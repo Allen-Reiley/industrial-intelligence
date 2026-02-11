@@ -1,5 +1,7 @@
 # 🏗️ Technical Specification: Industrial Intelligence Engine (v1.0)
 
+⚠️ Proprietary Software Notice: This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited.
+
 **Project Goal:** To build a privacy-first, B2B intent tracking system that deanonymizes website traffic for industrial clients in South Africa.
 
 **Core Stack:** Next.js (Frontend), FastAPI (Backend), PostgreSQL (Database), Vanilla JS (Tracker).
@@ -151,3 +153,10 @@ The system follows a **Decoupled Monolith** architecture. The Tracker runs on th
 
 ---
 
+## ⚖️ License & Proprietary Notice
+
+**Copyright (c) 2026 AuraWorks Pty (ltd). All Rights Reserved.**
+
+This tracker script is proprietary software. Unauthorized copying, modification, or redistribution is strictly prohibited. Use is granted only to active subscribers of the Industrial Intelligence Engine managed service.
+
+---

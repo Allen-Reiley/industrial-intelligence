@@ -1,5 +1,7 @@
  ## 📂 Project Directory Structure
 
+ ⚠️ Proprietary Software Notice: This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited.
+
 ```mermaid
 graph TD
     A[Industrial Intelligence Engine] --> B[Backend - FastAPI]
@@ -123,3 +125,11 @@ industrial-intelligence/
 │
 ├── docker-compose.yml      # For local development
 └── .env                    # Root environment variables
+
+## ⚖️ License & Proprietary Notice
+
+**Copyright (c) 2026 AuraWorks Pty (ltd). All Rights Reserved.**
+
+This tracker script is proprietary software. Unauthorized copying, modification, or redistribution is strictly prohibited. Use is granted only to active subscribers of the Industrial Intelligence Engine managed service.
+
+---
