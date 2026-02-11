@@ -1,5 +1,7 @@
 # 🎨 Industrial Intelligence Frontend
 
+⚠️ Proprietary Software Notice: This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited.
+
 The user-facing side of the Industrial Intelligence Engine. This repository contains the marketing site, the high-friction lead qualification funnel, and the client-facing reporting dashboard.
 
 ## 🚀 Getting Started

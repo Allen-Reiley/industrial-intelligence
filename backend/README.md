@@ -1,5 +1,7 @@
 # 🏗️ Industrial Intelligence Engine (v1.0)
 
+⚠️ Proprietary Software Notice: This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited.
+
 A high-performance B2B traffic deanonymization engine designed to identify juristic persons (companies) visiting industrial websites. Built with **FastAPI**, **Next.js**, and **SQLModel**.
 
 ## 🚀 Quick Start (Phase 1: Local Dev)

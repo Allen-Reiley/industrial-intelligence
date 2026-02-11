@@ -1,5 +1,7 @@
 # 🛠️ Infrastructure & Orchestration
 
+⚠️ Proprietary Software Notice: This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited.
+
 This directory contains the configuration files required to provision, containerize, and orchestrate the Industrial Intelligence Engine's services. It ensures that the environment is identical across **Local Development**, **Staging**, and **Production**.
 
 ## 📦 Containerization Strategy
