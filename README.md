@@ -1,107 +1,98 @@
-# 🏗️ Industrial Intelligence Engine (v1.0)
+# 🏭 Industrial Intelligence Engine (Master)
 
-A high-performance B2B traffic deanonymization engine designed to identify juristic persons (companies) visiting industrial websites. Built with **FastAPI**, **Next.js**, and **SQLModel**.
+The **Industrial Intelligence Engine** is a specialized B2B intent-tracking SaaS. It deanonymizes website traffic for industrial firms in the East Rand (and beyond), turning anonymous IP addresses into actionable sales leads.
 
-## 🚀 Quick Start (Phase 1: Local Dev)
+## 📂 Project Structure
 
-### 1. Prerequisites
+```text
+industrial-intelligence/
+├── backend/       # FastAPI + SQLModel + PostgreSQL (The Core)
+├── frontend/      # Next.js 14 + Tailwind (The Interface & Lead Funnel)
+├── tracker/       # Vanilla JS (The Edge Script)
+└── infra/         # Docker, Nginx, or CI/CD configs
 
-* **OS:** Windows 10/11 with **WSL 2** (Ubuntu recommended).
-* **Package Manager:** [uv](https://github.com/astral-sh/uv) installed in WSL.
-* **Docker:** Docker Desktop with WSL 2 integration enabled.
+```
 
-### 2. Backend Setup
+---
 
-Navigate to the `/backend` directory:
+## ⚡ Quick Start (Development Mode)
+
+### 1. Clone & Environment
+
+Ensure you are using **WSL 2** and have **Docker Desktop** running.
 
 ```bash
-# 1. Create and activate virtual environment
-uv venv
-source .venv/bin/activate
-
-# 2. Install dependencies in one go
-uv pip install fastapi uvicorn[standard] sqlmodel psycopg2-binary pydantic-settings python-multipart "python-jose[cryptography]" "passlib[bcrypt]"
-
-# 3. Generate requirements for Docker parity
-uv pip freeze > requirements.txt
+git clone <your-repo-url>
+cd industrial-intelligence
 
 ```
 
-### 3. Database Setup (Docker)
+### 2. Infrastructure (Postgres)
 
-In the project root, create a `docker-compose.yml` file to spin up your local PostgreSQL instance:
-
-```yaml
-version: '3.8'
-services:
-  db:
-    image: postgres:15
-    container_name: industrial_db
-    restart: always
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: industrial_intelligence
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-volumes:
-  postgres_data:
-
-```
-
-**Run the database:**
+Spin up the local database using Docker:
 
 ```bash
 docker compose up -d
 
 ```
 
----
+### 3. Backend Setup (FastAPI)
 
-## 🛠️ Tech Stack & Architecture
+Using `uv` for high-speed dependency management:
 
-| Layer | Technology |
-| --- | --- |
-| **Frontend** | Next.js 14+ (App Router), Tailwind CSS |
-| **Backend** | FastAPI, Python 3.11+ |
-| **Database** | PostgreSQL (Docker locally, Neon in Prod) |
-| **ORM** | SQLModel (Pydantic + SQLAlchemy) |
-| **Tracking** | Minified Vanilla JS (Beacon API) |
+```bash
+cd backend
+uv venv
+source .venv/bin/activate
+uv pip install -r requirements.txt
+uvicorn main:app --reload
 
----
+```
 
-## 📂 Project Structure
+### 4. Frontend Setup (Next.js)
 
-```text
-industrial-intelligence/
-├── backend/                # FastAPI logic
-│   ├── app/
-│   │   ├── api/            # Route handlers (/entry, /exit)
-│   │   ├── models/         # SQLModel schemas
-│   │   └── core/           # Config & Enrichment logic
-│   └── main.py             # Entry point
-├── frontend/               # Next.js Dashboard & Lead Funnel
-├── tracker/                # Vanilla JS script (tracker.min.js)
-└── docker-compose.yml      # Local infrastructure
+```bash
+cd frontend
+npm install
+npm run dev
 
 ```
 
 ---
 
-## 📑 API Endpoints (Planned)
+## 🛰️ How it Works (The Data Loop)
 
-* `POST /v1/track/entry` - Initialize session & identify company.
-* `POST /v1/track/exit` - Update session duration.
-* `GET /v1/admin/leads` - View qualified traffic (Internal).
+1. **Capture:** The `tracker.min.js` fires on a client's site.
+2. **Identify:** The Backend receives the IP, queries **IPinfo**, and filters out residential ISPs.
+3. **Store:** Valid B2B visits are saved to **PostgreSQL**.
+4. **Report:** The Client Dashboard visualizes the traffic, and a weekly PDF is generated for the client's sales team.
 
 ---
 
-## 🛡️ Compliance
+## 🛠️ Tech Stack Summary
 
-This project is designed with **POPIA** (Protection of Personal Information Act) in mind, focusing on **Juristic Person** identification and strictly purging non-essential data.
+* **Backend:** FastAPI, Python 3.11, SQLModel, Uvicorn.
+* **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS, Shadcn/UI.
+* **Database:** PostgreSQL (Neon.tech for Production).
+* **Deployment:** Vercel (Frontend) + Railway (Backend) + Cloudflare (CDN).
+
+---
+
+## 🛡️ Business Logic & Compliance
+
+* **Targeting:** Specifically engineered for the Industrial/Manufacturing sector.
+* **Pricing:** R10,000/month managed service.
+* **Privacy:** Designed for POPIA compliance—identifying Juristic Persons (Companies), not natural individuals.
+
+---
+
+## 📅 Roadmap (Phase 1)
+
+* [x] Technical Specification & Architecture.
+* [x] WSL 2 & Docker Environment Setup.
+* [ ] Database Schema Design (SQLModel).
+* [ ] API Ingestion Endpoints (`/entry`, `/exit`).
+* [ ] Lead Qualification Funnel build.
 
 ---
 
