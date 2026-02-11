@@ -25,7 +25,7 @@ industrial-intelligence/
 Ensure you are using **WSL 2** and have **Docker Desktop** running.
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Allen-Reiley/industrial-intelligence.git
 cd industrial-intelligence
 
 ```
@@ -47,7 +47,6 @@ Using `uv` for high-speed dependency management:
 cd backend
 uv venv
 source .venv/bin/activate
-uv pip install -r requirements.txt
 uvicorn main:app --reload
 
 ```
@@ -77,7 +76,7 @@ npm run dev
 * **Backend:** FastAPI, Python 3.11, SQLModel, Uvicorn.
 * **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS, Shadcn/UI.
 * **Database:** PostgreSQL (Neon.tech for Production).
-* **Deployment:** Vercel (Frontend) + Railway (Backend) + Cloudflare (CDN).
+* **Deployment:** Vercel (Frontend) + Render (Backend) + Cloudflare (CDN).
 
 ---
 

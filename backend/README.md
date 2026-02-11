@@ -22,7 +22,11 @@ uv venv
 source .venv/bin/activate
 
 # 2. Install dependencies in one go
-uv pip install fastapi uvicorn[standard] sqlmodel psycopg2-binary pydantic-settings python-multipart "python-jose[cryptography]" "passlib[bcrypt]"
+uv pip install fastapi uvicorn[standard] sqlmodel psycopg2-binary pydantic-settings python-multipart "python-jose[cryptography]" "passlib[bcrypt]" "dotenv"
+
+or
+
+uv add fastapi uvicorn[standard] sqlmodel psycopg2-binary pydantic-settings python-multipart "python-jose[cryptography]" "passlib[bcrypt]" "dotenv"
 
 # 3. Generate requirements for Docker parity
 uv pip freeze > requirements.txt

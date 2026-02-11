@@ -80,10 +80,7 @@ The edge layer script provided to your clients.
 
 ---
 
-
-
-
-industrial-intelligence/
+```industrial-intelligence/
 ├── backend/                # FastAPI Application
 │   ├── app/
 │   │   ├── api/            # Route handlers
@@ -125,6 +122,7 @@ industrial-intelligence/
 │
 ├── docker-compose.yml      # For local development
 └── .env                    # Root environment variables
+```
 
 ## ⚖️ License & Proprietary Notice
 
