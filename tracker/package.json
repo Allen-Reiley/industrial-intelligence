@@ -1,0 +1,10 @@
+{
+  "name": "industrial-tracker",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "terser src/index.js -o dist/tracker.min.js --compress --mangle"
+  },
+  "devDependencies": {
+    "terser": "^5.19.2"
+  }
+}
