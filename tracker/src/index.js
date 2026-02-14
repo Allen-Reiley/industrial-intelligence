@@ -7,7 +7,7 @@
     const script = document.currentScript;
     const clientId = script.getAttribute('data-id');
     // Ensure this matches your FastAPI backend
-    const baseUrl = "https://api.yourdomain.com/v1/track"; 
+    const API_URL = "http://localhost:8000/v1/track"; 
     
     // State Variables (Changed from const to let to allow resetting on navigation)
     let startTime = Date.now();
@@ -24,7 +24,7 @@
             timestamp: new Date().toISOString()
         };
 
-        fetch(`${baseUrl}/entry`, {
+        fetch(`${API_URL}/entry`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(entryPayload),
@@ -47,7 +47,7 @@
         };
 
         const blob = new Blob([JSON.stringify(exitPayload)], { type: 'application/json' });
-        navigator.sendBeacon(`${baseUrl}/exit`, blob);
+        navigator.sendBeacon(`${API_URL}/exit`, blob);
     };
 
     // --- 2. Initial Execution ---

@@ -3,8 +3,8 @@ from typing import Optional
 from app.models.visit import VisitCreate, Visit
 from app.models.pageview import PageViewCreate
 from app.services.enrichment import enrich_visitor_data
-from app.db import get_session
 from sqlmodel import Session, select
+from app.db import engine
 import logging
 
 router = APIRouter()
@@ -12,11 +12,11 @@ logger = logging.getLogger("uvicorn")
 
 async def process_entry_logic(payload: VisitCreate, client_ip: str):
     """
-    Background task to handle the heavy lifting: 
-    IP enrichment, B2B filtering, and DB storage.
+    Background task to handle IP enrichment and DB storage.
     """
-    with Session(get_session()) as session:
-        # 1. Check if this is an ISP or a real Company (The Enrichment Service)
+    # Use the ENGINE directly for background tasks
+    with Session(engine) as session:
+        # 1. Check if this is an ISP or a real Company
         enriched_data = await enrich_visitor_data(client_ip)
         
         # 2. Create the Visit record
@@ -34,7 +34,8 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
         
         session.add(db_visit)
         session.commit()
-        logger.info(f"Entry logged: {db_visit.company_name} on {payload.url}")
+        session.refresh(db_visit)
+        logger.info(f"Entry logged: {db_visit.company_name} from {client_ip}")
 
 @router.post("/entry")
 async def track_entry(
@@ -43,14 +44,13 @@ async def track_entry(
     background_tasks: BackgroundTasks,
     x_forwarded_for: Optional[str] = Header(None)
 ):
-    """
-    Endpoint for tracker.js Entry Ping.
-    Returns 202 Accepted immediately to keep the client site fast.
-    """
-    # Get IP: Use X-Forwarded-For if behind a proxy (like Railway/Cloudflare)
+    # Get IP: Use X-Forwarded-For if behind a proxy
     client_ip = x_forwarded_for.split(',')[0] if x_forwarded_for else request.client.host
+
+    #? Spoofing Google LLC for testing purposes
+    # client_ip = "8.8.8.8"
     
-    # Offload the heavy work to a background thread
+    # Offload to background thread
     background_tasks.add_task(process_entry_logic, payload, client_ip)
     
     return {"status": "accepted"}
@@ -58,12 +58,10 @@ async def track_entry(
 @router.post("/exit")
 async def track_exit(payload: PageViewCreate):
     """
-    Endpoint for tracker.js Exit Ping (sendBeacon).
-    Updates the duration of the visit.
+    Endpoint for tracker.js Exit Ping. Updates the duration.
     """
-    with Session(get_session()) as session:
-        # Find the most recent visit for this client and URL from this IP
-        # In a real-world scenario, you might use a Session ID or Cookie
+    with Session(engine) as session:
+        # Find the most recent visit for this client and URL
         statement = select(Visit).where(
             Visit.client_id == payload.client_id,
             Visit.url == payload.url
@@ -71,10 +69,13 @@ async def track_exit(payload: PageViewCreate):
         
         visit = session.exec(statement).first()
         
-        if visit:
-            visit.duration = payload.duration
-            session.add(visit)
-            session.commit()
-            logger.info(f"Exit logged: {visit.company_name} stayed for {payload.duration}s")
+        if not visit:
+            logger.warning(f"Exit received but no matching Entry found for client {payload.client_id}")
+            return {"status": "pending_entry"}
+
+        visit.duration = payload.duration
+        session.add(visit)
+        session.commit()
+        logger.info(f"Exit logged: {visit.company_name} stayed for {payload.duration}s")
             
     return {"status": "recorded"}
