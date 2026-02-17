@@ -22,10 +22,12 @@ class Visit(VisitBase, table=True):
     
     # Business Intelligence (The "Secret Sauce")
     company_name: Optional[str] = Field(default=None, index=True)
+    domain: Optional[str] = None
     is_b2b: bool = Field(default=False)
     industry: Optional[str] = None
     city: Optional[str] = None
     region: Optional[str] = None
+    
     
     # Behavioral Metrics
     duration: int = Field(default=0)

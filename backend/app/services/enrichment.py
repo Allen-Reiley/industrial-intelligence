@@ -52,6 +52,7 @@ async def enrich_visitor_data(ip_address: str) -> dict:
 
             return {
                 "company_name": company_name,
+                "domain": data.get("company", {}).get("domain"),
                 "is_b2b": is_b2b,
                 "industry": asn_type,
                 "city": data.get("city"),
