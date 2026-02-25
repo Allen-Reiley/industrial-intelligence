@@ -1,96 +1,36 @@
-# 🎨 Industrial Intelligence Frontend
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-⚠️ Proprietary Software Notice: This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited.
+## Getting Started
 
-The user-facing side of the Industrial Intelligence Engine. This repository contains the marketing site, the high-friction lead qualification funnel, and the client-facing reporting dashboard.
-
-## 🚀 Getting Started
-
-### 1. Prerequisites
-
-* **Node.js:** v18.17 or later.
-* **Package Manager:** `npm` or `pnpm`.
-
-### 2. Installation
-
-Navigate to the `/frontend` directory:
+First, run the development server:
 
 ```bash
-# Install dependencies
-npm install
-
-# Start the development server
 npm run dev
-
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-The site will be available at `http://localhost:3000`.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
----
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-## 🏗️ Features & Logic
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-### 1. The Lead Funnel (`/apply`)
+## Learn More
 
-A two-stage qualification process designed to filter for high-value industrial clients:
+To learn more about Next.js, take a look at the following resources:
 
-* **Stage 1:** Basic contact collection (Name, Company, Email).
-* **Stage 2:** Metric-based qualification (Monthly Traffic, Average Order Value, Closing Rate).
-* **Logic:** If the prospect meets the threshold, they are redirected to a **Zoom/Teams** booking page; otherwise, they receive a "Value-Add" rejection message.
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-### 2. Client Dashboard (`/dashboard`)
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-* **Live Feed:** Real-time visibility into which companies are currently browsing the client's site.
-* **Lead Analytics:** Breakdown of "Hot Leads" (high duration/high intent) vs. general traffic.
-* **Integration Hub:** Provides the client with their unique `tracker.min.js` snippet.
+## Deploy on Vercel
 
----
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-## 🛠️ Tech Stack
-
-* **Framework:** [Next.js 14](https://nextjs.org/) (App Router).
-* **Styling:** [Tailwind CSS](https://tailwindcss.com/).
-* **Components:** [Shadcn/UI](https://ui.shadcn.com/) + [Lucide React](https://lucide.dev/) icons.
-* **Form Handling:** [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/) for strict validation.
-* **State/Data Fetching:** [TanStack Query](https://tanstack.com/query/latest) (React Query).
-
----
-
-## 📂 Directory Structure
-
-```text
-frontend/
-├── src/
-│   ├── app/                # Next.js App Router (Pages)
-│   │   ├── apply/          # The Lead Funnel logic
-│   │   ├── dashboard/      # Client reporting UI
-│   │   └── api/            # Next.js Route Handlers (Internal)
-│   ├── components/         # Reusable UI components (Buttons, Inputs, etc.)
-│   ├── hooks/              # Custom React hooks
-│   └── lib/                # Utils (API clients, formatting)
-├── public/                 # Static assets (Logos, Icons)
-└── tailwind.config.ts      # Theme configuration
-
-```
-
----
-
-## 🌐 Deployment
-
-This frontend is optimized for deployment on **Vercel**.
-
-* Environment variables required:
-* `NEXT_PUBLIC_API_URL`: The URL of your FastAPI backend.
-* `NEXTAUTH_SECRET`: For dashboard authentication security.
-
-
-
----
-
-## ⚖️ License & Proprietary Notice
-
-**Copyright (c) 2026 AuraWorks Pty (ltd). All Rights Reserved.**
-
-This tracker script is proprietary software. Unauthorized copying, modification, or redistribution is strictly prohibited. Use is granted only to active subscribers of the Industrial Intelligence Engine managed service.
-
----
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
