@@ -10,7 +10,7 @@ The **Industrial Intelligence Engine** is a specialized B2B intent-tracking SaaS
 ```text
 industrial-intelligence/
 ├── backend/       # FastAPI + SQLModel + PostgreSQL (The Core)
-├── frontend/      # Next.js 14 + Tailwind (The Interface & Lead Funnel)
+├── frontend/      # Next.js 16 + Tailwind (The Interface & Lead Funnel)
 ├── tracker/       # Vanilla JS (The Edge Script)
 └── infra/         # Docker, Nginx, or CI/CD configs
 
