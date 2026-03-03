@@ -7,6 +7,14 @@ from app.api.v1 import track, clients
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"], # Your Next.js URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # 1. CORS Configuration
 # This is CRITICAL. Your clients' websites will be on different domains.
 # You must allow them to send data to your API.
