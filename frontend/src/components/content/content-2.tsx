@@ -1,7 +1,7 @@
 import { Cpu, Zap } from 'lucide-react'
 import Image from 'next/image'
 
-export default function ContentSection() {
+export default function ContentSection2() {
     return (
         <section className="py-16 md:py-32">
             <div className="mx-auto max-w-5xl space-y-8 px-6 md:space-y-16">

@@ -1,11 +1,11 @@
 import Image from 'next/image'
-import { Spotify } from '@/components/ui/svgs/spotify'
+import { cn } from '@/lib/utils'
 
-export default function ContentSection() {
+export default function ContentSection1({ className }: { className?: string }) {
     return (
-        <section className="py-16 md:py-32">
+        <section className={cn("py-16 md:py-32", className)}>
             <div className="mx-auto max-w-5xl space-y-8 px-6 md:space-y-16">
-                <h2 className="relative z-10 max-w-xl text-4xl font-medium lg:text-5xl">The Lyra ecosystem brings together our models.</h2>
+                <h2 className="relative z-10 max-w-xl text-4xl font-medium lg:text-5xl">Business intelligence, not random traffic.</h2>
                 <div className="grid gap-6 sm:grid-cols-2 md:gap-12 lg:gap-24">
                     <div className="relative mb-6 sm:mb-0">
                         <div className="bg-linear-to-b aspect-76/59 relative rounded-2xl from-zinc-300 to-transparent p-px dark:from-zinc-700">
@@ -28,21 +28,32 @@ export default function ContentSection() {
 
                     <div className="relative space-y-4">
                         <p className="text-muted-foreground">
-                            Gemini is evolving to be more than just the models. <span className="text-accent-foreground font-bold">It supports an entire ecosystem</span> — from products innovate.
+                            We filter out the noise. Our engine ignores personal traffic to show you only <span className="text-accent-foreground font-bold">real business prospects.</span> — Know which industrial firms are studying your specs before they even issue a tender.
                         </p>
-                        <p className="text-muted-foreground">It supports an entire ecosystem — from products to the APIs and platforms helping developers and businesses innovate</p>
+                        <p className="text-muted-foreground">AuraWorks bridges the gap between anonymous traffic and actionable sales data for your growth team.</p>
 
                         <div className="pt-6">
-                            <blockquote className="border-l-4 pl-4">
-                                <p>Using TailsUI has been like unlocking a secret design superpower. It's the perfect fusion of simplicity and versatility, enabling us to create UIs that are as stunning as they are user-friendly.</p>
+                            <blockquote className="border-l-4 pl-4 border-primary/20">
+                                <p className="italic text-muted-foreground">"Using this intelligence has been like unlocking a secret sales superpower. It's the perfect fusion of data and outreach."</p>
 
-                                <div className="mt-6 space-y-3">
-                                    <cite className="block font-medium">John Doe, CEO</cite>
-                                    <Spotify
-                                        height={24}
-                                        width={80}
-                                        className="**:fill-foreground"
-                                    />
+                                <div className="mt-6 space-y-4">
+                                    <cite className="block font-medium text-foreground">John Doe, CEO</cite>
+                                    
+                                    {/* SVG Image Space */}
+                                    <div className="relative h-6 w-24">
+                                        <Image
+                                            src="/logo-light.svg" // Replace with your client's light SVG
+                                            alt="Client Logo"
+                                            fill
+                                            className="object-contain object-left dark:hidden"
+                                        />
+                                        <Image
+                                            src="/logo-dark.svg" // Replace with your client's dark SVG
+                                            alt="Client Logo"
+                                            fill
+                                            className="hidden object-contain object-left dark:block"
+                                        />
+                                    </div>
                                 </div>
                             </blockquote>
                         </div>

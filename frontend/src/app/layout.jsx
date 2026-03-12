@@ -1,6 +1,5 @@
-import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script"; // Imported from Snippet 1
+import Script from "next/script";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,13 +12,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const viewport: Viewport = {
+// Removed ": Viewport" type annotation for JSX compatibility
+export const viewport = {
   themeColor: "#ffffff",
   width: "device-width",
   initialScale: 1,
 };
 
-export const metadata: Metadata = {
+// Removed ": Metadata" type annotation for JSX compatibility
+export const metadata = {
   metadataBase: new URL("https://auraworks.co.za"),
   title: {
     default: "AuraWorks | Industrial Sales Intelligence",
@@ -58,11 +59,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
@@ -70,9 +67,9 @@ export default function RootLayout({
 
         {/* AuraWorks Tracking Script */}
         <Script
-          src="http://localhost:8000/static/tracker.js" // Source from Snippet 2
-          data-id="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0" // ID from Snippet 2
-          strategy="afterInteractive" // Strategy from Snippet 1
+          src="http://localhost:8000/static/tracker.js"
+          data-id="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0"
+          strategy="afterInteractive"
         />
       </body>
     </html>

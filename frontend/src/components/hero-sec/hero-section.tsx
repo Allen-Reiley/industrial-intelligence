@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { TextEffect } from '@/components/ui/text-effect'
 import { AnimatedGroup } from '@/components/ui/animated-group'
 import { HeroHeader } from '../header/header'
+{/* 
 import { Spotify } from '@/components/ui/svgs/spotify'
 import { SupabaseFull } from '@/components/ui/svgs/supabase'
 import { Hulu } from '@/components/ui/svgs/hulu'
@@ -14,6 +15,7 @@ import { FirebaseFull } from '@/components/ui/svgs/firebase'
 import { Beacon } from '@/components/ui/svgs/beacon'
 import { Claude } from '@/components/ui/svgs/claude'
 import { VercelFull } from '@/components/ui/svgs/vercel'
+*/}
 
 const transitionVariants = {
     item: {
@@ -33,7 +35,7 @@ const transitionVariants = {
             },
         },
     },
-}
+} as const;
 
 export default function HeroSection() {
     return (
@@ -48,7 +50,8 @@ export default function HeroSection() {
                     <div className="h-320 -translate-y-87.5 absolute left-0 top-0 w-60 -rotate-45 bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.04)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)]" />
                 </div>
                 <section>
-                    <div className="relative pt-24 md:pt-36">
+                    {/* FIXED: Specific padding to align with the background radial mask */}
+                    <div className="relative pt-36 pb-0 px-0 md:pt-48">
                         <AnimatedGroup
                             variants={{
                                 container: {
@@ -78,9 +81,10 @@ export default function HeroSection() {
                             <Image
                                 src="https://ik.imagekit.io/lrigu76hy/tailark/night-background.jpg?updatedAt=1745733451120"
                                 alt="background"
-                                className="hidden size-full dark:block"
+                                className="hidden size-full dark:block object-cover"
                                 width="3276"
                                 height="4095"
+                                priority
                             />
                         </AnimatedGroup>
 
@@ -95,7 +99,7 @@ export default function HeroSection() {
                                     <Link
                                         href="#link"
                                         className="hover:bg-background dark:hover:border-t-border bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-zinc-950/5 transition-colors duration-300 dark:border-t-white/5 dark:shadow-zinc-950">
-                                        <span className="text-foreground text-sm">Introducing Support for AI Models</span>
+                                        <span className="text-foreground text-sm">Industrial Sales Intelligence</span>
                                         <span className="dark:border-background block h-4 w-0.5 border-l bg-white dark:bg-zinc-700"></span>
 
                                         <div className="bg-background group-hover:bg-muted size-6 overflow-hidden rounded-full duration-500">
@@ -115,8 +119,8 @@ export default function HeroSection() {
                                     preset="fade-in-blur"
                                     speedSegment={0.3}
                                     as="h1"
-                                    className="mx-auto mt-8 max-w-4xl text-balance text-5xl max-md:font-semibold md:text-7xl lg:mt-16 xl:text-[5.25rem]">
-                                    Modern Solutions for Customer Engagement
+                                    className="mx-auto mt-8 max-w-4xl text-balance text-5xl font-bold md:text-7xl lg:mt-16 xl:text-[4rem] tracking-tight">
+                                    Know Which Companies Are Researching Your Products
                                 </TextEffect>
                                 <TextEffect
                                     per="line"
@@ -124,8 +128,8 @@ export default function HeroSection() {
                                     speedSegment={0.3}
                                     delay={0.5}
                                     as="p"
-                                    className="mx-auto mt-8 max-w-2xl text-balance text-lg">
-                                    Highly customizable components for building modern websites and applications that look and feel the way you mean it.
+                                    className="mx-auto mt-8 max-w-2xl text-balance text-lg text-muted-foreground">
+                                    AuraWorks identifies your anonymous industrial visitors and delivers their contact info to your inbox. Simple, weekly leads for your sales team.
                                 </TextEffect>
 
                                 <AnimatedGroup
@@ -140,27 +144,22 @@ export default function HeroSection() {
                                         },
                                         ...transitionVariants,
                                     }}
-                                    className="mt-12 flex flex-col items-center justify-center gap-2 md:flex-row">
-                                    <div
-                                        key={1}
-                                        className="bg-foreground/10 rounded-[calc(var(--radius-xl)+0.125rem)] border p-0.5">
-                                        <Button
-                                            asChild
-                                            size="lg"
-                                            className="rounded-xl px-5 text-base">
-                                            <Link href="#link">
-                                                <span className="text-nowrap">Start Building</span>
-                                            </Link>
-                                        </Button>
-                                    </div>
+                                    className="mt-12 flex flex-col items-center justify-center gap-4 md:flex-row">
                                     <Button
-                                        key={2}
+                                        asChild
+                                        size="lg"
+                                        className="rounded-xl px-8 text-base shadow-xl shadow-primary/20">
+                                        <Link href="#link">
+                                            <span className="text-nowrap">Get Started</span>
+                                        </Link>
+                                    </Button>
+                                    <Button
                                         asChild
                                         size="lg"
                                         variant="ghost"
-                                        className="h-10.5 rounded-xl px-5">
+                                        className="rounded-xl px-8 text-base">
                                         <Link href="#link">
-                                            <span className="text-nowrap">Request a demo</span>
+                                            <span className="text-nowrap">Book a Demo</span>
                                         </Link>
                                     </Button>
                                 </AnimatedGroup>
@@ -180,66 +179,45 @@ export default function HeroSection() {
                                 ...transitionVariants,
                             }}>
                             <div className="mask-b-from-55% relative -mr-56 mt-8 overflow-hidden px-2 sm:mr-0 sm:mt-12 md:mt-20">
-                                <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-lg shadow-zinc-950/15 ring-1">
+                                <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-2xl shadow-zinc-950/20 ring-1">
                                     <Image
                                         className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
                                         src="/mail2.png"
-                                        alt="app screen"
+                                        alt="industrial lead report dashboard"
                                         width="2700"
                                         height="1440"
+                                        priority
                                     />
                                     <Image
                                         className="z-2 border-border/25 aspect-15/8 relative rounded-2xl border dark:hidden"
                                         src="/mail2-light.png"
-                                        alt="app screen"
+                                        alt="industrial lead report dashboard"
                                         width="2700"
                                         height="1440"
+                                        priority
                                     />
                                 </div>
                             </div>
                         </AnimatedGroup>
                     </div>
                 </section>
-                <section className="bg-background pb-16 pt-16 md:pb-32">
+                
+                {/* Social Proof Section 
+                <section className="bg-background pb-16 pt-24 md:pb-32">
                     <div className="group relative m-auto max-w-5xl px-6">
-                        <div className="absolute inset-0 z-10 flex scale-95 items-center justify-center opacity-0 duration-500 group-hover:scale-100 group-hover:opacity-100">
-                            <Link
-                                href="/"
-                                className="block text-sm duration-150 hover:opacity-75">
-                                <span> Meet Our Customers</span>
-
-                                <ChevronRight className="ml-1 inline-block size-3" />
-                            </Link>
-                        </div>
-                        <div className="group-hover:blur-xs **:fill-foreground mx-auto mt-12 grid max-w-2xl grid-cols-3 gap-x-12 gap-y-8 transition-all duration-500 group-hover:opacity-50 sm:gap-x-16 sm:gap-y-14 md:grid-cols-4">
-                            <div className="flex items-center">
-                                <Bolt className="mx-auto h-5 w-full" />
-                            </div>
-                            <div className="flex items-center">
-                                <VercelFull className="mx-auto h-4 w-full" />
-                            </div>
-                            <div className="flex items-center">
-                                <SupabaseFull className="mx-auto h-6" />
-                            </div>
-                            <div className="flex items-center">
-                                <Hulu className="mx-auto h-4 w-full" />
-                            </div>
-                            <div className="flex items-center">
-                                <Spotify className="mx-auto h-6 w-full" />
-                            </div>
-                            <div className="flex items-center">
-                                <FirebaseFull className="mx-auto h-6 w-full" />
-                            </div>
-                            <div className="flex items-center">
-                                <Beacon className="mx-auto h-4 w-full" />
-                            </div>
-
-                            <div className="flex items-center">
-                                <Claude className="mx-auto h-5 w-full" />
-                            </div>
+                        <div className="group-hover:blur-xs **:fill-muted-foreground mx-auto grid max-w-2xl grid-cols-3 gap-x-12 gap-y-8 transition-all duration-500 group-hover:opacity-50 sm:gap-x-16 sm:gap-y-14 md:grid-cols-4">
+                            <Bolt className="mx-auto h-5 w-full" />
+                            <VercelFull className="mx-auto h-4 w-full" />
+                            <SupabaseFull className="mx-auto h-6" />
+                            <Hulu className="mx-auto h-4 w-full" />
+                            <Spotify className="mx-auto h-6 w-full" />
+                            <FirebaseFull className="mx-auto h-6 w-full" />
+                            <Beacon className="mx-auto h-4 w-full" />
+                            <Claude className="mx-auto h-5 w-full" />
                         </div>
                     </div>
                 </section>
+                */}
             </main>
         </>
     )
