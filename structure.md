@@ -97,6 +97,7 @@ The edge layer script provided to your clients.
 │   │   │   └── pageview.py       # Duration/Path schema
 │   │   ├── services/       # Business Logic (The "Blue Box")
 │   │   │   ├── enrichment.py     # IPinfo API integration
+│   │   │   ├── contacts.py       # Collects Contact info based on business departments
 │   │   │   └── reports.py        # PDF Generation logic (Generator.py)
 │   │   ├── db.py           # Neon Postgres connection
 │   │   └── main.py         # FastAPI Entry point
