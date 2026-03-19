@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 import { TextEffect } from '@/components/ui/text-effect'
 import { AnimatedGroup } from '@/components/ui/animated-group'
-import { HeroHeader } from '../header/header'
+import { HeroHeader } from './header/header'
 {/* 
 import { Spotify } from '@/components/ui/svgs/spotify'
 import { SupabaseFull } from '@/components/ui/svgs/supabase'
@@ -190,7 +190,7 @@ export default function HeroSection() {
                                     />
                                     <Image
                                         className="z-2 border-border/25 aspect-15/8 relative rounded-2xl border dark:hidden"
-                                        src="/mail2-light.png"
+                                        src="/mail2-light.webp"
                                         alt="industrial lead report dashboard"
                                         width="2700"
                                         height="1440"
