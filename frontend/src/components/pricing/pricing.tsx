@@ -27,88 +27,79 @@ export default function Pricing() {
         setHasMounted(true);
     }, []);
 
-    // --- SEO & SOCIAL CRAWLER FALLBACK ---
-    // This allows bots to see your keywords before the JS animations trigger.
     if (!hasMounted) {
-        return (
-            <div className="sr-only">
-                <h1>Deploy Your Industrial Growth Engine</h1>
-                <p>One year of unmasked revenue. Total visibility into the construction, mining, logistics, and manufacturing firms visiting your site.</p>
-                <p>R120k/yr Enterprise Sales Intelligence</p>
-                <ul>
-                    <li>Real-time identity resolution for SA and International traffic</li>
-                    <li>Weekly "Hot Lead" reports delivered to your inbox</li>
-                    <li>LinkedIn & Corporate Email enrichment</li>
-                    <li>POPIA-compliant visitor consent management</li>
-                    <li>Industrial-sector automated nurture sequence</li>
-                </ul>
-            </div>
-        )
+        return <div className="sr-only">AuraWorks Pricing - R120k/yr Annual Engine</div>;
     }
 
     return (
         <>
             <HeroHeader />
-            <div className="relative py-16 md:py-32">
-                <div className="mx-auto max-w-5xl px-6">
+            <div className="relative py-12 md:py-32">
+                <div className="mx-auto max-w-5xl px-4 md:px-6">
                     <div className="mx-auto max-w-2xl text-center">
-                        <h2 className="text-balance text-3xl font-bold md:text-4xl lg:text-5xl">
+                        <h2 className="text-balance text-3xl font-bold md:text-4xl lg:text-5xl leading-tight">
                             <TextEffect preset="fade-in-blur" speedSegment={0.3}>
                                 Deploy Your Industrial Growth Engine
                             </TextEffect>
                         </h2>
-                        <div className="text-muted-foreground mt-4 text-lg">
+                        <div className="text-muted-foreground mt-6 text-base md:text-lg px-2">
                             <AnimatedGroup variants={transitionVariants}>
                                 One year of unmasked revenue. Total visibility into the construction, mining, logistics, and manufacturing firms visiting your site.
                             </AnimatedGroup>
                         </div>
                     </div>
 
-                    <div className="mt-8 md:mt-20">
-                        <div className="bg-card relative rounded-3xl border shadow-2xl shadow-zinc-950/5">
-                            <div className="grid items-center gap-12 divide-y p-12 md:grid-cols-2 md:divide-x md:divide-y-0">
-                                <div className="pb-12 text-center md:pb-0 md:pr-12">
-                                    <div className="text-2xl font-semibold italic">
+                    <div className="mt-12 md:mt-20">
+                        {/* Added overflow-hidden to prevent layout shift */}
+                        <div className="bg-card relative rounded-3xl border shadow-2xl shadow-zinc-950/5 overflow-hidden">
+                            <div className="grid items-center gap-0 md:gap-12 divide-y md:grid-cols-2 md:divide-x md:divide-y-0">
+                                
+                                {/* LEFT COLUMN: Pricing & CTA */}
+                                <div className="p-8 md:p-12 text-center">
+                                    <div className="text-xl md:text-2xl font-semibold italic">
                                         <AnimatedGroup variants={transitionVariants}>
                                             AuraWorks Annual Engine
                                         </AnimatedGroup>
                                     </div>
 
                                     <AnimatedGroup variants={transitionVariants}>
-                                        <div className="mt-2 text-sm text-muted-foreground uppercase tracking-widest">
+                                        {/* FIX: break-words and responsive text size */}
+                                        <div className="mt-3 text-[10px] md:text-sm text-muted-foreground uppercase tracking-[0.2em] break-words">
                                             Enterprise Sales Intelligence
                                         </div>
                                     </AnimatedGroup>
 
                                     <AnimatedGroup variants={transitionVariants}>
-                                        <div className="mb-6 mt-12 inline-block text-6xl font-bold">
-                                            <span className="text-4xl font-medium text-foreground">R</span>
-                                            120k
-                                            <span className="text-lg font-normal text-muted-foreground">/yr</span>
+                                        {/* FIX: Fluid pricing text to prevent overflow */}
+                                        <div className="mb-8 mt-10 inline-flex items-baseline font-bold">
+                                            <span className="text-2xl md:text-4xl font-medium text-foreground mr-1">R</span>
+                                            <span className="text-5xl md:text-7xl tracking-tighter">120k</span>
+                                            <span className="text-base md:text-lg font-normal text-muted-foreground ml-1">/yr</span>
                                         </div>
                                     </AnimatedGroup>
 
-                                    <div className="flex justify-center">
-                                        <AnimatedGroup variants={transitionVariants}>
+                                    <div className="flex justify-center w-full">
+                                        <AnimatedGroup variants={transitionVariants} className="w-full md:w-auto">
                                             <Button
                                                 asChild
                                                 size="lg"
-                                                className="px-12 py-6 text-lg font-medium tracking-tight">
+                                                className="w-full md:w-auto px-10 py-7 text-base md:text-lg font-medium tracking-tight shadow-xl">
                                                 <Link href="/get-started">Request Enterprise Access</Link>
                                             </Button>
                                         </AnimatedGroup>
                                     </div>
 
-                                    <div className="text-muted-foreground mt-12 text-xs leading-relaxed max-w-xs mx-auto">
+                                    <div className="text-muted-foreground mt-10 text-[11px] md:text-xs leading-relaxed max-w-[280px] md:max-w-xs mx-auto">
                                         <TextEffect preset="fade-in-blur" speedSegment={0.3}>
                                             Annual License includes: Dedicated Identity Bridge, Full Social Enrichment, and Priority Industrial Lead Routing.
                                         </TextEffect>
                                     </div>
                                 </div>
 
-                                <div className="relative">
+                                {/* RIGHT COLUMN: Features */}
+                                <div className="p-8 md:p-12 bg-zinc-50/50 dark:bg-zinc-900/10">
                                     <AnimatedGroup variants={transitionVariants} className="space-y-8">
-                                        <ul role="list" className="space-y-4">
+                                        <ul role="list" className="space-y-5">
                                             {[
                                                 'Real-time identity resolution for SA and International traffic',
                                                 'Weekly "Hot Lead" reports delivered to your inbox',
@@ -116,17 +107,18 @@ export default function Pricing() {
                                                 'POPIA-compliant visitor consent management',
                                                 'Industrial-sector automated nurture sequence'
                                             ].map((item, index) => (
-                                                <li key={index} className="flex items-center gap-3">
-                                                    <Check className="size-4 text-primary" />
-                                                    <span className="text-sm font-medium">{item}</span>
+                                                <li key={index} className="flex items-start gap-3">
+                                                    <Check className="size-4 text-primary mt-1 shrink-0" />
+                                                    <span className="text-sm md:text-base font-medium leading-snug">{item}</span>
                                                 </li>
                                             ))}
                                         </ul>
-                                        <div className="text-muted-foreground text-sm leading-relaxed border-t pt-8 italic">
+                                        <div className="text-muted-foreground text-xs md:text-sm leading-relaxed border-t pt-8 italic">
                                             "Designed for firms that measure success in multi-million Rand contracts, not clicks."
                                         </div>
                                     </AnimatedGroup>
                                 </div>
+
                             </div>
                         </div>
                     </div>
