@@ -27,7 +27,24 @@ export default function Pricing() {
         setHasMounted(true);
     }, []);
 
-    if (!hasMounted) return null;
+    // --- SEO & SOCIAL CRAWLER FALLBACK ---
+    // This allows bots to see your keywords before the JS animations trigger.
+    if (!hasMounted) {
+        return (
+            <div className="sr-only">
+                <h1>Deploy Your Industrial Growth Engine</h1>
+                <p>One year of unmasked revenue. Total visibility into the construction, mining, logistics, and manufacturing firms visiting your site.</p>
+                <p>R120k/yr Enterprise Sales Intelligence</p>
+                <ul>
+                    <li>Real-time identity resolution for SA and International traffic</li>
+                    <li>Weekly "Hot Lead" reports delivered to your inbox</li>
+                    <li>LinkedIn & Corporate Email enrichment</li>
+                    <li>POPIA-compliant visitor consent management</li>
+                    <li>Industrial-sector automated nurture sequence</li>
+                </ul>
+            </div>
+        )
+    }
 
     return (
         <>
@@ -42,7 +59,7 @@ export default function Pricing() {
                         </h2>
                         <div className="text-muted-foreground mt-4 text-lg">
                             <AnimatedGroup variants={transitionVariants}>
-                                One year of unmasked revenue. Total visibility into the construction ,mining, logistics and manufacturing firms visiting your site.
+                                One year of unmasked revenue. Total visibility into the construction, mining, logistics, and manufacturing firms visiting your site.
                             </AnimatedGroup>
                         </div>
                     </div>
