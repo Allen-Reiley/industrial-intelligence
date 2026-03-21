@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://auraworks.co.za/sitemap.xml

@@ -28,6 +28,22 @@ export const metadata = {
     template: "%s | AuraWorks",
   },
   description: "Identify the companies visiting your website. AuraWorks turns anonymous industrial traffic into high-intent sales leads for B2B firms.",
+  
+  // Added Keywords for SEO and Crawler indexing
+  keywords: [
+    "B2B Lead Generation South Africa",
+    "Industrial Sales Intelligence",
+    "Intent-Based Lead Generation",
+    "Identity Resolution",
+    "POPIA Compliant Lead Generation",
+    "Anonymous Visitor Identification",
+    "Sales Automation for Manufacturing",
+    "Mining Sector Leads",
+    "Engineering Sales Intelligence",
+    "Revenue Systems Architecture",
+    "Gauteng B2B Sales Tools"
+  ],
+
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -40,7 +56,7 @@ export const metadata = {
   manifest: "/manifest.json",
   authors: [{ name: "Reitumetse Sethabela", url: "https://auraworks.co.za" }],
   creator: "Reitumetse Sethabela",
-  publisher: "AuraWorks (Pty) Ltd", // Updated to standard SA business format
+  publisher: "AuraWorks (Pty) Ltd",
   openGraph: {
     title: "AuraWorks | Industrial Sales Intelligence",
     description: "Identify companies visiting your site. Turn traffic into sales.",

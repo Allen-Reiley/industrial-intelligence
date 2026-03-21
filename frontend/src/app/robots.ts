@@ -5,7 +5,12 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: '/private/', 
+      // Prevent bots from crawling your lead-gen dashboard or internal API
+      disallow: [
+        '/private/',
+        '/dashboard/', 
+        '/api/',
+      ], 
     },
     sitemap: 'https://auraworks.co.za/sitemap.xml',
   };
