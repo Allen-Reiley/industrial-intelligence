@@ -3,7 +3,7 @@ import Script from "next/script";
 import "./globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleAnalytics } from '@next/third-parties/google';
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,14 +15,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Removed ": Viewport" type annotation for JSX compatibility
 export const viewport = {
   themeColor: "#ffffff",
   width: "device-width",
   initialScale: 1,
 };
 
-// Removed ": Metadata" type annotation for JSX compatibility
 export const metadata = {
   metadataBase: new URL("https://auraworks.co.za"),
   title: {
@@ -42,7 +40,7 @@ export const metadata = {
   manifest: "/manifest.json",
   authors: [{ name: "Reitumetse Sethabela", url: "https://auraworks.co.za" }],
   creator: "Reitumetse Sethabela",
-  publisher: "AuraWorks Pty (Ltd)",
+  publisher: "AuraWorks (Pty) Ltd", // Updated to standard SA business format
   openGraph: {
     title: "AuraWorks | Industrial Sales Intelligence",
     description: "Identify companies visiting your site. Turn traffic into sales.",
@@ -68,7 +66,7 @@ export default function RootLayout({ children }) {
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
 
-        {/* AuraWorks Tracking Script */}
+        {/* AuraWorks Tracking Script - Remember to update localhost before Prod deploy */}
         <Script
           src="http://localhost:8000/static/tracker.js"
           data-id="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0"
@@ -76,7 +74,8 @@ export default function RootLayout({ children }) {
         />
 
         <SpeedInsights />
-        <GoogleAnalytics gaId='G-2LE9FLFM12, GT-KV637ZBW'/>
+        {/* Using your primary Measurement ID */}
+        <GoogleAnalytics gaId="G-2LE9FLFM12" />
         <Analytics />
       </body>
     </html>
