@@ -24,6 +24,7 @@ export const HeroHeader = () => {
         window.addEventListener('scroll', handleScroll)
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
+
     return (
         <header>
             <nav
@@ -35,7 +36,9 @@ export const HeroHeader = () => {
                             <Link
                                 href="/"
                                 aria-label="home"
+                                onClick={() => setMenuState(false)} // Ensures menu closes when logo is clicked
                                 className="flex items-center space-x-2">
+                                {/* This component now handles the mobile/desktop swap internally */}
                                 <Logo />
                             </Link>
 
@@ -69,6 +72,7 @@ export const HeroHeader = () => {
                                         <li key={index}>
                                             <Link
                                                 href={item.href}
+                                                onClick={() => setMenuState(false)} // Closes menu when a link is clicked
                                                 className="text-muted-foreground hover:text-accent-foreground block duration-150">
                                                 <span>{item.name}</span>
                                             </Link>
