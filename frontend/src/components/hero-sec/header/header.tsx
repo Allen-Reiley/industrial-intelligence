@@ -36,15 +36,14 @@ export const HeroHeader = () => {
                             <Link
                                 href="/"
                                 aria-label="home"
-                                onClick={() => setMenuState(false)} // Ensures menu closes when logo is clicked
+                                onClick={() => setMenuState(false)}
                                 className="flex items-center space-x-2">
-                                {/* This component now handles the mobile/desktop swap internally */}
                                 <Logo />
                             </Link>
 
                             <button
                                 onClick={() => setMenuState(!menuState)}
-                                aria-label={menuState == true ? 'Close Menu' : 'Open Menu'}
+                                aria-label={menuState ? 'Close Menu' : 'Open Menu'}
                                 className="relative z-20 -m-2.5 -mr-4 block cursor-pointer p-2.5 lg:hidden">
                                 <Menu className="in-data-[state=active]:rotate-180 in-data-[state=active]:scale-0 in-data-[state=active]:opacity-0 m-auto size-6 duration-200" />
                                 <X className="in-data-[state=active]:rotate-0 in-data-[state=active]:scale-100 in-data-[state=active]:opacity-100 absolute inset-0 m-auto size-6 -rotate-180 scale-0 opacity-0 duration-200" />
@@ -72,7 +71,7 @@ export const HeroHeader = () => {
                                         <li key={index}>
                                             <Link
                                                 href={item.href}
-                                                onClick={() => setMenuState(false)} // Closes menu when a link is clicked
+                                                onClick={() => setMenuState(false)}
                                                 className="text-muted-foreground hover:text-accent-foreground block duration-150">
                                                 <span>{item.name}</span>
                                             </Link>
@@ -80,7 +79,9 @@ export const HeroHeader = () => {
                                     ))}
                                 </ul>
                             </div>
+                            
                             <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
+                                {/* Only show these two buttons in the expanded menu or the top-of-page header */}
                                 <Button
                                     asChild
                                     variant="outline"
@@ -98,14 +99,18 @@ export const HeroHeader = () => {
                                         <span>Get Started</span>
                                     </Link>
                                 </Button>
-                                <Button
-                                    asChild
-                                    size="sm"
-                                    className={cn(isScrolled ? 'lg:inline-flex' : 'hidden')}>
-                                    <Link href="/get-started">
-                                        <span>Get Started</span>
-                                    </Link>
-                                </Button>
+
+                                {/* This button ONLY appears on Desktop when scrolled */}
+                                {isScrolled && (
+                                    <Button
+                                        asChild
+                                        size="sm"
+                                        className="hidden lg:inline-flex">
+                                        <Link href="/get-started">
+                                            <span>Get Started</span>
+                                        </Link>
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     </div>

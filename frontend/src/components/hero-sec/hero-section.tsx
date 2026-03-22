@@ -51,7 +51,7 @@ export default function HeroSection() {
                 </div>
                 <section>
                     {/* FIXED: Specific padding to align with the background radial mask */}
-                    <div className="relative pt-36 pb-0 px-0 md:pt-48">
+                    <div className="relative pt-24 pb-0 px-0 md:pt-48">
                         <AnimatedGroup
                             variants={{
                                 container: {
