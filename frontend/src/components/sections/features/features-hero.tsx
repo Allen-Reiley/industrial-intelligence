@@ -10,7 +10,7 @@ export default function FeaturesHero() {
         <section className="relative pt-32 pb-20 overflow-hidden md:pt-48">
             <div className="mx-auto max-w-5xl px-6">
                 <div className="max-w-3xl">
-                    <h1 className="text-balance text-5xl font-bold tracking-tight md:text-7xl">
+                    <h1 className="text-5xl font-bold tracking-tight md:text-7xl">
                         <TextEffect preset="fade-in-blur" speedSegment={0.3}>
                             De-anonymize Your Industrial Traffic.
                         </TextEffect>
