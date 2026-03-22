@@ -1,3 +1,5 @@
-export default function GetStartedPage() {
-  return <div>Get Started Page Coming Soon</div>;
+import GetStartedPage from "@/components/sections/form/get-started";
+
+export default function GetStarted() {
+  return <GetStartedPage />;
 }

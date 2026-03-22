@@ -12,11 +12,11 @@ const links = [
         items: [
             {
                 title: 'Features',
-                href: '#',
+                href: '/features',
             },
             {
                 title: 'Solution',
-                href: '#',
+                href: '/solution',
             },
             {
                 title: 'Customers',
@@ -24,7 +24,7 @@ const links = [
             },
             {
                 title: 'Pricing',
-                href: '#',
+                href: '/pricing',
             },
             {
                 title: 'Help',
@@ -32,7 +32,7 @@ const links = [
             },
             {
                 title: 'About',
-                href: '#',
+                href: '/about',
             },
         ],
     },
@@ -74,7 +74,7 @@ const links = [
         items: [
             {
                 title: 'About',
-                href: '#',
+                href: '/about',
             },
             {
                 title: 'Careers',
