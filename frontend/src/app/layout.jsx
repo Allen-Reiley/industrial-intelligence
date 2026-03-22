@@ -44,14 +44,17 @@ export const metadata = {
     "Gauteng B2B Sales Tools"
   ],
 
-  icons: {
+ icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
+      // 1. Prioritize the high-density PNG for modern browsers
       { url: "/icon.png", type: "image/png", sizes: "32x32" },
-      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon-48.png", type: "image/png", sizes: "48x48" },
+      // 2. The .ico is the fallback for legacy only
+      { url: "/favicon.ico", sizes: "any" }, 
     ],
-    shortcut: "/favicon.ico",
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    apple: [
+      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" }
+    ],
   },
   manifest: "/manifest.json",
   authors: [{ name: "Reitumetse Sethabela", url: "https://auraworks.co.za" }],
