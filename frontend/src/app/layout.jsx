@@ -24,12 +24,15 @@ export const viewport = {
 export const metadata = {
   metadataBase: new URL("https://auraworks.co.za"),
   title: {
-    default: "AuraWorks | Industrial Sales Intelligence",
+    default: "AuraWorks | Industrial Sales Intelligence & Lead Generation",
     template: "%s | AuraWorks",
   },
-  description: "Identify the companies visiting your website. AuraWorks turns anonymous industrial traffic into high-intent sales leads for B2B firms.",
+  description: "Identify companies visiting your website. AuraWorks turns anonymous industrial traffic into high-intent sales leads for B2B firms in South Africa.",
   
-  // Added Keywords for SEO and Crawler indexing
+  // Added for browser category indexing
+  category: 'technology',
+  classification: 'Industrial Sales Intelligence',
+  
   keywords: [
     "B2B Lead Generation South Africa",
     "Industrial Sales Intelligence",
@@ -41,15 +44,14 @@ export const metadata = {
     "Mining Sector Leads",
     "Engineering Sales Intelligence",
     "Revenue Systems Architecture",
-    "Gauteng B2B Sales Tools"
+    "Gauteng B2B Sales Tools",
+    "East Rand Industrial Marketing" // Added local specificity
   ],
 
- icons: {
+  icons: {
     icon: [
-      // 1. Prioritize the high-density PNG for modern browsers
       { url: "/icon.png", type: "image/png", sizes: "32x32" },
       { url: "/icon-48.png", type: "image/png", sizes: "48x48" },
-      // 2. The .ico is the fallback for legacy only
       { url: "/favicon.ico", sizes: "any" }, 
     ],
     apple: [
@@ -60,22 +62,45 @@ export const metadata = {
   authors: [{ name: "Reitumetse Sethabela", url: "https://auraworks.co.za" }],
   creator: "Reitumetse Sethabela",
   publisher: "AuraWorks (Pty) Ltd",
+  
   openGraph: {
     title: "AuraWorks | Industrial Sales Intelligence",
-    description: "Identify companies visiting your site. Turn traffic into sales.",
+    description: "Turn anonymous industrial traffic into high-intent sales leads. POPIA-compliant B2B identification.",
     url: "https://auraworks.co.za",
     siteName: "AuraWorks",
     locale: "en_ZA",
     type: "website",
-    images: ["/og-image.jpg"],
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "AuraWorks | Industrial Sales Intelligence Dashboard",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "AuraWorks | B2B Intelligence",
+    description: "Industrial Lead Generation & Identity Resolution.",
     images: ["/twitter-image.jpg"],
   },
   alternates: {
     canonical: "https://auraworks.co.za",
+  },
+  
+  // Security and Browser Instructions
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false, // Ensures Google checks for updates more frequently
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 };
 

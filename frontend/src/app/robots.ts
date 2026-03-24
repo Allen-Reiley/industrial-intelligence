@@ -10,6 +10,9 @@ export default function robots(): MetadataRoute.Robots {
         '/private/',
         '/dashboard/', 
         '/api/',
+        '/403',        // No need to index error pages
+        '/500', 
+        '/admin/',
       ], 
     },
     sitemap: 'https://auraworks.co.za/sitemap.xml',
