@@ -40,7 +40,7 @@ export default function NotFound() {
                     </Button>
                     
                     <Button variant="ghost" asChild size="lg" className="rounded-xl px-8">
-                        <Link href="/book-call">
+                        <Link href="/customer-support">
                             <span>Contact Support</span>
                         </Link>
                     </Button>
