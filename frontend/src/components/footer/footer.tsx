@@ -77,20 +77,12 @@ const links = [
                 href: '/about',
             },
             {
-                title: 'Careers',
-                href: '#',
-            },
-            {
                 title: 'Blog',
-                href: '#',
-            },
-            {
-                title: 'Press',
-                href: '#',
+                href: '/blog',
             },
             {
                 title: 'Contact',
-                href: '#',
+                href: '/customer-support',
             },
             {
                 title: 'Help',
@@ -103,19 +95,31 @@ const links = [
         items: [
             {
                 title: 'Licence',
-                href: '#',
+                href: '/license',
             },
             {
                 title: 'Privacy',
-                href: '#',
+                href: '/privacy-policy',
             },
             {
                 title: 'Cookies',
-                href: '#',
+                href: '/cookies-policy',
+            },
+            {
+                title: 'Terms of Service',
+                href: '/terms-of-service',
+            },
+            {
+                title: 'POPIA Manual',
+                href: '/popia-manual',
+            },
+            {
+                title: 'Disclaimer',
+                href: '/disclaimer',
             },
             {
                 title: 'Security',
-                href: '#',
+                href: '/security',
             },
         ],
     },
