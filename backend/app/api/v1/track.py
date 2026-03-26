@@ -1,5 +1,6 @@
 from fastapi import APIRouter, BackgroundTasks, Request, Header
 from typing import Optional
+from datetime import datetime
 from app.models.visit import VisitCreate, Visit
 from app.models.pageview import PageViewCreate
 from app.services.enrichment import enrich_visitor_data
@@ -8,34 +9,54 @@ from sqlmodel import Session, select
 from app.db import engine
 import logging
 
-# 🛠️ Handled in main.py: app.include_router(track.router, prefix=f"{settings.API_V1_STR}/track")
 router = APIRouter()
 logger = logging.getLogger("uvicorn")
 
 async def process_entry_logic(payload: VisitCreate, client_ip: str):
     """
-    Handles IP enrichment and DB storage with safety nets.
+    Consolidates traffic by IP/URL and handles enrichment.
     """
     with Session(engine) as session:
+        # 1. Check if this specific Entity (IP + Page) already exists in our feed
+        # We look for the most recent record for this IP and URL
+        statement = select(Visit).where(
+            Visit.ip_address == client_ip,
+            Visit.url == payload.url,
+            Visit.client_id == payload.client_id
+        ).order_by(Visit.created_at.desc())
+        
+        existing_visit = session.exec(statement).first()
+
+        if existing_visit:
+            # 2. Logic: Increment existing record to avoid clutter
+            try:
+                # Assuming hit_count exists in your model (default 1)
+                existing_visit.hit_count = (existing_visit.hit_count or 1) + 1
+                existing_visit.updated_at = datetime.utcnow()
+                
+                session.add(existing_visit)
+                session.commit()
+                logger.info(f"📈 Signal Strengthened: {existing_visit.company_name} | Hits: {existing_visit.hit_count}")
+                return
+            except Exception as e:
+                logger.error(f"⚠️ Failed to increment hit_count: {e}")
+                # Fall through to create a new one if update fails
+
+        # 3. New Entity Logic (Enrichment only happens for NEW entries)
         enriched_data = {"company_name": "Unknown", "is_b2b": False}
         contact_data = {"hq_phone": None, "corp_emails": []}
 
         try:
-            # 1. Attempt Enrichment using the dynamic client_ip
             enriched_data = await enrich_visitor_data(client_ip)
-            
-            # 2. Attempt Contact Data (only if B2B)
             if enriched_data.get("is_b2b") and enriched_data.get("domain"):
                 try:
                     contact_data = await get_corporate_contacts(enriched_data["domain"])
                 except Exception as e:
-                    logger.error(f"⚠️ Contact Enrichment Failed for {enriched_data['domain']}: {e}")
-        
+                    logger.error(f"⚠️ Contact Enrichment Failed: {e}")
         except Exception as e:
-            logger.error(f"❌ Critical Enrichment Failure for IP {client_ip}: {e}")
+            logger.error(f"❌ Enrichment Failure for {client_ip}: {e}")
 
         try:
-            # 3. Create the Visit record
             db_visit = Visit(
                 client_id=payload.client_id,
                 url=payload.url,
@@ -47,16 +68,14 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
                 industry=enriched_data.get("industry"),
                 city=enriched_data.get("city"),
                 region=enriched_data.get("region"),
-                
-                # Contact Data mapped to DB columns
                 hq_phone=contact_data.get("hq_phone"),
-                corp_emails=", ".join(contact_data.get("corp_emails", [])) if contact_data.get("corp_emails") else None
+                corp_emails=", ".join(contact_data.get("corp_emails", [])) if contact_data.get("corp_emails") else None,
+                hit_count=1 # Initialize the counter
             )
             
             session.add(db_visit)
             session.commit()
-            session.refresh(db_visit)
-            logger.info(f"✅ Visit Saved: {db_visit.company_name} | IP: {client_ip}")
+            logger.info(f"✨ New Entity Resolved: {db_visit.company_name} | IP: {client_ip}")
             
         except Exception as e:
             logger.error(f"🚨 DATABASE COMMIT FAILED: {e}")
@@ -68,37 +87,25 @@ async def track_entry(
     background_tasks: BackgroundTasks,
     x_forwarded_for: Optional[str] = Header(None)
 ):
-    """
-    Endpoint: /api/v1/track/entry
-    Captures oncoming traffic IP and offloads enrichment to background tasks.
-    """
-    # Dynamic IP Extraction (Prioritize proxy header for Railway, fallback to direct client host)
     client_ip = "127.0.0.1"
     if x_forwarded_for:
-        # Get the first IP if multiple exist (standard proxy behavior)
         client_ip = x_forwarded_for.split(',')[0].strip()
     elif request.client:
         client_ip = request.client.host
 
-    logger.info(f"⚡ Tracking attempt received for Client: {payload.client_id} from IP: {client_ip}")
-
-    # Offload heavy lifting to background to keep the tracker responsive
+    logger.info(f"⚡ Ping from {client_ip} on {payload.url}")
     background_tasks.add_task(process_entry_logic, payload, client_ip)
-    
     return {"status": "accepted"}
 
 @router.post("/exit")
 async def track_exit(payload: PageViewCreate):
-    """
-    Endpoint: /api/v1/track/exit
-    Updates the duration of the most recent visit.
-    """
     try:
         with Session(engine) as session:
+            # Match the most recent visit to update duration
             statement = select(Visit).where(
                 Visit.client_id == payload.client_id,
                 Visit.url == payload.url
-            ).order_by(Visit.created_at.desc())
+            ).order_by(Visit.updated_at.desc()) # Use updated_at since hit_count refreshes it
             
             visit = session.exec(statement).first()
             
@@ -106,10 +113,8 @@ async def track_exit(payload: PageViewCreate):
                 visit.duration = payload.duration
                 session.add(visit)
                 session.commit()
-                logger.info(f"⏱️ Duration Updated: {visit.company_name} for {payload.duration}s")
                 return {"status": "recorded"}
-            
             return {"status": "pending_entry"}
     except Exception as e:
-        logger.error(f"❌ Exit Logging Error: {e}")
+        logger.error(f"❌ Exit Error: {e}")
         return {"status": "error"}
