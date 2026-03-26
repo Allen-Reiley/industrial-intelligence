@@ -1,7 +1,7 @@
 // @/app/get-started/page.tsx
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, type FormEvent, type SubmitEventHandler } from 'react'
 import { 
     Building2, Mail, User, Briefcase, ArrowLeft, 
     Globe, BarChart3, Tag, Database, Loader2, 
@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils'
 export default function GetStartedPage() {
     const [step, setStep] = useState(1)
     const [isLoading, setIsLoading] = useState(false)
+    const [isSuccess, setIsSuccess] = useState(false)
     
     // Unified State
     const [formData, setFormData] = useState({
@@ -29,7 +30,7 @@ export default function GetStartedPage() {
         crm: ''
     })
 
-    const handleNext = (e: React.FormEvent) => {
+    const handleNext = (e: FormEvent) => {
         e.preventDefault()
         
         // Basic Email Validation Logic
@@ -42,18 +43,34 @@ export default function GetStartedPage() {
         setStep(2)
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    // Modernized handler using SubmitEventHandler for React 19+ compatibility
+    const handleSubmit: SubmitEventHandler<HTMLFormElement> = async (e) => {
         e.preventDefault()
         setIsLoading(true)
         
-        // Final Submission Logic (e.g., your own API or PostgreSQL)
-        console.log("Final Data Collected:", formData)
-        
-        // Simulate local processing
-        setTimeout(() => {
+        try {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1/waitlist/'
+            
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            })
+
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(errorData.detail || 'Failed to join waitlist')
+            }
+
+            setIsSuccess(true)
+        } catch (error: any) {
+            console.error("Submission Error:", error)
+            alert(error.message || "Something went wrong. Please try again.")
+        } finally {
             setIsLoading(false)
-            alert("Application submitted to local infrastructure.")
-        }, 1500)
+        }
     }
 
     return (
@@ -91,119 +108,137 @@ export default function GetStartedPage() {
 
                 {/* Sliding Viewport */}
                 <div className="relative overflow-hidden rounded-3xl border bg-card/50 backdrop-blur-sm shadow-2xl">
-                    <div 
-                        className="flex transition-transform duration-700 ease-[cubic-bezier(0.87,_0,_0.13,_1)]" 
-                        style={{ transform: `translateX(-${(step - 1) * 100}%)` }}
-                    >
-                        
-                        {/* STEP 1: Identification */}
-                        <div className="w-full shrink-0 p-8 md:p-12">
-                            <div className="mb-10">
-                                <h1 className="text-3xl font-bold tracking-tight">Identity</h1>
-                                <p className="text-muted-foreground mt-2 text-sm">Basic credentials for the 100-partner cohort.</p>
+                    {isSuccess ? (
+                        <div className="p-12 text-center animate-in fade-in zoom-in duration-500">
+                            <div className="mb-6 flex justify-center">
+                                <div className="rounded-full bg-primary/10 p-3">
+                                    <CheckCircle className="h-12 w-12 text-primary" />
+                                </div>
                             </div>
-
-                            <form onSubmit={handleNext} className="grid gap-6">
-                                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                    <div className="space-y-2">
-                                        <Label>Full Name</Label>
-                                        <div className="relative">
-                                            <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <Input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="John Doe" className="pl-10 rounded-xl bg-muted/30" />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Work Email</Label>
-                                        <div className="relative">
-                                            <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <Input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="john@mining.co.za" className="pl-10 rounded-xl bg-muted/30" />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Company Name</Label>
-                                    <div className="relative">
-                                        <Building2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                        <Input required value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} placeholder="e.g. Rand Industrial" className="pl-10 rounded-xl bg-muted/30" />
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Industry</Label>
-                                    <div className="relative">
-                                        <Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                        <select required value={formData.industry} onChange={e => setFormData({...formData, industry: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none">
-                                            <option value="">Select industry...</option>
-                                            <option value="mining">Mining & Resources</option>
-                                            <option value="manufacturing">Manufacturing</option>
-                                            <option value="logistics">Logistics</option>
-                                            <option value="construction">Heavy Construction</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <Button size="lg" className="mt-4 rounded-xl font-bold group">
-                                    Continue to Audit <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                                </Button>
-                            </form>
+                            <h2 className="text-3xl font-bold tracking-tight">Audit Initiated</h2>
+                            <p className="text-muted-foreground mt-4 text-sm max-w-sm mx-auto">
+                                Thank you, {formData.name.split(' ')[0]}. We've added {formData.company} to the Phase 01 queue. 
+                                Our team will reach out to the work email provided shortly.
+                            </p>
+                            <Button asChild variant="outline" className="mt-8 rounded-xl">
+                                <Link href="/">Return to Home</Link>
+                            </Button>
                         </div>
-
-                        {/* STEP 2: Qualification */}
-                        <div className="w-full shrink-0 p-8 md:p-12">
-                            <div className="mb-10">
-                                <h2 className="text-3xl font-bold tracking-tight">Audit</h2>
-                                <p className="text-muted-foreground mt-2 text-sm">System markers for ROI calculation.</p>
-                            </div>
-
-                            <form onSubmit={handleSubmit} className="grid gap-6">
-                                <div className="space-y-2">
-                                    <Label>Website Link</Label>
-                                    <div className="relative">
-                                        <Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                        <Input required value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} placeholder="https://..." className="pl-10 rounded-xl bg-muted/30" />
-                                    </div>
+                    ) : (
+                        <div 
+                            className="flex transition-transform duration-700 ease-[cubic-bezier(0.87,_0,_0.13,_1)]" 
+                            style={{ transform: `translateX(-${(step - 1) * 100}%)` }}
+                        >
+                            
+                            {/* STEP 1: Identification */}
+                            <div className="w-full shrink-0 p-8 md:p-12">
+                                <div className="mb-10">
+                                    <h1 className="text-3xl font-bold tracking-tight">Identity</h1>
+                                    <p className="text-muted-foreground mt-2 text-sm">Basic credentials for the 100-partner cohort.</p>
                                 </div>
-                                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+
+                                <form onSubmit={handleNext} className="grid gap-6">
+                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                        <div className="space-y-2">
+                                            <Label>Full Name</Label>
+                                            <div className="relative">
+                                                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                                <Input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="John Doe" className="pl-10 rounded-xl bg-muted/30" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Work Email</Label>
+                                            <div className="relative">
+                                                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                                <Input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="john@mining.co.za" className="pl-10 rounded-xl bg-muted/30" />
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div className="space-y-2">
-                                        <Label>Monthly Traffic</Label>
+                                        <Label>Company Name</Label>
                                         <div className="relative">
-                                            <BarChart3 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <select required value={formData.traffic} onChange={e => setFormData({...formData, traffic: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none">
-                                                <option value="">Select range...</option>
-                                                <option value="0-1k">0 - 1,000</option>
-                                                <option value="1k-5k">1,000 - 5,000</option>
-                                                <option value="5k+">5,000+</option>
+                                            <Building2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <Input required value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} placeholder="e.g. Rand Industrial" className="pl-10 rounded-xl bg-muted/30" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Industry</Label>
+                                        <div className="relative">
+                                            <Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <select required value={formData.industry} onChange={e => setFormData({...formData, industry: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none">
+                                                <option value="">Select industry...</option>
+                                                <option value="mining">Mining & Resources</option>
+                                                <option value="manufacturing">Manufacturing</option>
+                                                <option value="logistics">Logistics</option>
+                                                <option value="construction">Heavy Construction</option>
                                             </select>
                                         </div>
                                     </div>
+                                    <Button size="lg" className="mt-4 rounded-xl font-bold group">
+                                        Continue to Audit <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                    </Button>
+                                </form>
+                            </div>
+
+                            {/* STEP 2: Qualification */}
+                            <div className="w-full shrink-0 p-8 md:p-12">
+                                <div className="mb-10">
+                                    <h2 className="text-3xl font-bold tracking-tight">Audit</h2>
+                                    <p className="text-muted-foreground mt-2 text-sm">System markers for ROI calculation.</p>
+                                </div>
+
+                                <form onSubmit={handleSubmit} className="grid gap-6">
                                     <div className="space-y-2">
-                                        <Label>Avg Product Price</Label>
+                                        <Label>Website Link</Label>
                                         <div className="relative">
-                                            <Tag className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <Input required value={formData.avgPrice} onChange={e => setFormData({...formData, avgPrice: e.target.value})} placeholder="e.g. R50k" className="pl-10 rounded-xl bg-muted/30" />
+                                            <Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <Input required value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} placeholder="https://..." className="pl-10 rounded-xl bg-muted/30" />
                                         </div>
                                     </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>CRM System</Label>
-                                    <div className="relative">
-                                        <Database className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                        <select required value={formData.crm} onChange={e => setFormData({...formData, crm: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none">
-                                            <option value="">Select CRM...</option>
-                                            <option value="hubspot">HubSpot</option>
-                                            <option value="salesforce">Salesforce</option>
-                                            <option value="pipedrive">Pipedrive</option>
-                                            <option value="zoho">Zoho</option>
-                                            <option value="other">Other / Custom</option>
-                                            <option value="none">No CRM</option>
-                                        </select>
+                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                        <div className="space-y-2">
+                                            <Label>Monthly Traffic</Label>
+                                            <div className="relative">
+                                                <BarChart3 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                                <select required value={formData.traffic} onChange={e => setFormData({...formData, traffic: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none">
+                                                    <option value="">Select range...</option>
+                                                    <option value="0-1k">0 - 1,000</option>
+                                                    <option value="1k-5k">1,000 - 5,000</option>
+                                                    <option value="5k+">5,000+</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Avg Product Price</Label>
+                                            <div className="relative">
+                                                <Tag className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                                <Input required value={formData.avgPrice} onChange={e => setFormData({...formData, avgPrice: e.target.value})} placeholder="e.g. R50k" className="pl-10 rounded-xl bg-muted/30" />
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <Button disabled={isLoading} size="lg" className="mt-4 rounded-xl font-bold shadow-xl shadow-primary/20">
-                                    {isLoading ? <Loader2 className="animate-spin" /> : "Request Access"}
-                                </Button>
-                            </form>
-                        </div>
+                                    <div className="space-y-2">
+                                        <Label>CRM System</Label>
+                                        <div className="relative">
+                                            <Database className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <select required value={formData.crm} onChange={e => setFormData({...formData, crm: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none">
+                                                <option value="">Select CRM...</option>
+                                                <option value="hubspot">HubSpot</option>
+                                                <option value="salesforce">Salesforce</option>
+                                                <option value="pipedrive">Pipedrive</option>
+                                                <option value="zoho">Zoho</option>
+                                                <option value="other">Other / Custom</option>
+                                                <option value="none">No CRM</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <Button disabled={isLoading} size="lg" className="mt-4 rounded-xl font-bold shadow-xl shadow-primary/20">
+                                        {isLoading ? <Loader2 className="animate-spin" /> : "Request Access"}
+                                    </Button>
+                                </form>
+                            </div>
 
-                    </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Aesthetic Footer */}
