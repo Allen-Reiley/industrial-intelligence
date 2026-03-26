@@ -29,13 +29,15 @@ static_dir = os.path.join(os.path.dirname(current_dir), "static")
 # DEBUG PRINT: This will show up in Railway logs so we can verify the path
 print(f"DEBUG: Looking for static files in: {static_dir}")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[ 
+origins = [ 
         "https://industrial-intelligence-xi.vercel.app/", 
         "http://localhost:3000",
         "https://auraworks.co.za",
-        "https://www.auraworks.co.za"],
+        "https://www.auraworks.co.za"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
