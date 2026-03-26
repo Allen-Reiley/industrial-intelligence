@@ -31,7 +31,11 @@ print(f"DEBUG: Looking for static files in: {static_dir}")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://auraworks.co.za", "https://industrial-intelligence-xi.vercel.app/", "http://localhost:3000"],
+    allow_origins=[ 
+        "https://industrial-intelligence-xi.vercel.app/", 
+        "http://localhost:3000",
+        "https://auraworks.co.za",
+        "https://www.auraworks.co.za"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
