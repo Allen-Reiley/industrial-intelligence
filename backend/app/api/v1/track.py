@@ -69,14 +69,18 @@ async def track_entry(
     background_tasks: BackgroundTasks,
     x_forwarded_for: Optional[str] = Header(None)
 ):
-    # Get IP: Railway/Vercel proxies use X-Forwarded-For
-    # We take the first IP in the list
+    # 1. Safer IP Extraction (Fixes the 'NoneType' error)
+    client_ip = "127.0.0.1" # Default fallback
+    
     if x_forwarded_for:
         client_ip = x_forwarded_for.split(',')[0].strip()
-    else:
+    elif request.client:
         client_ip = request.client.host
 
-    # Offload to background thread so the user's browser isn't waiting
+    # 2. Log the attempt so we can see it in Railway Logs
+    logger.info(f"⚡ Tracking attempt received for Client: {payload.client_id} from IP: {client_ip}")
+
+    # Offload to background thread
     background_tasks.add_task(process_entry_logic, payload, client_ip)
     
     return {"status": "accepted"}
