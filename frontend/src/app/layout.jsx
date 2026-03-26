@@ -105,20 +105,25 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  // Pull the base URL (e.g., https://your-app.up.railway.app)
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  
+  // Clean the URL to ensure it points to the static asset correctly
+  const trackerSrc = `${API_BASE_URL.replace(/\/$/, '')}/static/tracker.js`;
+
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
 
-        {/* AuraWorks Tracking Script - Remember to update localhost before Prod deploy */}
+        {/* AuraWorks Identity Bridge - Environment Aware */}
         <Script
-          src="http://localhost:8000/static/tracker.js"
+          src={trackerSrc}
           data-id="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0"
           strategy="afterInteractive"
         />
 
         <SpeedInsights />
-        {/* Using your primary Measurement ID */}
         <GoogleAnalytics gaId="G-2LE9FLFM12" />
         <Analytics />
       </body>

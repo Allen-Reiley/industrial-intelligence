@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { submitToWaitlist } from "@/lib/api";
 
 export default function GetStartedPage() {
     const [step, setStep] = useState(1)
@@ -30,12 +31,13 @@ export default function GetStartedPage() {
         crm: ''
     })
 
-    const handleNext = (e: FormEvent) => {
+ const handleNext = (e: FormEvent) => {
         e.preventDefault()
         
-        // Basic Email Validation Logic
+        // Industrial Intelligence logic: Prioritize work emails
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(formData.email)) {
+            // Replace with a custom UI 'Error' state later for the "Quiet Premium" feel
             alert("Please enter a valid work email address.")
             return
         }
@@ -43,35 +45,20 @@ export default function GetStartedPage() {
         setStep(2)
     }
 
-    // Modernized handler using SubmitEventHandler for React 19+ compatibility
-    const handleSubmit: SubmitEventHandler<HTMLFormElement> = async (e) => {
-        e.preventDefault()
-        setIsLoading(true)
-        
-        try {
-            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1/waitlist/'
-            
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            })
-
-            if (!response.ok) {
-                const errorData = await response.json()
-                throw new Error(errorData.detail || 'Failed to join waitlist')
-            }
-
-            setIsSuccess(true)
-        } catch (error: any) {
-            console.error("Submission Error:", error)
-            alert(error.message || "Something went wrong. Please try again.")
-        } finally {
-            setIsLoading(false)
-        }
+ const handleSubmit: SubmitEventHandler<HTMLFormElement> = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+        await submitToWaitlist(formData);
+        setIsSuccess(true);
+    } catch (error: any) {
+        console.error("Submission Error:", error);
+        alert(error.message);
+    } finally {
+        setIsLoading(false);
     }
+ }
 
     return (
         <main className="relative min-h-screen flex items-center justify-center bg-background px-6 py-12 overflow-hidden">

@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
+import os
 
 from app.core.config import settings
 from app.db import init_db, engine
@@ -19,15 +20,28 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
 
+# current_dir is .../backend/app
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Move up one level to .../backend/ and then into static/
+static_dir = os.path.join(os.path.dirname(current_dir), "static")
+
+# DEBUG PRINT: This will show up in Railway logs so we can verify the path
+print(f"DEBUG: Looking for static files in: {static_dir}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://auraworks.co.za", "http://localhost:3000"],
+    allow_origins=["https://auraworks.co.za", "https://industrial-intelligence-xi.vercel.app/", "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+    print("✅ Static files mounted successfully.")
+else:
+    print(f"⚠️ Warning: Static directory not found at {static_dir}")
 
 # Routes
 app.include_router(track.router, prefix=settings.API_V1_STR + "/track", tags=["tracking"])
