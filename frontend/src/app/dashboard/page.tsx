@@ -8,9 +8,11 @@ import {
   ExternalLink, 
   ShieldCheck, 
   Zap,
-  Activity
+  Activity,
+  RefreshCcw
 } from 'lucide-react';
 
+// --- Types ---
 interface Lead {
   id: number;
   company_name: string | null;
@@ -29,22 +31,47 @@ interface Lead {
 export default function DashboardPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // --- Dynamic API Resolution ---
+  const getApiUrl = () => {
+    // Priority 1: Environment Variable (Defined in Vercel/Railway)
+    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+    
+    // Priority 2: Production Railway URL
+    return "https://dynamic-flow-production-a5d6.up.railway.app";
+  };
+
+  const fetchData = async () => {
+    setIsRefreshing(true);
+    const BASE_URL = getApiUrl().replace(/\/$/, '');
+    
+    try {
+      // Endpoint matches your FastAPI router: /api/v1/leads
+      const res = await fetch(`${BASE_URL}/api/v1/leads`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setLeads(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("AuraWorks Identity Bridge Connection failed:", err);
+      setLeads([]);
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    fetch('http://localhost:8000/v1/leads') 
-      .then(res => res.json())
-      .then(data => {
-        setLeads(Array.isArray(data) ? data : []);
-      })
-      .catch(err => {
-        console.error("Connection failed:", err);
-        setLeads([]);
-      })
-      .finally(() => setLoading(false));
+    fetchData();
+    // Auto-refresh every 60 seconds to keep the "Intelligence Feed" live
+    const interval = setInterval(fetchData, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   const getUrlInfo = (urlStr: string | null, type: 'host' | 'path') => {
-    if (!urlStr || urlStr === "Direct") return type === 'host' ? "Direct Traffic" : "/";
+    if (!urlStr || urlStr === "direct" || urlStr === "Direct") {
+      return type === 'host' ? "Direct Traffic" : "/";
+    }
     try {
       const fullUrl = urlStr.startsWith('http') ? urlStr : `https://${urlStr}`;
       const urlObj = new URL(fullUrl);
@@ -68,6 +95,13 @@ export default function DashboardPage() {
           </div>
           
           <div className="flex items-center gap-4">
+             <button 
+                onClick={fetchData}
+                className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-full transition-colors"
+                title="Manual Sync"
+             >
+                <RefreshCcw className={`h-4 w-4 text-zinc-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+             </button>
              <div className="hidden md:flex flex-col items-end mr-2">
                 <span className="text-[9px] uppercase font-bold text-zinc-400 tracking-tighter">System Engine</span>
                 <span className="text-[11px] font-mono text-emerald-500 flex items-center gap-1.5">
