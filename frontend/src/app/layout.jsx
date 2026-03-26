@@ -105,27 +105,28 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-  // Pull the base URL (e.g., https://your-app.up.railway.app)
+  // 1. The Single Source of Truth
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
   
-  // Clean the URL to ensure it points to the static asset correctly
-  const trackerSrc = `${API_BASE_URL.replace(/\/$/, '')}/static/tracker.js`;
+  // 2. Automated Versioning (updates every time you redeploy the frontend)
+  const version = "1.0.1"; 
+  const trackerSrc = `${API_BASE_URL.replace(/\/$/, '')}/static/tracker.js?v=${version}`;
 
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
 
-        {/* 1. Inject Config: This tells the tracker where the backend is */}
+        {/* Inject Config: Pass the base URL to the tracker */}
         <script
           dangerouslySetInnerHTML={{
             __html: `window.AURA_CONFIG = { apiUrl: "${API_BASE_URL}" };`,
           }}
         />
 
-        {/* 2. Load Tracker: Pulling it from your Railway static folder */}
+        {/* Load Tracker with Versioning */}
         <Script
-          src={`${API_BASE_URL.replace(/\/$/, '')}/static/tracker.js`}
+          src={trackerSrc}
           data-id="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0"
           strategy="afterInteractive"
         />
