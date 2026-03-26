@@ -8,15 +8,15 @@ from sqlmodel import Session, select
 from app.db import engine
 import logging
 
+# 🛠️ Keep this clean. No prefix or tags here as they are handled in main.py
 router = APIRouter()
 logger = logging.getLogger("uvicorn")
 
 async def process_entry_logic(payload: VisitCreate, client_ip: str):
     """
-    REINFORCED: Handles IP enrichment with safety nets to ensure DB storage.
+    Handles IP enrichment and DB storage with safety nets.
     """
     with Session(engine) as session:
-        # Initialize defaults so the Visit record can still be created if APIs fail
         enriched_data = {"company_name": "Unknown", "is_b2b": False}
         contact_data = {"hq_phone": None, "corp_emails": []}
 
@@ -32,11 +32,10 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
                     logger.error(f"⚠️ Contact Enrichment Failed for {enriched_data['domain']}: {e}")
         
         except Exception as e:
-            # If the enrichment service crashes, we still want to log the visit!
             logger.error(f"❌ Critical Enrichment Failure for IP {client_ip}: {e}")
 
         try:
-            # 3. Create the Visit record (The "Identity" save)
+            # 3. Create the Visit record
             db_visit = Visit(
                 client_id=payload.client_id,
                 url=payload.url,
@@ -49,7 +48,7 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
                 city=enriched_data.get("city"),
                 region=enriched_data.get("region"),
                 
-                # Contact Data
+                # Contact Data (mapped to new DB columns)
                 hq_phone=contact_data.get("hq_phone"),
                 corp_emails=", ".join(contact_data.get("corp_emails", [])) if contact_data.get("corp_emails") else None
             )
@@ -62,6 +61,7 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
         except Exception as e:
             logger.error(f"🚨 DATABASE COMMIT FAILED: {e}")
 
+# 🛠️ FIX: Ensure this is just "/entry". Final URL: /api/v1/track/entry
 @router.post("/entry")
 async def track_entry(
     payload: VisitCreate, 
@@ -69,22 +69,19 @@ async def track_entry(
     background_tasks: BackgroundTasks,
     x_forwarded_for: Optional[str] = Header(None)
 ):
-    # 1. Safer IP Extraction (Fixes the 'NoneType' error)
-    client_ip = "127.0.0.1" # Default fallback
-    
+    # Safer IP Extraction
+    client_ip = "127.0.0.1"
     if x_forwarded_for:
         client_ip = x_forwarded_for.split(',')[0].strip()
     elif request.client:
         client_ip = request.client.host
 
-    # 2. Log the attempt so we can see it in Railway Logs
     logger.info(f"⚡ Tracking attempt received for Client: {payload.client_id} from IP: {client_ip}")
 
-    # Offload to background thread
     background_tasks.add_task(process_entry_logic, payload, client_ip)
-    
     return {"status": "accepted"}
 
+# 🛠️ FIX: Ensure this is just "/exit". Final URL: /api/v1/track/exit
 @router.post("/exit")
 async def track_exit(payload: PageViewCreate):
     """
@@ -106,7 +103,6 @@ async def track_exit(payload: PageViewCreate):
                 logger.info(f"⏱️ Duration Updated: {visit.company_name} for {payload.duration}s")
                 return {"status": "recorded"}
             
-            logger.warning(f"❓ Exit received, no Entry found: {payload.client_id}")
             return {"status": "pending_entry"}
     except Exception as e:
         logger.error(f"❌ Exit Logging Error: {e}")
