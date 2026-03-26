@@ -116,9 +116,16 @@ export default function RootLayout({ children }) {
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
 
-        {/* AuraWorks Identity Bridge - Environment Aware */}
+        {/* 1. Inject Config: This tells the tracker where the backend is */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.AURA_CONFIG = { apiUrl: "${API_BASE_URL}" };`,
+          }}
+        />
+
+        {/* 2. Load Tracker: Pulling it from your Railway static folder */}
         <Script
-          src={trackerSrc}
+          src={`${API_BASE_URL.replace(/\/$/, '')}/static/tracker.js`}
           data-id="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0"
           strategy="afterInteractive"
         />
