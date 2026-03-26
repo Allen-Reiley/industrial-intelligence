@@ -7,23 +7,24 @@
     
     // --- DYNAMIC API RESOLUTION ---
     const getBaseUrl = () => {
+        // 1. Check window config (Set in layout.tsx)
         if (window.AURA_CONFIG?.apiUrl) return window.AURA_CONFIG.apiUrl;
         
-        // If script is loaded from Railway, use that origin
+        // 2. Fallback to script origin if loaded from Railway
         if (script && script.src.includes('http')) {
             try {
                 return new URL(script.src).origin;
             } catch (e) {
-                console.warn("AuraWorks: Could not parse script origin, falling back.");
+                console.warn("AuraWorks: Could not parse script origin.");
             }
         }
-        // Local development fallback
+        // 3. Local development fallback
         return "http://localhost:8000";
     };
 
     const BASE_URL = getBaseUrl().replace(/\/$/, '');
     
-    // Matches: app.include_router(track.router, prefix=f"{settings.API_V1_STR}/track")
+    // Path matches Swagger Docs: /api/v1/track
     const API_URL = `${BASE_URL}/api/v1/track`; 
     
     console.log(`🚀 AuraWorks Tracker Active. Engine: ${API_URL}`);
@@ -37,23 +38,27 @@
             url: window.location.href,
             referrer: document.referrer || "direct", 
             screen_resolution: `${window.screen.width}x${window.screen.height}`,
-            // Sent as ISO string; VisitBase model now handles this as Optional[str]
             timestamp: new Date().toISOString()
         };
 
+        console.log("📡 AuraWorks: Sending Entry Log...", entryPayload);
+
         fetch(`${API_URL}/entry`, {
             method: 'POST',
-            mode: 'cors', // Explicitly signal CORS
+            mode: 'cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(entryPayload),
             keepalive: true
         })
-        .then(response => {
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        .then(async response => {
+            if (!response.ok) {
+                const errorBody = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorBody}`);
+            }
             return response.json();
         })
-        .then(data => console.log("✅ AuraWorks: Entry Logged", data))
-        .catch(err => console.error("❌ AuraWorks Tracking Error (Entry):", err));
+        .then(data => console.log("✅ AuraWorks: Entry Logged Successfully", data))
+        .catch(err => console.error("❌ AuraWorks Entry Error:", err.message));
     };
 
     const trackExit = () => {
@@ -67,9 +72,17 @@
             event_type: "exit"
         };
 
-        // Use sendBeacon for reliability on page close
+        console.log("📡 AuraWorks: Sending Exit Log...", exitPayload);
+
+        // Using sendBeacon for reliability on page close - No trailing slash
         const blob = new Blob([JSON.stringify(exitPayload)], { type: 'application/json' });
-        navigator.sendBeacon(`${API_URL}/exit`, blob);
+        const success = navigator.sendBeacon(`${API_URL}/exit`, blob);
+        
+        if (success) {
+            console.log("📤 AuraWorks: Exit Beacon Queued");
+        } else {
+            console.warn("⚠️ AuraWorks: Exit Beacon failed to queue");
+        }
     };
 
     // --- Execution Logic ---
@@ -83,6 +96,7 @@
             const result = original.apply(this, arguments);
             currentUrl = window.location.href;
             startTime = Date.now();
+            // Wrap in setTimeout to ensure the URL has updated before tracking entry
             setTimeout(trackEntry, 0);
             return result;
         };

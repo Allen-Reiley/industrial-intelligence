@@ -8,7 +8,7 @@ from sqlmodel import Session, select
 from app.db import engine
 import logging
 
-# 🛠️ Keep this clean. No prefix or tags here as they are handled in main.py
+# 🛠️ Handled in main.py: app.include_router(track.router, prefix=f"{settings.API_V1_STR}/track")
 router = APIRouter()
 logger = logging.getLogger("uvicorn")
 
@@ -21,7 +21,7 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
         contact_data = {"hq_phone": None, "corp_emails": []}
 
         try:
-            # 1. Attempt Enrichment
+            # 1. Attempt Enrichment using the dynamic client_ip
             enriched_data = await enrich_visitor_data(client_ip)
             
             # 2. Attempt Contact Data (only if B2B)
@@ -48,7 +48,7 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
                 city=enriched_data.get("city"),
                 region=enriched_data.get("region"),
                 
-                # Contact Data (mapped to new DB columns)
+                # Contact Data mapped to DB columns
                 hq_phone=contact_data.get("hq_phone"),
                 corp_emails=", ".join(contact_data.get("corp_emails", [])) if contact_data.get("corp_emails") else None
             )
@@ -61,7 +61,6 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
         except Exception as e:
             logger.error(f"🚨 DATABASE COMMIT FAILED: {e}")
 
-# 🛠️ FIX: Ensure this is just "/entry". Final URL: /api/v1/track/entry
 @router.post("/entry")
 async def track_entry(
     payload: VisitCreate, 
@@ -69,22 +68,29 @@ async def track_entry(
     background_tasks: BackgroundTasks,
     x_forwarded_for: Optional[str] = Header(None)
 ):
-    # Safer IP Extraction
+    """
+    Endpoint: /api/v1/track/entry
+    Captures oncoming traffic IP and offloads enrichment to background tasks.
+    """
+    # Dynamic IP Extraction (Prioritize proxy header for Railway, fallback to direct client host)
     client_ip = "127.0.0.1"
     if x_forwarded_for:
+        # Get the first IP if multiple exist (standard proxy behavior)
         client_ip = x_forwarded_for.split(',')[0].strip()
     elif request.client:
         client_ip = request.client.host
 
     logger.info(f"⚡ Tracking attempt received for Client: {payload.client_id} from IP: {client_ip}")
 
+    # Offload heavy lifting to background to keep the tracker responsive
     background_tasks.add_task(process_entry_logic, payload, client_ip)
+    
     return {"status": "accepted"}
 
-# 🛠️ FIX: Ensure this is just "/exit". Final URL: /api/v1/track/exit
 @router.post("/exit")
 async def track_exit(payload: PageViewCreate):
     """
+    Endpoint: /api/v1/track/exit
     Updates the duration of the most recent visit.
     """
     try:
