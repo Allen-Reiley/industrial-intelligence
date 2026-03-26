@@ -6,19 +6,24 @@
     const clientId = script.getAttribute('data-id');
     
     // --- DYNAMIC API RESOLUTION ---
-    // First try the injected config, then fallback to current domain, then localhost
     const getBaseUrl = () => {
         if (window.AURA_CONFIG?.apiUrl) return window.AURA_CONFIG.apiUrl;
         
-        // Fallback: If script is loaded from a remote server, use that server's origin
+        // If script is loaded from Railway, use that origin
         if (script && script.src.includes('http')) {
-            return new URL(script.src).origin;
+            try {
+                return new URL(script.src).origin;
+            } catch (e) {
+                console.warn("AuraWorks: Could not parse script origin, falling back.");
+            }
         }
+        // Local development fallback
         return "http://localhost:8000";
     };
 
     const BASE_URL = getBaseUrl().replace(/\/$/, '');
-    // Synchronize this with your FastAPI route prefix
+    
+    // Matches: app.include_router(track.router, prefix=f"{settings.API_V1_STR}/track")
     const API_URL = `${BASE_URL}/api/v1/track`; 
     
     console.log(`🚀 AuraWorks Tracker Active. Engine: ${API_URL}`);
@@ -32,15 +37,23 @@
             url: window.location.href,
             referrer: document.referrer || "direct", 
             screen_resolution: `${window.screen.width}x${window.screen.height}`,
+            // Sent as ISO string; VisitBase model now handles this as Optional[str]
             timestamp: new Date().toISOString()
         };
 
         fetch(`${API_URL}/entry`, {
             method: 'POST',
+            mode: 'cors', // Explicitly signal CORS
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(entryPayload),
             keepalive: true
-        }).catch(err => console.error("Tracking Error (Entry):", err));
+        })
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+        })
+        .then(data => console.log("✅ AuraWorks: Entry Logged", data))
+        .catch(err => console.error("❌ AuraWorks Tracking Error (Entry):", err));
     };
 
     const trackExit = () => {
@@ -54,13 +67,15 @@
             event_type: "exit"
         };
 
+        // Use sendBeacon for reliability on page close
         const blob = new Blob([JSON.stringify(exitPayload)], { type: 'application/json' });
         navigator.sendBeacon(`${API_URL}/exit`, blob);
     };
 
-    // --- Execution & SPA Logic ---
+    // --- Execution Logic ---
     trackEntry();
 
+    // SPA Navigation Handling (Next.js/React)
     const patchHistoryMethod = (method) => {
         const original = history[method];
         return function() {
@@ -83,6 +98,7 @@
         trackEntry();
     });
 
+    // Track when user switches tabs or minimizes
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
             trackExit();
