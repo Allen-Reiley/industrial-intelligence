@@ -113,6 +113,9 @@ export default function RootLayout({ children }) {
   const version = "2.2.0"; 
   const trackerSrc = `${API_BASE_URL.replace(/\/$/, '')}/static/aura.js?v=${version}`;
 
+  // Use your new Cloudflare URL
+  const cdnSrc = `https://cdn.auraworks.co.za/aura.js?v=${version}`;
+
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
@@ -130,7 +133,7 @@ export default function RootLayout({ children }) {
 
         {/* Load Tracker with Versioning */}
         <Script
-          src={trackerSrc}
+          src={cdnSrc} // Use CDN URL
           data-id="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0"
           strategy="afterInteractive"
         />
