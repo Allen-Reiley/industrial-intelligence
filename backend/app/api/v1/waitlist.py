@@ -1,12 +1,58 @@
+import httpx
+import asyncio
+import logging
 from fastapi import APIRouter, HTTPException
 from sqlmodel import Session, select
 from app.db import engine
-# Pointing to your new model in models/waitlist.py
 from app.models.waitlist import WaitlistLead 
-import logging
+from app.core.config import settings
 
 router = APIRouter()
 logger = logging.getLogger("uvicorn")
+
+async def send_slack_notification(lead_data: dict):
+    """Background task to alert Slack of a new Phase 01 partner"""
+    if not settings.SLACK_WEBHOOK_URL:
+        logger.warning("Slack Webhook URL is not configured.")
+        return
+
+    # "Quiet Premium" Slack Formatting
+    payload = {
+        "text": f"🚀 New Phase 01 Audit: {lead_data.get('company')}",
+        "blocks": [
+            {
+                "type": "header",
+                "text": {"type": "plain_text", "text": "🔔 New Partner Audit: Phase 01"}
+            },
+            {
+                "type": "section",
+                "fields": [
+                    {"type": "mrkdwn", "text": f"*Name:*\n{lead_data.get('name')}"},
+                    {"type": "mrkdwn", "text": f"*Company:*\n{lead_data.get('company')}"},
+                    {"type": "mrkdwn", "text": f"*Industry:*\n{lead_data.get('industry')}"},
+                    {"type": "mrkdwn", "text": f"*Traffic:*\n{lead_data.get('traffic')}"}
+                ]
+            },
+            {
+                "type": "section",
+                "fields": [
+                    {"type": "mrkdwn", "text": f"*Avg Price:*\n{lead_data.get('avg_price')}"},
+                    {"type": "mrkdwn", "text": f"*CRM:*\n{lead_data.get('crm')}"}
+                ]
+            },
+            {
+                "type": "context",
+                "elements": [{"type": "mrkdwn", "text": f"📍 Audit Link: {lead_data.get('website')}"}]
+            }
+        ]
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            # Short timeout to keep the background worker lean
+            await client.post(settings.SLACK_WEBHOOK_URL, json=payload, timeout=5.0)
+        except Exception as e:
+            logger.error(f"Slack notification failed: {e}")
 
 @router.post("/join")
 async def join_waitlist(payload: dict):
@@ -17,18 +63,15 @@ async def join_waitlist(payload: dict):
         raise HTTPException(status_code=400, detail="Work email is required.")
 
     with Session(engine) as session:
-        # 1. Check if this email already exists in the waitlist
         statement = select(WaitlistLead).where(WaitlistLead.email == email)
         lead = session.exec(statement).first()
 
         if not lead:
-            # Create a fresh record if they aren't in the DB yet
             lead = WaitlistLead(email=email, name=payload.get("name", "Unknown"))
             logger.info(f"🆕 Creating new WaitlistLead for {email}")
 
-        # 2. Map Frontend Data to Model Fields
-        # Note: we map 'avgPrice' from Next.js to 'avg_price' in the DB
         try:
+            # Map values
             lead.name = payload.get("name")
             lead.company = payload.get("company")
             lead.industry = payload.get("industry")
@@ -37,10 +80,22 @@ async def join_waitlist(payload: dict):
             lead.avg_price = payload.get("avgPrice") 
             lead.crm = payload.get("crm")
             
-            # 3. Save to the database
             session.add(lead)
             session.commit()
             session.refresh(lead)
+            
+            # Fire-and-forget Slack notification so the user isn't kept waiting
+            lead_info = {
+                "name": lead.name,
+                "company": lead.company,
+                "email": lead.email,
+                "industry": lead.industry,
+                "website": lead.website,
+                "traffic": lead.traffic,
+                "avg_price": lead.avg_price,
+                "crm": lead.crm
+            }
+            asyncio.create_task(send_slack_notification(lead_info))
             
             logger.info(f"✅ Waitlist Success: {email} (Aura ID: {aura_id})")
             return {"status": "success", "message": "Phase 01 Audit Initiated"}
@@ -48,7 +103,6 @@ async def join_waitlist(payload: dict):
         except Exception as e:
             session.rollback()
             logger.error(f"❌ Database Error during waitlist join: {str(e)}")
-            # If the table doesn't exist yet, this 500 will trigger
             raise HTTPException(
                 status_code=500, 
                 detail="The intelligence engine encountered a database sync error."

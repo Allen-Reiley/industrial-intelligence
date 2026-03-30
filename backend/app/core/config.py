@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
 
-    # API Keys for Frontend (Waitlist) - Added to prevent validation crashes
+    # API Keys for Frontend (Waitlist)
     NEXT_PUBLIC_WAITLIST_API_KEY: Optional[str] = None
     NEXT_PUBLIC_WAITLIST_ID: Optional[str] = None
     
@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     # Third Party APIs
     IPINFO_TOKEN: str # Required in .env
     
+    # Notifications
+    # Paste your webhook in Railway/Local .env as SLACK_WEBHOOK_URL
+    SLACK_WEBHOOK_URL: Optional[str] = None
+    
     # Email Settings
     SMTP_TLS: bool = True
     SMTP_PORT: Optional[int] = 587
@@ -33,7 +37,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env", 
         case_sensitive=True,
-        extra="ignore" # This stops the 'extra_forbidden' error
+        extra="ignore" 
     )
 
 settings = Settings()
