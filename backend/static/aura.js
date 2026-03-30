@@ -1,0 +1,220 @@
+/**
+ * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
+ * Version: 2.2.0 (High-Entropy & Debug Enabled)
+ * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
+ */
+(async function() {
+    const script = document.currentScript;
+    const clientId = script.getAttribute('data-id');
+    if (!clientId) return console.error("❌ AuraWorks: Missing Client ID in script tag.");
+
+    // --- CONFIGURATION ---
+    const getBaseUrl = () => {
+        if (window.AURA_CONFIG?.apiUrl) return window.AURA_CONFIG.apiUrl;
+        if (script?.src.includes('http')) {
+            try { return new URL(script.src).origin; } catch (e) {}
+        }
+        return "http://localhost:8000";
+    };
+    const API_URL = `${getBaseUrl().replace(/\/$/, '')}/api/v1/track`;
+    console.log(`🚀 AuraWorks Active. Client: ${clientId} | Engine: ${API_URL}`);
+
+    // --- PILLAR 1: PERSISTENCE (The Memory) ---
+    const AuraPersistence = {
+        key: 'aura_uid',
+        async init() {
+            let id = await this.getStoredID();
+            if (!id) {
+                id = this.generateUUID();
+                console.log("🆕 AuraWorks: New Unique ID Generated:", id);
+            } else {
+                console.log("🔄 AuraWorks: Existing ID Restored:", id);
+            }
+            await this.syncStorage(id);
+            return id;
+        },
+        async getStoredID() {
+            const c = document.cookie.split('; ').find(r => r.startsWith(`${this.key}=`))?.split('=')[1];
+            const l = localStorage.getItem(this.key);
+            const d = await this.getFromIndexedDB();
+            return c || l || d || null;
+        },
+        async syncStorage(id) {
+            const exp = new Date(); exp.setFullYear(exp.getFullYear() + 2);
+            document.cookie = `${this.key}=${id}; expires=${exp.toUTCString()}; path=/; SameSite=None; Secure; Partitioned`;
+            localStorage.setItem(this.key, id);
+            await this.saveToIndexedDB(id);
+            window.AURA_UID = id;
+        },
+        generateUUID() {
+            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+        },
+        async getFromIndexedDB() {
+            return new Promise(res => {
+                const req = indexedDB.open("AuraWorksDB", 1);
+                req.onupgradeneeded = e => e.target.result.createObjectStore("identity");
+                req.onsuccess = e => {
+                    const store = e.target.result.transaction("identity", "readonly").objectStore("identity");
+                    const getReq = store.get(this.key);
+                    getReq.onsuccess = () => res(getReq.result);
+                    getReq.onerror = () => res(null);
+                };
+                req.onerror = () => res(null);
+            });
+        },
+        async saveToIndexedDB(id) {
+            const req = indexedDB.open("AuraWorksDB", 1);
+            req.onsuccess = e => e.target.result.transaction("identity", "readwrite").objectStore("identity").put(id, this.key);
+        }
+    };
+
+    // --- PILLAR 2: FORENSIC IDENTITY (The Fingerprint) ---
+    const AuraFingerprint = {
+        async getFullSignature() {
+            console.log("🧬 AuraWorks: Calculating Forensic Signature...");
+            return {
+                canvas: this.getCanvas(),
+                webgl: this.getWebGL(),
+                drift: await this.measureDrift(),
+                audio: await this.getAudioHash(),
+                fonts: this.getFonts(),
+                screen: `${screen.width}x${screen.height}x${screen.colorDepth}`,
+                ua: navigator.userAgent
+            };
+        },
+        getCanvas() {
+            const cvs = document.createElement('canvas');
+            const ctx = cvs.getContext('2d');
+            ctx.textBaseline = "top"; ctx.font = "14px 'Arial'";
+            ctx.fillText("AuraWorks_Forensic_v1", 2, 2);
+            ctx.fillStyle = "rgba(102, 204, 0, 0.7)"; ctx.fillRect(100, 5, 80, 50);
+            return cvs.toDataURL();
+        },
+        getWebGL() {
+            const cvs = document.createElement('canvas');
+            const gl = cvs.getContext('webgl') || cvs.getContext('experimental-webgl');
+            if (!gl) return "no_gl";
+            const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+            return dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_ID) : "generic_gpu";
+        },
+        async measureDrift() {
+            return new Promise(r => {
+                const t0 = performance.now(), d0 = Date.now();
+                setTimeout(() => r((performance.now() - t0) - (Date.now() - d0)), 500);
+            });
+        },
+        async getAudioHash() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                return ctx.sampleRate || "no_audio_ctx";
+            } catch (e) { return "blocked"; }
+        },
+        getFonts() {
+            const f = ["cursive", "monospace", "serif", "sans-serif", "Impact", "Arial Black"];
+            return f.filter(font => document.fonts.check(`12px ${font}`)).join(',');
+        }
+    };
+
+    // --- PILLAR 3: MASTER TRACKER (The Intent) ---
+    const AuraTracker = {
+        init(auraId) {
+            this.auraId = auraId;
+            this.startTime = Date.now();
+            this.currentUrl = window.location.href;
+            this.honeyPotId = 'aura-v-check';
+            this.trackEntry();
+            this.setupSensors();
+            this.patchSPA();
+        },
+        async dispatch(endpoint, payload, useBeacon = false) {
+            const data = {
+                client_id: clientId,
+                aura_id: this.auraId,
+                timestamp: new Date().toISOString(),
+                ...payload
+            };
+            if (useBeacon && navigator.sendBeacon) {
+                const success = navigator.sendBeacon(`${API_URL}/${endpoint}`, new Blob([JSON.stringify(data)], {type:'application/json'}));
+                if (success) console.log(`📤 AuraWorks: Beacon Queued [${endpoint}]`);
+                return success;
+            }
+            console.log(`📡 AuraWorks: Sending ${endpoint.toUpperCase()} Log...`, data);
+            try {
+                const res = await fetch(`${API_URL}/${endpoint}`, {
+                    method: 'POST', mode: 'cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data), keepalive: true
+                });
+                const json = await res.json();
+                console.log(`✅ AuraWorks: ${endpoint.toUpperCase()} Logged`, json);
+                return json;
+            } catch (e) { console.error(`❌ AuraWorks [${endpoint}] Error:`, e.message); }
+        },
+        setupSensors() {
+            // Blur Capture (The Money)
+            document.querySelectorAll('input[type="email"], input[name*="email"]').forEach(i => {
+                i.addEventListener('blur', (e) => {
+                    if (e.target.value.includes('@')) {
+                        console.log("💰 AuraWorks: Capturing Partial Lead...");
+                        this.dispatch('event', { event_type: 'blur_capture', email: e.target.value, field: e.target.id || e.target.name });
+                    }
+                });
+            });
+            // Honey Pot (Bot Filter)
+            const hp = document.getElementById(this.honeyPotId);
+            if (hp) hp.addEventListener('click', (e) => {
+                e.preventDefault(); console.warn("🛡️ AuraWorks: Bot Triggered Honey Pot!");
+                this.dispatch('event', { is_bot: true, event_type: 'bot_trigger' });
+            });
+            // Scroll Intent
+            let sFired = false;
+            window.addEventListener('scroll', () => {
+                if (sFired) return;
+                const pct = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+                if (pct > 30) {
+                    console.log("📈 AuraWorks: High Intent (Scroll > 30%)");
+                    this.dispatch('event', { event_type: 'high_intent', depth: Math.round(pct) });
+                    sFired = true;
+                }
+            }, { passive: true });
+        },
+        trackEntry() {
+            this.dispatch('entry', { url: window.location.href, referrer: document.referrer || "direct", res: `${screen.width}x${screen.height}` });
+        },
+        trackExit() {
+            const dur = Math.round((Date.now() - this.startTime) / 1000);
+            this.dispatch('exit', { url: this.currentUrl, duration: dur }, true);
+        },
+        patchSPA() {
+            const self = this;
+            const patch = (m) => {
+                const orig = history[m];
+                history[m] = function() {
+                    self.trackExit();
+                    const r = orig.apply(this, arguments);
+                    self.currentUrl = window.location.href; self.startTime = Date.now();
+                    setTimeout(() => self.trackEntry(), 0);
+                    return r;
+                };
+            };
+            patch('pushState'); patch('replaceState');
+            window.addEventListener('popstate', () => { self.trackExit(); self.currentUrl = window.location.href; self.startTime = Date.now(); self.trackEntry(); });
+            document.addEventListener('visibilitychange', () => { 
+                if (document.visibilityState === 'hidden') self.trackExit(); 
+                else { console.log("🔄 AuraWorks: Tab Focused - Restarting Timer"); self.startTime = Date.now(); }
+            });
+        }
+    };
+
+    // --- EXECUTION SEQUENCE ---
+    const auraId = await AuraPersistence.init();
+    AuraTracker.init(auraId);
+
+    // Establish Forensic Lock after 5s of engagement
+    setTimeout(async () => {
+        const sig = await AuraFingerprint.getFullSignature();
+        await AuraTracker.dispatch('identity', { signature: sig });
+        console.log("✅ AuraWorks Identity Bridge: Forensic Lock Established.");
+    }, 5000);
+
+})();

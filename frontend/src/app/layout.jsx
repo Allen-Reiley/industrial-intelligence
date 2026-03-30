@@ -4,6 +4,7 @@ import "./globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { Analytics } from "@vercel/analytics/next";
+import AuraConsentBanner from "@/components/consent-banner/consent-banner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -109,8 +110,8 @@ export default function RootLayout({ children }) {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
   
   // 2. Automated Versioning (updates every time you redeploy the frontend)
-  const version = "1.0.1"; 
-  const trackerSrc = `${API_BASE_URL.replace(/\/$/, '')}/static/tracker.js?v=${version}`;
+  const version = "2.2.0"; 
+  const trackerSrc = `${API_BASE_URL.replace(/\/$/, '')}/static/aura.js?v=${version}`;
 
   return (
     <html lang="en">
@@ -123,6 +124,9 @@ export default function RootLayout({ children }) {
             __html: `window.AURA_CONFIG = { apiUrl: "${API_BASE_URL}" };`,
           }}
         />
+
+        {/*Generates Consent Banner to all pages*/}
+        <AuraConsentBanner />
 
         {/* Load Tracker with Versioning */}
         <Script
