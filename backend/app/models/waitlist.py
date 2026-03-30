@@ -18,3 +18,4 @@ class WaitlistLead(SQLModel, table=True):
     crm: str
     
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
