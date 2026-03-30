@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     
     # Third Party APIs
     IPINFO_TOKEN: str # Required in .env
+    RESEND_API_KEY: Optional[str] = None
     
     # Notifications
     # Paste your webhook in Railway/Local .env as SLACK_WEBHOOK_URL

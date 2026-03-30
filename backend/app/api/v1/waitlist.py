@@ -1,6 +1,7 @@
 import httpx
 import asyncio
 import logging
+import resend
 from fastapi import APIRouter, HTTPException
 from sqlmodel import Session, select
 from app.db import engine
@@ -10,13 +11,15 @@ from app.core.config import settings
 router = APIRouter()
 logger = logging.getLogger("uvicorn")
 
+# Initialize Resend SDK
+resend.api_key = settings.RESEND_API_KEY
+
 async def send_slack_notification(lead_data: dict):
     """Background task to alert Slack of a new Phase 01 partner"""
     if not settings.SLACK_WEBHOOK_URL:
         logger.warning("Slack Webhook URL is not configured.")
         return
 
-    # "Quiet Premium" Slack Formatting
     payload = {
         "text": f"🚀 New Phase 01 Audit: {lead_data.get('company')}",
         "blocks": [
@@ -49,10 +52,40 @@ async def send_slack_notification(lead_data: dict):
 
     async with httpx.AsyncClient() as client:
         try:
-            # Short timeout to keep the background worker lean
             await client.post(settings.SLACK_WEBHOOK_URL, json=payload, timeout=5.0)
         except Exception as e:
             logger.error(f"Slack notification failed: {e}")
+
+async def send_welcome_email(email: str, name: str):
+    """Background task to dispatch the Phase 01 Welcome Email via Resend"""
+    if not settings.RESEND_API_KEY:
+        logger.warning("Resend API Key not configured.")
+        return
+
+    first_name = name.split()[0] if name else "Partner"
+    
+    try:
+        resend.Emails.send({
+            "from": "AuraWorks <intelligence@auraworks.co.za>",
+            "to": [email],
+            "subject": "Phase 01: Identity Verified & Audit Initiated",
+            "html": f"""
+                <div style="font-family: sans-serif; color: #1a1a1a; max-width: 600px;">
+                    <h2 style="font-weight: 600; letter-spacing: -0.02em;">System Identity Verified</h2>
+                    <p>Hello {first_name},</p>
+                    <p>Your request to join the AuraWorks cohort has been received. Our engine has initiated the <strong>Phase 01 Infrastructure Audit</strong> for your domain.</p>
+                    <p>We will notify you once the industrial intelligence bridge is ready for review.</p>
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666;">
+                        AuraWorks (Pty) Ltd | Industrial Systems Architecture
+                    </div>
+                </div>
+            """
+        })
+        logger.info(f"📧 Welcome email dispatched to {email}")
+        return True
+    except Exception as e:
+        logger.error(f"Resend email failed: {e}")
+        return False
 
 @router.post("/join")
 async def join_waitlist(payload: dict):
@@ -71,7 +104,6 @@ async def join_waitlist(payload: dict):
             logger.info(f"🆕 Creating new WaitlistLead for {email}")
 
         try:
-            # Map values
             lead.name = payload.get("name")
             lead.company = payload.get("company")
             lead.industry = payload.get("industry")
@@ -84,7 +116,7 @@ async def join_waitlist(payload: dict):
             session.commit()
             session.refresh(lead)
             
-            # Fire-and-forget Slack notification so the user isn't kept waiting
+            # Prepare data for background tasks
             lead_info = {
                 "name": lead.name,
                 "company": lead.company,
@@ -95,7 +127,12 @@ async def join_waitlist(payload: dict):
                 "avg_price": lead.avg_price,
                 "crm": lead.crm
             }
+            
+            # 1. Fire Slack Notification
             asyncio.create_task(send_slack_notification(lead_info))
+            
+            # 2. Fire Welcome Email
+            asyncio.create_task(send_welcome_email(lead.email, lead.name))
             
             logger.info(f"✅ Waitlist Success: {email} (Aura ID: {aura_id})")
             return {"status": "success", "message": "Phase 01 Audit Initiated"}
@@ -103,7 +140,4 @@ async def join_waitlist(payload: dict):
         except Exception as e:
             session.rollback()
             logger.error(f"❌ Database Error during waitlist join: {str(e)}")
-            raise HTTPException(
-                status_code=500, 
-                detail="The intelligence engine encountered a database sync error."
-            )
+            raise HTTPException(status_code=500, detail="Database sync error.")

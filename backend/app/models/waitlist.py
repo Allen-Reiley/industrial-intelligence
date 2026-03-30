@@ -17,5 +17,10 @@ class WaitlistLead(SQLModel, table=True):
     avg_price: str
     crm: str
     
+    # Automation Tracking
+    # Tracks if the Resend welcome email was successfully dispatched
+    welcome_email_sent: bool = Field(default=False)
+    
+    # Metadata
+    # Uses UTC to keep audits consistent across timezones
     created_at: datetime = Field(default_factory=datetime.utcnow)
-
