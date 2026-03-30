@@ -31,13 +31,12 @@ export default function GetStartedPage() {
         crm: ''
     })
 
- const handleNext = (e: FormEvent) => {
+    const handleNext = (e: FormEvent) => {
         e.preventDefault()
         
         // Industrial Intelligence logic: Prioritize work emails
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(formData.email)) {
-            // Replace with a custom UI 'Error' state later for the "Quiet Premium" feel
             alert("Please enter a valid work email address.")
             return
         }
@@ -45,20 +44,24 @@ export default function GetStartedPage() {
         setStep(2)
     }
 
- const handleSubmit: SubmitEventHandler<HTMLFormElement> = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    try {
-        await submitToWaitlist(formData);
-        setIsSuccess(true);
-    } catch (error: any) {
-        console.error("Submission Error:", error);
-        alert(error.message);
-    } finally {
-        setIsLoading(false);
+    const handleSubmit: SubmitEventHandler<HTMLFormElement> = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        
+        try {
+            // Mapping UI state to the backend expectation
+            await submitToWaitlist({
+                ...formData,
+                aura_id: typeof window !== 'undefined' ? localStorage.getItem('aura_uid') : null
+            });
+            setIsSuccess(true);
+        } catch (error: any) {
+            console.error("Submission Error:", error);
+            alert(error.message || "An error occurred during submission.");
+        } finally {
+            setIsLoading(false);
+        }
     }
- }
 
     return (
         <main className="relative min-h-screen flex items-center justify-center bg-background px-6 py-12 overflow-hidden">
@@ -69,7 +72,7 @@ export default function GetStartedPage() {
 
             <div className="w-full max-w-xl relative">
                 
-                {/* Navigation Header - Aligned Step Indicator here */}
+                {/* Navigation Header */}
                 <div className="mb-8 flex items-center justify-between">
                     {step === 1 ? (
                         <Button variant="ghost" asChild className="-ml-2 text-muted-foreground hover:text-foreground">
@@ -81,7 +84,6 @@ export default function GetStartedPage() {
                         </Button>
                     )}
 
-                    {/* Moved inside the header flex container */}
                     <div className="flex items-center gap-3">
                         <div className="flex gap-1">
                             <div className={cn("h-1.5 w-6 rounded-full transition-all duration-500", step === 1 ? "bg-primary" : "bg-muted")} />
@@ -161,7 +163,7 @@ export default function GetStartedPage() {
                                             </select>
                                         </div>
                                     </div>
-                                    <Button size="lg" className="mt-4 rounded-xl font-bold group">
+                                    <Button type="submit" size="lg" className="mt-4 rounded-xl font-bold group">
                                         Continue to Audit <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                                     </Button>
                                 </form>
@@ -218,7 +220,7 @@ export default function GetStartedPage() {
                                             </select>
                                         </div>
                                     </div>
-                                    <Button disabled={isLoading} size="lg" className="mt-4 rounded-xl font-bold shadow-xl shadow-primary/20">
+                                    <Button type="submit" disabled={isLoading} size="lg" className="mt-4 rounded-xl font-bold shadow-xl shadow-primary/20">
                                         {isLoading ? <Loader2 className="animate-spin" /> : "Request Access"}
                                     </Button>
                                 </form>

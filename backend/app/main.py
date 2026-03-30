@@ -6,7 +6,7 @@ import logging
 
 from app.core.config import settings
 from app.db import init_db, engine
-from app.api.v1 import track, clients, identity # Added identity for production logic
+from app.api.v1 import track, clients, identity, waitlist # Added identity and waitlist for production logic
 from app.models.visit import Visit
 
 # Setup logging
@@ -68,6 +68,7 @@ async def debug_aura_signal(endpoint: str, request: Request):
 app.include_router(track.router, prefix=f"{settings.API_V1_STR}/track", tags=["tracking"])
 app.include_router(clients.router, prefix=f"{settings.API_V1_STR}/clients", tags=["clients"])
 app.include_router(identity.router, prefix=f"{settings.API_V1_STR}/identity", tags=["identity"])
+app.include_router(waitlist.router, prefix=f"{settings.API_V1_STR}/waitlist", tags=["waitlist"])
 
 @app.get("/health")
 def health_check():
