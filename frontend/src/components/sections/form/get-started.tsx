@@ -18,6 +18,7 @@ export default function GetStartedPage() {
     const [isLoading, setIsLoading] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
     
+    // Unified State
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -25,17 +26,20 @@ export default function GetStartedPage() {
         industry: '',
         website: '',
         traffic: '',
-        avgPrice: '', // Keep UI state as is
+        avgPrice: '',
         crm: ''
     })
 
     const handleNext = (e: FormEvent) => {
         e.preventDefault()
+        
+        // Industrial Intelligence logic: Prioritize work emails
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(formData.email)) {
-            alert("Please use a valid work email.")
+            alert("Please enter a valid work email address.")
             return
         }
+        
         setStep(2)
     }
 
@@ -44,29 +48,20 @@ export default function GetStartedPage() {
         setIsLoading(true);
         
         try {
+            // Retrieve tracking ID
             const aura_id = typeof window !== 'undefined' ? localStorage.getItem('aura_uid') : null;
 
-            // HARD MAPPING: Ensure keys match the SQLModel exactly
-            const payload = {
-                name: formData.name,
-                email: formData.email,
-                company: formData.company,
-                industry: formData.industry,
-                website: formData.website,
-                traffic: formData.traffic,
-                avg_price: formData.avgPrice, // Mapped to snake_case for the API
-                crm: formData.crm,
+            // Mapping UI state to the backend expectation (avg_price)
+            await submitToWaitlist({
+                ...formData,
+                avg_price: formData.avgPrice, // Maps camelCase to snake_case for the DB
                 aura_id: aura_id
-            };
-
-            await submitToWaitlist(payload);
+            });
             setIsSuccess(true);
         } catch (error: any) {
-            // Log for your eyes only in dev
-            console.error("Pipeline Error:", error);
-            
-            // USER FACING: Professional and generic to hide DB structure
-            alert("System Update: We encountered a synchronization delay. The audit queue is being refreshed. Please try again.");
+            console.error("Submission Error:", error);
+            // Secure generic alert to prevent leaking DB structure
+            alert("System Update: We encountered a synchronization delay with the audit pipeline. Please try again in a moment.");
         } finally {
             setIsLoading(false);
         }
@@ -74,11 +69,14 @@ export default function GetStartedPage() {
 
     return (
         <main className="relative min-h-screen flex items-center justify-center bg-background px-6 py-12 overflow-hidden">
+            {/* Background Decorations */}
             <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-full opacity-30 [background:radial-gradient(50%_50%_at_50%_10%_var(--color-primary)_0%,transparent_100%)] blur-3xl" />
             </div>
 
             <div className="w-full max-w-xl relative">
+                
+                {/* Navigation Header */}
                 <div className="mb-8 flex items-center justify-between">
                     {step === 1 ? (
                         <Button variant="ghost" asChild className="-ml-2 text-muted-foreground hover:text-foreground">
@@ -95,10 +93,13 @@ export default function GetStartedPage() {
                             <div className={cn("h-1.5 w-6 rounded-full transition-all duration-500", step === 1 ? "bg-primary" : "bg-muted")} />
                             <div className={cn("h-1.5 w-6 rounded-full transition-all duration-500", step === 2 ? "bg-primary" : "bg-muted")} />
                         </div>
-                        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Phase 0{step}</span>
+                        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
+                            Phase 0{step}
+                        </span>
                     </div>
                 </div>
 
+                {/* Sliding Viewport */}
                 <div className="relative overflow-hidden rounded-3xl border bg-card/50 backdrop-blur-sm shadow-2xl">
                     {isSuccess ? (
                         <div className="p-12 text-center animate-in fade-in zoom-in duration-500">
@@ -109,8 +110,8 @@ export default function GetStartedPage() {
                             </div>
                             <h2 className="text-3xl font-bold tracking-tight">Audit Initiated</h2>
                             <p className="text-muted-foreground mt-4 text-sm max-w-sm mx-auto">
-                                Thank you, {formData.name.split(' ')[0]}. We've added {formData.company} to the queue. 
-                                We'll verify your industrial footprint shortly.
+                                Thank you, {formData.name.split(' ')[0]}. We've added {formData.company} to the Phase 01 queue. 
+                                Our team will reach out to the work email provided shortly.
                             </p>
                             <Button asChild variant="outline" className="mt-8 rounded-xl">
                                 <Link href="/">Return to Home</Link>
@@ -121,12 +122,14 @@ export default function GetStartedPage() {
                             className="flex transition-transform duration-700 ease-[cubic-bezier(0.87,_0,_0.13,_1)]" 
                             style={{ transform: `translateX(-${(step - 1) * 100}%)` }}
                         >
-                            {/* STEP 1 */}
+                            
+                            {/* STEP 1: Identification */}
                             <div className="w-full shrink-0 p-8 md:p-12">
                                 <div className="mb-10">
-                                    <h1 className="text-3xl font-bold tracking-tight text-white">Identity</h1>
-                                    <p className="text-muted-foreground mt-2 text-sm">Industrial credentials for cohort verification.</p>
+                                    <h1 className="text-3xl font-bold tracking-tight">Identity</h1>
+                                    <p className="text-muted-foreground mt-2 text-sm">Basic credentials for the 100-partner cohort.</p>
                                 </div>
+
                                 <form onSubmit={handleNext} className="grid gap-6">
                                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                         <div className="space-y-2">
@@ -148,14 +151,14 @@ export default function GetStartedPage() {
                                         <Label>Company Name</Label>
                                         <div className="relative">
                                             <Building2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <Input required value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} placeholder="Rand Industrial" className="pl-10 rounded-xl bg-muted/30" />
+                                            <Input required value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} placeholder="e.g. Rand Industrial" className="pl-10 rounded-xl bg-muted/30" />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Industry</Label>
-                                        <div className="relative text-white">
+                                        <div className="relative">
                                             <Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <select required value={formData.industry} onChange={e => setFormData({...formData, industry: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-[#09090b] pl-10 pr-3 py-2 text-sm outline-none appearance-none">
+                                            <select required value={formData.industry} onChange={e => setFormData({...formData, industry: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none">
                                                 <option value="">Select industry...</option>
                                                 <option value="mining">Mining & Resources</option>
                                                 <option value="manufacturing">Manufacturing</option>
@@ -165,17 +168,18 @@ export default function GetStartedPage() {
                                         </div>
                                     </div>
                                     <Button type="submit" size="lg" className="mt-4 rounded-xl font-bold group">
-                                        Continue <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                        Continue to Audit <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                                     </Button>
                                 </form>
                             </div>
 
-                            {/* STEP 2 */}
+                            {/* STEP 2: Qualification */}
                             <div className="w-full shrink-0 p-8 md:p-12">
                                 <div className="mb-10">
-                                    <h2 className="text-3xl font-bold tracking-tight text-white">Audit</h2>
+                                    <h2 className="text-3xl font-bold tracking-tight">Audit</h2>
                                     <p className="text-muted-foreground mt-2 text-sm">System markers for ROI calculation.</p>
                                 </div>
+
                                 <form onSubmit={handleSubmit} className="grid gap-6">
                                     <div className="space-y-2">
                                         <Label>Website Link</Label>
@@ -187,9 +191,9 @@ export default function GetStartedPage() {
                                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                         <div className="space-y-2">
                                             <Label>Monthly Traffic</Label>
-                                            <div className="relative text-white">
+                                            <div className="relative">
                                                 <BarChart3 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                                <select required value={formData.traffic} onChange={e => setFormData({...formData, traffic: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-[#09090b] pl-10 pr-3 py-2 text-sm outline-none appearance-none">
+                                                <select required value={formData.traffic} onChange={e => setFormData({...formData, traffic: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none">
                                                     <option value="">Select range...</option>
                                                     <option value="0-1k">0 - 1,000</option>
                                                     <option value="1k-5k">1,000 - 5,000</option>
@@ -207,9 +211,9 @@ export default function GetStartedPage() {
                                     </div>
                                     <div className="space-y-2">
                                         <Label>CRM System</Label>
-                                        <div className="relative text-white">
+                                        <div className="relative">
                                             <Database className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <select required value={formData.crm} onChange={e => setFormData({...formData, crm: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-[#09090b] pl-10 pr-3 py-2 text-sm outline-none appearance-none">
+                                            <select required value={formData.crm} onChange={e => setFormData({...formData, crm: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none">
                                                 <option value="">Select CRM...</option>
                                                 <option value="hubspot">HubSpot</option>
                                                 <option value="salesforce">Salesforce</option>
@@ -225,13 +229,19 @@ export default function GetStartedPage() {
                                     </Button>
                                 </form>
                             </div>
+
                         </div>
                     )}
                 </div>
 
+                {/* Aesthetic Footer */}
                 <div className="mt-10 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.3em] font-bold text-muted-foreground/40">
                     <Lock className="h-3 w-3" /> Secure Infrastructure Pipeline
                 </div>
+                <p className="text-center text-xs text-muted-foreground mt-4">
+                    By requesting access, you agree to our terms of service and our systems-driven 
+                    approach to B2B privacy.
+                </p>
             </div>
         </main>
     )
