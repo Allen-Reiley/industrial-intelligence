@@ -124,7 +124,7 @@ async def send_welcome_email(email: str, name: str):
 @router.post("/join")
 async def join_waitlist(payload: dict, request: Request):
     email = payload.get("email")
-    client_id = payload.get("aura_id") or payload.get("client_id")
+    client_id = payload.get("client_id") or payload.get("aura_id")
     
     # SYSTEM FIX: Resolving Real IP from Proxy Headers (Railway/Cloudflare)
     client_ip = request.headers.get("X-Forwarded-For")
