@@ -5,7 +5,7 @@ import React from 'react'
 import Link from 'next/link'
 import { ArrowLeft, CheckCircle2, Clock, ShieldCheck, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { HeroHeader } from '@/components/hero-sec/header/header'
+import { HeroHeader } from '@/components/header/header'
 
 const benefits = [
     {

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Check } from 'lucide-react'
 import Link from 'next/link'
-import { HeroHeader } from '../hero-sec/header/header'
+import { HeroHeader } from '../header/header'
 import { TextEffect } from '../ui/text-effect'
 import { AnimatedGroup } from '../ui/animated-group'
 

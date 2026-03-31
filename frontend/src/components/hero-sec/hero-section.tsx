@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 import { TextEffect } from '@/components/ui/text-effect'
 import { AnimatedGroup } from '@/components/ui/animated-group'
-import { HeroHeader } from './header/header'
+import { HeroHeader } from '../header/header'
 {/* 
 import { Spotify } from '@/components/ui/svgs/spotify'
 import { SupabaseFull } from '@/components/ui/svgs/supabase'

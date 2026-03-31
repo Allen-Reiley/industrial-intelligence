@@ -4,7 +4,7 @@ import { FeatureGrid } from "@/components/sections/features/feature-grid";
 import { FeaturesCTA } from "@/components/sections/features/features-cta";
 import CallToAction from "@/components/cta/call-to-action";
 import Footer from "@/components/footer/footer";
-import { HeroHeader } from "@/components/hero-sec/header/header";
+import { HeroHeader } from "@/components/header/header";
 
 export default function FeaturesPage() {
   return (
