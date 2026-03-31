@@ -71,24 +71,50 @@ async def send_welcome_email(email: str, name: str):
     if not settings.RESEND_API_KEY:
         logger.warning("🔴 Resend API Key missing.")
         return
-
-    first_name = name.split()[0] if name else "Partner"
     
     try:
         resend.Emails.send({
-            "from": "AuraWorks <intelligence@auraworks.co.za>",
+            "from": "AuraWorks <systems@auraworks.co.za>",
             "to": [email],
             "subject": "Phase 01: Identity Verified & Audit Initiated",
             "html": f"""
-                <div style="font-family: sans-serif; color: #1a1a1a; max-width: 600px; line-height: 1.6;">
-                    <h2 style="font-weight: 600;">System Identity Verified</h2>
-                    <p>Hello {first_name},</p>
-                    <p>Our engine has initiated the <strong>Phase 01 Infrastructure Audit</strong> for your domain.</p>
-                    <p>We will notify you once the industrial intelligence bridge is ready.</p>
-                    <div style="margin-top: 30px; border-top: 1px solid #eee; font-size: 11px; color: #999;">
-                        AuraWorks (Pty) Ltd | Industrial Systems Architecture
-                    </div>
-                </div>
+                <!DOCTYPE html>
+                <html>
+                <head><meta charset="utf-8"></head>
+                <body style="background-color: #09090b; color: #fafafa; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 0;">
+                  <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 40px auto; padding: 20px;">
+                    <tr>
+                      <td style="padding-bottom: 30px;">
+                        <p style="font-family: monospace; font-size: 10px; letter-spacing: 0.2em; color: #71717a; margin: 0; text-transform: uppercase;">
+                          AURA WORKS // SYSTEMS
+                        </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <h1 style="font-size: 24px; font-weight: bold; margin: 0 0 20px 0; color: #ffffff; letter-spacing: -0.02em;">
+                          Audit Initiated
+                        </h1>
+                        <p style="font-size: 14px; line-height: 1.6; color: #a1a1aa; margin: 0 0 15px 0;">
+                          The credentials for your organization have been successfully received. 
+                          Your industrial footprint is now being queued for a <strong>Phase 01 ROI audit</strong>.
+                        </p>
+                        <p style="font-size: 14px; line-height: 1.6; color: #a1a1aa; margin: 0 0 30px 0;">
+                          Our systems architect will review your data markers within the next 24 hours. 
+                          If the alignment holds, we will move to Phase 02: Infrastructure Integration.
+                        </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="border-top: 1px solid #27272a; padding-top: 20px;">
+                        <p style="font-size: 11px; color: #52525b; margin: 0;">
+                          This is an automated system signal from AuraWorks (Pty) Ltd.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </body>
+                </html>
             """
         })
         logger.info(f"📧 Welcome email dispatched to {email}")
@@ -101,7 +127,6 @@ async def join_waitlist(payload: dict, request: Request):
     client_id = payload.get("aura_id") or payload.get("client_id")
     client_ip = "0.0.0.0"
     
-    # Accurate IP extraction for Railway/Cloudflare
     if request.client:
         client_ip = request.client.host
     
@@ -112,7 +137,6 @@ async def join_waitlist(payload: dict, request: Request):
 
     with Session(engine) as session:
         try:
-            # 1. Fetch or Initialize Lead
             statement = select(WaitlistLead).where(WaitlistLead.email == email)
             lead = session.exec(statement).first()
 
@@ -122,7 +146,6 @@ async def join_waitlist(payload: dict, request: Request):
             else:
                 logger.info(f"🔄 Updating existing record for {email}")
 
-            # 2. Sync Metadata
             lead.name = payload.get("name")
             lead.company = payload.get("company")
             lead.industry = payload.get("industry")
@@ -136,12 +159,9 @@ async def join_waitlist(payload: dict, request: Request):
             session.refresh(lead)
             logger.info(f"💾 DB Sync Successful for {email}")
 
-            # 3. Resolve Intelligence
-            # We do this after commit to ensure the visitor record isn't locked
             journey_data = get_visitor_journey(client_id, client_ip)
             logger.info(f"🕵️ Journey Resolved: {journey_data.get('total_touches')} touches")
 
-            # 4. Dispatch Tasks
             asyncio.create_task(send_slack_notification(payload, journey_data))
             asyncio.create_task(send_welcome_email(lead.email, lead.name))
             
