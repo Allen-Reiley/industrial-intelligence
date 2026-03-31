@@ -14,12 +14,12 @@ class VisitCreate(VisitBase):
     screen_resolution: Optional[str] = None
 
 class Visit(SQLModel, table=True): 
-    """The actual database table for visits and lead intelligence"""
+    """The central intelligence record for visits, forensic identity, and B2B firmographics"""
     id: Optional[int] = Field(default=None, primary_key=True)
     
     # --- BASIC METADATA ---
     client_id: str = Field(index=True)
-    aura_id: Optional[str] = Field(default=None, index=True) # The unique browser fingerprint ID
+    aura_id: Optional[str] = Field(default=None, index=True) # The browser fingerprint
     url: str
     referrer: Optional[str] = "direct"
     screen_resolution: Optional[str] = None
@@ -34,29 +34,37 @@ class Visit(SQLModel, table=True):
     # --- B2B FIRMOGRAPHICS (DE-ANONYMIZATION) ---
     company_name: Optional[str] = Field(default="Unknown", index=True)
     domain: Optional[str] = None
-    is_b2b: bool = Field(default=False)
+    is_b2b: bool = Field(default=False, index=True)
     industry: Optional[str] = None
     city: Optional[str] = None
     region: Optional[str] = None
     hq_phone: Optional[str] = None
     corp_emails: Optional[str] = None
     
+    # --- SIGNAL STRENGTHENING ---
+    # Increments every time this specific entity returns to the same page
+    hit_count: int = Field(default=1) 
+    
     # --- WAITLIST & QUALIFICATION (CONVERTED LEADS) ---
-    email: Optional[str] = Field(default=None, index=True) # Work email from form
-    name: Optional[str] = None # Contact name
-    website: Optional[str] = None # Their company website
-    traffic: Optional[str] = None # Monthly traffic range
-    avg_price: Optional[str] = None # Product price range
-    crm: Optional[str] = None # Current CRM used
+    email: Optional[str] = Field(default=None, index=True) 
+    name: Optional[str] = None 
+    website: Optional[str] = None 
+    traffic: Optional[str] = None 
+    avg_price: Optional[str] = None 
+    crm: Optional[str] = None 
     is_waitlist: bool = Field(default=False, index=True)
     
     # --- BEHAVIORAL METRICS ---
-    duration: int = Field(default=0)
+    duration: int = Field(default=0) # Seconds spent on page
     
     # --- AUTOMATION ---
     updated_at: datetime = Field(
         default_factory=datetime.utcnow,
-        sa_column=Column(DateTime(timezone=True), onupdate=sa.func.now())
+        sa_column=Column(
+            DateTime(timezone=True), 
+            onupdate=sa.func.now(), 
+            server_default=sa.func.now()
+        )
     )
     created_at: datetime = Field(
         sa_column=Column(

@@ -1,11 +1,11 @@
 from fastapi import APIRouter, BackgroundTasks, Request, Header
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.models.visit import VisitCreate, Visit
 from app.models.pageview import PageViewCreate
 from app.services.enrichment import enrich_visitor_data
 from app.services.contacts import get_corporate_contacts 
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 from app.db import engine
 import logging
 
@@ -14,11 +14,23 @@ logger = logging.getLogger("uvicorn")
 
 async def process_entry_logic(payload: VisitCreate, client_ip: str):
     """
-    Consolidates traffic by IP/URL and handles enrichment.
+    Consolidates traffic by IP/URL and handles Building-Level enrichment.
     """
     with Session(engine) as session:
-        # 1. Check if this specific Entity (IP + Page) already exists in our feed
-        # We look for the most recent record for this IP and URL
+        # 1. Building-Level Clustering Logic
+        # Check if other unique devices (client_ids) have hit us from this IP in last 48h
+        time_window = datetime.utcnow() - timedelta(hours=48)
+        building_statement = select(Visit.client_id).where(
+            Visit.ip_address == client_ip,
+            Visit.client_id != payload.client_id,
+            Visit.created_at >= time_window
+        ).distinct()
+        
+        other_devices = session.exec(building_statement).all()
+        is_building_hit = len(other_devices) > 0
+        device_cluster_count = len(other_devices) + 1 # Total devices from this building
+
+        # 2. Check if this specific Device + Page already exists to increment hits
         statement = select(Visit).where(
             Visit.ip_address == client_ip,
             Visit.url == payload.url,
@@ -28,26 +40,31 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
         existing_visit = session.exec(statement).first()
 
         if existing_visit:
-            # 2. Logic: Increment existing record to avoid clutter
             try:
-                # Assuming hit_count exists in your model (default 1)
                 existing_visit.hit_count = (existing_visit.hit_count or 1) + 1
                 existing_visit.updated_at = datetime.utcnow()
+                # Update building context even on repeat hits
+                existing_visit.is_b2b = is_building_hit or existing_visit.is_b2b
                 
                 session.add(existing_visit)
                 session.commit()
-                logger.info(f"📈 Signal Strengthened: {existing_visit.company_name} | Hits: {existing_visit.hit_count}")
+                logger.info(f"📈 Signal Strengthened: {existing_visit.company_name} | Cluster Size: {device_cluster_count}")
                 return
             except Exception as e:
                 logger.error(f"⚠️ Failed to increment hit_count: {e}")
-                # Fall through to create a new one if update fails
 
-        # 3. New Entity Logic (Enrichment only happens for NEW entries)
+        # 3. New Entity Resolution (Enrichment)
         enriched_data = {"company_name": "Unknown", "is_b2b": False}
         contact_data = {"hq_phone": None, "corp_emails": []}
 
         try:
             enriched_data = await enrich_visitor_data(client_ip)
+            # If IPinfo doesn't find a company, but we see multiple devices, we tag as B2B
+            if is_building_hit:
+                enriched_data["is_b2b"] = True
+                if enriched_data["company_name"] == "Unknown":
+                    enriched_data["company_name"] = f"Unresolved Building ({client_ip})"
+
             if enriched_data.get("is_b2b") and enriched_data.get("domain"):
                 try:
                     contact_data = await get_corporate_contacts(enriched_data["domain"])
@@ -70,12 +87,12 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
                 region=enriched_data.get("region"),
                 hq_phone=contact_data.get("hq_phone"),
                 corp_emails=", ".join(contact_data.get("corp_emails", [])) if contact_data.get("corp_emails") else None,
-                hit_count=1 # Initialize the counter
+                hit_count=1
             )
             
             session.add(db_visit)
             session.commit()
-            logger.info(f"✨ New Entity Resolved: {db_visit.company_name} | IP: {client_ip}")
+            logger.info(f"✨ Building Resolved: {db_visit.company_name} | Devices in Cluster: {device_cluster_count}")
             
         except Exception as e:
             logger.error(f"🚨 DATABASE COMMIT FAILED: {e}")
@@ -87,13 +104,13 @@ async def track_entry(
     background_tasks: BackgroundTasks,
     x_forwarded_for: Optional[str] = Header(None)
 ):
+    # Standard Railway/Cloudflare IP extraction
     client_ip = "127.0.0.1"
     if x_forwarded_for:
         client_ip = x_forwarded_for.split(',')[0].strip()
     elif request.client:
         client_ip = request.client.host
 
-    logger.info(f"⚡ Ping from {client_ip} on {payload.url}")
     background_tasks.add_task(process_entry_logic, payload, client_ip)
     return {"status": "accepted"}
 
@@ -101,11 +118,10 @@ async def track_entry(
 async def track_exit(payload: PageViewCreate):
     try:
         with Session(engine) as session:
-            # Match the most recent visit to update duration
             statement = select(Visit).where(
                 Visit.client_id == payload.client_id,
                 Visit.url == payload.url
-            ).order_by(Visit.updated_at.desc()) # Use updated_at since hit_count refreshes it
+            ).order_by(Visit.updated_at.desc())
             
             visit = session.exec(statement).first()
             
