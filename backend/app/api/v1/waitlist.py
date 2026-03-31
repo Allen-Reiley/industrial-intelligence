@@ -165,7 +165,7 @@ async def join_waitlist(payload: dict, request: Request):
             logger.info(f"💾 DB Sync Successful for {email}")
 
             # 3. Resolve Intelligence (Stitching Journey)
-            journey_data = get_visitor_journey(client_id, client_ip)
+            journey_data = await get_visitor_journey(client_id, client_ip)
             logger.info(f"🕵️ Journey Resolved: {journey_data.get('total_touches')} touches")
 
             # 4. Dispatch Tasks
