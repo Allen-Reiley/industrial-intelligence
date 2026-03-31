@@ -74,7 +74,7 @@ async def send_welcome_email(email: str, name: str):
     
     try:
         resend.Emails.send({
-            "from": "AuraWorks <systems@auraworks.co.za>",
+            "from": "AuraWorks <audit@auraworks.co.za>",
             "to": [email],
             "subject": "Phase 01: Identity Verified & Audit Initiated",
             "html": f"""
@@ -125,18 +125,22 @@ async def send_welcome_email(email: str, name: str):
 async def join_waitlist(payload: dict, request: Request):
     email = payload.get("email")
     client_id = payload.get("aura_id") or payload.get("client_id")
-    client_ip = "0.0.0.0"
     
-    if request.client:
-        client_ip = request.client.host
+    # SYSTEM FIX: Resolving Real IP from Proxy Headers (Railway/Cloudflare)
+    client_ip = request.headers.get("X-Forwarded-For")
+    if client_ip:
+        client_ip = client_ip.split(",")[0].strip()
+    else:
+        client_ip = request.client.host if request.client else "0.0.0.0"
     
-    logger.info(f"📥 Processing Waitlist Join: {email} from IP: {client_ip}")
+    logger.info(f"📥 Processing Waitlist Join: {email} from Real IP: {client_ip}")
 
     if not email:
         raise HTTPException(status_code=400, detail="Work email is required.")
 
     with Session(engine) as session:
         try:
+            # 1. Fetch or Initialize Lead
             statement = select(WaitlistLead).where(WaitlistLead.email == email)
             lead = session.exec(statement).first()
 
@@ -146,6 +150,7 @@ async def join_waitlist(payload: dict, request: Request):
             else:
                 logger.info(f"🔄 Updating existing record for {email}")
 
+            # 2. Sync Metadata
             lead.name = payload.get("name")
             lead.company = payload.get("company")
             lead.industry = payload.get("industry")
@@ -159,9 +164,11 @@ async def join_waitlist(payload: dict, request: Request):
             session.refresh(lead)
             logger.info(f"💾 DB Sync Successful for {email}")
 
+            # 3. Resolve Intelligence (Stitching Journey)
             journey_data = get_visitor_journey(client_id, client_ip)
             logger.info(f"🕵️ Journey Resolved: {journey_data.get('total_touches')} touches")
 
+            # 4. Dispatch Tasks
             asyncio.create_task(send_slack_notification(payload, journey_data))
             asyncio.create_task(send_welcome_email(lead.email, lead.name))
             

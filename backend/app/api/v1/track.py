@@ -1,6 +1,6 @@
 from fastapi import APIRouter, BackgroundTasks, Request, Header
 from typing import Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from app.models.visit import VisitCreate, Visit
 from app.models.pageview import PageViewCreate
 from app.services.enrichment import enrich_visitor_data
@@ -17,9 +17,8 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
     Consolidates traffic by IP/URL and handles Building-Level enrichment.
     """
     with Session(engine) as session:
-        # 1. Building-Level Clustering Logic
-        # Check if other unique devices (client_ids) have hit us from this IP in last 48h
-        time_window = datetime.utcnow() - timedelta(hours=48)
+        # 1. Building-Level Clustering Logic (Using Timezone-aware UTC)
+        time_window = datetime.now(timezone.utc) - timedelta(hours=48)
         building_statement = select(Visit.client_id).where(
             Visit.ip_address == client_ip,
             Visit.client_id != payload.client_id,
@@ -28,9 +27,9 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
         
         other_devices = session.exec(building_statement).all()
         is_building_hit = len(other_devices) > 0
-        device_cluster_count = len(other_devices) + 1 # Total devices from this building
+        device_cluster_count = len(other_devices) + 1
 
-        # 2. Check if this specific Device + Page already exists to increment hits
+        # 2. Check if this specific Device + Page already exists
         statement = select(Visit).where(
             Visit.ip_address == client_ip,
             Visit.url == payload.url,
@@ -42,12 +41,11 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
         if existing_visit:
             try:
                 existing_visit.hit_count = (existing_visit.hit_count or 1) + 1
-                existing_visit.updated_at = datetime.utcnow()
-                # Update building context even on repeat hits
+                existing_visit.updated_at = datetime.now(timezone.utc)
                 existing_visit.is_b2b = is_building_hit or existing_visit.is_b2b
                 
                 session.add(existing_visit)
-                session.commit()
+                session.commit() # FORCE COMMIT for immediate visibility
                 logger.info(f"📈 Signal Strengthened: {existing_visit.company_name} | Cluster Size: {device_cluster_count}")
                 return
             except Exception as e:
@@ -59,10 +57,9 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
 
         try:
             enriched_data = await enrich_visitor_data(client_ip)
-            # If IPinfo doesn't find a company, but we see multiple devices, we tag as B2B
             if is_building_hit:
                 enriched_data["is_b2b"] = True
-                if enriched_data["company_name"] == "Unknown":
+                if enriched_data.get("company_name") == "Unknown":
                     enriched_data["company_name"] = f"Unresolved Building ({client_ip})"
 
             if enriched_data.get("is_b2b") and enriched_data.get("domain"):
@@ -91,8 +88,8 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
             )
             
             session.add(db_visit)
-            session.commit()
-            logger.info(f"✨ Building Resolved: {db_visit.company_name} | Devices in Cluster: {device_cluster_count}")
+            session.commit() # FINAL SYNC before Slack triggers
+            logger.info(f"✨ Building Resolved: {db_visit.company_name} | Devices: {device_cluster_count}")
             
         except Exception as e:
             logger.error(f"🚨 DATABASE COMMIT FAILED: {e}")
@@ -104,7 +101,7 @@ async def track_entry(
     background_tasks: BackgroundTasks,
     x_forwarded_for: Optional[str] = Header(None)
 ):
-    # Standard Railway/Cloudflare IP extraction
+    # SYSTEM FIX: Real IP resolution for Railway/Cloudflare
     client_ip = "127.0.0.1"
     if x_forwarded_for:
         client_ip = x_forwarded_for.split(',')[0].strip()
@@ -118,6 +115,7 @@ async def track_entry(
 async def track_exit(payload: PageViewCreate):
     try:
         with Session(engine) as session:
+            # Look for the most recent visit from this client on this URL
             statement = select(Visit).where(
                 Visit.client_id == payload.client_id,
                 Visit.url == payload.url
@@ -128,7 +126,7 @@ async def track_exit(payload: PageViewCreate):
             if visit:
                 visit.duration = payload.duration
                 session.add(visit)
-                session.commit()
+                session.commit() # ENSURE exit duration is saved for Slack
                 return {"status": "recorded"}
             return {"status": "pending_entry"}
     except Exception as e:
