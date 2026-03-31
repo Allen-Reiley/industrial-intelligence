@@ -1,7 +1,7 @@
 // @/app/get-started/page.tsx
 'use client'
 
-import React, { useState, type FormEvent, type SubmitEventHandler } from 'react'
+import React, { useState, type FormEvent } from 'react'
 import { 
     Building2, Mail, User, Briefcase, ArrowLeft, 
     Globe, BarChart3, Tag, Database, Loader2, 
@@ -19,7 +19,6 @@ export default function GetStartedPage() {
     const [isLoading, setIsLoading] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
     
-    // Unified State
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -33,31 +32,42 @@ export default function GetStartedPage() {
 
     const handleNext = (e: FormEvent) => {
         e.preventDefault()
-        
-        // Industrial Intelligence logic: Prioritize work emails
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(formData.email)) {
             alert("Please enter a valid work email address.")
             return
         }
-        
         setStep(2)
     }
 
-    const handleSubmit: SubmitEventHandler<HTMLFormElement> = async (e) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         
         try {
-            // Mapping UI state to the backend expectation
+            // Retrieve tracking IDs from localStorage
+            const aura_id = typeof window !== 'undefined' ? localStorage.getItem('aura_uid') : null;
+            const client_id = typeof window !== 'undefined' ? localStorage.getItem('aura_client_id') : null;
+
+            // Mapping UI state to the exact naming convention expected by the backend
             await submitToWaitlist({
-                ...formData,
-                aura_id: typeof window !== 'undefined' ? localStorage.getItem('aura_uid') : null
+                name: formData.name,
+                email: formData.email,
+                company: formData.company,
+                industry: formData.industry,
+                website: formData.website,
+                traffic: formData.traffic,
+                avg_price: formData.avgPrice, // Corrected mapping for SQLModel
+                crm: formData.crm,
+                aura_id: aura_id || client_id // Ensure a fallback for stitching
             });
+
             setIsSuccess(true);
         } catch (error: any) {
-            console.error("Submission Error:", error);
-            alert(error.message || "An error occurred during submission.");
+            // SECURITY: Log technical details to console for dev, 
+            // but show a professional generic message to the user.
+            console.error("Submission Pipeline Error:", error);
+            alert("System Update: We encountered a synchronization delay with the audit pipeline. Please try again in a moment.");
         } finally {
             setIsLoading(false);
         }
@@ -122,7 +132,7 @@ export default function GetStartedPage() {
                             {/* STEP 1: Identification */}
                             <div className="w-full shrink-0 p-8 md:p-12">
                                 <div className="mb-10">
-                                    <h1 className="text-3xl font-bold tracking-tight">Identity</h1>
+                                    <h1 className="text-3xl font-bold tracking-tight text-white">Identity</h1>
                                     <p className="text-muted-foreground mt-2 text-sm">Basic credentials for the 100-partner cohort.</p>
                                 </div>
 
@@ -172,7 +182,7 @@ export default function GetStartedPage() {
                             {/* STEP 2: Qualification */}
                             <div className="w-full shrink-0 p-8 md:p-12">
                                 <div className="mb-10">
-                                    <h2 className="text-3xl font-bold tracking-tight">Audit</h2>
+                                    <h2 className="text-3xl font-bold tracking-tight text-white">Audit</h2>
                                     <p className="text-muted-foreground mt-2 text-sm">System markers for ROI calculation.</p>
                                 </div>
 
@@ -234,10 +244,6 @@ export default function GetStartedPage() {
                 <div className="mt-10 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.3em] font-bold text-muted-foreground/40">
                     <Lock className="h-3 w-3" /> Secure Infrastructure Pipeline
                 </div>
-                <p className="text-center text-xs text-muted-foreground mt-4">
-                    By requesting access, you agree to our terms of service and our systems-driven 
-                    approach to B2B privacy.
-                </p>
             </div>
         </main>
     )
