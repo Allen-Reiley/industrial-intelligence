@@ -29,11 +29,8 @@ export const metadata = {
     template: "%s | AuraWorks",
   },
   description: "Identify companies visiting your website. AuraWorks turns anonymous industrial traffic into high-intent sales leads for B2B firms in South Africa.",
-  
-  // Added for browser category indexing
   category: 'technology',
   classification: 'Industrial Sales Intelligence',
-  
   keywords: [
     "B2B Lead Generation South Africa",
     "Industrial Sales Intelligence",
@@ -46,9 +43,8 @@ export const metadata = {
     "Engineering Sales Intelligence",
     "Revenue Systems Architecture",
     "Gauteng B2B Sales Tools",
-    "East Rand Industrial Marketing" // Added local specificity
+    "East Rand Industrial Marketing"
   ],
-
   icons: {
     icon: [
       { url: "/icon.png", type: "image/png", sizes: "32x32" },
@@ -63,7 +59,6 @@ export const metadata = {
   authors: [{ name: "Reitumetse Sethabela", url: "https://auraworks.co.za" }],
   creator: "Reitumetse Sethabela",
   publisher: "AuraWorks (Pty) Ltd",
-  
   openGraph: {
     title: "AuraWorks | Industrial Sales Intelligence",
     description: "Turn anonymous industrial traffic into high-intent sales leads. POPIA-compliant B2B identification.",
@@ -89,12 +84,10 @@ export const metadata = {
   alternates: {
     canonical: "https://auraworks.co.za",
   },
-  
-  // Security and Browser Instructions
   robots: {
     index: true,
     follow: true,
-    nocache: false, // Ensures Google checks for updates more frequently
+    nocache: false,
     googleBot: {
       index: true,
       follow: true,
@@ -106,37 +99,37 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-  // 1. The Single Source of Truth
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-  
-  // 2. Automated Versioning (updates every time you redeploy the frontend)
-  const version = "2.2.0"; 
-  const trackerSrc = `${API_BASE_URL.replace(/\/$/, '')}/static/aura.js?v=${version}`;
-
-  // Use your new Cloudflare URL
-  const cdnSrc = `https://cdn.auraworks.co.za/aura.js?v=${version}`;
+  const CLIENT_ID = "c4a6c9b1-8355-4de2-985d-a04f4dcd63a0";
+  const CDN_BASE_URL = "https://cdn.auraworks.co.za/aura.js";
 
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
 
-        {/* Inject Config: Pass the base URL to the tracker */}
+        {/* ADVANCED IMMUTABLE LOADER 
+            1. Sets global AURA_CONFIG for backend comms.
+            2. Injects the tracker with a time-based 'v' parameter.
+            3. The 'v' updates automatically every hour (3600000ms).
+        */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `window.AURA_CONFIG = { apiUrl: "${API_BASE_URL}" };`,
+            __html: `
+              (function(w,d,s,i,u,a){
+                w.AURA_CONFIG = { apiUrl: "${API_BASE_URL}" };
+                w.AURA_ID = i; 
+                a=d.createElement(s);
+                a.async=1;
+                let v = Math.floor(Date.now()/3600000);
+                a.src= u + '?v=' + v;
+                d.head.appendChild(a);
+              })(window,document,'script','${CLIENT_ID}','${CDN_BASE_URL}');
+            `,
           }}
         />
 
-        {/*Generates Consent Banner to all pages*/}
         <AuraConsentBanner />
-
-        {/* Load Tracker with Versioning */}
-        <Script
-          src={cdnSrc} // Use CDN URL
-          data-id="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0"
-          strategy="afterInteractive"
-        />
 
         <SpeedInsights />
         <GoogleAnalytics gaId="G-2LE9FLFM12" />

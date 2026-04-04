@@ -1,12 +1,17 @@
 /**
  * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
- * Version: 2.2.1 (Identity Stitching & Human-Gating Enabled)
+ * Version: 2.2.2 (Immutable Loader & Forensic Stitching)
  * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
  */
 (async function() {
     const script = document.currentScript;
-    const clientId = script.getAttribute('data-id');
-    if (!clientId) return console.error("❌ AuraWorks: Missing Client ID in script tag.");
+    
+    // Support for Immutable Loader (window.AURA_ID) or Legacy Tag (data-id)
+    const clientId = window.AURA_ID || script?.getAttribute('data-id');
+    
+    if (!clientId) {
+        return console.error("❌ AuraWorks: Missing Client Identity context. Initialization aborted.");
+    }
 
     // --- CONFIGURATION ---
     const getBaseUrl = () => {
@@ -16,6 +21,7 @@
         }
         return "http://localhost:8000";
     };
+    
     const API_URL = `${getBaseUrl().replace(/\/$/, '')}/api/v1/track`;
 
     // --- PILLAR 1: PERSISTENCE (The Memory) ---
@@ -25,9 +31,10 @@
             let id = await this.getStoredID();
             if (!id) {
                 id = this.generateUUID();
-                console.log("🆕 AuraWorks: New Unique ID Generated:", id);
+                console.log("🆕 AuraWorks: New Unique ID Generated");
             } else {
-                console.log("🔄 AuraWorks: Existing ID Restored:", id);
+                // Clinical restoration log
+                console.log("🔄 AuraWorks: Identity Restored");
             }
             await this.syncStorage(id);
             return id;
@@ -40,6 +47,7 @@
         },
         async syncStorage(id) {
             const exp = new Date(); exp.setFullYear(exp.getFullYear() + 2);
+            // Partitioned cookies for cross-site privacy compliance
             document.cookie = `${this.key}=${id}; expires=${exp.toUTCString()}; path=/; SameSite=None; Secure; Partitioned`;
             localStorage.setItem(this.key, id);
             await this.saveToIndexedDB(id);
@@ -55,7 +63,9 @@
                 const req = indexedDB.open("AuraWorksDB", 1);
                 req.onupgradeneeded = e => e.target.result.createObjectStore("identity");
                 req.onsuccess = e => {
-                    const store = e.target.result.transaction("identity", "readonly").objectStore("identity");
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains("identity")) return res(null);
+                    const store = db.transaction("identity", "readonly").objectStore("identity");
                     const getReq = store.get(this.key);
                     getReq.onsuccess = () => res(getReq.result);
                     getReq.onerror = () => res(null);
@@ -65,7 +75,11 @@
         },
         async saveToIndexedDB(id) {
             const req = indexedDB.open("AuraWorksDB", 1);
-            req.onsuccess = e => e.target.result.transaction("identity", "readwrite").objectStore("identity").put(id, this.key);
+            req.onsuccess = e => {
+                const db = e.target.result;
+                const transaction = db.transaction("identity", "readwrite");
+                transaction.objectStore("identity").put(id, this.key);
+            };
         }
     };
 
@@ -85,7 +99,7 @@
             const cvs = document.createElement('canvas');
             const ctx = cvs.getContext('2d');
             ctx.textBaseline = "top"; ctx.font = "14px 'Arial'";
-            ctx.fillText("AuraWorks_Forensic_v1", 2, 2);
+            ctx.fillText("AuraWorks_Forensic_v2", 2, 2);
             return cvs.toDataURL();
         },
         getWebGL() {
@@ -98,7 +112,7 @@
         async measureDrift() {
             return new Promise(r => {
                 const t0 = performance.now(), d0 = Date.now();
-                setTimeout(() => r((performance.now() - t0) - (Date.now() - d0)), 500);
+                setTimeout(() => r(Math.round((performance.now() - t0) - (Date.now() - d0))), 500);
             });
         },
         getFonts() {
@@ -126,7 +140,7 @@
             };
 
             if (useBeacon && navigator.sendBeacon) {
-                return navigator.sendBeacon(`${API_URL}/${endpoint}`, new Blob([JSON.stringify(data)], {type:'application/json'}));
+                return navigator.sendBeacon(`${API_URL}/${endpoint}`, JSON.stringify(data));
             }
 
             try {
@@ -135,16 +149,15 @@
                 });
                 const json = await res.json();
                 
-                // --- IDENTITY BRIDGE STITCHING ---
-                // If backend identifies this forensic signature as an existing profile
+                // IDENTITY BRIDGE: Check for forensic stitching match
                 if (json.stitched_id && json.stitched_id !== this.auraId) {
-                    console.log("🔗 AuraWorks: Forensic Match Found. Stitching Identities...");
+                    console.log("🧵 AuraWorks: Forensic Match Found. Stitching identities...");
                     await AuraPersistence.syncStorage(json.stitched_id);
-                    this.auraId = json.stitched_id; // Update local context
+                    this.auraId = json.stitched_id; 
                 }
                 
                 return json;
-            } catch (e) { console.error(`❌ AuraWorks [${endpoint}] Error:`, e.message); }
+            } catch (e) { /* Silent fail for premium feel */ }
         },
         setupSensors() {
             document.querySelectorAll('input[type="email"], [name*="email"]').forEach(i => {
@@ -159,7 +172,7 @@
             window.addEventListener('scroll', () => {
                 if (sFired) return;
                 const pct = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-                if (pct > 30) {
+                if (pct > 35) {
                     this.dispatch('event', { event_type: 'high_intent', depth: Math.round(pct) });
                     sFired = true;
                 }
@@ -185,7 +198,12 @@
                 };
             };
             patch('pushState'); patch('replaceState');
-            window.addEventListener('popstate', () => { self.trackExit(); self.currentUrl = window.location.href; self.startTime = Date.now(); self.trackEntry(); });
+            window.addEventListener('popstate', () => { 
+                self.trackExit(); 
+                self.currentUrl = window.location.href; 
+                self.startTime = Date.now(); 
+                self.trackEntry(); 
+            });
         }
     };
 
@@ -194,11 +212,11 @@
     const startAura = async () => {
         if (initStarted) return;
         initStarted = true;
-        console.log("🚀 AuraWorks: Human Interaction Verified. Initializing...");
+        
         const auraId = await AuraPersistence.init();
         AuraTracker.init(auraId);
 
-        // Establish Forensic Lock after 5s of engagement
+        // Forensic Lock: Deep scan hardware profile after 5s of engagement
         setTimeout(async () => {
             const sig = await AuraFingerprint.getFullSignature();
             await AuraTracker.dispatch('identity', { signature: sig });
@@ -206,7 +224,7 @@
         }, 5000);
     };
 
-    // Gating Logic: Wait for 2s of verified activity (per MEMORY.md)
+    // Wait for 2s or first physical interaction
     setTimeout(startAura, 2000); 
     window.addEventListener('mousemove', startAura, { once: true });
     window.addEventListener('touchstart', startAura, { once: true });
