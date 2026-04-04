@@ -109,6 +109,7 @@ The edge layer script provided to your clients.
 │   │   ├── app/            # App Router (Pages)
 │   │   │   ├── (auth)/     # Login/Signup pages
 │   │   │   ├── admin/      # Your Internal Dashboard
+│   │   │   ├── (pages)/ 
 │   │   │   ├── dashboard/  # Client-facing Dashboard (Magic link access)
 │   │   │   └── apply/      # Form A & Form B (The Lead Funnel)
 │   │   ├── components/     # UI Library (Shadcn/UI)
@@ -116,7 +117,10 @@ The edge layer script provided to your clients.
 │   │   └── lib/            # API fetching & Utils
 │   └── package.json
 │
+├── infra/                  # Code for infrastructure and deployment
+│ 
 ├── tracker/                # The Client-Side Script
+│   ├── v2/
 │   ├── src/
 │   │   └── index.js        # Minified Tracker.js (Served via CDN/S3)
 │   └── package.json
