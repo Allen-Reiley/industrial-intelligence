@@ -32,7 +32,6 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
 
 # --- STATIC FILES: DECOUPLED ---
-# Served via Cloudflare CDN for zero-latency industrial delivery
 logger.info("⚡ Static asset delivery offloaded to Cloudflare CDN.")
 
 # --- CORS CONFIGURATION ---
@@ -60,8 +59,10 @@ async def debug_aura_signal(endpoint: str, request: Request):
     """
     try:
         data = await request.json()
+        # NOISY DEV LOG: Detailed signal inspection
         logger.info(f"--- 📡 AURA SIGNAL: [{endpoint.upper()}] ---")
         logger.info(f"Aura ID: {data.get('aura_id')}")
+        logger.info(f"Full Payload: {data}")
         
         if endpoint == "identity":
             sig = data.get('signature', {})
@@ -84,14 +85,29 @@ app.include_router(waitlist.router, prefix=f"{settings.API_V1_STR}/waitlist", ta
 def health_check():
     return {"status": "healthy"}
 
-# --- ENTITY DEBUGGER: Updated for Company-First Model ---
+# --- DEBUG ROUTES: Unified Visibility ---
+
+@app.get(f"{settings.API_V1_STR}/leads")
+async def get_leads():
+    """
+    Restored to stop 404 errors. Returns raw visit data.
+    """
+    with Session(engine) as session:
+        statement = select(Visit).order_by(Visit.created_at.desc())
+        results = session.exec(statement).all()
+        # NOISY DEV LOG
+        logger.info(f"--- 💡 DEV LOG: FETCHING {len(results)} RAW VISITS ---")
+        return results
+
 @app.get(f"{settings.API_V1_STR}/debug/entities")
 async def get_entities():
     """
     Direct access to the Juristic Entity ledger.
-    Use this to verify Apollo enrichment success.
+    Verify Apollo/IPinfo enrichment success here.
     """
     with Session(engine) as session:
         statement = select(Company).order_by(Company.created_at.desc())
         results = session.exec(statement).all()
+        # NOISY DEV LOG
+        logger.info(f"--- 💡 DEV LOG: FETCHING {len(results)} ENRICHED COMPANIES ---")
         return results

@@ -58,16 +58,19 @@ async def send_slack_notification(payload: dict, journey: dict = None):
     status_text = "HOT LEAD" if is_hot else "New Verified Inquiry"
     
     formatted_price = format_zar(payload.get('avg_price'))
+    
+    # Logic fallback for Company Name visibility
+    display_company = payload.get('company_name_raw') or payload.get('company') or "Unknown Entity"
 
     slack_data = {
-        "text": f"{status_emoji} {status_text}: {payload.get('company_name_raw', 'Unknown Entity')}",
+        "text": f"{status_emoji} {status_text}: {display_company}",
         "blocks": [
             {"type": "header", "text": {"type": "plain_text", "text": f"{status_emoji} Phase 01: Identity Promotion"}},
             {
                 "type": "section",
                 "fields": [
                     {"type": "mrkdwn", "text": f"*Name:*\n{payload.get('name')}"},
-                    {"type": "mrkdwn", "text": f"*Company:*\n{payload.get('company_name_raw')}"}
+                    {"type": "mrkdwn", "text": f"*Company:*\n{display_company}"}
                 ]
             },
             {"type": "divider"},
@@ -100,9 +103,14 @@ async def send_slack_notification(payload: dict, journey: dict = None):
 # --- MAIN ROUTE: The Promotion Logic ---
 @router.post("/join")
 async def join_waitlist(payload: dict, request: Request, background_tasks: BackgroundTasks):
+    # DEV LOG: Noisy input inspection
+    logger.info(f"--- 💡 DEV LOG: WAITLIST PAYLOAD KEYS: {list(payload.keys())} ---")
+    
     email = payload.get("email")
     aura_id = payload.get("aura_id")
-    raw_company_name = payload.get("company")
+    
+    # Resilience for frontend key naming (company vs company_name)
+    raw_company_name = payload.get("company") or payload.get("company_name") or payload.get("companyName")
     website = payload.get("website")
 
     if not email:
@@ -111,14 +119,24 @@ async def join_waitlist(payload: dict, request: Request, background_tasks: Backg
     with Session(engine) as session:
         try:
             # 1. Resolve Jurisdictive Entity (Company)
-            domain = website.replace("https://", "").replace("http://", "").split("/")[0] if website else None
+            domain = None
+            if website:
+                domain = website.replace("https://", "").replace("http://", "").split("/")[0].lower()
             
             company = None
             if domain:
                 company = session.exec(select(Company).where(Company.domain == domain)).first()
             
+            # If no domain match, check by Name to prevent duplicate entries
+            if not company and raw_company_name:
+                company = session.exec(select(Company).where(Company.name == raw_company_name)).first()
+
             if not company:
-                company = Company(name=raw_company_name or "New Entity", domain=domain)
+                company = Company(
+                    name=raw_company_name or "Unknown Industrial Entity", 
+                    domain=domain,
+                    industry=payload.get("industry")
+                )
                 session.add(company)
                 session.commit()
                 session.refresh(company)
@@ -152,8 +170,12 @@ async def join_waitlist(payload: dict, request: Request, background_tasks: Backg
             session.refresh(lead)
 
             # 4. Intelligence Execution (DeepSeek-V3 intent logic)
+            # We call this journey_data here to pass to Slack
             journey_data = await get_visitor_journey(aura_id)
             
+            # Update payload with enriched company name for Slack visibility
+            payload["company_name_raw"] = company.name
+
             # 5. Hand off to Background Workers
             background_tasks.add_task(send_slack_notification, payload, journey_data)
             background_tasks.add_task(send_welcome_email, lead.email, lead.name)

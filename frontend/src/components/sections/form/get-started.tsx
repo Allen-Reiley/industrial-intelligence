@@ -4,7 +4,7 @@ import React, { useState, type FormEvent } from 'react'
 import { 
     Building2, Mail, User, Briefcase, ArrowLeft, 
     Globe, BarChart3, Tag, Database, Loader2, 
-    Lock, ArrowRight, CheckCircle 
+    Lock, ArrowRight, CheckCircle, ChevronDown
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,7 +18,6 @@ export default function GetStartedPage() {
     const [isLoading, setIsLoading] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
     
-    // Unified State - Now using avg_price to match Backend/DB schemas
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -26,20 +25,17 @@ export default function GetStartedPage() {
         industry: '',
         website: '',
         traffic: '',
-        avg_price: '', // Fixed: snake_case for direct DB mapping
+        avg_price: '', 
         crm: ''
     })
 
     const handleNext = (e: FormEvent) => {
         e.preventDefault()
-        
-        // Industrial Intelligence logic: Prioritize work emails
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(formData.email)) {
             alert("Please enter a valid work email address.")
             return
         }
-        
         setStep(2)
     }
 
@@ -48,10 +44,7 @@ export default function GetStartedPage() {
         setIsLoading(true);
         
         try {
-            // Retrieve tracking ID from local storage (Forensic Bridge)
             const aura_id = typeof window !== 'undefined' ? localStorage.getItem('aura_uid') : null;
-
-            // Direct submission: formData now aligns with backend WaitlistLead schema
             await submitToWaitlist({
                 ...formData,
                 aura_id: aura_id
@@ -59,8 +52,7 @@ export default function GetStartedPage() {
             setIsSuccess(true);
         } catch (error: any) {
             console.error("Submission Error:", error);
-            // Secure generic alert to prevent leaking infrastructure details
-            alert("System Update: We encountered a synchronization delay with the audit pipeline. Please try again in a moment.");
+            alert("System Update: We encountered a synchronization delay. Please try again in a moment.");
         } finally {
             setIsLoading(false);
         }
@@ -107,7 +99,6 @@ export default function GetStartedPage() {
                             <h2 className="text-3xl font-bold tracking-tight">Audit Initiated</h2>
                             <p className="text-muted-foreground mt-4 text-sm max-w-sm mx-auto">
                                 Thank you, {formData.name.split(' ')[0]}. We've added {formData.company} to the Phase 01 queue. 
-                                Our team will reach out to the work email provided shortly.
                             </p>
                             <Button asChild variant="outline" className="mt-8 rounded-xl">
                                 <Link href="/">Return to Home</Link>
@@ -160,7 +151,9 @@ export default function GetStartedPage() {
                                                 <option value="manufacturing">Manufacturing</option>
                                                 <option value="logistics">Logistics</option>
                                                 <option value="construction">Heavy Construction</option>
+                                                <option value="other">Other Industrial</option>
                                             </select>
+                                            <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
                                         </div>
                                     </div>
                                     <Button type="submit" size="lg" className="mt-4 rounded-xl font-bold group">
@@ -193,15 +186,31 @@ export default function GetStartedPage() {
                                                     <option value="">Select range...</option>
                                                     <option value="0-1k">0 - 1,000</option>
                                                     <option value="1k-5k">1,000 - 5,000</option>
-                                                    <option value="5k+">5,000+</option>
+                                                    <option value="5k-20k">5,000 - 20,000</option>
+                                                    <option value="20k+">20,000+</option>
                                                 </select>
+                                                <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
                                             </div>
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Avg Product Price</Label>
                                             <div className="relative">
                                                 <Tag className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                                <Input required value={formData.avg_price} onChange={e => setFormData({...formData, avg_price: e.target.value})} placeholder="e.g. R50k" className="pl-10 rounded-xl bg-muted/30" />
+                                                {/* UPDATED: Structured Dropdown for Average Price */}
+                                                <select 
+                                                    required 
+                                                    value={formData.avg_price} 
+                                                    onChange={e => setFormData({...formData, avg_price: e.target.value})} 
+                                                    className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm outline-none appearance-none"
+                                                >
+                                                    <option value="">Select range...</option>
+                                                    <option value="10k-50k">R10,000 - R50,000</option>
+                                                    <option value="50k-150k">R50,000 - R150,000</option>
+                                                    <option value="150k-500k">R150,000 - R500,000</option>
+                                                    <option value="500k-1m">R500,000 - R1,000,000</option>
+                                                    <option value="1m+">R1,000,000+</option>
+                                                </select>
+                                                <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
                                             </div>
                                         </div>
                                     </div>
@@ -218,6 +227,7 @@ export default function GetStartedPage() {
                                                 <option value="other">Other / Custom</option>
                                                 <option value="none">No CRM</option>
                                             </select>
+                                            <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
                                         </div>
                                     </div>
                                     <Button type="submit" disabled={isLoading} size="lg" className="mt-4 rounded-xl font-bold shadow-xl shadow-primary/20">
@@ -233,10 +243,6 @@ export default function GetStartedPage() {
                 <div className="mt-10 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.3em] font-bold text-muted-foreground/40">
                     <Lock className="h-3 w-3" /> Secure Infrastructure Pipeline
                 </div>
-                <p className="text-center text-xs text-muted-foreground mt-4">
-                    By requesting access, you agree to our terms of service and our systems-driven 
-                    approach to B2B privacy.
-                </p>
             </div>
         </main>
     )
