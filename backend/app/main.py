@@ -6,34 +6,42 @@ import logging
 
 from app.core.config import settings
 from app.db import init_db, engine
-from app.api.v1 import track, clients, identity, waitlist # Added identity and waitlist for production logic
+from app.api.v1 import track, clients, identity, waitlist
 from app.models.visit import Visit
+from app.models.company import Company 
+from app.core.scheduler import start_scheduler 
 
-# Setup logging
+# Setup logging - Industrial Clinical Style
 logger = logging.getLogger("uvicorn")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("🚀 Initializing Database and Tables...")
+    """
+    The AuraWorks OS Lifecycle Manager.
+    Initializes the Juristic Ledger and starts the Background Intelligence Brain.
+    """
+    logger.info("🚀 AuraWorks OS: Initializing Database Ledger...")
     init_db()
+    
+    logger.info("🧠 AuraWorks OS: Starting Intelligence Scheduler (Apollo & DeepSeek)...")
+    start_scheduler()
+    
     yield
-    logger.info("🛑 Shutting down...")
+    logger.info("🛑 AuraWorks OS: Orderly shutdown of systems...")
 
 app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
 
 # --- STATIC FILES: DECOUPLED ---
-# We have removed the app.mount("/static", ...) block. 
-# Assets are now served via https://cdn.auraworks.co.za/aura.js
+# Served via Cloudflare CDN for zero-latency industrial delivery
 logger.info("⚡ Static asset delivery offloaded to Cloudflare CDN.")
 
 # --- CORS CONFIGURATION ---
-# Trusted origins for your industrial intelligence ecosystem
 origins = [ 
     "https://industrial-intelligence-xi.vercel.app", 
     "http://localhost:3000",
     "https://auraworks.co.za",
     "https://www.auraworks.co.za",
-    "https://cdn.auraworks.co.za" # Authorized CDN origin
+    "https://cdn.auraworks.co.za"
 ]
 
 app.add_middleware(
@@ -45,24 +53,26 @@ app.add_middleware(
 )
 
 # --- AURAWORKS FORENSIC DEBUGGER ---
-# Keeps logs visible during the transition to the full identity engine
 @app.post(f"{settings.API_V1_STR}/track/{{endpoint}}")
 async def debug_aura_signal(endpoint: str, request: Request):
+    """
+    Intercepts and logs forensic signals for real-time system monitoring.
+    """
     try:
         data = await request.json()
         logger.info(f"--- 📡 AURA SIGNAL: [{endpoint.upper()}] ---")
-        logger.info(f"Client ID: {data.get('client_id')} | Aura ID: {data.get('aura_id')}")
+        logger.info(f"Aura ID: {data.get('aura_id')}")
         
         if endpoint == "identity":
             sig = data.get('signature', {})
-            logger.info(f"🧬 Forensic Signature: Drift={sig.get('drift')}ms | Fonts={sig.get('fonts')}")
-        elif endpoint == "event":
-            logger.info(f"💰 Lead Capture: {data.get('event_type')} | Data: {data.get('email') or data.get('depth')}%")
-        
+            logger.info(f"🧬 Forensic Signature: Drift={sig.get('drift')}ms")
+        elif endpoint == "consent":
+            logger.info(f"✅ Technical Consent Handshake for {data.get('aura_id')}")
+            
         return {"status": "debug_captured"}
     except Exception as e:
         logger.error(f"❌ Debug Capture Error: {str(e)}")
-        return {"status": "error", "message": str(e)}
+        return {"status": "error"}
 
 # --- ROUTE REGISTRATION ---
 app.include_router(track.router, prefix=f"{settings.API_V1_STR}/track", tags=["tracking"])
@@ -74,10 +84,14 @@ app.include_router(waitlist.router, prefix=f"{settings.API_V1_STR}/waitlist", ta
 def health_check():
     return {"status": "healthy"}
 
-@app.get(f"{settings.API_V1_STR}/leads")
-async def get_leads():
+# --- ENTITY DEBUGGER: Updated for Company-First Model ---
+@app.get(f"{settings.API_V1_STR}/debug/entities")
+async def get_entities():
+    """
+    Direct access to the Juristic Entity ledger.
+    Use this to verify Apollo enrichment success.
+    """
     with Session(engine) as session:
-        statement = select(Visit).order_by(Visit.created_at.desc())
+        statement = select(Company).order_by(Company.created_at.desc())
         results = session.exec(statement).all()
-        logger.info(f"DEBUG: Found {len(results)} total visits in database.")
         return results

@@ -1,42 +1,33 @@
 import httpx
 import logging
 import resend
-from fastapi import APIRouter, HTTPException, Request, BackgroundTasks, Depends
+from fastapi import APIRouter, HTTPException, Request, BackgroundTasks
 from sqlmodel import Session, select
 from app.db import engine
 from app.models.waitlist import WaitlistLead 
+from app.models.company import Company
+from app.models.visit import Visit
 from app.core.config import settings
 from app.services.intelligence import get_visitor_journey
 
 router = APIRouter()
 logger = logging.getLogger("uvicorn")
 
-# --- UTILS: Clinical Formatting ---
+# --- UTILS: Industrial Formatting ---
 def format_zar(value: str) -> str:
-    """Formats raw price input into Clinical ZAR currency string for Slack."""
     if not value: return "N/A"
     clean_value = "".join(filter(str.isdigit, value))
-    if clean_value:
-        try:
-            return f"R{int(clean_value):,}"
-        except:
-            return value
-    return value
+    return f"R{int(clean_value):,}" if clean_value else value
 
 # --- TASK 1: Resend (The Welcome Signal) ---
 async def send_welcome_email(email: str, name: str):
-    """Dispatches the T+0 Phase 01 Welcome Email via Resend"""
-    if not settings.RESEND_API_KEY:
-        logger.warning("🔴 Resend API Key missing in environment.")
-        return
-    
-    # Initialize key within the task to ensure it's fresh
+    if not settings.RESEND_API_KEY: return
     resend.api_key = settings.RESEND_API_KEY
     first_name = name.split(' ')[0] if name else "Partner"
     
     try:
         resend.Emails.send({
-            "from": "AuraWorks <audit@auraworks.co.za>", # Must be a verified domain in Resend
+            "from": "AuraWorks <audit@auraworks.co.za>",
             "to": [email],
             "subject": "Phase 01: Identity Verified & Audit Initiated",
             "html": f"""
@@ -51,101 +42,119 @@ async def send_welcome_email(email: str, name: str):
                 </body>
             """
         })
-        logger.info(f"📧 Resend: Welcome email dispatched to {email}")
     except Exception as e:
-        logger.error(f"❌ Resend API Error: {str(e)}")
+        logger.error(f"❌ Resend Error: {e}")
 
 # --- TASK 2: Slack (The Intelligence Alert) ---
 async def send_slack_notification(payload: dict, journey: dict = None):
-    """Alerts Slack with lead credentials and forensic journey markers"""
-    if not settings.SLACK_WEBHOOK_URL:
-        logger.warning("🔴 Slack Webhook URL missing in environment.")
-        return
-
+    """
+    Enhanced Slack Alert: Prioritizes Intent Analysis & Corporate Clustering.
+    """
+    if not settings.SLACK_WEBHOOK_URL: return
     journey = journey or {}
-    journey_text = (
-        f"*Total Touches:* {journey.get('total_touches', 0)}\n"
-        f"*Pathway:* `{journey.get('pathway', 'Direct')}`\n"
-        f"*Context:* {journey.get('building_context', 'Solo Device')}"
-    )
-
+    
+    is_hot = journey.get("is_high_intent", False)
+    status_emoji = "🔴" if is_hot else "🔵"
+    status_text = "HOT LEAD" if is_hot else "New Verified Inquiry"
+    
     formatted_price = format_zar(payload.get('avg_price'))
 
     slack_data = {
-        "text": f"🚀 New Phase 01 Audit: {payload.get('company', 'Unknown Entity')}",
+        "text": f"{status_emoji} {status_text}: {payload.get('company_name_raw', 'Unknown Entity')}",
         "blocks": [
-            {"type": "header", "text": {"type": "plain_text", "text": "🔔 New Partner Audit: Phase 01"}},
+            {"type": "header", "text": {"type": "plain_text", "text": f"{status_emoji} Phase 01: Identity Promotion"}},
             {
                 "type": "section",
                 "fields": [
-                    {"type": "mrkdwn", "text": f"*Name:*\n{payload.get('name') or 'Unknown'}"},
-                    {"type": "mrkdwn", "text": f"*Company:*\n{payload.get('company') or 'Unknown'}"}
+                    {"type": "mrkdwn", "text": f"*Name:*\n{payload.get('name')}"},
+                    {"type": "mrkdwn", "text": f"*Company:*\n{payload.get('company_name_raw')}"}
                 ]
             },
             {"type": "divider"},
             {
                 "type": "section",
-                "text": {"type": "mrkdwn", "text": f"*🕵️ Industrial Intelligence:*\n{journey_text}"}
+                "text": {
+                    "type": "mrkdwn", 
+                    "text": f"*🕵️ Executive Intent Summary (DeepSeek-V3):*\n_{journey.get('intent_summary', 'Awaiting behavioral analysis...')}_"
+                }
             },
             {"type": "divider"},
             {
                 "type": "section",
                 "fields": [
                     {"type": "mrkdwn", "text": f"*Industry:*\n{str(payload.get('industry', 'N/A')).title()}"},
-                    {"type": "mrkdwn", "text": f"*Traffic:*\n{payload.get('traffic') or 'N/A'}"},
                     {"type": "mrkdwn", "text": f"*Avg Price:*\n{formatted_price}"},
-                    {"type": "mrkdwn", "text": f"*CRM:*\n{str(payload.get('crm', 'N/A')).upper()}"}
+                    {"type": "mrkdwn", "text": f"*Pathway:* `{journey.get('pathway', 'Direct')}`"},
+                    {"type": "mrkdwn", "text": f"*Total Touches:* {journey.get('total_touches', 1)}"}
                 ]
             },
-            {"type": "context", "elements": [{"type": "mrkdwn", "text": f"📍 Website: {payload.get('website') or 'Not provided'}"}]}
+            {"type": "context", "elements": [{"type": "mrkdwn", "text": f"📍 Origin: {payload.get('website') or 'Not provided'}"}]}
         ]
     }
-
     async with httpx.AsyncClient() as client:
         try:
-            resp = await client.post(settings.SLACK_WEBHOOK_URL, json=slack_data, timeout=5.0)
-            logger.info(f"📡 Slack Alert Status: {resp.status_code}")
+            await client.post(settings.SLACK_WEBHOOK_URL, json=slack_data)
         except Exception as e:
-            logger.error(f"❌ Slack Webhook Error: {str(e)}")
+            logger.error(f"❌ Slack Notification Failure: {e}")
 
-# --- MAIN ROUTE: The Entry Point ---
+# --- MAIN ROUTE: The Promotion Logic ---
 @router.post("/join")
 async def join_waitlist(payload: dict, request: Request, background_tasks: BackgroundTasks):
     email = payload.get("email")
-    aura_id = payload.get("aura_id") or payload.get("client_id")
-    
-    # Resolve Real IP for South African ISP context
-    client_ip = request.headers.get("X-Forwarded-For", "").split(",")[0].strip() or request.client.host
+    aura_id = payload.get("aura_id")
+    raw_company_name = payload.get("company")
+    website = payload.get("website")
 
     if not email:
         raise HTTPException(status_code=400, detail="Work email required.")
 
     with Session(engine) as session:
         try:
-            # 1. DB Persistence
-            statement = select(WaitlistLead).where(WaitlistLead.email == email)
-            lead = session.exec(statement).first()
+            # 1. Resolve Jurisdictive Entity (Company)
+            domain = website.replace("https://", "").replace("http://", "").split("/")[0] if website else None
+            
+            company = None
+            if domain:
+                company = session.exec(select(Company).where(Company.domain == domain)).first()
+            
+            if not company:
+                company = Company(name=raw_company_name or "New Entity", domain=domain)
+                session.add(company)
+                session.commit()
+                session.refresh(company)
 
+            # 2. Update/Create Verified Secondary Entity (WaitlistLead)
+            lead = session.exec(select(WaitlistLead).where(WaitlistLead.email == email)).first()
             if not lead:
                 lead = WaitlistLead(email=email)
             
-            # Sync metadata from fixed snake_case payload
             lead.name = payload.get("name")
-            lead.company = payload.get("company")
+            lead.company_id = company.id
+            lead.company_name_raw = raw_company_name
             lead.industry = payload.get("industry")
-            lead.website = payload.get("website")
+            lead.website = website
             lead.traffic = payload.get("traffic")
-            lead.avg_price = payload.get("avg_price") 
+            lead.avg_price = payload.get("avg_price")
             lead.crm = payload.get("crm")
+            lead.aura_id = aura_id
             
             session.add(lead)
+
+            # 3. THE PROMOTION STITCH: Anchor anonymous history to this identity
+            if aura_id:
+                past_visits = session.exec(select(Visit).where(Visit.aura_id == aura_id)).all()
+                for v in past_visits:
+                    v.is_consented = True
+                    v.company_id = company.id
+                    session.add(v)
+
             session.commit()
             session.refresh(lead)
 
-            # 2. Forensic Intelligence Resolution
-            journey_data = await get_visitor_journey(aura_id, client_ip)
-
-            # 3. Hand off to Background Tasks (Non-blocking)
+            # 4. Intelligence Execution (DeepSeek-V3 intent logic)
+            journey_data = await get_visitor_journey(aura_id)
+            
+            # 5. Hand off to Background Workers
             background_tasks.add_task(send_slack_notification, payload, journey_data)
             background_tasks.add_task(send_welcome_email, lead.email, lead.name)
             
@@ -153,6 +162,5 @@ async def join_waitlist(payload: dict, request: Request, background_tasks: Backg
 
         except Exception as e:
             session.rollback()
-            logger.error(f"🚨 CRITICAL DB ERROR: {str(e)}")
-            # Return generic error to user to avoid leaking DB schema details
-            raise HTTPException(status_code=500, detail="Synchronization delay in audit pipeline.")
+            logger.error(f"🚨 Promotion Failure: {e}")
+            raise HTTPException(status_code=500, detail="Synchronization delay.")
