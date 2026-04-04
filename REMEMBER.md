@@ -38,4 +38,4 @@
 ## 5. Compliance & Local Context (South Africa)
 * **Legal Framework:** POPIA/PAIA compliant. All data handling is governed by the Dynamic Markdown files served at `/legal`, `/privacy-policy`, and `/security`.
 * **Information Officer:** Reitumetse Sethabela (Founder/Agency Owner).
-* **Target ICP:** Industrial, Engineering, Manufacturing, and Law firms specifically within the **Gauteng** economic hub.
+* **Target ICP:** Industrial, Engineering, Manufacturing, and Law firms specifically within the **South African** economic hub.

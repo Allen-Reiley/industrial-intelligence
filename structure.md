@@ -121,8 +121,9 @@ The edge layer script provided to your clients.
 │ 
 ├── tracker/                # The Client-Side Script
 │   ├── v2/
+│   └── aura.js             # The Tracker the system uses
 │   ├── src/
-│   │   └── index.js        # Minified Tracker.js (Served via CDN/S3)
+│   │   └── index.js        # Minified Tracker.js, No longer in use (Served via CDN/S3)
 │   └── package.json
 │
 ├── docker-compose.yml      # For local development

@@ -2,7 +2,8 @@
  * AuraWorks Identity Bridge - fingerprint.js
  * Version: 1.0.0 (Forensic Edition)
  * Purpose: High-entropy hardware identification using GPU noise and Clock Drift.
- */
+ * For reference purposes, aura.js is used.
+*/
 
 const AuraFingerprint = {
     async generateHardwareID() {

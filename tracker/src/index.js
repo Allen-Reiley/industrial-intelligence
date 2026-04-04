@@ -1,7 +1,8 @@
 /**
  * Industrial Intelligence Engine - Master Tracker (v2 SPA Support)
  * Usage: <script src="https://cdn.yourdomain.com/tracker.js" data-id="CLIENT_ID_HERE"></script>
- */
+ * This tracker is rendered obsolete, aura.js is what's being used
+*/
 (function() {
     // 1. Configuration & Setup
     const script = document.currentScript;

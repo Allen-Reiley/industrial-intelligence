@@ -18,7 +18,7 @@ export default function GetStartedPage() {
     const [isLoading, setIsLoading] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
     
-    // Unified State
+    // Unified State - Now using avg_price to match Backend/DB schemas
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -26,7 +26,7 @@ export default function GetStartedPage() {
         industry: '',
         website: '',
         traffic: '',
-        avgPrice: '',
+        avg_price: '', // Fixed: snake_case for direct DB mapping
         crm: ''
     })
 
@@ -48,19 +48,18 @@ export default function GetStartedPage() {
         setIsLoading(true);
         
         try {
-            // Retrieve tracking ID
+            // Retrieve tracking ID from local storage (Forensic Bridge)
             const aura_id = typeof window !== 'undefined' ? localStorage.getItem('aura_uid') : null;
 
-            // Mapping UI state to the backend expectation (avg_price)
+            // Direct submission: formData now aligns with backend WaitlistLead schema
             await submitToWaitlist({
                 ...formData,
-                avg_price: formData.avgPrice, // Maps camelCase to snake_case for the DB
                 aura_id: aura_id
             });
             setIsSuccess(true);
         } catch (error: any) {
             console.error("Submission Error:", error);
-            // Secure generic alert to prevent leaking DB structure
+            // Secure generic alert to prevent leaking infrastructure details
             alert("System Update: We encountered a synchronization delay with the audit pipeline. Please try again in a moment.");
         } finally {
             setIsLoading(false);
@@ -69,14 +68,12 @@ export default function GetStartedPage() {
 
     return (
         <main className="relative min-h-screen flex items-center justify-center bg-background px-6 py-12 overflow-hidden">
-            {/* Background Decorations */}
             <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-full opacity-30 [background:radial-gradient(50%_50%_at_50%_10%_var(--color-primary)_0%,transparent_100%)] blur-3xl" />
             </div>
 
             <div className="w-full max-w-xl relative">
                 
-                {/* Navigation Header */}
                 <div className="mb-8 flex items-center justify-between">
                     {step === 1 ? (
                         <Button variant="ghost" asChild className="-ml-2 text-muted-foreground hover:text-foreground">
@@ -99,7 +96,6 @@ export default function GetStartedPage() {
                     </div>
                 </div>
 
-                {/* Sliding Viewport */}
                 <div className="relative overflow-hidden rounded-3xl border bg-card/50 backdrop-blur-sm shadow-2xl">
                     {isSuccess ? (
                         <div className="p-12 text-center animate-in fade-in zoom-in duration-500">
@@ -158,7 +154,7 @@ export default function GetStartedPage() {
                                         <Label>Industry</Label>
                                         <div className="relative">
                                             <Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <select required value={formData.industry} onChange={e => setFormData({...formData, industry: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none">
+                                            <select required value={formData.industry} onChange={e => setFormData({...formData, industry: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm outline-none appearance-none">
                                                 <option value="">Select industry...</option>
                                                 <option value="mining">Mining & Resources</option>
                                                 <option value="manufacturing">Manufacturing</option>
@@ -193,7 +189,7 @@ export default function GetStartedPage() {
                                             <Label>Monthly Traffic</Label>
                                             <div className="relative">
                                                 <BarChart3 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                                <select required value={formData.traffic} onChange={e => setFormData({...formData, traffic: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none">
+                                                <select required value={formData.traffic} onChange={e => setFormData({...formData, traffic: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm outline-none appearance-none">
                                                     <option value="">Select range...</option>
                                                     <option value="0-1k">0 - 1,000</option>
                                                     <option value="1k-5k">1,000 - 5,000</option>
@@ -205,7 +201,7 @@ export default function GetStartedPage() {
                                             <Label>Avg Product Price</Label>
                                             <div className="relative">
                                                 <Tag className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                                <Input required value={formData.avgPrice} onChange={e => setFormData({...formData, avgPrice: e.target.value})} placeholder="e.g. R50k" className="pl-10 rounded-xl bg-muted/30" />
+                                                <Input required value={formData.avg_price} onChange={e => setFormData({...formData, avg_price: e.target.value})} placeholder="e.g. R50k" className="pl-10 rounded-xl bg-muted/30" />
                                             </div>
                                         </div>
                                     </div>
@@ -213,7 +209,7 @@ export default function GetStartedPage() {
                                         <Label>CRM System</Label>
                                         <div className="relative">
                                             <Database className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <select required value={formData.crm} onChange={e => setFormData({...formData, crm: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none">
+                                            <select required value={formData.crm} onChange={e => setFormData({...formData, crm: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm outline-none appearance-none">
                                                 <option value="">Select CRM...</option>
                                                 <option value="hubspot">HubSpot</option>
                                                 <option value="salesforce">Salesforce</option>
@@ -234,7 +230,6 @@ export default function GetStartedPage() {
                     )}
                 </div>
 
-                {/* Aesthetic Footer */}
                 <div className="mt-10 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.3em] font-bold text-muted-foreground/40">
                     <Lock className="h-3 w-3" /> Secure Infrastructure Pipeline
                 </div>

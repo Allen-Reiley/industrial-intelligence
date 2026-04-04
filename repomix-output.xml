@@ -32,7 +32,7 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: backend/**/*.py, frontend/src/**/*.{ts,tsx}, tracker/src/**/*.js, docker-compose.yml, {README,REMEMBER,VOID_CONTEXT,spec-sheet}.md
+- Only files matching these patterns are included: backend/**/*.py, frontend/src/**/*.{ts,tsx}, tracker/src/**/*.js, docker-compose.yml, {README,REMEMBER,VOID_CONTEXT}.md
 - Files matching these patterns are excluded: **/node_modules/**, **/venv/**, **/.next/**, **/dist/**, **/tests/**, **/.env*, **/*.log, **/package-lock.json, **/pnpm-lock.yaml, **/yarn.lock
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
@@ -64,6 +64,7 @@ backend/
       email.py
       enrichment.py
       intelligence.py
+      notifications.py
       reports.py
     db.py
     main.py
@@ -188,103 +189,33 @@ tracker/
 docker-compose.yml
 README.md
 REMEMBER.md
-spec-sheet.md
 VOID_CONTEXT.md
 </directory_structure>
 
 <files>
 This section contains the contents of the repository's files.
 
-<file path="REMEMBER.md">
-# MEMORY.md | AuraWorks 2.2.0: Industrial Intelligence Engine
+<file path="backend/app/services/notifications.py">
+import httpx
+from app.core.config import settings
 
-## 1. Commercial Logic & Strategy (The R120k/yr Framework)
-* **The Offer:** Hybrid Flat-Rate model. **R10k/month (R120k/year)** base retainer.
-* **Usage Cap:** Includes up to **10,000 resolved B2B identities** per month to protect margins while ensuring high-volume value.
-* **The Guarantee:** **30% Minimum Identity Resolution Rate** for unique B2B visitors. Failure to meet this trigger results in a pro-rata credit for the following billing cycle.
-* **Primary Value Prop:** "Foundational Authority"—moving from "Clicks" to "Boardroom-Ready Leads" for the South African industrial sector.
-* **Delivery Mechanism:** "Push-First" architecture. Automated **Weekly Intelligence Reports (PDF)** delivered via Resend. The live dashboard is a secondary utility for real-time deep dives.
+async def post_to_slack(lead_data: dict):
+    if not settings.SLACK_WEBHOOK_URL:
+        return
 
-## 2. Technical Forensics & Identity Bridge (`aura.js`)
-* **Persistence Pillar:** Triple-redundancy tracking using **Cookies, LocalStorage, and IndexedDB** to survive cache clears and "Identity Wipes."
-* **Resolution Logic:** * **Deterministic Fingerprinting:** Prioritizes Canvas Rendering, WebGL GPU unmasking, and **Clock Drift** (performance.now vs Date.now) over generic network signals.
-    * **ISP Filtering:** Hard blacklist for residential/mobile CIDR ranges (**Vodacom, MTN, Rain, Telkom**) to isolate fixed-line corporate infrastructure.
-* **Behavioral Gating:**
-    * **2-Second Threshold:** Forensic enrichment calls only fire after 2 seconds of verified "Human" interaction (monitored via scroll velocity and cursor erraticism).
-    * **Bot Defense:** "Honey Pot" traps for `onMouseOver` or hidden link interactions commonly triggered by procurement scrapers.
-* **Intent Capture:** Active "Blur" event monitoring on email input fields to harvest partial leads before form submission.
-
-## 3. Infrastructure & High-Precision Security
-* **Stack:** Next.js 15+ (Frontend), FastAPI (Backend), PostgreSQL (Vault), Strapi (CMS/Reporting).
-* **Multi-Tenancy:** **Row-Level Security (RLS)** enforced at the PostgreSQL engine level. Direct `client_id` isolation ensures zero cross-pollination of industrial data.
-* **Encryption (AES-256):** Mandatory field-level encryption for all PII:
-    * `visitor_email`
-    * `phone_number`
-    * `precise_location` (GPS/Coordinates)
-    * *Note: Firmography (Company Name/Industry) remains unencrypted for high-speed indexing and reporting.*
-* **Kill Switch:** Server-side Token Validation. `aura.js` pings the API on initialization; a `403 Forbidden` response for inactive `client_id` tokens terminates all client-side forensic logic instantly.
-
-## 4. Automation & Integration Workflows
-* **Slack Intent Routing:**
-    * `#hot-leads`: Real-time alerts for high-dwell time on "Pricing," "Contact," or "Audit" pages.
-    * `#traffic-audit`: Daily summaries of general corporate footprints and network signals.
-* **Resend Nurture Sequence:**
-    * **T+0:** "Intelligence Engine Activated" – Immediate confirmation of Audit Phase 01.
-    * **T+24h:** "First 5 Industrial Signals Identified" – Proof of value delivered within the first business day.
-    * **T+7d:** "Weekly Intelligence Summary" – First automated PDF report detailing unmasked entities.
-
-## 5. Compliance & Local Context (South Africa)
-* **Legal Framework:** POPIA/PAIA compliant. All data handling is governed by the Dynamic Markdown files served at `/legal`, `/privacy-policy`, and `/security`.
-* **Information Officer:** Reitumetse Sethabela (Founder/Agency Owner).
-* **Target ICP:** Industrial, Engineering, Manufacturing, and Law firms specifically within the **Gauteng** economic hub.
-</file>
-
-<file path="VOID_CONTEXT.md">
-1. Project Mission: AuraWorks Industrial Engine
-Domain: B2B Sales Intelligence & Identity Resolution.
-
-Goal: Map anonymous website traffic (IP/Browser) to corporate identities to drive organic B2B leads.
-
-Core Aesthetic: "Quiet Premium"—Minimalist, industrial, authoritative. No "neon" tech tropes.
-
-2. Technical Stack (The "Holy Stack")
-Backend: FastAPI (Python 3.12+)
-
-Frontend: Next.js (App Router, TypeScript)
-
-Database: PostgreSQL (with pgvector for future RAG)
-
-Identity: Custom tracking script (vanilla JS) + Identity Resolution logic.
-
-Compliance: POPIA (South Africa) & GDPR. Data must be encrypted at rest.
-
-3. Architecture & Patterns
-Backend Logic: Use Pydantic schemas for all request/response models. Logic resides in services/, endpoints in api/.
-
-Frontend Logic: Functional components only. Use Tailwind CSS for the "Quiet Premium" look (Muted slates, high-contrast typography, ample whitespace).
-
-Security: Never log PII (Personally Identifiable Information). Use Argon2 for hashing and AES-256 for sensitive data.
-
-4. Coding "Laws" (Strict Enforcement)
-Law 1: Always write clinical, self-documenting code.
-
-Law 2: No external heavy dependencies unless explicitly discussed.
-
-Law 3: All database migrations must be handled via Alembic.
-
-Law 4: When modifying the tracking script, ensure zero-impact on host site performance.
-
-5. Knowledge Context
-Refer to docs/api_references.md for identity provider schemas.
-
-Refer to docs/security_manual.md for POPIA encryption standards.
+    payload = {
+        "text": f"🚀 *New Lead Captured*\n*Company:* {lead_data.get('company')}\n*Industry:* {lead_data.get('industry')}\n*Avg. Price:* {lead_data.get('avg_price')}"
+    }
+    
+    async with httpx.AsyncClient() as client:
+        await client.post(settings.SLACK_WEBHOOK_URL, json=payload)
 </file>
 
 <file path="backend/app/api/v1/identity.py">
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlmodel import Session, select
 from app.db import engine
-from app.models.visit import Visit # Assuming your model stores these fields
+from app.models.visit import Visit
 import logging
 
 router = APIRouter()
@@ -292,61 +223,80 @@ logger = logging.getLogger("uvicorn")
 
 def calculate_identity_match(new_sig: dict, existing_visit: Visit) -> float:
     """
-    Calculates a probability score (0.0 to 1.0) that two signatures 
-    belong to the same professional persona.
+    Calculates a probability score (0.0 to 1.0) based on hardware entropy.
+    Weights are tuned for B2B Industrial environments (Corporate NATs).
     """
     score = 0.0
     
-    # 1. Canvas Match (High Weight)
+    # 1. Canvas Match (40% Weight) - Most unique hardware signature
     if new_sig.get('canvas') == existing_visit.canvas_hash:
         score += 0.40
         
-    # 2. Clock Drift Match (Allowing for 1ms variance)
+    # 2. Clock Drift Match (30% Weight) - Precision timing delta (allow 1ms)
     drift_diff = abs(new_sig.get('drift', 0) - (existing_visit.clock_drift or 0))
     if drift_diff <= 1:
         score += 0.30
         
-    # 3. Fonts Match
+    # 3. Fonts Match (20% Weight) - OS/Software profile
     if new_sig.get('fonts') == existing_visit.font_list:
         score += 0.20
         
-    # 4. WebGL/Renderer Match
+    # 4. WebGL/Renderer Match (10% Weight) - GPU identification
     if new_sig.get('webgl') == existing_visit.webgl_renderer:
         score += 0.10
         
     return score
 
+async def merge_sessions(session: Session, new_id: str, original_id: str):
+    """Background task to unify fragmented session data after a forensic stitch."""
+    statement = select(Visit).where(Visit.aura_id == new_id)
+    recent_visits = session.exec(statement).all()
+    for visit in recent_visits:
+        visit.aura_id = original_id
+        session.add(visit)
+    session.commit()
+    logger.info(f"🔗 Session Merge Complete: {new_id} -> {original_id}")
+
 @router.post("/resolve")
-async def resolve_identity(payload: dict):
+async def resolve_identity(payload: dict, background_tasks: BackgroundTasks):
     aura_id = payload.get("aura_id")
     signature = payload.get("signature", {})
     
+    if not aura_id:
+        raise HTTPException(status_code=400, detail="Missing aura_id")
+
     with Session(engine) as session:
-        # Step 1: Check for direct ID match first (Fastest)
+        # Step 1: Check for direct ID match (Existing browser session)
         statement = select(Visit).where(Visit.aura_id == aura_id)
         existing_lead = session.exec(statement).first()
         
         if existing_lead:
-            logger.info(f"🎯 Direct Match Found: {aura_id}. Updating signature.")
-            # Update forensic data if it has changed
+            logger.info(f"🎯 Direct Match: {aura_id}. Refreshing Forensic Lock.")
             existing_lead.canvas_hash = signature.get('canvas')
             existing_lead.clock_drift = signature.get('drift')
+            existing_lead.webgl_renderer = signature.get('webgl')
+            existing_lead.font_list = signature.get('fonts')
             session.add(existing_lead)
             session.commit()
             return {"status": "recognized", "method": "direct_id"}
 
-        # Step 2: Perform Weighted Forensic Search (The "Stitch")
-        # We look for visits in the last 30 days with similar hardware
-        all_recent = session.exec(select(Visit).limit(100)).all()
+        # Step 2: Weighted Forensic Search (The "Identity Bridge")
+        # Search the last 100 industrial footprints for a hardware match
+        all_recent = session.exec(select(Visit).order_by(Visit.created_at.desc()).limit(100)).all()
         
         for visit in all_recent:
             match_probability = calculate_identity_match(signature, visit)
             
-            if match_probability >= 0.80: # High Confidence Threshold
-                logger.info(f"🧵 Session Stitched! Probability: {match_probability*100}%")
+            if match_probability >= 0.85: # High Confidence Threshold for Stitched Profiles
+                logger.info(f"🧵 Forensic Stitch Identified! Conf: {match_probability*100}%")
+                
+                # Trigger a background merge to unify this session with the original profile
+                background_tasks.add_task(merge_sessions, session, aura_id, visit.aura_id)
+                
+                # Return 'stitched_id' so aura.js can sync the local storage
                 return {
                     "status": "stitched", 
-                    "original_id": visit.aura_id, 
+                    "stitched_id": visit.aura_id, 
                     "confidence": match_probability
                 }
 
@@ -409,42 +359,25 @@ def filter_business_contacts(contacts: List[Dict]) -> List[Dict]:
 </file>
 
 <file path="backend/app/services/email.py">
-import resend
-from app.core.config import settings
-import logging
-
-logger = logging.getLogger("uvicorn")
-
-# Initialize Resend
-resend.api_key = settings.RESEND_API_KEY
-
 def send_welcome_email(to_email: str, first_name: str):
-    """Sends the Phase 01: Audit Confirmation Email"""
     if not settings.RESEND_API_KEY:
-        logger.warning("⚠️ Resend API Key missing. Email not sent.")
+        logger.warning("⚠️ Resend API Key missing.")
         return
 
     try:
+        # Check if the API key is initialized correctly
+        resend.api_key = settings.RESEND_API_KEY 
+        
         params = {
-            "from": "AuraWorks <intelligence@auraworks.co.za>",
+            "from": "AuraWorks <intelligence@auraworks.co.za>", # Verify this domain in Resend
             "to": [to_email],
             "subject": "Phase 01: Audit Initiated",
-            "html": f"""
-                <div style="font-family: sans-serif; max-width: 600px; color: #1a1a1a;">
-                    <h2 style="letter-spacing: -0.02em;">System Identity Verified</h2>
-                    <p>Hello {first_name},</p>
-                    <p>Your request for the 100-partner cohort has been received. We have initiated the <strong>Phase 01 Audit</strong> for your infrastructure.</p>
-                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
-                    <p style="font-size: 14px; color: #666;">
-                        <em>Industrial Intelligence Engine | AuraWorks (Pty) Ltd</em>
-                    </p>
-                </div>
-            """
+            "html": f"""..."""
         }
-        resend.Emails.send(params)
-        logger.info(f"📧 Welcome email dispatched to {to_email}")
+        r = resend.Emails.send(params)
+        logger.info(f"📧 Email sent. ID: {r.get('id')}")
     except Exception as e:
-        logger.error(f"❌ Email failed: {str(e)}")
+        logger.error(f"❌ Resend Error: {str(e)}")
 </file>
 
 <file path="backend/app/services/reports.py">
@@ -3562,6 +3495,91 @@ volumes:
   postgres_data:
 </file>
 
+<file path="REMEMBER.md">
+# MEMORY.md | AuraWorks 2.2.0: Industrial Intelligence Engine
+
+## 1. Commercial Logic & Strategy (The R120k/yr Framework)
+* **The Offer:** Hybrid Flat-Rate model. **R10k/month (R120k/year)** base retainer.
+* **Usage Cap:** Includes up to **10,000 resolved B2B identities** per month to protect margins while ensuring high-volume value.
+* **The Guarantee:** **30% Minimum Identity Resolution Rate** for unique B2B visitors. Failure to meet this trigger results in a pro-rata credit for the following billing cycle.
+* **Primary Value Prop:** "Foundational Authority"—moving from "Clicks" to "Boardroom-Ready Leads" for the South African industrial sector.
+* **Delivery Mechanism:** "Push-First" architecture. Automated **Weekly Intelligence Reports (PDF)** delivered via Resend. The live dashboard is a secondary utility for real-time deep dives.
+
+## 2. Technical Forensics & Identity Bridge (`aura.js`)
+* **Persistence Pillar:** Triple-redundancy tracking using **Cookies, LocalStorage, and IndexedDB** to survive cache clears and "Identity Wipes."
+* **Resolution Logic:** * **Deterministic Fingerprinting:** Prioritizes Canvas Rendering, WebGL GPU unmasking, and **Clock Drift** (performance.now vs Date.now) over generic network signals.
+    * **ISP Filtering:** Hard blacklist for residential/mobile CIDR ranges (**Vodacom, MTN, Rain, Telkom**) to isolate fixed-line corporate infrastructure.
+* **Behavioral Gating:**
+    * **2-Second Threshold:** Forensic enrichment calls only fire after 2 seconds of verified "Human" interaction (monitored via scroll velocity and cursor erraticism).
+    * **Bot Defense:** "Honey Pot" traps for `onMouseOver` or hidden link interactions commonly triggered by procurement scrapers.
+* **Intent Capture:** Active "Blur" event monitoring on email input fields to harvest partial leads before form submission.
+
+## 3. Infrastructure & High-Precision Security
+* **Stack:** Next.js 15+ (Frontend), FastAPI (Backend), PostgreSQL (Vault), Strapi (CMS/Reporting).
+* **Multi-Tenancy:** **Row-Level Security (RLS)** enforced at the PostgreSQL engine level. Direct `client_id` isolation ensures zero cross-pollination of industrial data.
+* **Encryption (AES-256):** Mandatory field-level encryption for all PII:
+    * `visitor_email`
+    * `phone_number`
+    * `precise_location` (GPS/Coordinates)
+    * *Note: Firmography (Company Name/Industry) remains unencrypted for high-speed indexing and reporting.*
+* **Kill Switch:** Server-side Token Validation. `aura.js` pings the API on initialization; a `403 Forbidden` response for inactive `client_id` tokens terminates all client-side forensic logic instantly.
+
+## 4. Automation & Integration Workflows
+* **Slack Intent Routing:**
+    * `#hot-leads`: Real-time alerts for high-dwell time on "Pricing," "Contact," or "Audit" pages.
+    * `#traffic-audit`: Daily summaries of general corporate footprints and network signals.
+* **Resend Nurture Sequence:**
+    * **T+0:** "Intelligence Engine Activated" – Immediate confirmation of Audit Phase 01.
+    * **T+24h:** "First 5 Industrial Signals Identified" – Proof of value delivered within the first business day.
+    * **T+7d:** "Weekly Intelligence Summary" – First automated PDF report detailing unmasked entities.
+
+## 5. Compliance & Local Context (South Africa)
+* **Legal Framework:** POPIA/PAIA compliant. All data handling is governed by the Dynamic Markdown files served at `/legal`, `/privacy-policy`, and `/security`.
+* **Information Officer:** Reitumetse Sethabela (Founder/Agency Owner).
+* **Target ICP:** Industrial, Engineering, Manufacturing, and Law firms specifically within the **South African** economic hub.
+</file>
+
+<file path="VOID_CONTEXT.md">
+1. Project Mission: AuraWorks Industrial Engine
+Domain: B2B Sales Intelligence & Identity Resolution.
+
+Goal: Map anonymous website traffic (IP/Browser) to corporate identities to drive organic B2B leads.
+
+Core Aesthetic: "Quiet Premium"—Minimalist, industrial, authoritative. No "neon" tech tropes.
+
+2. Technical Stack (The "Holy Stack")
+Backend: FastAPI (Python 3.12+)
+
+Frontend: Next.js (App Router, TypeScript)
+
+Database: PostgreSQL (with pgvector for future RAG)
+
+Identity: Custom tracking script (vanilla JS) + Identity Resolution logic.
+
+Compliance: POPIA (South Africa) & GDPR. Data must be encrypted at rest.
+
+3. Architecture & Patterns
+Backend Logic: Use Pydantic schemas for all request/response models. Logic resides in services/, endpoints in api/.
+
+Frontend Logic: Functional components only. Use Tailwind CSS for the "Quiet Premium" look (Muted slates, high-contrast typography, ample whitespace).
+
+Security: Never log PII (Personally Identifiable Information). Use Argon2 for hashing and AES-256 for sensitive data.
+
+4. Coding "Laws" (Strict Enforcement)
+Law 1: Always write clinical, self-documenting code.
+
+Law 2: No external heavy dependencies unless explicitly discussed.
+
+Law 3: All database migrations must be handled via Alembic.
+
+Law 4: When modifying the tracking script, ensure zero-impact on host site performance.
+
+5. Knowledge Context
+Refer to docs/api_references.md for identity provider schemas.
+
+Refer to docs/security_manual.md for POPIA encryption standards.
+</file>
+
 <file path="backend/app/api/v1/clients.py">
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
@@ -4720,7 +4738,8 @@ export default nextConfig;
 /**
  * Industrial Intelligence Engine - Master Tracker (v2 SPA Support)
  * Usage: <script src="https://cdn.yourdomain.com/tracker.js" data-id="CLIENT_ID_HERE"></script>
- */
+ * This tracker is rendered obsolete, aura.js is what's being used
+*/
 (function() {
     // 1. Configuration & Setup
     const script = document.currentScript;
@@ -4822,171 +4841,6 @@ export default nextConfig;
     });
 
 })();
-</file>
-
-<file path="spec-sheet.md">
-# 🏗️ Technical Specification: Industrial Intelligence Engine (v1.0)
-
-⚠️ Proprietary Software Notice: This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited.
-
-**Project Goal:** To build a privacy-first, B2B intent tracking system that deanonymizes website traffic for industrial clients in South Africa.
-
-**Core Stack:** Next.js (Frontend), FastAPI (Backend), PostgreSQL (Database), Vanilla JS (Tracker).
-
----
-
-## 1. System Architecture Overview
-
-The system follows a **Decoupled Monolith** architecture. The Tracker runs on the client's site, the Backend handles logic/storage, and the Frontend handles presentation/sales.
-
-### 1.1 The Three Pillars
-
-1. **The Edge (Tracker):** A lightweight (<1KB) JS file hosted on a CDN.
-2. **The Core (API):** A high-performance Python/FastAPI server.
-3. **The Interface (Web):** A React/Next.js dashboard for clients and admins.
-
----
-
-## 2. Component Specifications
-
-### 2.1 The Tracker (Edge Layer)
-
-* **Language:** Vanilla JavaScript (ES6+).
-* **Delivery:** Minified via Cloudflare CDN.
-* **Functionality:**
-* **Initialization:** Captures `referrer`, `screen_res`, and `timestamp` on load.
-* **Transport:** Uses `fetch` (keepalive) for Entry and `navigator.sendBeacon` for Exit.
-* **Performance:** Must be non-blocking (`async`/`defer`).
-* **Payload Limit:** < 2KB to ensure delivery over poor 3G/LTE networks in industrial zones.
-
-
-
-### 2.2 The Backend (Logic Layer)
-
-* **Framework:** FastAPI (Python 3.10+).
-* **Concurrency:** `async`/`await` for all I/O operations (DB writes, API calls).
-* **Key Services:**
-* **Ingestion Service:** Handles high-volume `POST` requests from the tracker.
-* **Enrichment Service:** Integrating **IPinfo** to resolve `IP` → `Company Name`.
-* **Filtering Service:** Logic to discard consumer ISPs (Telkom, Vodacom, Rain, Afrihost).
-* **Reporting Service:** Cron job (Celery/Arq) to generate PDF reports weekly.
-
-
-* **Security:**
-* **CORS:** Strict allow-list for registered client domains only.
-* **Rate Limiting:** 100 req/min per IP to prevent abuse.
-
-
-
-### 2.3 The Database (Persistence Layer)
-
-* **Engine:** PostgreSQL (via Neon or Supabase).
-* **ORM:** SQLModel (Pydantic + SQLAlchemy).
-
-| Table | Purpose | Key Fields |
-| --- | --- | --- |
-| **Clients** | Stores your customer data | `id` (UUID), `company_name`, `domain`, `api_key`, `status` |
-| **Visits** | The "Session" container | `id`, `client_id`, `ip_address`, `visitor_company`, `is_b2b` (bool) |
-| **PageViews** | Specific actions/paths | `id`, `visit_id`, `url`, `duration_seconds`, `timestamp` |
-| **Leads** | Sales funnel data | `id`, `email`, `traffic_vol`, `aov`, `status` (Qualified/Rejected) |
-
----
-
-## 3. API Contract (Key Endpoints)
-
-### Public Tracking API
-
-* `POST /v1/track/entry`
-* **Input:** `{client_id, url, referrer, screen_res}`
-* **Process:** Check Redis cache for IP → If new, call IPinfo → Create `Visit` record.
-* **Response:** `200 OK` (Processed in background).
-
-
-* `POST /v1/track/exit`
-* **Input:** `{client_id, url, duration, event_type="exit"}`
-* **Process:** Update `PageView` entry with final `duration`.
-
-
-
-### Internal Dashboard API
-
-* `GET /v1/admin/clients`: List all clients & subscription status.
-* `GET /v1/admin/stats`: Global traffic vs. leads generated.
-* `POST /v1/admin/onboard`: Create new client + Generate unique Script Tag.
-
----
-
-## 4. Frontend Specifications (Next.js)
-
-### 4.1 The Marketing Site
-
-* **Lead Funnel:**
-* **Form A:** Contact details with Zod validation.
-* **Form B:** Conditional logic (e.g., `Traffic > 1000` ? Qualify : Reject).
-
-
-
-### 4.2 The Client Dashboard
-
-* **Auth:** NextAuth.js (Magic Link or Email/Password).
-* **Views:**
-* **Overview:** Graph of Visits vs. Identified Leads.
-* **Live Feed:** Real-time list of companies currently on site.
-* **Settings:** Tracking snippet management.
-
-
-
----
-
-## 5. Implementation Roadmap
-
-### **Phase 1: The Foundation (Week 1)**
-
-* [ ] **Day 1:** Setup Monorepo (Next.js + FastAPI). Configure Postgres DB.
-* [ ] **Day 2:** Build Database Models (SQLModel) and Migrations.
-* [ ] **Day 3:** Build `POST /entry` and `POST /exit` endpoints (Mock data).
-* [ ] **Day 4:** Write `tracker.js` script and host locally for testing.
-* [ ] **Day 5:** **Integration Test:** Ensure script successfully writes to DB.
-
-### **Phase 2: The Intelligence (Week 2)**
-
-* [ ] **Day 1:** Integrate **IPinfo API** and build "ISP Filter" logic.
-* [ ] **Day 2:** Build the Lead Qualification Funnel (Frontend Form A/B).
-* [ ] **Day 3:** Build Admin Dashboard (Basic Lead Table).
-* [ ] **Day 4:** Deploy Backend (Railway/Render) and Frontend (Vercel).
-* [ ] **Day 5:** **Live Test:** Test tracker on your own site via different networks.
-
-### **Phase 3: The Business Logic (Week 3)**
-
-* [ ] **Day 1:** Setup Cron Jobs for weekly reporting.
-* [ ] **Day 2:** Design PDF Report template (HTML/CSS to PDF).
-* [ ] **Day 3:** Integrate Email API (Resend/SendGrid) for report delivery.
-* [ ] **Day 4:** Integrate Payment Gateway (Paystack) webhooks.
-* [ ] **Day 5:** Final Polish, Security Audit (CORS, ENV vars).
-
----
-
-## 6. Infrastructure & Costs (MVP)
-
-| Service | Purpose | Plan | Est. Cost |
-| --- | --- | --- | --- |
-| **Vercel** | Frontend Hosting | Hobby | Free |
-| **Railway/Render** | Backend Hosting | Hobby/Starter | ~$5/mo (R90) |
-| **Neon** | Serverless Postgres | Free Tier | Free |
-| **Cloudflare** | DNS & CDN | Free | Free |
-| **IPinfo** | IP Enrichment | Free (50k reqs) | Free |
-| **Resend** | Email | Free | Free |
-| **Total** |  |  | **~R90 / month** |
-
----
-
-## ⚖️ License & Proprietary Notice
-
-**Copyright (c) 2026 AuraWorks Pty (ltd). All Rights Reserved.**
-
-This tracker script is proprietary software. Unauthorized copying, modification, or redistribution is strictly prohibited. Use is granted only to active subscribers of the Industrial Intelligence Engine managed service.
-
----
 </file>
 
 <file path="frontend/src/app/(pages)/about/page.tsx">
@@ -6395,7 +6249,7 @@ export default function GetStartedPage() {
     const [isLoading, setIsLoading] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
     
-    // Unified State
+    // Unified State - Now using avg_price to match Backend/DB schemas
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -6403,7 +6257,7 @@ export default function GetStartedPage() {
         industry: '',
         website: '',
         traffic: '',
-        avgPrice: '',
+        avg_price: '', // Fixed: snake_case for direct DB mapping
         crm: ''
     })
 
@@ -6425,19 +6279,18 @@ export default function GetStartedPage() {
         setIsLoading(true);
         
         try {
-            // Retrieve tracking ID
+            // Retrieve tracking ID from local storage (Forensic Bridge)
             const aura_id = typeof window !== 'undefined' ? localStorage.getItem('aura_uid') : null;
 
-            // Mapping UI state to the backend expectation (avg_price)
+            // Direct submission: formData now aligns with backend WaitlistLead schema
             await submitToWaitlist({
                 ...formData,
-                avg_price: formData.avgPrice, // Maps camelCase to snake_case for the DB
                 aura_id: aura_id
             });
             setIsSuccess(true);
         } catch (error: any) {
             console.error("Submission Error:", error);
-            // Secure generic alert to prevent leaking DB structure
+            // Secure generic alert to prevent leaking infrastructure details
             alert("System Update: We encountered a synchronization delay with the audit pipeline. Please try again in a moment.");
         } finally {
             setIsLoading(false);
@@ -6446,14 +6299,12 @@ export default function GetStartedPage() {
 
     return (
         <main className="relative min-h-screen flex items-center justify-center bg-background px-6 py-12 overflow-hidden">
-            {/* Background Decorations */}
             <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-full opacity-30 [background:radial-gradient(50%_50%_at_50%_10%_var(--color-primary)_0%,transparent_100%)] blur-3xl" />
             </div>
 
             <div className="w-full max-w-xl relative">
                 
-                {/* Navigation Header */}
                 <div className="mb-8 flex items-center justify-between">
                     {step === 1 ? (
                         <Button variant="ghost" asChild className="-ml-2 text-muted-foreground hover:text-foreground">
@@ -6476,7 +6327,6 @@ export default function GetStartedPage() {
                     </div>
                 </div>
 
-                {/* Sliding Viewport */}
                 <div className="relative overflow-hidden rounded-3xl border bg-card/50 backdrop-blur-sm shadow-2xl">
                     {isSuccess ? (
                         <div className="p-12 text-center animate-in fade-in zoom-in duration-500">
@@ -6535,7 +6385,7 @@ export default function GetStartedPage() {
                                         <Label>Industry</Label>
                                         <div className="relative">
                                             <Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <select required value={formData.industry} onChange={e => setFormData({...formData, industry: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none">
+                                            <select required value={formData.industry} onChange={e => setFormData({...formData, industry: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm outline-none appearance-none">
                                                 <option value="">Select industry...</option>
                                                 <option value="mining">Mining & Resources</option>
                                                 <option value="manufacturing">Manufacturing</option>
@@ -6570,7 +6420,7 @@ export default function GetStartedPage() {
                                             <Label>Monthly Traffic</Label>
                                             <div className="relative">
                                                 <BarChart3 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                                <select required value={formData.traffic} onChange={e => setFormData({...formData, traffic: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none">
+                                                <select required value={formData.traffic} onChange={e => setFormData({...formData, traffic: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm outline-none appearance-none">
                                                     <option value="">Select range...</option>
                                                     <option value="0-1k">0 - 1,000</option>
                                                     <option value="1k-5k">1,000 - 5,000</option>
@@ -6582,7 +6432,7 @@ export default function GetStartedPage() {
                                             <Label>Avg Product Price</Label>
                                             <div className="relative">
                                                 <Tag className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                                <Input required value={formData.avgPrice} onChange={e => setFormData({...formData, avgPrice: e.target.value})} placeholder="e.g. R50k" className="pl-10 rounded-xl bg-muted/30" />
+                                                <Input required value={formData.avg_price} onChange={e => setFormData({...formData, avg_price: e.target.value})} placeholder="e.g. R50k" className="pl-10 rounded-xl bg-muted/30" />
                                             </div>
                                         </div>
                                     </div>
@@ -6590,7 +6440,7 @@ export default function GetStartedPage() {
                                         <Label>CRM System</Label>
                                         <div className="relative">
                                             <Database className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <select required value={formData.crm} onChange={e => setFormData({...formData, crm: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none">
+                                            <select required value={formData.crm} onChange={e => setFormData({...formData, crm: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm outline-none appearance-none">
                                                 <option value="">Select CRM...</option>
                                                 <option value="hubspot">HubSpot</option>
                                                 <option value="salesforce">Salesforce</option>
@@ -6611,7 +6461,6 @@ export default function GetStartedPage() {
                     )}
                 </div>
 
-                {/* Aesthetic Footer */}
                 <div className="mt-10 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.3em] font-bold text-muted-foreground/40">
                     <Lock className="h-3 w-3" /> Secure Infrastructure Pipeline
                 </div>
@@ -6764,10 +6613,9 @@ async def track_exit(payload: PageViewCreate):
 
 <file path="backend/app/api/v1/waitlist.py">
 import httpx
-import asyncio
 import logging
 import resend
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, BackgroundTasks, Depends
 from sqlmodel import Session, select
 from app.db import engine
 from app.models.waitlist import WaitlistLead 
@@ -6777,16 +6625,57 @@ from app.services.intelligence import get_visitor_journey
 router = APIRouter()
 logger = logging.getLogger("uvicorn")
 
-# Initialize Resend SDK
-resend.api_key = settings.RESEND_API_KEY
+# --- UTILS: Clinical Formatting ---
+def format_zar(value: str) -> str:
+    """Formats raw price input into Clinical ZAR currency string for Slack."""
+    if not value: return "N/A"
+    clean_value = "".join(filter(str.isdigit, value))
+    if clean_value:
+        try:
+            return f"R{int(clean_value):,}"
+        except:
+            return value
+    return value
 
-async def send_slack_notification(lead_data: dict, journey: dict = None):
-    """Background task to alert Slack with lead data and forensic journey"""
+# --- TASK 1: Resend (The Welcome Signal) ---
+async def send_welcome_email(email: str, name: str):
+    """Dispatches the T+0 Phase 01 Welcome Email via Resend"""
+    if not settings.RESEND_API_KEY:
+        logger.warning("🔴 Resend API Key missing in environment.")
+        return
+    
+    # Initialize key within the task to ensure it's fresh
+    resend.api_key = settings.RESEND_API_KEY
+    first_name = name.split(' ')[0] if name else "Partner"
+    
+    try:
+        resend.Emails.send({
+            "from": "AuraWorks <audit@auraworks.co.za>", # Must be a verified domain in Resend
+            "to": [email],
+            "subject": "Phase 01: Identity Verified & Audit Initiated",
+            "html": f"""
+                <body style="background-color: #09090b; color: #fafafa; font-family: sans-serif; padding: 40px;">
+                    <div style="max-width: 600px; margin: 0 auto;">
+                        <p style="letter-spacing: 0.2em; color: #71717a; font-size: 10px; text-transform: uppercase;">AURA WORKS // SYSTEMS</p>
+                        <h1 style="font-size: 24px; margin-top: 20px;">Audit Initiated: {first_name}</h1>
+                        <p style="color: #a1a1aa; line-height: 1.6;">Your industrial footprint is now being queued for a Phase 01 ROI audit. Our systems architect will review your data markers within the next 24 hours.</p>
+                        <hr style="border: 0; border-top: 1px solid #27272a; margin-top: 30px;">
+                        <p style="font-size: 11px; color: #52525b;">Automated Signal | AuraWorks (Pty) Ltd</p>
+                    </div>
+                </body>
+            """
+        })
+        logger.info(f"📧 Resend: Welcome email dispatched to {email}")
+    except Exception as e:
+        logger.error(f"❌ Resend API Error: {str(e)}")
+
+# --- TASK 2: Slack (The Intelligence Alert) ---
+async def send_slack_notification(payload: dict, journey: dict = None):
+    """Alerts Slack with lead credentials and forensic journey markers"""
     if not settings.SLACK_WEBHOOK_URL:
-        logger.warning("🔴 Slack Webhook URL missing in settings.")
+        logger.warning("🔴 Slack Webhook URL missing in environment.")
         return
 
-    # Safe formatting for Slack blocks
     journey = journey or {}
     journey_text = (
         f"*Total Touches:* {journey.get('total_touches', 0)}\n"
@@ -6794,15 +6683,17 @@ async def send_slack_notification(lead_data: dict, journey: dict = None):
         f"*Context:* {journey.get('building_context', 'Solo Device')}"
     )
 
-    payload = {
-        "text": f"🚀 New Phase 01 Audit: {lead_data.get('company', 'Unknown Entity')}",
+    formatted_price = format_zar(payload.get('avg_price'))
+
+    slack_data = {
+        "text": f"🚀 New Phase 01 Audit: {payload.get('company', 'Unknown Entity')}",
         "blocks": [
             {"type": "header", "text": {"type": "plain_text", "text": "🔔 New Partner Audit: Phase 01"}},
             {
                 "type": "section",
                 "fields": [
-                    {"type": "mrkdwn", "text": f"*Name:*\n{lead_data.get('name') or 'Unknown'}"},
-                    {"type": "mrkdwn", "text": f"*Company:*\n{lead_data.get('company') or 'Unknown'}"}
+                    {"type": "mrkdwn", "text": f"*Name:*\n{payload.get('name') or 'Unknown'}"},
+                    {"type": "mrkdwn", "text": f"*Company:*\n{payload.get('company') or 'Unknown'}"}
                 ]
             },
             {"type": "divider"},
@@ -6814,135 +6705,71 @@ async def send_slack_notification(lead_data: dict, journey: dict = None):
             {
                 "type": "section",
                 "fields": [
-                    {"type": "mrkdwn", "text": f"*Industry:*\n{lead_data.get('industry') or 'N/A'}"},
-                    {"type": "mrkdwn", "text": f"*Traffic:*\n{lead_data.get('traffic') or 'N/A'}"},
-                    {"type": "mrkdwn", "text": f"*Avg Price:*\n{lead_data.get('avg_price') or 'N/A'}"},
-                    {"type": "mrkdwn", "text": f"*CRM:*\n{lead_data.get('crm') or 'N/A'}"}
+                    {"type": "mrkdwn", "text": f"*Industry:*\n{str(payload.get('industry', 'N/A')).title()}"},
+                    {"type": "mrkdwn", "text": f"*Traffic:*\n{payload.get('traffic') or 'N/A'}"},
+                    {"type": "mrkdwn", "text": f"*Avg Price:*\n{formatted_price}"},
+                    {"type": "mrkdwn", "text": f"*CRM:*\n{str(payload.get('crm', 'N/A')).upper()}"}
                 ]
             },
-            {"type": "context", "elements": [{"type": "mrkdwn", "text": f"📍 Website: {lead_data.get('website') or 'Not provided'}"}]}
+            {"type": "context", "elements": [{"type": "mrkdwn", "text": f"📍 Website: {payload.get('website') or 'Not provided'}"}]}
         ]
     }
 
     async with httpx.AsyncClient() as client:
         try:
-            resp = await client.post(settings.SLACK_WEBHOOK_URL, json=payload, timeout=5.0)
-            logger.info(f"📡 Slack Notification Sent. Status: {resp.status_code}")
+            resp = await client.post(settings.SLACK_WEBHOOK_URL, json=slack_data, timeout=5.0)
+            logger.info(f"📡 Slack Alert Status: {resp.status_code}")
         except Exception as e:
-            logger.error(f"❌ Slack Webhook Failure: {e}")
+            logger.error(f"❌ Slack Webhook Error: {str(e)}")
 
-async def send_welcome_email(email: str, name: str):
-    """Background task to dispatch the Phase 01 Welcome Email"""
-    if not settings.RESEND_API_KEY:
-        logger.warning("🔴 Resend API Key missing.")
-        return
-    
-    try:
-        resend.Emails.send({
-            "from": "AuraWorks <audit@auraworks.co.za>",
-            "to": [email],
-            "subject": "Phase 01: Identity Verified & Audit Initiated",
-            "html": f"""
-                <!DOCTYPE html>
-                <html>
-                <head><meta charset="utf-8"></head>
-                <body style="background-color: #09090b; color: #fafafa; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 0;">
-                  <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 40px auto; padding: 20px;">
-                    <tr>
-                      <td style="padding-bottom: 30px;">
-                        <p style="font-family: monospace; font-size: 10px; letter-spacing: 0.2em; color: #71717a; margin: 0; text-transform: uppercase;">
-                          AURA WORKS // SYSTEMS
-                        </p>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <h1 style="font-size: 24px; font-weight: bold; margin: 0 0 20px 0; color: #ffffff; letter-spacing: -0.02em;">
-                          Audit Initiated
-                        </h1>
-                        <p style="font-size: 14px; line-height: 1.6; color: #a1a1aa; margin: 0 0 15px 0;">
-                          The credentials for your organization have been successfully received. 
-                          Your industrial footprint is now being queued for a <strong>Phase 01 ROI audit</strong>.
-                        </p>
-                        <p style="font-size: 14px; line-height: 1.6; color: #a1a1aa; margin: 0 0 30px 0;">
-                          Our systems architect will review your data markers within the next 24 hours. 
-                          If the alignment holds, we will move to Phase 02: Infrastructure Integration.
-                        </p>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="border-top: 1px solid #27272a; padding-top: 20px;">
-                        <p style="font-size: 11px; color: #52525b; margin: 0;">
-                          This is an automated system signal from AuraWorks (Pty) Ltd.
-                        </p>
-                      </td>
-                    </tr>
-                  </table>
-                </body>
-                </html>
-            """
-        })
-        logger.info(f"📧 Welcome email dispatched to {email}")
-    except Exception as e:
-        logger.error(f"❌ Resend API Error: {e}")
-
+# --- MAIN ROUTE: The Entry Point ---
 @router.post("/join")
-async def join_waitlist(payload: dict, request: Request):
+async def join_waitlist(payload: dict, request: Request, background_tasks: BackgroundTasks):
     email = payload.get("email")
-    client_id = payload.get("client_id") or payload.get("aura_id")
+    aura_id = payload.get("aura_id") or payload.get("client_id")
     
-    # SYSTEM FIX: Resolving Real IP from Proxy Headers (Railway/Cloudflare)
-    client_ip = request.headers.get("X-Forwarded-For")
-    if client_ip:
-        client_ip = client_ip.split(",")[0].strip()
-    else:
-        client_ip = request.client.host if request.client else "0.0.0.0"
-    
-    logger.info(f"📥 Processing Waitlist Join: {email} from Real IP: {client_ip}")
+    # Resolve Real IP for South African ISP context
+    client_ip = request.headers.get("X-Forwarded-For", "").split(",")[0].strip() or request.client.host
 
     if not email:
-        raise HTTPException(status_code=400, detail="Work email is required.")
+        raise HTTPException(status_code=400, detail="Work email required.")
 
     with Session(engine) as session:
         try:
-            # 1. Fetch or Initialize Lead
+            # 1. DB Persistence
             statement = select(WaitlistLead).where(WaitlistLead.email == email)
             lead = session.exec(statement).first()
 
             if not lead:
                 lead = WaitlistLead(email=email)
-                logger.info(f"🆕 Creating new record for {email}")
-            else:
-                logger.info(f"🔄 Updating existing record for {email}")
-
-            # 2. Sync Metadata
+            
+            # Sync metadata from fixed snake_case payload
             lead.name = payload.get("name")
             lead.company = payload.get("company")
             lead.industry = payload.get("industry")
             lead.website = payload.get("website")
             lead.traffic = payload.get("traffic")
-            lead.avg_price = payload.get("avgPrice") 
+            lead.avg_price = payload.get("avg_price") 
             lead.crm = payload.get("crm")
             
             session.add(lead)
             session.commit()
             session.refresh(lead)
-            logger.info(f"💾 DB Sync Successful for {email}")
 
-            # 3. Resolve Intelligence (Stitching Journey)
-            journey_data = await get_visitor_journey(client_id, client_ip)
-            logger.info(f"🕵️ Journey Resolved: {journey_data.get('total_touches')} touches")
+            # 2. Forensic Intelligence Resolution
+            journey_data = await get_visitor_journey(aura_id, client_ip)
 
-            # 4. Dispatch Tasks
-            asyncio.create_task(send_slack_notification(payload, journey_data))
-            asyncio.create_task(send_welcome_email(lead.email, lead.name))
+            # 3. Hand off to Background Tasks (Non-blocking)
+            background_tasks.add_task(send_slack_notification, payload, journey_data)
+            background_tasks.add_task(send_welcome_email, lead.email, lead.name)
             
             return {"status": "success", "message": "Phase 01 Audit Initiated"}
 
         except Exception as e:
             session.rollback()
             logger.error(f"🚨 CRITICAL DB ERROR: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Database sync error: {str(e)}")
+            # Return generic error to user to avoid leaking DB schema details
+            raise HTTPException(status_code=500, detail="Synchronization delay in audit pipeline.")
 </file>
 
 <file path="backend/app/main.py">

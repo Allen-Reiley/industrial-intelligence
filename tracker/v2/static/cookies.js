@@ -2,7 +2,8 @@
  * AuraWorks Identity Bridge - cookie.js
  * Version: 1.0.0 (Persistence Edition)
  * Purpose: 2026-compliant Triple-Storage (Cookie, LocalStorage, IndexedDB).
- */
+ * For reference purposes, aura.js is used.
+*/
 
 const AuraPersistence = {
     key: 'aura_uid',

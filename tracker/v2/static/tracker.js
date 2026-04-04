@@ -1,6 +1,7 @@
 /**
  * AuraWorks Industrial Intelligence Engine - Unified Master Tracker
  * Version: 2.1.0 (Debug & Forensic Edition)
+ * For reference purposes, aura.js is used.
  */
 (function() {
     const script = document.currentScript;
