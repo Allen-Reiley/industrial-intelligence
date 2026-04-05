@@ -1,7 +1,13 @@
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime
 from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
 import sqlalchemy as sa
+
+# Use TYPE_CHECKING to avoid circular imports between models
+if TYPE_CHECKING:
+    from app.models.visit import Visit
+    from app.models.department import Department
+    from app.models.waitlist import WaitlistLead
 
 class Company(SQLModel, table=True):
     """The Jurisdictive Entity record. The anchor for all B2B intelligence."""
@@ -24,10 +30,14 @@ class Company(SQLModel, table=True):
     intent_summary: Optional[str] = None 
     
     # --- RELATIONS ---
+    # Unified naming to match back_populates in WaitlistLead and Visit
     visits: List["Visit"] = Relationship(back_populates="company")
     departments: List["Department"] = Relationship(back_populates="company")
-    visitors: List["WaitlistLead"] = Relationship(back_populates="company")
+    
+    # UPDATED: Renamed from 'visitors' to 'leads' to fix the 500 Promotion Failure
+    leads: List["WaitlistLead"] = Relationship(back_populates="company")
 
+    # --- TIMEKEEPING ---
     created_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), server_default=sa.func.now())
     )
