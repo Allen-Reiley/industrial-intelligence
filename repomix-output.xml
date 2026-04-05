@@ -203,143 +203,8 @@ This section contains the contents of the repository's files.
 
 </file>
 
-<file path="backend/app/core/scheduler.py">
-from apscheduler.schedulers.background import BackgroundScheduler
-from sqlmodel import Session, select
-from app.db import engine
-from app.models.company import Company
-from app.models.department import Department
-from app.services.enrichment import get_departmental_intelligence
-from datetime import datetime, timezone
-import asyncio
-import logging
-
-logger = logging.getLogger("uvicorn")
-
-def run_enrichment_cycle():
-    """
-    Industrial Enrichment Task:
-    Maps corporate departments for Juristic Entities using Apollo.io.
-    """
-    # Create a dedicated event loop for this background thread to avoid loop conflicts
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    with Session(engine) as session:
-        # Find companies with domains that require enrichment
-        # Logic: Domain must exist, and we haven't found any departments yet
-        statement = select(Company).where(Company.domain != None)
-        companies = session.exec(statement).all()
-
-        for company in companies:
-            try:
-                # 🛡️ API WASTE GATE:
-                # We check if this company already has departmental records.
-                # In a future update, we can check 'company.last_enriched_at' for 30-day refreshes.
-                existing_depts = session.exec(
-                    select(Department).where(Department.company_id == company.id)
-                ).first()
-                
-                if existing_depts:
-                    # Skip to save Apollo credits if already mapped
-                    continue
-
-                logger.info(f"🔍 Scheduled Enrichment: Researching {company.name} [{company.domain}]")
-                
-                # Execute the Apollo.io search via the async service
-                depts_data = loop.run_until_complete(get_departmental_intelligence(company.domain))
-                
-                if not depts_data:
-                    logger.info(f"ℹ️ No departments found for {company.domain}")
-                    continue
-
-                for dept in depts_data:
-                    new_dept = Department(
-                        company_id=company.id,
-                        name=dept.get('name', 'General'),
-                        email=dept.get('email'),
-                        phone=dept.get('phone'),
-                        head_of_dept_linkedin=dept.get('head_of_dept_linkedin')
-                    )
-                    session.add(new_dept)
-                
-                # Update company metadata if you decide to add this field to your Company model
-                # company.last_enriched_at = datetime.now(timezone.utc)
-                # session.add(company)
-                
-                session.commit()
-                logger.info(f"✅ Successfully mapped {len(depts_data)} departments for {company.name}")
-
-            except Exception as e:
-                session.rollback()
-                logger.error(f"❌ Enrichment Cycle Error for {company.name}: {e}")
-    
-    loop.close()
-
-def start_scheduler():
-    """
-    Initializes the AuraWorks Background Pipeline.
-    """
-    scheduler = BackgroundScheduler()
-    
-    # Task 1: Perform industrial enrichment every hour
-    # This captures companies added via tracking or waitlist that haven't been mapped yet.
-    scheduler.add_job(
-        run_enrichment_cycle, 
-        'interval', 
-        hours=1, 
-        id='industrial_enrichment',
-        replace_existing=True
-    )
-    
-    # Task 2: (Planned) Weekly ROI Audit Reports
-    # scheduler.add_job(generate_weekly_audit_reports, 'cron', day_of_week='mon', hour=8)
-    
-    scheduler.start()
-    logger.info("🚀 AuraWorks Scheduler: Online. Monitoring Juristic Entities.")
-</file>
-
 <file path="backend/app/core/security.py">
 
-</file>
-
-<file path="backend/app/models/company.py">
-from typing import Optional, List
-from datetime import datetime
-from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
-import sqlalchemy as sa
-
-class Company(SQLModel, table=True):
-    """The Jurisdictive Entity record. The anchor for all B2B intelligence."""
-    id: Optional[int] = Field(default=None, primary_key=True)
-    
-    # --- FIRMOGRAPHICS (Public Entity Data) ---
-    name: str = Field(index=True, unique=True)
-    domain: str = Field(index=True, unique=True)
-    industry: Optional[str] = None
-    hq_phone: Optional[str] = None
-    city: Optional[str] = None
-    region: Optional[str] = None # e.g., "Gauteng"
-    is_b2b: bool = Field(default=True, index=True)
-    
-    # --- AGGREGATED INTELLIGENCE ---
-    total_visits: int = Field(default=1)
-    unique_visitors_count: int = Field(default=1) # Count of unique aura_ids
-    
-    # DeepSeek Generated "Corporate Intent" Summary
-    intent_summary: Optional[str] = None 
-    
-    # --- RELATIONS ---
-    visits: List["Visit"] = Relationship(back_populates="company")
-    departments: List["Department"] = Relationship(back_populates="company")
-    visitors: List["WaitlistLead"] = Relationship(back_populates="company")
-
-    created_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now())
-    )
-    updated_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), onupdate=sa.func.now())
-    )
 </file>
 
 <file path="backend/app/models/department.py">
@@ -3558,110 +3423,100 @@ def create_client(client_in: ClientCreate, session: Session = Depends(get_sessio
     return db_client
 </file>
 
-<file path="backend/app/api/v1/identity.py">
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+<file path="backend/app/core/scheduler.py">
+from apscheduler.schedulers.background import BackgroundScheduler
 from sqlmodel import Session, select
 from app.db import engine
-from app.models.visit import Visit
+from app.models.company import Company
+from app.models.department import Department
+from app.services.enrichment import get_departmental_intelligence
+from datetime import datetime, timezone
+import asyncio
 import logging
 
-router = APIRouter()
 logger = logging.getLogger("uvicorn")
 
-def calculate_identity_match(new_sig: dict, existing_visit: Visit) -> float:
+def run_enrichment_cycle():
     """
-    Calculates a probability score (0.0 to 1.0) based on hardware entropy.
-    Weights normalized to 1.0 for B2B Industrial environments.
+    Industrial Enrichment Task:
+    Maps corporate departments for Juristic Entities using Apollo.io.
     """
-    score = 0.0
-    
-    # 1. Canvas Match (40% Weight) - Primary hardware rendering signature
-    if new_sig.get('canvas') == existing_visit.canvas_hash:
-        score += 0.40
-        
-    # 2. Clock Drift Match (30% Weight) - Precision timing delta
-    # Allow 1ms variance for network jitter
-    drift_diff = abs(new_sig.get('drift', 0) - (existing_visit.clock_drift or 0))
-    if drift_diff <= 1:
-        score += 0.30
-        
-    # 3. Fonts Match (20% Weight) - OS/Software profile
-    if new_sig.get('fonts') == existing_visit.font_list:
-        score += 0.20
-        
-    # 4. WebGL/Renderer Match (10% Weight) - GPU identification
-    if new_sig.get('webgl') == existing_visit.webgl_renderer:
-        score += 0.10
-        
-    return score
-
-def merge_sessions_sync(new_id: str, original_id: str):
-    """
-    Sync wrapper for the background merge task to unify fragmented session data.
-    """
-    with Session(engine) as session:
-        try:
-            statement = select(Visit).where(Visit.aura_id == new_id)
-            visits_to_update = session.exec(statement).all()
-            
-            for visit in visits_to_update:
-                visit.aura_id = original_id
-                session.add(visit)
-            
-            session.commit()
-            logger.info(f"🔗 Forensic Stitch Success: {new_id} unified into {original_id}")
-        except Exception as e:
-            logger.error(f"❌ Session Merge Failure: {e}")
-
-@router.post("/resolve")
-async def resolve_identity(payload: dict, background_tasks: BackgroundTasks):
-    aura_id = payload.get("aura_id")
-    signature = payload.get("signature", {})
-    
-    if not aura_id:
-        raise HTTPException(status_code=400, detail="Missing aura_id")
+    # Create a dedicated event loop for this background thread to avoid loop conflicts
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
 
     with Session(engine) as session:
-        # Step 1: Check for direct ID match (Existing browser session)
-        statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at.desc())
-        existing_visit = session.exec(statement).first()
-        
-        if existing_visit:
-            logger.info(f"🎯 Direct Match: {aura_id}. Refreshing Forensic Lock.")
-            # Update the fingerprint in case they updated their browser/OS
-            existing_visit.canvas_hash = signature.get('canvas')
-            existing_visit.clock_drift = signature.get('drift')
-            existing_visit.webgl_renderer = signature.get('webgl')
-            existing_visit.font_list = signature.get('fonts')
-            session.add(existing_visit)
-            session.commit()
-            return {"status": "recognized", "method": "direct_id"}
+        # Find companies with domains that require enrichment
+        # Logic: Domain must exist, and we haven't found any departments yet
+        statement = select(Company).where(Company.domain != None)
+        companies = session.exec(statement).all()
 
-        # Step 2: Weighted Forensic Search (The "Identity Bridge")
-        # Scan recent industrial footprints for a hardware match
-        all_recent = session.exec(select(Visit).order_by(Visit.created_at.desc()).limit(150)).all()
-        
-        # Deduplicate results by aura_id to only compare unique profiles
-        unique_profiles = {v.aura_id: v for v in all_recent}.values()
-        
-        for profile in unique_profiles:
-            match_probability = calculate_identity_match(signature, profile)
-            
-            # High Confidence Threshold (85%)
-            if match_probability >= 0.85:
-                logger.info(f"🧵 Forensic Stitch Identified! Conf: {match_probability*100}%")
+        for company in companies:
+            try:
+                # 🛡️ API WASTE GATE:
+                # We check if this company already has departmental records.
+                # In a future update, we can check 'company.last_enriched_at' for 30-day refreshes.
+                existing_depts = session.exec(
+                    select(Department).where(Department.company_id == company.id)
+                ).first()
                 
-                # Unify this new ID with the historical profile in the background
-                background_tasks.add_task(merge_sessions_sync, aura_id, profile.aura_id)
-                
-                # Signal the frontend to update its local storage to the original ID
-                return {
-                    "status": "stitched", 
-                    "stitched_id": profile.aura_id, 
-                    "confidence": match_probability
-                }
+                if existing_depts:
+                    # Skip to save Apollo credits if already mapped
+                    continue
 
-    return {"status": "new_identity", "message": "Forensic profile initialized."}
+                logger.info(f"🔍 Scheduled Enrichment: Researching {company.name} [{company.domain}]")
+                
+                # Execute the Apollo.io search via the async service
+                depts_data = loop.run_until_complete(get_departmental_intelligence(company.domain))
+                
+                if not depts_data:
+                    logger.info(f"ℹ️ No departments found for {company.domain}")
+                    continue
+
+                for dept in depts_data:
+                    new_dept = Department(
+                        company_id=company.id,
+                        name=dept.get('name', 'General'),
+                        email=dept.get('email'),
+                        phone=dept.get('phone'),
+                        head_of_dept_linkedin=dept.get('head_of_dept_linkedin')
+                    )
+                    session.add(new_dept)
+                
+                # Update company metadata if you decide to add this field to your Company model
+                # company.last_enriched_at = datetime.now(timezone.utc)
+                # session.add(company)
+                
+                session.commit()
+                logger.info(f"✅ Successfully mapped {len(depts_data)} departments for {company.name}")
+
+            except Exception as e:
+                session.rollback()
+                logger.error(f"❌ Enrichment Cycle Error for {company.name}: {e}")
+    
+    loop.close()
+
+def start_scheduler():
+    """
+    Initializes the AuraWorks Background Pipeline.
+    """
+    scheduler = BackgroundScheduler()
+    
+    # Task 1: Perform industrial enrichment every hour
+    # This captures companies added via tracking or waitlist that haven't been mapped yet.
+    scheduler.add_job(
+        run_enrichment_cycle, 
+        'interval', 
+        hours=1, 
+        id='industrial_enrichment',
+        replace_existing=True
+    )
+    
+    # Task 2: (Planned) Weekly ROI Audit Reports
+    # scheduler.add_job(generate_weekly_audit_reports, 'cron', day_of_week='mon', hour=8)
+    
+    scheduler.start()
+    logger.info("🚀 AuraWorks Scheduler: Online. Monitoring Juristic Entities.")
 </file>
 
 <file path="backend/app/models/client.py">
@@ -3691,6 +3546,55 @@ class ClientPublic(SQLModel):
     id: str
     name: str
     is_active: bool
+</file>
+
+<file path="backend/app/models/company.py">
+from typing import Optional, List, TYPE_CHECKING
+from datetime import datetime
+from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
+import sqlalchemy as sa
+
+# Use TYPE_CHECKING to avoid circular imports between models
+if TYPE_CHECKING:
+    from app.models.visit import Visit
+    from app.models.department import Department
+    from app.models.waitlist import WaitlistLead
+
+class Company(SQLModel, table=True):
+    """The Jurisdictive Entity record. The anchor for all B2B intelligence."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    
+    # --- FIRMOGRAPHICS (Public Entity Data) ---
+    name: str = Field(index=True, unique=True)
+    domain: str = Field(index=True, unique=True)
+    industry: Optional[str] = None
+    hq_phone: Optional[str] = None
+    city: Optional[str] = None
+    region: Optional[str] = None # e.g., "Gauteng"
+    is_b2b: bool = Field(default=True, index=True)
+    
+    # --- AGGREGATED INTELLIGENCE ---
+    total_visits: int = Field(default=1)
+    unique_visitors_count: int = Field(default=1) # Count of unique aura_ids
+    
+    # DeepSeek Generated "Corporate Intent" Summary
+    intent_summary: Optional[str] = None 
+    
+    # --- RELATIONS ---
+    # Unified naming to match back_populates in WaitlistLead and Visit
+    visits: List["Visit"] = Relationship(back_populates="company")
+    departments: List["Department"] = Relationship(back_populates="company")
+    
+    # UPDATED: Renamed from 'visitors' to 'leads' to fix the 500 Promotion Failure
+    leads: List["WaitlistLead"] = Relationship(back_populates="company")
+
+    # --- TIMEKEEPING ---
+    created_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now())
+    )
+    updated_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), onupdate=sa.func.now())
+    )
 </file>
 
 <file path="backend/app/models/pageview.py">
@@ -4163,67 +4067,6 @@ export const LogoIcon = ({ className }: { className?: string }) => {
 }
 </file>
 
-<file path="frontend/src/lib/api.ts">
-// src/lib/api.ts
-
-/**
- * The BASE_URL resolves the backend address.
- * Ensure NEXT_PUBLIC_API_URL is set in your .env.local or production environment.
- */
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
-/**
- * Normalizes the API URL. 
- * Removes trailing and leading slashes to prevent standard FastAPI route mismatches.
- */
-const getEndpoint = (path: string) => {
-    const cleanBase = BASE_URL.replace(/\/$/, '');
-    const cleanPath = path.replace(/^\//, '').replace(/\/$/, '');
-    return `${cleanBase}/${cleanPath}`;
-};
-
-export async function submitToWaitlist(formData: any) {
-    /**
-     * Targets the updated v1/waitlist/join endpoint.
-     * Matches the backend route defined in app/api/v1/waitlist.py
-     */
-    const endpoint = getEndpoint('api/v1/waitlist/join');
-
-    const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            ...formData,
-            /**
-             * THE STITCH:
-             * Automatically grab the aura_id (forensic signature) from storage.
-             * This upgrades the anonymous session to a 'Consented' identity.
-             */
-            aura_id: typeof window !== 'undefined' ? localStorage.getItem('aura_uid') : null,
-            source: "industrial_intelligence_v1",
-            timestamp: new Date().toISOString()
-        }),
-    });
-
-    if (!response.ok) {
-        // Attempt to parse the structured error from FastAPI
-        const errorData = await response.json().catch(() => ({}));
-        
-        // Logical Check: If the route is missing entirely
-        if (response.status === 404) {
-            throw new Error(`Intelligence Gateway not found at ${endpoint}. Please verify backend deployment.`);
-        }
-
-        // Return the detailed error (e.g. 'Work email required') or a generic fallback
-        throw new Error(errorData.detail || 'The intelligence engine is currently synchronizing. Please try again.');
-    }
-
-    return response.json();
-}
-</file>
-
 <file path="frontend/src/lib/utils.ts">
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
@@ -4279,6 +4122,112 @@ export function cn(...inputs: ClassValue[]) {
 * **Legal Framework:** POPIA/PAIA compliant. All data handling is governed by the Dynamic Markdown files served at `/legal`, `/privacy-policy`, and `/security`.
 * **Information Officer:** Reitumetse Sethabela (Founder/Agency Owner).
 * **Target ICP:** Industrial, Engineering, Manufacturing, and Law firms specifically within the **South African** economic hub.
+</file>
+
+<file path="backend/app/api/v1/identity.py">
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from sqlmodel import Session, select
+from app.db import engine
+from app.models.visit import Visit
+import logging
+
+router = APIRouter()
+logger = logging.getLogger("uvicorn")
+
+def calculate_identity_match(new_sig: dict, existing_visit: Visit) -> float:
+    """
+    Calculates a probability score (0.0 to 1.0) based on hardware entropy.
+    Weights normalized to 1.0 for B2B Industrial environments.
+    """
+    score = 0.0
+    
+    # 1. Canvas Match (40% Weight) - Primary hardware rendering signature
+    if new_sig.get('canvas') == existing_visit.canvas_hash:
+        score += 0.40
+        
+    # 2. Clock Drift Match (30% Weight) - Precision timing delta
+    # Allow 1ms variance for network jitter
+    drift_diff = abs(new_sig.get('drift', 0) - (existing_visit.clock_drift or 0))
+    if drift_diff <= 1:
+        score += 0.30
+        
+    # 3. Fonts Match (20% Weight) - OS/Software profile
+    if new_sig.get('fonts') == existing_visit.font_list:
+        score += 0.20
+        
+    # 4. WebGL/Renderer Match (10% Weight) - GPU identification
+    if new_sig.get('webgl') == existing_visit.webgl_renderer:
+        score += 0.10
+        
+    return score
+
+def merge_sessions_sync(new_id: str, original_id: str):
+    """
+    Sync wrapper for the background merge task to unify fragmented session data.
+    """
+    with Session(engine) as session:
+        try:
+            statement = select(Visit).where(Visit.aura_id == new_id)
+            visits_to_update = session.exec(statement).all()
+            
+            for visit in visits_to_update:
+                visit.aura_id = original_id
+                session.add(visit)
+            
+            session.commit()
+            logger.info(f"🔗 Forensic Stitch Success: {new_id} unified into {original_id}")
+        except Exception as e:
+            logger.error(f"❌ Session Merge Failure: {e}")
+
+@router.post("/resolve")
+async def resolve_identity(payload: dict, background_tasks: BackgroundTasks):
+    aura_id = payload.get("aura_id")
+    signature = payload.get("signature", {})
+    
+    if not aura_id:
+        raise HTTPException(status_code=400, detail="Missing aura_id")
+
+    with Session(engine) as session:
+        # Step 1: Check for direct ID match (Existing browser session)
+        statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at.desc())
+        existing_visit = session.exec(statement).first()
+        
+        if existing_visit:
+            logger.info(f"🎯 Direct Match: {aura_id}. Refreshing Forensic Lock.")
+            # Update the fingerprint in case they updated their browser/OS
+            existing_visit.canvas_hash = signature.get('canvas')
+            existing_visit.clock_drift = signature.get('drift')
+            existing_visit.webgl_renderer = signature.get('webgl')
+            existing_visit.font_list = signature.get('fonts')
+            session.add(existing_visit)
+            session.commit()
+            return {"status": "recognized", "method": "direct_id"}
+
+        # Step 2: Weighted Forensic Search (The "Identity Bridge")
+        # Scan recent industrial footprints for a hardware match
+        all_recent = session.exec(select(Visit).order_by(Visit.created_at.desc()).limit(150)).all()
+        
+        # Deduplicate results by aura_id to only compare unique profiles
+        unique_profiles = {v.aura_id: v for v in all_recent}.values()
+        
+        for profile in unique_profiles:
+            match_probability = calculate_identity_match(signature, profile)
+            
+            # High Confidence Threshold (85%)
+            if match_probability >= 0.85:
+                logger.info(f"🧵 Forensic Stitch Identified! Conf: {match_probability*100}%")
+                
+                # Unify this new ID with the historical profile in the background
+                background_tasks.add_task(merge_sessions_sync, aura_id, profile.aura_id)
+                
+                # Signal the frontend to update its local storage to the original ID
+                return {
+                    "status": "stitched", 
+                    "stitched_id": profile.aura_id, 
+                    "confidence": match_probability
+                }
+
+    return {"status": "new_identity", "message": "Forensic profile initialized."}
 </file>
 
 <file path="frontend/src/app/(pages)/pricing/page.tsx">
@@ -4862,6 +4811,67 @@ function Label({
 export { Label }
 </file>
 
+<file path="frontend/src/lib/api.ts">
+// src/lib/api.ts
+
+/**
+ * The BASE_URL resolves the backend address.
+ * Ensure NEXT_PUBLIC_API_URL is set in your .env.local or production environment.
+ */
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+/**
+ * Normalizes the API URL. 
+ * Removes trailing and leading slashes to prevent standard FastAPI route mismatches.
+ */
+const getEndpoint = (path: string) => {
+    const cleanBase = BASE_URL.replace(/\/$/, '');
+    const cleanPath = path.replace(/^\//, '').replace(/\/$/, '');
+    return `${cleanBase}/${cleanPath}`;
+};
+
+export async function submitToWaitlist(formData: any) {
+    /**
+     * Targets the updated v1/waitlist/join endpoint.
+     * Matches the backend route defined in app/api/v1/waitlist.py
+     */
+    const endpoint = getEndpoint('api/v1/waitlist/join');
+
+    const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            ...formData,
+            /**
+             * THE STITCH:
+             * Automatically grab the aura_id (forensic signature) from storage.
+             * This upgrades the anonymous session to a 'Consented' identity.
+             */
+            aura_id: typeof window !== 'undefined' ? localStorage.getItem('aura_uid') : null,
+            source: "industrial_intelligence_v1",
+            timestamp: new Date().toISOString()
+        }),
+    });
+
+    if (!response.ok) {
+        // Attempt to parse the structured error from FastAPI
+        const errorData = await response.json().catch(() => ({}));
+        
+        // Logical Check: If the route is missing entirely
+        if (response.status === 404) {
+            throw new Error(`Intelligence Gateway not found at ${endpoint}. Please verify backend deployment.`);
+        }
+
+        // Return the detailed error (e.g. 'Work email required') or a generic fallback
+        throw new Error(errorData.detail || 'The intelligence engine is currently synchronizing. Please try again.');
+    }
+
+    return response.json();
+}
+</file>
+
 <file path="frontend/src/next.config.ts">
 import type { NextConfig } from "next";
 
@@ -4888,171 +4898,6 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-</file>
-
-<file path="backend/app/services/intelligence.py">
-import httpx
-import logging
-import asyncio
-import json
-from datetime import datetime, timedelta, timezone
-from typing import List, Optional, Dict
-from sqlmodel import Session, select
-from app.models.visit import Visit
-from app.models.company import Company
-from app.db import engine
-from app.core.config import settings
-
-logger = logging.getLogger("uvicorn")
-
-# --- PHASE 01: DeepSeek-V3 Intent Analysis ---
-
-async def analyze_corporate_intent(company_name: str, industry: str, pathway: str) -> str:
-    """
-    Uses DeepSeek-V3 to generate a 'Clinical Intent Summary' based on browsing behavior.
-    """
-    if not settings.DEEPSEEK_API_KEY:
-        return "Intent analysis pending (API Key missing)."
-
-    # Fallbacks to ensure the prompt never fails
-    c_name = company_name or "Industrial Prospect"
-    ind = industry or "Manufacturing/Industrial"
-    path = pathway or "Direct Homepage Entry"
-
-    prompt = f"""
-    Analyze the following B2B website traffic for a South African industrial client.
-    Company: {c_name}
-    Industry: {ind}
-    Browsing Pathway: {path}
-
-    Task: Provide a 2-sentence 'Executive Intent Summary'. 
-    - Sentence 1: Identify the likely buying persona (e.g., Engineering, Procurement, or Executive).
-    - Sentence 2: Assess the 'Temperature' (Cold/Warm/Hot) based on page depth (e.g., Pricing/Docs = High Intent).
-    Tone: Clinical, sophisticated, 'Quiet Premium'. No marketing fluff.
-    """
-
-    async with httpx.AsyncClient() as client:
-        try:
-            # Increased timeout to 15s for DeepSeek-V3's complex reasoning
-            response = await client.post(
-                "https://api.deepseek.com/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "deepseek-chat",
-                    "messages": [
-                        {"role": "system", "content": "You are a B2B Intelligence Analyst focusing on high-ticket industrial sales."},
-                        {"role": "user", "content": prompt}
-                    ],
-                    "temperature": 0.3 
-                },
-                timeout=15.0
-            )
-            
-            if response.status_code != 200:
-                logger.error(f"DeepSeek Error: {response.text}")
-                return "Intelligence engine calibrating. Analysis deferred."
-
-            result = response.json()
-            return result['choices'][0]['message']['content'].strip()
-        except Exception as e:
-            logger.error(f"DeepSeek Analysis Failed: {e}")
-            return "Intelligence engine temporarily offline."
-
-# --- PHASE 02: Journey & Stitching Logic ---
-
-async def get_visitor_journey(aura_id: str) -> Dict:
-    """
-    Retrieves the full behavioral ledger for a specific forensic ID.
-    Used to feed the Intent Analysis engine and populate Slack/Dashboards.
-    """
-    if not aura_id:
-        return {
-            "total_touches": 0, 
-            "pathway": "Direct/Anonymous", 
-            "intent_summary": "No forensic signature detected.",
-            "is_high_intent": False
-        }
-
-    with Session(engine) as session:
-        # Retrieve all historical visits for this forensic signature
-        statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at)
-        history = session.exec(statement).all()
-
-        if not history:
-            return {
-                "total_touches": 0, 
-                "pathway": "First Contact", 
-                "intent_summary": "Initial touchpoint recorded.",
-                "is_high_intent": False
-            }
-
-        # Extract Clean Paths (stripping domain noise)
-        pages = []
-        for v in history:
-            # Clean URL to show only path (e.g. /pricing)
-            p = v.url.split('auraworks.co.za')[-1] if v.url else "/"
-            if not p or p == "" or p == "undefined": p = "/"
-            pages.append(p)
-        
-        # Deduplicate pathway sequence while preserving order
-        unique_pathway = []
-        for p in pages:
-            if not unique_pathway or p != unique_pathway[-1]:
-                unique_pathway.append(p)
-        
-        pathway_str = " → ".join(unique_pathway)
-        
-        # 🏢 Resolve Company Context for the LLM
-        company = None
-        # Check if any visit in history has a company_id (linked via IP or Waitlist)
-        linked_visit = next((v for v in history if v.company_id), None)
-        if linked_visit:
-            company = session.get(Company, linked_visit.company_id)
-
-        # 🧠 Run DeepSeek Intent Analysis
-        # Even if no company is linked, we run it as 'Anonymous Prospect'
-        intent_summary = await analyze_corporate_intent(
-            company.name if company else "Anonymous Industrial Entity", 
-            company.industry if company else "Unknown Industry", 
-            pathway_str
-        )
-
-        return {
-            "total_touches": len(history),
-            "pathway": pathway_str,
-            "first_seen": history[0].created_at.strftime("%Y-%m-%d %H:%M"),
-            "intent_summary": intent_summary,
-            "is_high_intent": any(kw in pathway_str.lower() for kw in ["pricing", "waitlist", "get-started", "audit"])
-        }
-
-# --- PHASE 03: The 'Building-Level' Cluster ---
-
-async def get_building_activity(ip_address: str, current_aura_id: str) -> str:
-    """
-    Detects if multiple unique devices from the same IP are interacting.
-    Signifies a 'Company-Wide' evaluation (Building-Level Cluster).
-    """
-    if not ip_address: return "Solo Device"
-    
-    # 72-hour window for active consideration
-    time_threshold = datetime.now(timezone.utc) - timedelta(hours=72)
-    
-    with Session(engine) as session:
-        statement = select(Visit).where(
-            Visit.ip_address == ip_address,
-            Visit.aura_id != current_aura_id,
-            Visit.created_at >= time_threshold
-        )
-        other_hits = session.exec(statement).all()
-        
-        if not other_hits:
-            return "Solo Device"
-            
-        unique_devices = len({v.aura_id for v in other_hits})
-        return f"🏢 Corporate Cluster: {unique_devices} other device(s) active from this facility."
 </file>
 
 <file path="frontend/src/app/(pages)/about/page.tsx">
@@ -5480,6 +5325,171 @@ export default function Home() {
 })();
 </file>
 
+<file path="backend/app/services/intelligence.py">
+import httpx
+import logging
+import asyncio
+import json
+from datetime import datetime, timedelta, timezone
+from typing import List, Optional, Dict
+from sqlmodel import Session, select
+from app.models.visit import Visit
+from app.models.company import Company
+from app.db import engine
+from app.core.config import settings
+
+logger = logging.getLogger("uvicorn")
+
+# --- PHASE 01: DeepSeek-V3 Intent Analysis ---
+
+async def analyze_corporate_intent(company_name: str, industry: str, pathway: str) -> str:
+    """
+    Uses DeepSeek-V3 to generate a 'Clinical Intent Summary' based on browsing behavior.
+    """
+    if not settings.DEEPSEEK_API_KEY:
+        return "Intent analysis pending (API Key missing)."
+
+    # Fallbacks to ensure the prompt never fails
+    c_name = company_name or "Industrial Prospect"
+    ind = industry or "Manufacturing/Industrial"
+    path = pathway or "Direct Homepage Entry"
+
+    prompt = f"""
+    Analyze the following B2B website traffic for a South African industrial client.
+    Company: {c_name}
+    Industry: {ind}
+    Browsing Pathway: {path}
+
+    Task: Provide a 2-sentence 'Executive Intent Summary'. 
+    - Sentence 1: Identify the likely buying persona (e.g., Engineering, Procurement, or Executive).
+    - Sentence 2: Assess the 'Temperature' (Cold/Warm/Hot) based on page depth (e.g., Pricing/Docs = High Intent).
+    Tone: Clinical, sophisticated, 'Quiet Premium'. No marketing fluff.
+    """
+
+    async with httpx.AsyncClient() as client:
+        try:
+            # Increased timeout to 15s for DeepSeek-V3's complex reasoning
+            response = await client.post(
+                "https://api.deepseek.com/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "deepseek-chat",
+                    "messages": [
+                        {"role": "system", "content": "You are a B2B Intelligence Analyst focusing on high-ticket industrial sales."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    "temperature": 0.3 
+                },
+                timeout=15.0
+            )
+            
+            if response.status_code != 200:
+                logger.error(f"DeepSeek Error: {response.text}")
+                return "Intelligence engine calibrating. Analysis deferred."
+
+            result = response.json()
+            return result['choices'][0]['message']['content'].strip()
+        except Exception as e:
+            logger.error(f"DeepSeek Analysis Failed: {e}")
+            return "Intelligence engine temporarily offline."
+
+# --- PHASE 02: Journey & Stitching Logic ---
+
+async def get_visitor_journey(aura_id: str) -> Dict:
+    """
+    Retrieves the full behavioral ledger for a specific forensic ID.
+    Used to feed the Intent Analysis engine and populate Slack/Dashboards.
+    """
+    if not aura_id:
+        return {
+            "total_touches": 0, 
+            "pathway": "Direct/Anonymous", 
+            "intent_summary": "No forensic signature detected.",
+            "is_high_intent": False
+        }
+
+    with Session(engine) as session:
+        # Retrieve all historical visits for this forensic signature
+        statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at)
+        history = session.exec(statement).all()
+
+        if not history:
+            return {
+                "total_touches": 0, 
+                "pathway": "First Contact", 
+                "intent_summary": "Initial touchpoint recorded.",
+                "is_high_intent": False
+            }
+
+        # Extract Clean Paths (stripping domain noise)
+        pages = []
+        for v in history:
+            # Clean URL to show only path (e.g. /pricing)
+            p = v.url.split('auraworks.co.za')[-1] if v.url else "/"
+            if not p or p == "" or p == "undefined": p = "/"
+            pages.append(p)
+        
+        # Deduplicate pathway sequence while preserving order
+        unique_pathway = []
+        for p in pages:
+            if not unique_pathway or p != unique_pathway[-1]:
+                unique_pathway.append(p)
+        
+        pathway_str = " → ".join(unique_pathway)
+        
+        # 🏢 Resolve Company Context for the LLM
+        company = None
+        # Check if any visit in history has a company_id (linked via IP or Waitlist)
+        linked_visit = next((v for v in history if v.company_id), None)
+        if linked_visit:
+            company = session.get(Company, linked_visit.company_id)
+
+        # 🧠 Run DeepSeek Intent Analysis
+        # Even if no company is linked, we run it as 'Anonymous Prospect'
+        intent_summary = await analyze_corporate_intent(
+            company.name if company else "Anonymous Industrial Entity", 
+            company.industry if company else "Unknown Industry", 
+            pathway_str
+        )
+
+        return {
+            "total_touches": len(history),
+            "pathway": pathway_str,
+            "first_seen": history[0].created_at.strftime("%Y-%m-%d %H:%M"),
+            "intent_summary": intent_summary,
+            "is_high_intent": any(kw in pathway_str.lower() for kw in ["pricing", "waitlist", "get-started", "audit"])
+        }
+
+# --- PHASE 03: The 'Building-Level' Cluster ---
+
+async def get_building_activity(ip_address: str, current_aura_id: str) -> str:
+    """
+    Detects if multiple unique devices from the same IP are interacting.
+    Signifies a 'Company-Wide' evaluation (Building-Level Cluster).
+    """
+    if not ip_address: return "Solo Device"
+    
+    # 72-hour window for active consideration
+    time_threshold = datetime.now(timezone.utc) - timedelta(hours=72)
+    
+    with Session(engine) as session:
+        statement = select(Visit).where(
+            Visit.ip_address == ip_address,
+            Visit.aura_id != current_aura_id,
+            Visit.created_at >= time_threshold
+        )
+        other_hits = session.exec(statement).all()
+        
+        if not other_hits:
+            return "Solo Device"
+            
+        unique_devices = len({v.aura_id for v in other_hits})
+        return f"🏢 Corporate Cluster: {unique_devices} other device(s) active from this facility."
+</file>
+
 <file path="frontend/src/components/footer/footer.tsx">
 import { Logo } from '@/components/ui/logo'
 import { Button } from '@/components/ui/button'
@@ -5826,131 +5836,6 @@ class Settings(BaseSettings):
 settings = Settings()
 </file>
 
-<file path="backend/app/services/enrichment.py">
-import httpx
-import logging
-from app.core.config import settings
-from typing import Optional, List, Dict
-
-logger = logging.getLogger("uvicorn")
-
-# --- AuraWorks Identity Bridge: Consumer ISP & Infrastructure Blacklist ---
-
-def is_consumer_traffic(target_name: str) -> bool:
-    """Detects if a visit is originating from a residential/consumer ISP."""
-    if not target_name:
-        return False
-    normalized = target_name.lower()
-    return any(keyword in normalized for keyword in CONSUMER_ISP_KEYWORDS)
-
-async def enrich_visitor_data(ip_address: str) -> dict:
-    """
-    Phase 01: Forensic IP Resolution.
-    Separates Industrial Entities from Residential Noise.
-    """
-    if ip_address in ("127.0.0.1", "localhost", "::1"):
-        return {"company_name": "Local Test Environment", "is_b2b": False}
-
-    url = f"https://ipinfo.io/{ip_address}?token={settings.IPINFO_TOKEN}"
-
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(url, timeout=5.0)
-            if response.status_code != 200:
-                return {"company_name": "Unknown", "is_b2b": False}
-
-            data = response.json()
-            company_data = data.get("company", {})
-            final_name = company_data.get("name")
-            final_domain = company_data.get("domain")
-
-            # If IPinfo 'company' block is empty, fallback to 'org' parsing
-            if not final_name:
-                org_full = data.get("org", "Unknown")
-                parts = org_full.split(" ")
-                final_name = " ".join(parts[1:]) if parts[0].startswith("AS") and len(parts) > 1 else org_full
-
-            asn_type = data.get("asn", {}).get("type", "").lower()
-            
-            # THE JURISTIC FILTER: Only allow actual Companies
-            is_b2b = True
-            if is_consumer_traffic(final_name) or is_consumer_traffic(data.get("org", "")):
-                is_b2b = False
-            elif asn_type in ["hosting", "isp"]:
-                is_b2b = False
-
-            return {
-                "company_name": final_name,
-                "domain": final_domain or data.get("asn", {}).get("domain"),
-                "is_b2b": is_b2b,
-                "industry": asn_type or "unknown",
-                "city": data.get("city"),
-                "region": data.get("region")
-            }
-        except Exception as e:
-            logger.error(f"IPinfo Failure: {e}")
-            return {"company_name": "Error", "is_b2b": False}
-
-async def get_departmental_intelligence(domain: str) -> List[Dict]:
-    """
-    Phase 02: Industrial Cluster Mapping (Apollo.io).
-    Scans the corporate domain for decision makers in key departments.
-    """
-    if not settings.APOLLO_API_KEY or not domain:
-        return []
-
-    # API endpoint for person search
-    url = "https://api.apollo.io/v1/people/search"
-    
-    # Targeting the 'Industrial Buying Committee'
-    target_departments = [
-        "Procurement", "Operations", "Engineering", 
-        "Maintenance", "Supply Chain", "Technical Director"
-    ]
-
-    payload = {
-        "api_key": settings.APOLLO_API_KEY,
-        "q_organization_domains": domain,
-        "person_titles": target_departments,
-        "organization_locations": ["South Africa"],
-        "display_mode": "regular",
-        "per_page": 10
-    }
-
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(url, json=payload, timeout=12.0)
-            if response.status_code != 200:
-                logger.warning(f"Apollo API returned status {response.status_code}")
-                return []
-
-            data = response.json()
-            people = data.get("people", [])
-            
-            departments_found = []
-            for person in people:
-                # Map titles to a simplified department name
-                title = person.get("title", "").lower()
-                matched_dept = "Operations" # Default
-                for dept in target_departments:
-                    if dept.lower() in title:
-                        matched_dept = dept
-                        break
-                
-                departments_found.append({
-                    "name": matched_dept,
-                    "email": person.get("email"),
-                    "phone": person.get("phone_numbers", [{}])[0].get("raw_number"),
-                    "head_of_dept_linkedin": person.get("linkedin_url")
-                })
-            
-            return departments_found
-
-        except Exception as e:
-            logger.error(f"Apollo Enrichment Failure for {domain}: {e}")
-            return []
-</file>
-
 <file path="frontend/src/components/pricing/pricing.tsx">
 'use client'
 
@@ -6252,6 +6137,131 @@ class PageViewCreate(SQLModel):
     event_type: str = "exit"
 </file>
 
+<file path="backend/app/services/enrichment.py">
+import httpx
+import logging
+from app.core.config import settings
+from typing import Optional, List, Dict
+
+logger = logging.getLogger("uvicorn")
+
+# --- AuraWorks Identity Bridge: Consumer ISP & Infrastructure Blacklist ---
+
+def is_consumer_traffic(target_name: str) -> bool:
+    """Detects if a visit is originating from a residential/consumer ISP."""
+    if not target_name:
+        return False
+    normalized = target_name.lower()
+    return any(keyword in normalized for keyword in CONSUMER_ISP_KEYWORDS)
+
+async def enrich_visitor_data(ip_address: str) -> dict:
+    """
+    Phase 01: Forensic IP Resolution.
+    Separates Industrial Entities from Residential Noise.
+    """
+    if ip_address in ("127.0.0.1", "localhost", "::1"):
+        return {"company_name": "Local Test Environment", "is_b2b": False}
+
+    url = f"https://ipinfo.io/{ip_address}?token={settings.IPINFO_TOKEN}"
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url, timeout=5.0)
+            if response.status_code != 200:
+                return {"company_name": "Unknown", "is_b2b": False}
+
+            data = response.json()
+            company_data = data.get("company", {})
+            final_name = company_data.get("name")
+            final_domain = company_data.get("domain")
+
+            # If IPinfo 'company' block is empty, fallback to 'org' parsing
+            if not final_name:
+                org_full = data.get("org", "Unknown")
+                parts = org_full.split(" ")
+                final_name = " ".join(parts[1:]) if parts[0].startswith("AS") and len(parts) > 1 else org_full
+
+            asn_type = data.get("asn", {}).get("type", "").lower()
+            
+            # THE JURISTIC FILTER: Only allow actual Companies
+            is_b2b = True
+            if is_consumer_traffic(final_name) or is_consumer_traffic(data.get("org", "")):
+                is_b2b = False
+            elif asn_type in ["hosting", "isp"]:
+                is_b2b = False
+
+            return {
+                "company_name": final_name,
+                "domain": final_domain or data.get("asn", {}).get("domain"),
+                "is_b2b": is_b2b,
+                "industry": asn_type or "unknown",
+                "city": data.get("city"),
+                "region": data.get("region")
+            }
+        except Exception as e:
+            logger.error(f"IPinfo Failure: {e}")
+            return {"company_name": "Error", "is_b2b": False}
+
+async def get_departmental_intelligence(domain: str) -> List[Dict]:
+    """
+    Phase 02: Industrial Cluster Mapping (Apollo.io).
+    Scans the corporate domain for decision makers in key departments.
+    """
+    if not settings.APOLLO_API_KEY or not domain:
+        return []
+
+    # API endpoint for person search
+    url = "https://api.apollo.io/v1/people/search"
+    
+    # Targeting the 'Industrial Buying Committee'
+    target_departments = [
+        "Procurement", "Operations", "Engineering", 
+        "Maintenance", "Supply Chain", "Technical Director"
+    ]
+
+    payload = {
+        "api_key": settings.APOLLO_API_KEY,
+        "q_organization_domains": domain,
+        "person_titles": target_departments,
+        "organization_locations": ["South Africa"],
+        "display_mode": "regular",
+        "per_page": 10
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(url, json=payload, timeout=12.0)
+            if response.status_code != 200:
+                logger.warning(f"Apollo API returned status {response.status_code}")
+                return []
+
+            data = response.json()
+            people = data.get("people", [])
+            
+            departments_found = []
+            for person in people:
+                # Map titles to a simplified department name
+                title = person.get("title", "").lower()
+                matched_dept = "Operations" # Default
+                for dept in target_departments:
+                    if dept.lower() in title:
+                        matched_dept = dept
+                        break
+                
+                departments_found.append({
+                    "name": matched_dept,
+                    "email": person.get("email"),
+                    "phone": person.get("phone_numbers", [{}])[0].get("raw_number"),
+                    "head_of_dept_linkedin": person.get("linkedin_url")
+                })
+            
+            return departments_found
+
+        except Exception as e:
+            logger.error(f"Apollo Enrichment Failure for {domain}: {e}")
+            return []
+</file>
+
 <file path="frontend/src/components/hero-sec/hero-section.tsx">
 import React from 'react'
 import Link from 'next/link'
@@ -6490,6 +6500,18 @@ import sqlalchemy as sa
 def get_utc_now():
     return datetime.now(timezone.utc)
 
+from typing import Optional, TYPE_CHECKING
+from datetime import datetime, timezone
+from sqlmodel import SQLModel, Field, Relationship, Column, DateTime, String
+import sqlalchemy as sa
+
+# Forward reference for Type Checking
+if TYPE_CHECKING:
+    from app.models.company import Company
+
+def get_utc_now():
+    return datetime.now(timezone.utc)
+
 class WaitlistLead(SQLModel, table=True):
     """
     Individuals who have provided explicit Personal Consent via form submission.
@@ -6505,18 +6527,19 @@ class WaitlistLead(SQLModel, table=True):
     name: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
     email: str = Field(index=True, unique=True)
     
-    # Captured raw string from form for fuzzy matching/validation
+    # FIX: Explicitly naming the column to match the field name to stop UndefinedColumn errors
     company_name_raw: Optional[str] = Field(
         default=None, 
         sa_column=Column("company_name_raw", String, nullable=True)
     )
+    
     industry: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
     
     # --- B2B AUDIT & FIRMOGRAPHICS ---
     website: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
     traffic: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
     
-    # UPDATED: Changed to String to accommodate dropdown ranges (e.g., "150k-500k")
+    # UPDATED: String type to accommodate dropdown ranges (e.g., "150k-500k")
     avg_price: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
     
     crm: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
@@ -6531,19 +6554,20 @@ class WaitlistLead(SQLModel, table=True):
     # --- METADATA & TIMEKEEPING ---
     created_at: datetime = Field(
         default_factory=get_utc_now,
-        sa_column=Column(DateTime(timezone=True), nullable=False)
+        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=sa.func.now())
     )
     updated_at: datetime = Field(
         default_factory=get_utc_now,
         sa_column=Column(
             DateTime(timezone=True), 
-            onupdate=get_utc_now, # Automatically updates on every save
-            nullable=False
+            onupdate=sa.func.now(), # Automatically updates on every database save
+            nullable=False,
+            server_default=sa.func.now()
         )
     )
 
     # --- RELATIONSHIPS ---
-    # Relationship with the Company model (back-populated from Company.leads)
+    # Standardized to 'leads' to match Company.leads
     company: Optional["Company"] = Relationship(back_populates="leads")
 </file>
 
@@ -6929,6 +6953,122 @@ async def track_exit(payload: PageViewCreate):
         return {"status": "error"}
 </file>
 
+<file path="backend/app/main.py">
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from sqlmodel import Session, select
+import logging
+
+from app.core.config import settings
+from app.db import init_db, engine
+from app.api.v1 import track, clients, identity, waitlist
+from app.models.visit import Visit
+from app.models.company import Company 
+from app.core.scheduler import start_scheduler 
+
+# Setup logging - Industrial Clinical Style
+logger = logging.getLogger("uvicorn")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    The AuraWorks OS Lifecycle Manager.
+    Initializes the Juristic Ledger and starts the Background Intelligence Brain.
+    """
+    logger.info("🚀 AuraWorks OS: Initializing Database Ledger...")
+    init_db()
+    
+    logger.info("🧠 AuraWorks OS: Starting Intelligence Scheduler (Apollo & DeepSeek)...")
+    start_scheduler()
+    
+    yield
+    logger.info("🛑 AuraWorks OS: Orderly shutdown of systems...")
+
+app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
+
+# --- STATIC FILES: DECOUPLED ---
+logger.info("⚡ Static asset delivery offloaded to Cloudflare CDN.")
+
+# --- CORS CONFIGURATION ---
+origins = [ 
+    "https://industrial-intelligence-xi.vercel.app", 
+    "http://localhost:3000",
+    "https://auraworks.co.za",
+    "https://www.auraworks.co.za",
+    "https://cdn.auraworks.co.za"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS"], 
+    allow_headers=["*"],
+)
+
+# --- AURAWORKS FORENSIC DEBUGGER ---
+@app.post(f"{settings.API_V1_STR}/track/{{endpoint}}")
+async def debug_aura_signal(endpoint: str, request: Request):
+    """
+    Intercepts and logs forensic signals for real-time system monitoring.
+    """
+    try:
+        data = await request.json()
+        # NOISY DEV LOG: Detailed signal inspection
+        logger.info(f"--- 📡 AURA SIGNAL: [{endpoint.upper()}] ---")
+        logger.info(f"Aura ID: {data.get('aura_id')}")
+        logger.info(f"Full Payload: {data}")
+        
+        if endpoint == "identity":
+            sig = data.get('signature', {})
+            logger.info(f"🧬 Forensic Signature: Drift={sig.get('drift')}ms")
+        elif endpoint == "consent":
+            logger.info(f"✅ Technical Consent Handshake for {data.get('aura_id')}")
+            
+        return {"status": "debug_captured"}
+    except Exception as e:
+        logger.error(f"❌ Debug Capture Error: {str(e)}")
+        return {"status": "error"}
+
+# --- ROUTE REGISTRATION ---
+app.include_router(track.router, prefix=f"{settings.API_V1_STR}/track", tags=["tracking"])
+app.include_router(clients.router, prefix=f"{settings.API_V1_STR}/clients", tags=["clients"])
+app.include_router(identity.router, prefix=f"{settings.API_V1_STR}/identity", tags=["identity"])
+app.include_router(waitlist.router, prefix=f"{settings.API_V1_STR}/waitlist", tags=["waitlist"])
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+
+# --- DEBUG ROUTES: Unified Visibility ---
+
+@app.get(f"{settings.API_V1_STR}/leads")
+async def get_leads():
+    """
+    Restored to stop 404 errors. Returns raw visit data.
+    """
+    with Session(engine) as session:
+        statement = select(Visit).order_by(Visit.created_at.desc())
+        results = session.exec(statement).all()
+        # NOISY DEV LOG
+        logger.info(f"--- 💡 DEV LOG: FETCHING {len(results)} RAW VISITS ---")
+        return results
+
+@app.get(f"{settings.API_V1_STR}/debug/entities")
+async def get_entities():
+    """
+    Direct access to the Juristic Entity ledger.
+    Verify Apollo/IPinfo enrichment success here.
+    """
+    with Session(engine) as session:
+        statement = select(Company).order_by(Company.created_at.desc())
+        results = session.exec(statement).all()
+        # NOISY DEV LOG
+        logger.info(f"--- 💡 DEV LOG: FETCHING {len(results)} ENRICHED COMPANIES ---")
+        return results
+</file>
+
 <file path="backend/app/api/v1/waitlist.py">
 import httpx
 import logging
@@ -7130,122 +7270,6 @@ async def join_waitlist(payload: dict, request: Request, background_tasks: Backg
             session.rollback()
             logger.error(f"🚨 Promotion Failure: {e}")
             raise HTTPException(status_code=500, detail="Synchronization delay.")
-</file>
-
-<file path="backend/app/main.py">
-from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import Session, select
-import logging
-
-from app.core.config import settings
-from app.db import init_db, engine
-from app.api.v1 import track, clients, identity, waitlist
-from app.models.visit import Visit
-from app.models.company import Company 
-from app.core.scheduler import start_scheduler 
-
-# Setup logging - Industrial Clinical Style
-logger = logging.getLogger("uvicorn")
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """
-    The AuraWorks OS Lifecycle Manager.
-    Initializes the Juristic Ledger and starts the Background Intelligence Brain.
-    """
-    logger.info("🚀 AuraWorks OS: Initializing Database Ledger...")
-    init_db()
-    
-    logger.info("🧠 AuraWorks OS: Starting Intelligence Scheduler (Apollo & DeepSeek)...")
-    start_scheduler()
-    
-    yield
-    logger.info("🛑 AuraWorks OS: Orderly shutdown of systems...")
-
-app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
-
-# --- STATIC FILES: DECOUPLED ---
-logger.info("⚡ Static asset delivery offloaded to Cloudflare CDN.")
-
-# --- CORS CONFIGURATION ---
-origins = [ 
-    "https://industrial-intelligence-xi.vercel.app", 
-    "http://localhost:3000",
-    "https://auraworks.co.za",
-    "https://www.auraworks.co.za",
-    "https://cdn.auraworks.co.za"
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"], 
-    allow_headers=["*"],
-)
-
-# --- AURAWORKS FORENSIC DEBUGGER ---
-@app.post(f"{settings.API_V1_STR}/track/{{endpoint}}")
-async def debug_aura_signal(endpoint: str, request: Request):
-    """
-    Intercepts and logs forensic signals for real-time system monitoring.
-    """
-    try:
-        data = await request.json()
-        # NOISY DEV LOG: Detailed signal inspection
-        logger.info(f"--- 📡 AURA SIGNAL: [{endpoint.upper()}] ---")
-        logger.info(f"Aura ID: {data.get('aura_id')}")
-        logger.info(f"Full Payload: {data}")
-        
-        if endpoint == "identity":
-            sig = data.get('signature', {})
-            logger.info(f"🧬 Forensic Signature: Drift={sig.get('drift')}ms")
-        elif endpoint == "consent":
-            logger.info(f"✅ Technical Consent Handshake for {data.get('aura_id')}")
-            
-        return {"status": "debug_captured"}
-    except Exception as e:
-        logger.error(f"❌ Debug Capture Error: {str(e)}")
-        return {"status": "error"}
-
-# --- ROUTE REGISTRATION ---
-app.include_router(track.router, prefix=f"{settings.API_V1_STR}/track", tags=["tracking"])
-app.include_router(clients.router, prefix=f"{settings.API_V1_STR}/clients", tags=["clients"])
-app.include_router(identity.router, prefix=f"{settings.API_V1_STR}/identity", tags=["identity"])
-app.include_router(waitlist.router, prefix=f"{settings.API_V1_STR}/waitlist", tags=["waitlist"])
-
-@app.get("/health")
-def health_check():
-    return {"status": "healthy"}
-
-# --- DEBUG ROUTES: Unified Visibility ---
-
-@app.get(f"{settings.API_V1_STR}/leads")
-async def get_leads():
-    """
-    Restored to stop 404 errors. Returns raw visit data.
-    """
-    with Session(engine) as session:
-        statement = select(Visit).order_by(Visit.created_at.desc())
-        results = session.exec(statement).all()
-        # NOISY DEV LOG
-        logger.info(f"--- 💡 DEV LOG: FETCHING {len(results)} RAW VISITS ---")
-        return results
-
-@app.get(f"{settings.API_V1_STR}/debug/entities")
-async def get_entities():
-    """
-    Direct access to the Juristic Entity ledger.
-    Verify Apollo/IPinfo enrichment success here.
-    """
-    with Session(engine) as session:
-        statement = select(Company).order_by(Company.created_at.desc())
-        results = session.exec(statement).all()
-        # NOISY DEV LOG
-        logger.info(f"--- 💡 DEV LOG: FETCHING {len(results)} ENRICHED COMPANIES ---")
-        return results
 </file>
 
 </files>
