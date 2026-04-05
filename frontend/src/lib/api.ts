@@ -1,10 +1,14 @@
 // src/lib/api.ts
 
+/**
+ * The BASE_URL resolves the backend address.
+ * Ensure NEXT_PUBLIC_API_URL is set in your .env.local or production environment.
+ */
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 /**
  * Normalizes the API URL. 
- * Removed the forced trailing slash to stay compatible with standard FastAPI routes.
+ * Removes trailing and leading slashes to prevent standard FastAPI route mismatches.
  */
 const getEndpoint = (path: string) => {
     const cleanBase = BASE_URL.replace(/\/$/, '');
@@ -13,7 +17,10 @@ const getEndpoint = (path: string) => {
 };
 
 export async function submitToWaitlist(formData: any) {
-    // Added '/join' to match your FastAPI router logic
+    /**
+     * Targets the updated v1/waitlist/join endpoint.
+     * Matches the backend route defined in app/api/v1/waitlist.py
+     */
     const endpoint = getEndpoint('api/v1/waitlist/join');
 
     const response = await fetch(endpoint, {
@@ -23,7 +30,11 @@ export async function submitToWaitlist(formData: any) {
         },
         body: JSON.stringify({
             ...formData,
-            // Automatically grab the aura_id from storage for the "Stitch"
+            /**
+             * THE STITCH:
+             * Automatically grab the aura_id (forensic signature) from storage.
+             * This upgrades the anonymous session to a 'Consented' identity.
+             */
             aura_id: typeof window !== 'undefined' ? localStorage.getItem('aura_uid') : null,
             source: "industrial_intelligence_v1",
             timestamp: new Date().toISOString()
@@ -31,12 +42,16 @@ export async function submitToWaitlist(formData: any) {
     });
 
     if (!response.ok) {
+        // Attempt to parse the structured error from FastAPI
         const errorData = await response.json().catch(() => ({}));
-        // Providing a clearer error if the backend returns a 404
+        
+        // Logical Check: If the route is missing entirely
         if (response.status === 404) {
-            throw new Error(`Endpoint not found at ${endpoint}. Check your API URL.`);
+            throw new Error(`Intelligence Gateway not found at ${endpoint}. Please verify backend deployment.`);
         }
-        throw new Error(errorData.detail || 'Failed to connect to the intelligence engine.');
+
+        // Return the detailed error (e.g. 'Work email required') or a generic fallback
+        throw new Error(errorData.detail || 'The intelligence engine is currently synchronizing. Please try again.');
     }
 
     return response.json();

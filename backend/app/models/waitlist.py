@@ -25,14 +25,17 @@ class WaitlistLead(SQLModel, table=True):
     # Captured raw string from form for fuzzy matching/validation
     company_name_raw: Optional[str] = Field(
         default=None, 
-        sa_column=Column("company", String, nullable=True)
+        sa_column=Column("company_name_raw", String, nullable=True)
     )
     industry: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
     
     # --- B2B AUDIT & FIRMOGRAPHICS ---
     website: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
     traffic: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
+    
+    # UPDATED: Changed to String to accommodate dropdown ranges (e.g., "150k-500k")
     avg_price: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
+    
     crm: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
     
     # --- PROMOTIONAL STITCHING ---
@@ -51,11 +54,11 @@ class WaitlistLead(SQLModel, table=True):
         default_factory=get_utc_now,
         sa_column=Column(
             DateTime(timezone=True), 
-            onupdate=get_utc_now,
+            onupdate=get_utc_now, # Automatically updates on every save
             nullable=False
         )
     )
 
     # --- RELATIONSHIPS ---
-    # Parent link for 'Quiet Premium' report generation
-    company: Optional["Company"] = Relationship(back_populates="visitors")
+    # Relationship with the Company model (back-populated from Company.leads)
+    company: Optional["Company"] = Relationship(back_populates="leads")

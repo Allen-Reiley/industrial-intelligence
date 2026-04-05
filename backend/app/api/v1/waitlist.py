@@ -15,7 +15,25 @@ logger = logging.getLogger("uvicorn")
 
 # --- UTILS: Industrial Formatting ---
 def format_zar(value: str) -> str:
+    """
+    Handles both raw numbers and the new dropdown ranges (e.g., '50k-150k').
+    """
     if not value: return "N/A"
+    
+    # Handle the '1m+' case
+    if "m" in value.lower():
+        return "R1,000,000+"
+        
+    # Handle ranges like '50k-150k'
+    if "-" in value:
+        parts = value.replace('k', '000').split('-')
+        try:
+            formatted_parts = [f"R{int(p.strip()):,}" for p in parts]
+            return " - ".join(formatted_parts)
+        except:
+            return value
+
+    # Fallback for raw numeric strings
     clean_value = "".join(filter(str.isdigit, value))
     return f"R{int(clean_value):,}" if clean_value else value
 
@@ -57,9 +75,9 @@ async def send_slack_notification(payload: dict, journey: dict = None):
     status_emoji = "🔴" if is_hot else "🔵"
     status_text = "HOT LEAD" if is_hot else "New Verified Inquiry"
     
+    # Use the range-aware formatter
     formatted_price = format_zar(payload.get('avg_price'))
     
-    # Logic fallback for Company Name visibility
     display_company = payload.get('company_name_raw') or payload.get('company') or "Unknown Entity"
 
     slack_data = {
@@ -103,13 +121,10 @@ async def send_slack_notification(payload: dict, journey: dict = None):
 # --- MAIN ROUTE: The Promotion Logic ---
 @router.post("/join")
 async def join_waitlist(payload: dict, request: Request, background_tasks: BackgroundTasks):
-    # DEV LOG: Noisy input inspection
     logger.info(f"--- 💡 DEV LOG: WAITLIST PAYLOAD KEYS: {list(payload.keys())} ---")
     
     email = payload.get("email")
     aura_id = payload.get("aura_id")
-    
-    # Resilience for frontend key naming (company vs company_name)
     raw_company_name = payload.get("company") or payload.get("company_name") or payload.get("companyName")
     website = payload.get("website")
 
@@ -127,7 +142,6 @@ async def join_waitlist(payload: dict, request: Request, background_tasks: Backg
             if domain:
                 company = session.exec(select(Company).where(Company.domain == domain)).first()
             
-            # If no domain match, check by Name to prevent duplicate entries
             if not company and raw_company_name:
                 company = session.exec(select(Company).where(Company.name == raw_company_name)).first()
 
@@ -141,7 +155,7 @@ async def join_waitlist(payload: dict, request: Request, background_tasks: Backg
                 session.commit()
                 session.refresh(company)
 
-            # 2. Update/Create Verified Secondary Entity (WaitlistLead)
+            # 2. Update/Create Lead
             lead = session.exec(select(WaitlistLead).where(WaitlistLead.email == email)).first()
             if not lead:
                 lead = WaitlistLead(email=email)
@@ -152,7 +166,7 @@ async def join_waitlist(payload: dict, request: Request, background_tasks: Backg
             lead.industry = payload.get("industry")
             lead.website = website
             lead.traffic = payload.get("traffic")
-            lead.avg_price = payload.get("avg_price")
+            lead.avg_price = payload.get("avg_price") # Stores the dropdown string
             lead.crm = payload.get("crm")
             lead.aura_id = aura_id
             
@@ -170,10 +184,8 @@ async def join_waitlist(payload: dict, request: Request, background_tasks: Backg
             session.refresh(lead)
 
             # 4. Intelligence Execution (DeepSeek-V3 intent logic)
-            # We call this journey_data here to pass to Slack
             journey_data = await get_visitor_journey(aura_id)
             
-            # Update payload with enriched company name for Slack visibility
             payload["company_name_raw"] = company.name
 
             # 5. Hand off to Background Workers

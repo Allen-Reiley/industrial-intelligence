@@ -210,61 +210,93 @@ from app.db import engine
 from app.models.company import Company
 from app.models.department import Department
 from app.services.enrichment import get_departmental_intelligence
-# from app.services.intelligence import generate_corporate_summary (Building next)
+from datetime import datetime, timezone
+import asyncio
 import logging
 
 logger = logging.getLogger("uvicorn")
 
 def run_enrichment_cycle():
     """
-    Overnight/Hourly task to map departments for new Juristic Entities.
+    Industrial Enrichment Task:
+    Maps corporate departments for Juristic Entities using Apollo.io.
     """
+    # Create a dedicated event loop for this background thread to avoid loop conflicts
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
     with Session(engine) as session:
-        # Find companies with domains that haven't been enriched yet
+        # Find companies with domains that require enrichment
+        # Logic: Domain must exist, and we haven't found any departments yet
         statement = select(Company).where(Company.domain != None)
         companies = session.exec(statement).all()
 
         for company in companies:
-            # Check if we already have departments to avoid API waste
-            existing_depts = session.exec(
-                select(Department).where(Department.company_id == company.id)
-            ).first()
-            
-            if existing_depts:
-                continue
-
-            logger.info(f"🔍 Scheduled Enrichment: Researching {company.name}...")
-            
             try:
-                # We use a synchronous wrapper or run_in_executor for the async service
-                import asyncio
-                depts_data = asyncio.run(get_departmental_intelligence(company.domain))
+                # 🛡️ API WASTE GATE:
+                # We check if this company already has departmental records.
+                # In a future update, we can check 'company.last_enriched_at' for 30-day refreshes.
+                existing_depts = session.exec(
+                    select(Department).where(Department.company_id == company.id)
+                ).first()
                 
+                if existing_depts:
+                    # Skip to save Apollo credits if already mapped
+                    continue
+
+                logger.info(f"🔍 Scheduled Enrichment: Researching {company.name} [{company.domain}]")
+                
+                # Execute the Apollo.io search via the async service
+                depts_data = loop.run_until_complete(get_departmental_intelligence(company.domain))
+                
+                if not depts_data:
+                    logger.info(f"ℹ️ No departments found for {company.domain}")
+                    continue
+
                 for dept in depts_data:
                     new_dept = Department(
                         company_id=company.id,
-                        name=dept['name'],
-                        email=dept['email'],
-                        phone=dept['phone'],
-                        head_of_dept_linkedin=dept['head_of_dept_linkedin']
+                        name=dept.get('name', 'General'),
+                        email=dept.get('email'),
+                        phone=dept.get('phone'),
+                        head_of_dept_linkedin=dept.get('head_of_dept_linkedin')
                     )
                     session.add(new_dept)
                 
+                # Update company metadata if you decide to add this field to your Company model
+                # company.last_enriched_at = datetime.now(timezone.utc)
+                # session.add(company)
+                
                 session.commit()
+                logger.info(f"✅ Successfully mapped {len(depts_data)} departments for {company.name}")
+
             except Exception as e:
+                session.rollback()
                 logger.error(f"❌ Enrichment Cycle Error for {company.name}: {e}")
+    
+    loop.close()
 
 def start_scheduler():
+    """
+    Initializes the AuraWorks Background Pipeline.
+    """
     scheduler = BackgroundScheduler()
     
-    # Task 1: Enrich new companies every hour
-    scheduler.add_job(run_enrichment_cycle, 'interval', hours=1)
+    # Task 1: Perform industrial enrichment every hour
+    # This captures companies added via tracking or waitlist that haven't been mapped yet.
+    scheduler.add_job(
+        run_enrichment_cycle, 
+        'interval', 
+        hours=1, 
+        id='industrial_enrichment',
+        replace_existing=True
+    )
     
-    # Task 2: (Optional) Weekly Report Generation - Every Monday at 08:00 SAST
+    # Task 2: (Planned) Weekly ROI Audit Reports
     # scheduler.add_job(generate_weekly_audit_reports, 'cron', day_of_week='mon', hour=8)
     
     scheduler.start()
-    logger.info("🚀 AuraWorks Scheduler: Online & Monitoring Entities.")
+    logger.info("🚀 AuraWorks Scheduler: Online. Monitoring Juristic Entities.")
 </file>
 
 <file path="backend/app/core/security.py">
@@ -3539,15 +3571,16 @@ logger = logging.getLogger("uvicorn")
 def calculate_identity_match(new_sig: dict, existing_visit: Visit) -> float:
     """
     Calculates a probability score (0.0 to 1.0) based on hardware entropy.
-    Weights are tuned for B2B Industrial environments (Corporate NATs).
+    Weights normalized to 1.0 for B2B Industrial environments.
     """
     score = 0.0
     
-    # 1. Canvas Match (40% Weight) - Most unique hardware signature
+    # 1. Canvas Match (40% Weight) - Primary hardware rendering signature
     if new_sig.get('canvas') == existing_visit.canvas_hash:
         score += 0.40
         
-    # 2. Clock Drift Match (30% Weight) - Precision timing delta (allow 1ms)
+    # 2. Clock Drift Match (30% Weight) - Precision timing delta
+    # Allow 1ms variance for network jitter
     drift_diff = abs(new_sig.get('drift', 0) - (existing_visit.clock_drift or 0))
     if drift_diff <= 1:
         score += 0.30
@@ -3562,15 +3595,23 @@ def calculate_identity_match(new_sig: dict, existing_visit: Visit) -> float:
         
     return score
 
-async def merge_sessions(session: Session, new_id: str, original_id: str):
-    """Background task to unify fragmented session data after a forensic stitch."""
-    statement = select(Visit).where(Visit.aura_id == new_id)
-    recent_visits = session.exec(statement).all()
-    for visit in recent_visits:
-        visit.aura_id = original_id
-        session.add(visit)
-    session.commit()
-    logger.info(f"🔗 Session Merge Complete: {new_id} -> {original_id}")
+def merge_sessions_sync(new_id: str, original_id: str):
+    """
+    Sync wrapper for the background merge task to unify fragmented session data.
+    """
+    with Session(engine) as session:
+        try:
+            statement = select(Visit).where(Visit.aura_id == new_id)
+            visits_to_update = session.exec(statement).all()
+            
+            for visit in visits_to_update:
+                visit.aura_id = original_id
+                session.add(visit)
+            
+            session.commit()
+            logger.info(f"🔗 Forensic Stitch Success: {new_id} unified into {original_id}")
+        except Exception as e:
+            logger.error(f"❌ Session Merge Failure: {e}")
 
 @router.post("/resolve")
 async def resolve_identity(payload: dict, background_tasks: BackgroundTasks):
@@ -3582,40 +3623,45 @@ async def resolve_identity(payload: dict, background_tasks: BackgroundTasks):
 
     with Session(engine) as session:
         # Step 1: Check for direct ID match (Existing browser session)
-        statement = select(Visit).where(Visit.aura_id == aura_id)
-        existing_lead = session.exec(statement).first()
+        statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at.desc())
+        existing_visit = session.exec(statement).first()
         
-        if existing_lead:
+        if existing_visit:
             logger.info(f"🎯 Direct Match: {aura_id}. Refreshing Forensic Lock.")
-            existing_lead.canvas_hash = signature.get('canvas')
-            existing_lead.clock_drift = signature.get('drift')
-            existing_lead.webgl_renderer = signature.get('webgl')
-            existing_lead.font_list = signature.get('fonts')
-            session.add(existing_lead)
+            # Update the fingerprint in case they updated their browser/OS
+            existing_visit.canvas_hash = signature.get('canvas')
+            existing_visit.clock_drift = signature.get('drift')
+            existing_visit.webgl_renderer = signature.get('webgl')
+            existing_visit.font_list = signature.get('fonts')
+            session.add(existing_visit)
             session.commit()
             return {"status": "recognized", "method": "direct_id"}
 
         # Step 2: Weighted Forensic Search (The "Identity Bridge")
-        # Search the last 100 industrial footprints for a hardware match
-        all_recent = session.exec(select(Visit).order_by(Visit.created_at.desc()).limit(100)).all()
+        # Scan recent industrial footprints for a hardware match
+        all_recent = session.exec(select(Visit).order_by(Visit.created_at.desc()).limit(150)).all()
         
-        for visit in all_recent:
-            match_probability = calculate_identity_match(signature, visit)
+        # Deduplicate results by aura_id to only compare unique profiles
+        unique_profiles = {v.aura_id: v for v in all_recent}.values()
+        
+        for profile in unique_profiles:
+            match_probability = calculate_identity_match(signature, profile)
             
-            if match_probability >= 0.85: # High Confidence Threshold for Stitched Profiles
+            # High Confidence Threshold (85%)
+            if match_probability >= 0.85:
                 logger.info(f"🧵 Forensic Stitch Identified! Conf: {match_probability*100}%")
                 
-                # Trigger a background merge to unify this session with the original profile
-                background_tasks.add_task(merge_sessions, session, aura_id, visit.aura_id)
+                # Unify this new ID with the historical profile in the background
+                background_tasks.add_task(merge_sessions_sync, aura_id, profile.aura_id)
                 
-                # Return 'stitched_id' so aura.js can sync the local storage
+                # Signal the frontend to update its local storage to the original ID
                 return {
                     "status": "stitched", 
-                    "stitched_id": visit.aura_id, 
+                    "stitched_id": profile.aura_id, 
                     "confidence": match_probability
                 }
 
-    return {"status": "new_identity", "message": "Forensic profile created."}
+    return {"status": "new_identity", "message": "Forensic profile initialized."}
 </file>
 
 <file path="backend/app/models/client.py">
@@ -4120,11 +4166,15 @@ export const LogoIcon = ({ className }: { className?: string }) => {
 <file path="frontend/src/lib/api.ts">
 // src/lib/api.ts
 
+/**
+ * The BASE_URL resolves the backend address.
+ * Ensure NEXT_PUBLIC_API_URL is set in your .env.local or production environment.
+ */
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 /**
  * Normalizes the API URL. 
- * Removed the forced trailing slash to stay compatible with standard FastAPI routes.
+ * Removes trailing and leading slashes to prevent standard FastAPI route mismatches.
  */
 const getEndpoint = (path: string) => {
     const cleanBase = BASE_URL.replace(/\/$/, '');
@@ -4133,7 +4183,10 @@ const getEndpoint = (path: string) => {
 };
 
 export async function submitToWaitlist(formData: any) {
-    // Added '/join' to match your FastAPI router logic
+    /**
+     * Targets the updated v1/waitlist/join endpoint.
+     * Matches the backend route defined in app/api/v1/waitlist.py
+     */
     const endpoint = getEndpoint('api/v1/waitlist/join');
 
     const response = await fetch(endpoint, {
@@ -4143,7 +4196,11 @@ export async function submitToWaitlist(formData: any) {
         },
         body: JSON.stringify({
             ...formData,
-            // Automatically grab the aura_id from storage for the "Stitch"
+            /**
+             * THE STITCH:
+             * Automatically grab the aura_id (forensic signature) from storage.
+             * This upgrades the anonymous session to a 'Consented' identity.
+             */
             aura_id: typeof window !== 'undefined' ? localStorage.getItem('aura_uid') : null,
             source: "industrial_intelligence_v1",
             timestamp: new Date().toISOString()
@@ -4151,12 +4208,16 @@ export async function submitToWaitlist(formData: any) {
     });
 
     if (!response.ok) {
+        // Attempt to parse the structured error from FastAPI
         const errorData = await response.json().catch(() => ({}));
-        // Providing a clearer error if the backend returns a 404
+        
+        // Logical Check: If the route is missing entirely
         if (response.status === 404) {
-            throw new Error(`Endpoint not found at ${endpoint}. Check your API URL.`);
+            throw new Error(`Intelligence Gateway not found at ${endpoint}. Please verify backend deployment.`);
         }
-        throw new Error(errorData.detail || 'Failed to connect to the intelligence engine.');
+
+        // Return the detailed error (e.g. 'Work email required') or a generic fallback
+        throw new Error(errorData.detail || 'The intelligence engine is currently synchronizing. Please try again.');
     }
 
     return response.json();
@@ -4835,7 +4896,7 @@ import logging
 import asyncio
 import json
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional
+from typing import List, Optional, Dict
 from sqlmodel import Session, select
 from app.models.visit import Visit
 from app.models.company import Company
@@ -4853,11 +4914,16 @@ async def analyze_corporate_intent(company_name: str, industry: str, pathway: st
     if not settings.DEEPSEEK_API_KEY:
         return "Intent analysis pending (API Key missing)."
 
+    # Fallbacks to ensure the prompt never fails
+    c_name = company_name or "Industrial Prospect"
+    ind = industry or "Manufacturing/Industrial"
+    path = pathway or "Direct Homepage Entry"
+
     prompt = f"""
     Analyze the following B2B website traffic for a South African industrial client.
-    Company: {company_name}
-    Industry: {industry}
-    Browsing Pathway: {pathway}
+    Company: {c_name}
+    Industry: {ind}
+    Browsing Pathway: {path}
 
     Task: Provide a 2-sentence 'Executive Intent Summary'. 
     - Sentence 1: Identify the likely buying persona (e.g., Engineering, Procurement, or Executive).
@@ -4867,6 +4933,7 @@ async def analyze_corporate_intent(company_name: str, industry: str, pathway: st
 
     async with httpx.AsyncClient() as client:
         try:
+            # Increased timeout to 15s for DeepSeek-V3's complex reasoning
             response = await client.post(
                 "https://api.deepseek.com/v1/chat/completions",
                 headers={
@@ -4875,11 +4942,19 @@ async def analyze_corporate_intent(company_name: str, industry: str, pathway: st
                 },
                 json={
                     "model": "deepseek-chat",
-                    "messages": [{"role": "user", "content": prompt}],
-                    "temperature": 0.3 # Low temperature for clinical consistency
+                    "messages": [
+                        {"role": "system", "content": "You are a B2B Intelligence Analyst focusing on high-ticket industrial sales."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    "temperature": 0.3 
                 },
-                timeout=10.0
+                timeout=15.0
             )
+            
+            if response.status_code != 200:
+                logger.error(f"DeepSeek Error: {response.text}")
+                return "Intelligence engine calibrating. Analysis deferred."
+
             result = response.json()
             return result['choices'][0]['message']['content'].strip()
         except Exception as e:
@@ -4888,13 +4963,18 @@ async def analyze_corporate_intent(company_name: str, industry: str, pathway: st
 
 # --- PHASE 02: Journey & Stitching Logic ---
 
-async def get_visitor_journey(aura_id: str):
+async def get_visitor_journey(aura_id: str) -> Dict:
     """
     Retrieves the full behavioral ledger for a specific forensic ID.
-    Used to feed the Intent Analysis engine.
+    Used to feed the Intent Analysis engine and populate Slack/Dashboards.
     """
     if not aura_id:
-        return {"total_touches": 0, "pathway": "Anonymous", "intent": "None"}
+        return {
+            "total_touches": 0, 
+            "pathway": "Direct/Anonymous", 
+            "intent_summary": "No forensic signature detected.",
+            "is_high_intent": False
+        }
 
     with Session(engine) as session:
         # Retrieve all historical visits for this forensic signature
@@ -4902,38 +4982,50 @@ async def get_visitor_journey(aura_id: str):
         history = session.exec(statement).all()
 
         if not history:
-            return {"total_touches": 0, "pathway": "First Contact", "intent": "N/A"}
+            return {
+                "total_touches": 0, 
+                "pathway": "First Contact", 
+                "intent_summary": "Initial touchpoint recorded.",
+                "is_high_intent": False
+            }
 
-        # Extract Clean Paths (e.g., /pricing, /docs)
+        # Extract Clean Paths (stripping domain noise)
         pages = []
         for v in history:
-            path = v.url.split('auraworks.co.za')[-1] if v.url else "/"
-            if not path or path == "": path = "/"
-            pages.append(path)
+            # Clean URL to show only path (e.g. /pricing)
+            p = v.url.split('auraworks.co.za')[-1] if v.url else "/"
+            if not p or p == "" or p == "undefined": p = "/"
+            pages.append(p)
         
-        # Unique pathway sequence
-        pathway_str = " → ".join(list(dict.fromkeys(pages)))
+        # Deduplicate pathway sequence while preserving order
+        unique_pathway = []
+        for p in pages:
+            if not unique_pathway or p != unique_pathway[-1]:
+                unique_pathway.append(p)
+        
+        pathway_str = " → ".join(unique_pathway)
         
         # 🏢 Resolve Company Context for the LLM
         company = None
-        if history[0].company_id:
-            company = session.get(Company, history[0].company_id)
+        # Check if any visit in history has a company_id (linked via IP or Waitlist)
+        linked_visit = next((v for v in history if v.company_id), None)
+        if linked_visit:
+            company = session.get(Company, linked_visit.company_id)
 
-        # 🧠 Run DeepSeek Intent Analysis if we have a Company
-        intent_summary = "Awaiting Entity Resolution."
-        if company:
-            intent_summary = await analyze_corporate_intent(
-                company.name, 
-                company.industry or "Industrial", 
-                pathway_str
-            )
+        # 🧠 Run DeepSeek Intent Analysis
+        # Even if no company is linked, we run it as 'Anonymous Prospect'
+        intent_summary = await analyze_corporate_intent(
+            company.name if company else "Anonymous Industrial Entity", 
+            company.industry if company else "Unknown Industry", 
+            pathway_str
+        )
 
         return {
             "total_touches": len(history),
             "pathway": pathway_str,
             "first_seen": history[0].created_at.strftime("%Y-%m-%d %H:%M"),
             "intent_summary": intent_summary,
-            "is_high_intent": "pricing" in pathway_str.lower() or "waitlist" in pathway_str.lower()
+            "is_high_intent": any(kw in pathway_str.lower() for kw in ["pricing", "waitlist", "get-started", "audit"])
         }
 
 # --- PHASE 03: The 'Building-Level' Cluster ---
@@ -4941,8 +5033,11 @@ async def get_visitor_journey(aura_id: str):
 async def get_building_activity(ip_address: str, current_aura_id: str) -> str:
     """
     Detects if multiple unique devices from the same IP are interacting.
-    Signifies a 'Company-Wide' evaluation.
+    Signifies a 'Company-Wide' evaluation (Building-Level Cluster).
     """
+    if not ip_address: return "Solo Device"
+    
+    # 72-hour window for active consideration
     time_threshold = datetime.now(timezone.utc) - timedelta(hours=72)
     
     with Session(engine) as session:
@@ -4957,7 +5052,7 @@ async def get_building_activity(ip_address: str, current_aura_id: str) -> str:
             return "Solo Device"
             
         unique_devices = len({v.aura_id for v in other_hits})
-        return f"🏢 Corporate Cluster: {unique_devices} other device(s) active."
+        return f"🏢 Corporate Cluster: {unique_devices} other device(s) active from this facility."
 </file>
 
 <file path="frontend/src/app/(pages)/about/page.tsx">
@@ -5733,61 +5828,16 @@ settings = Settings()
 
 <file path="backend/app/services/enrichment.py">
 import httpx
+import logging
 from app.core.config import settings
 from typing import Optional, List, Dict
-import logging
 
 logger = logging.getLogger("uvicorn")
 
 # --- AuraWorks Identity Bridge: Consumer ISP & Infrastructure Blacklist ---
-# (Keep your existing CONSUMER_ISP_KEYWORDS list here as the SA Authority filter)
-
-CONSUMER_ISP_KEYWORDS = [
-    # --- The Big Five (Mobile & Primary) ---
-    "vodacom", "mtn", "telkom", "cell c", "rain", "liquid intelligent", "liquid telecom",
-
-    # --- Major National ISPs & Fibre Providers ---
-    "afrihost", "mweb", "cool ideas", "vumatel", "frogfoot", "openserve", 
-    "vox telecom", "webafrica", "seacom", "dark fibre africa", "dfa",
-    "supersonic", "metrofibre", "herotel", "rsaweb", "nexus", "tiscali",
-    "axxess", "cybersmart", "home-connect", "atomic access",
-
-    # --- Regional, Local & WISPs (Wireless ISPs) ---
-    "wispernet", "snowball", "infoprotect", "italk", "skyfi", "jikani", 
-    "amobia", "bitco", "comsol", "i-connect", "krypton", "limpopo online", 
-    "megasurf", "penta-net", "wisper", "zeon", "zalist", "wirulink",
-    "fancam", "breede net", "gigajoy", "lightspeed", "wibernet", "wiiconnect",
-    "cape connect", "garden route fibre", "urbanx", "123net", "adept ict",
-
-    # --- MVNOs & Retail Managed Services ---
-    "fnb connect", "standard bank mobile", "capitec connect", "melon mobile",
-    "shoprite k'nect", "pnp mobile", "mr p mobile", "tyme bank mobile",
-    "flash mobile", "absamobile",
-
-    # --- Fibre Infrastructure & Open Access (FNOs) ---
-    "octotel", "link africa", "evotel", "vuma", "zoom fibre", "ttconnect",
-    "mitchells fibre", "century city connect", "smart village", "vula",
-    "fibertime", "net nine nine", "link layer", "lightstruck", "clear access",
-    "dnatel", "purple forest fibre", "balwin fibre", "fibresuburb", "netstream",
-    "open fibre", "route networks", "teralink", "thinkspeed", "wire-wire", 
-    "ilitha telecoms", "zing fibre", "purple forest",
-
-    # --- Satellite & Niche Providers ---
-    "starlink", "morclick", "q-kon", "yahclick", "eutelsat", "too-way", "twoobii",
-
-    # --- Legacy & Merged Entities ---
-    "iburst", "neotel", "screamer", "is", "internet solutions",
-    "dimension data", "didata", "altech", "autopage", "nashua mobile",
-    "business connexion", "bcx", "yellow pages", "trudon",
-
-    # --- International Overspill & Cloud Proxies ---
-    "google", "comcast", "verizon", "orange", "at&t", "charter", "bt", 
-    "telefonica", "t-mobile", "cox", "lumen", "centurylink", "fastly", 
-    "cloudflare", "akamai", "amazon", "aws", "microsoft", "azure"
-]
 
 def is_consumer_traffic(target_name: str) -> bool:
-    """Helper to check if a name matches our blacklist."""
+    """Detects if a visit is originating from a residential/consumer ISP."""
     if not target_name:
         return False
     normalized = target_name.lower()
@@ -5795,8 +5845,8 @@ def is_consumer_traffic(target_name: str) -> bool:
 
 async def enrich_visitor_data(ip_address: str) -> dict:
     """
-    Phase 01: Immediate IP Resolution.
-    Identifies the Jurisdictive Entity (Company) from network signatures.
+    Phase 01: Forensic IP Resolution.
+    Separates Industrial Entities from Residential Noise.
     """
     if ip_address in ("127.0.0.1", "localhost", "::1"):
         return {"company_name": "Local Test Environment", "is_b2b": False}
@@ -5814,6 +5864,7 @@ async def enrich_visitor_data(ip_address: str) -> dict:
             final_name = company_data.get("name")
             final_domain = company_data.get("domain")
 
+            # If IPinfo 'company' block is empty, fallback to 'org' parsing
             if not final_name:
                 org_full = data.get("org", "Unknown")
                 parts = org_full.split(" ")
@@ -5821,7 +5872,7 @@ async def enrich_visitor_data(ip_address: str) -> dict:
 
             asn_type = data.get("asn", {}).get("type", "").lower()
             
-            # B2B Logic: Filter out Consumer ISPs and Hosting Bots
+            # THE JURISTIC FILTER: Only allow actual Companies
             is_b2b = True
             if is_consumer_traffic(final_name) or is_consumer_traffic(data.get("org", "")):
                 is_b2b = False
@@ -5842,18 +5893,19 @@ async def enrich_visitor_data(ip_address: str) -> dict:
 
 async def get_departmental_intelligence(domain: str) -> List[Dict]:
     """
-    Phase 02: Departmental Mapping via Apollo.io.
-    Finds public contact points for specific industrial departments.
+    Phase 02: Industrial Cluster Mapping (Apollo.io).
+    Scans the corporate domain for decision makers in key departments.
     """
     if not settings.APOLLO_API_KEY or not domain:
         return []
 
+    # API endpoint for person search
     url = "https://api.apollo.io/v1/people/search"
     
-    # Industrial Department Personas
+    # Targeting the 'Industrial Buying Committee'
     target_departments = [
-        "Procurement", "Engineering", "Maintenance", 
-        "Operations", "Supply Chain", "Technical"
+        "Procurement", "Operations", "Engineering", 
+        "Maintenance", "Supply Chain", "Technical Director"
     ]
 
     payload = {
@@ -5861,14 +5913,15 @@ async def get_departmental_intelligence(domain: str) -> List[Dict]:
         "q_organization_domains": domain,
         "person_titles": target_departments,
         "organization_locations": ["South Africa"],
-        "page": 1,
-        "display_mode": "regular"
+        "display_mode": "regular",
+        "per_page": 10
     }
 
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post(url, json=payload, timeout=10.0)
+            response = await client.post(url, json=payload, timeout=12.0)
             if response.status_code != 200:
+                logger.warning(f"Apollo API returned status {response.status_code}")
                 return []
 
             data = response.json()
@@ -5876,15 +5929,19 @@ async def get_departmental_intelligence(domain: str) -> List[Dict]:
             
             departments_found = []
             for person in people:
-                # Group by department keyword
-                title = person.get("title", "")
-                dept_name = next((d for d in target_departments if d.lower() in title.lower()), "General")
+                # Map titles to a simplified department name
+                title = person.get("title", "").lower()
+                matched_dept = "Operations" # Default
+                for dept in target_departments:
+                    if dept.lower() in title:
+                        matched_dept = dept
+                        break
                 
                 departments_found.append({
-                    "name": dept_name,
+                    "name": matched_dept,
                     "email": person.get("email"),
                     "phone": person.get("phone_numbers", [{}])[0].get("raw_number"),
-                    "head_of_dept_linkedin": f"https://www.linkedin.com/in/{person.get('linkedin_url', '').split('/')[-1]}" if person.get('linkedin_url') else None
+                    "head_of_dept_linkedin": person.get("linkedin_url")
                 })
             
             return departments_found
@@ -6451,14 +6508,17 @@ class WaitlistLead(SQLModel, table=True):
     # Captured raw string from form for fuzzy matching/validation
     company_name_raw: Optional[str] = Field(
         default=None, 
-        sa_column=Column("company", String, nullable=True)
+        sa_column=Column("company_name_raw", String, nullable=True)
     )
     industry: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
     
     # --- B2B AUDIT & FIRMOGRAPHICS ---
     website: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
     traffic: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
+    
+    # UPDATED: Changed to String to accommodate dropdown ranges (e.g., "150k-500k")
     avg_price: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
+    
     crm: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
     
     # --- PROMOTIONAL STITCHING ---
@@ -6477,14 +6537,14 @@ class WaitlistLead(SQLModel, table=True):
         default_factory=get_utc_now,
         sa_column=Column(
             DateTime(timezone=True), 
-            onupdate=get_utc_now,
+            onupdate=get_utc_now, # Automatically updates on every save
             nullable=False
         )
     )
 
     # --- RELATIONSHIPS ---
-    # Parent link for 'Quiet Premium' report generation
-    company: Optional["Company"] = Relationship(back_populates="visitors")
+    # Relationship with the Company model (back-populated from Company.leads)
+    company: Optional["Company"] = Relationship(back_populates="leads")
 </file>
 
 <file path="frontend/src/components/sections/form/get-started.tsx">
@@ -6494,7 +6554,7 @@ import React, { useState, type FormEvent } from 'react'
 import { 
     Building2, Mail, User, Briefcase, ArrowLeft, 
     Globe, BarChart3, Tag, Database, Loader2, 
-    Lock, ArrowRight, CheckCircle 
+    Lock, ArrowRight, CheckCircle, ChevronDown
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -6508,7 +6568,6 @@ export default function GetStartedPage() {
     const [isLoading, setIsLoading] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
     
-    // Unified State - Now using avg_price to match Backend/DB schemas
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -6516,20 +6575,17 @@ export default function GetStartedPage() {
         industry: '',
         website: '',
         traffic: '',
-        avg_price: '', // Fixed: snake_case for direct DB mapping
+        avg_price: '', 
         crm: ''
     })
 
     const handleNext = (e: FormEvent) => {
         e.preventDefault()
-        
-        // Industrial Intelligence logic: Prioritize work emails
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(formData.email)) {
             alert("Please enter a valid work email address.")
             return
         }
-        
         setStep(2)
     }
 
@@ -6538,10 +6594,7 @@ export default function GetStartedPage() {
         setIsLoading(true);
         
         try {
-            // Retrieve tracking ID from local storage (Forensic Bridge)
             const aura_id = typeof window !== 'undefined' ? localStorage.getItem('aura_uid') : null;
-
-            // Direct submission: formData now aligns with backend WaitlistLead schema
             await submitToWaitlist({
                 ...formData,
                 aura_id: aura_id
@@ -6549,8 +6602,7 @@ export default function GetStartedPage() {
             setIsSuccess(true);
         } catch (error: any) {
             console.error("Submission Error:", error);
-            // Secure generic alert to prevent leaking infrastructure details
-            alert("System Update: We encountered a synchronization delay with the audit pipeline. Please try again in a moment.");
+            alert("System Update: We encountered a synchronization delay. Please try again in a moment.");
         } finally {
             setIsLoading(false);
         }
@@ -6597,7 +6649,6 @@ export default function GetStartedPage() {
                             <h2 className="text-3xl font-bold tracking-tight">Audit Initiated</h2>
                             <p className="text-muted-foreground mt-4 text-sm max-w-sm mx-auto">
                                 Thank you, {formData.name.split(' ')[0]}. We've added {formData.company} to the Phase 01 queue. 
-                                Our team will reach out to the work email provided shortly.
                             </p>
                             <Button asChild variant="outline" className="mt-8 rounded-xl">
                                 <Link href="/">Return to Home</Link>
@@ -6650,7 +6701,9 @@ export default function GetStartedPage() {
                                                 <option value="manufacturing">Manufacturing</option>
                                                 <option value="logistics">Logistics</option>
                                                 <option value="construction">Heavy Construction</option>
+                                                <option value="other">Other Industrial</option>
                                             </select>
+                                            <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
                                         </div>
                                     </div>
                                     <Button type="submit" size="lg" className="mt-4 rounded-xl font-bold group">
@@ -6683,15 +6736,31 @@ export default function GetStartedPage() {
                                                     <option value="">Select range...</option>
                                                     <option value="0-1k">0 - 1,000</option>
                                                     <option value="1k-5k">1,000 - 5,000</option>
-                                                    <option value="5k+">5,000+</option>
+                                                    <option value="5k-20k">5,000 - 20,000</option>
+                                                    <option value="20k+">20,000+</option>
                                                 </select>
+                                                <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
                                             </div>
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Avg Product Price</Label>
                                             <div className="relative">
                                                 <Tag className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                                <Input required value={formData.avg_price} onChange={e => setFormData({...formData, avg_price: e.target.value})} placeholder="e.g. R50k" className="pl-10 rounded-xl bg-muted/30" />
+                                                {/* UPDATED: Structured Dropdown for Average Price */}
+                                                <select 
+                                                    required 
+                                                    value={formData.avg_price} 
+                                                    onChange={e => setFormData({...formData, avg_price: e.target.value})} 
+                                                    className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm outline-none appearance-none"
+                                                >
+                                                    <option value="">Select range...</option>
+                                                    <option value="10k-50k">R10,000 - R50,000</option>
+                                                    <option value="50k-150k">R50,000 - R150,000</option>
+                                                    <option value="150k-500k">R150,000 - R500,000</option>
+                                                    <option value="500k-1m">R500,000 - R1,000,000</option>
+                                                    <option value="1m+">R1,000,000+</option>
+                                                </select>
+                                                <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
                                             </div>
                                         </div>
                                     </div>
@@ -6708,6 +6777,7 @@ export default function GetStartedPage() {
                                                 <option value="other">Other / Custom</option>
                                                 <option value="none">No CRM</option>
                                             </select>
+                                            <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
                                         </div>
                                     </div>
                                     <Button type="submit" disabled={isLoading} size="lg" className="mt-4 rounded-xl font-bold shadow-xl shadow-primary/20">
@@ -6723,10 +6793,6 @@ export default function GetStartedPage() {
                 <div className="mt-10 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.3em] font-bold text-muted-foreground/40">
                     <Lock className="h-3 w-3" /> Secure Infrastructure Pipeline
                 </div>
-                <p className="text-center text-xs text-muted-foreground mt-4">
-                    By requesting access, you agree to our terms of service and our systems-driven 
-                    approach to B2B privacy.
-                </p>
             </div>
         </main>
     )
@@ -6881,7 +6947,25 @@ logger = logging.getLogger("uvicorn")
 
 # --- UTILS: Industrial Formatting ---
 def format_zar(value: str) -> str:
+    """
+    Handles both raw numbers and the new dropdown ranges (e.g., '50k-150k').
+    """
     if not value: return "N/A"
+    
+    # Handle the '1m+' case
+    if "m" in value.lower():
+        return "R1,000,000+"
+        
+    # Handle ranges like '50k-150k'
+    if "-" in value:
+        parts = value.replace('k', '000').split('-')
+        try:
+            formatted_parts = [f"R{int(p.strip()):,}" for p in parts]
+            return " - ".join(formatted_parts)
+        except:
+            return value
+
+    # Fallback for raw numeric strings
     clean_value = "".join(filter(str.isdigit, value))
     return f"R{int(clean_value):,}" if clean_value else value
 
@@ -6923,17 +7007,20 @@ async def send_slack_notification(payload: dict, journey: dict = None):
     status_emoji = "🔴" if is_hot else "🔵"
     status_text = "HOT LEAD" if is_hot else "New Verified Inquiry"
     
+    # Use the range-aware formatter
     formatted_price = format_zar(payload.get('avg_price'))
+    
+    display_company = payload.get('company_name_raw') or payload.get('company') or "Unknown Entity"
 
     slack_data = {
-        "text": f"{status_emoji} {status_text}: {payload.get('company_name_raw', 'Unknown Entity')}",
+        "text": f"{status_emoji} {status_text}: {display_company}",
         "blocks": [
             {"type": "header", "text": {"type": "plain_text", "text": f"{status_emoji} Phase 01: Identity Promotion"}},
             {
                 "type": "section",
                 "fields": [
                     {"type": "mrkdwn", "text": f"*Name:*\n{payload.get('name')}"},
-                    {"type": "mrkdwn", "text": f"*Company:*\n{payload.get('company_name_raw')}"}
+                    {"type": "mrkdwn", "text": f"*Company:*\n{display_company}"}
                 ]
             },
             {"type": "divider"},
@@ -6966,9 +7053,11 @@ async def send_slack_notification(payload: dict, journey: dict = None):
 # --- MAIN ROUTE: The Promotion Logic ---
 @router.post("/join")
 async def join_waitlist(payload: dict, request: Request, background_tasks: BackgroundTasks):
+    logger.info(f"--- 💡 DEV LOG: WAITLIST PAYLOAD KEYS: {list(payload.keys())} ---")
+    
     email = payload.get("email")
     aura_id = payload.get("aura_id")
-    raw_company_name = payload.get("company")
+    raw_company_name = payload.get("company") or payload.get("company_name") or payload.get("companyName")
     website = payload.get("website")
 
     if not email:
@@ -6977,19 +7066,28 @@ async def join_waitlist(payload: dict, request: Request, background_tasks: Backg
     with Session(engine) as session:
         try:
             # 1. Resolve Jurisdictive Entity (Company)
-            domain = website.replace("https://", "").replace("http://", "").split("/")[0] if website else None
+            domain = None
+            if website:
+                domain = website.replace("https://", "").replace("http://", "").split("/")[0].lower()
             
             company = None
             if domain:
                 company = session.exec(select(Company).where(Company.domain == domain)).first()
             
+            if not company and raw_company_name:
+                company = session.exec(select(Company).where(Company.name == raw_company_name)).first()
+
             if not company:
-                company = Company(name=raw_company_name or "New Entity", domain=domain)
+                company = Company(
+                    name=raw_company_name or "Unknown Industrial Entity", 
+                    domain=domain,
+                    industry=payload.get("industry")
+                )
                 session.add(company)
                 session.commit()
                 session.refresh(company)
 
-            # 2. Update/Create Verified Secondary Entity (WaitlistLead)
+            # 2. Update/Create Lead
             lead = session.exec(select(WaitlistLead).where(WaitlistLead.email == email)).first()
             if not lead:
                 lead = WaitlistLead(email=email)
@@ -7000,7 +7098,7 @@ async def join_waitlist(payload: dict, request: Request, background_tasks: Backg
             lead.industry = payload.get("industry")
             lead.website = website
             lead.traffic = payload.get("traffic")
-            lead.avg_price = payload.get("avg_price")
+            lead.avg_price = payload.get("avg_price") # Stores the dropdown string
             lead.crm = payload.get("crm")
             lead.aura_id = aura_id
             
@@ -7020,6 +7118,8 @@ async def join_waitlist(payload: dict, request: Request, background_tasks: Backg
             # 4. Intelligence Execution (DeepSeek-V3 intent logic)
             journey_data = await get_visitor_journey(aura_id)
             
+            payload["company_name_raw"] = company.name
+
             # 5. Hand off to Background Workers
             background_tasks.add_task(send_slack_notification, payload, journey_data)
             background_tasks.add_task(send_welcome_email, lead.email, lead.name)
@@ -7067,7 +7167,6 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
 
 # --- STATIC FILES: DECOUPLED ---
-# Served via Cloudflare CDN for zero-latency industrial delivery
 logger.info("⚡ Static asset delivery offloaded to Cloudflare CDN.")
 
 # --- CORS CONFIGURATION ---
@@ -7095,8 +7194,10 @@ async def debug_aura_signal(endpoint: str, request: Request):
     """
     try:
         data = await request.json()
+        # NOISY DEV LOG: Detailed signal inspection
         logger.info(f"--- 📡 AURA SIGNAL: [{endpoint.upper()}] ---")
         logger.info(f"Aura ID: {data.get('aura_id')}")
+        logger.info(f"Full Payload: {data}")
         
         if endpoint == "identity":
             sig = data.get('signature', {})
@@ -7119,16 +7220,31 @@ app.include_router(waitlist.router, prefix=f"{settings.API_V1_STR}/waitlist", ta
 def health_check():
     return {"status": "healthy"}
 
-# --- ENTITY DEBUGGER: Updated for Company-First Model ---
+# --- DEBUG ROUTES: Unified Visibility ---
+
+@app.get(f"{settings.API_V1_STR}/leads")
+async def get_leads():
+    """
+    Restored to stop 404 errors. Returns raw visit data.
+    """
+    with Session(engine) as session:
+        statement = select(Visit).order_by(Visit.created_at.desc())
+        results = session.exec(statement).all()
+        # NOISY DEV LOG
+        logger.info(f"--- 💡 DEV LOG: FETCHING {len(results)} RAW VISITS ---")
+        return results
+
 @app.get(f"{settings.API_V1_STR}/debug/entities")
 async def get_entities():
     """
     Direct access to the Juristic Entity ledger.
-    Use this to verify Apollo enrichment success.
+    Verify Apollo/IPinfo enrichment success here.
     """
     with Session(engine) as session:
         statement = select(Company).order_by(Company.created_at.desc())
         results = session.exec(statement).all()
+        # NOISY DEV LOG
+        logger.info(f"--- 💡 DEV LOG: FETCHING {len(results)} ENRICHED COMPANIES ---")
         return results
 </file>
 
