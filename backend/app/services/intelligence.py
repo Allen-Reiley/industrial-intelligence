@@ -1,46 +1,70 @@
 import httpx
 import logging
 import asyncio
-import json
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Dict
 from sqlmodel import Session, select
 from app.models.visit import Visit
 from app.models.company import Company
+from app.models.waitlist import WaitlistLead
 from app.db import engine
 from app.core.config import settings
 
 logger = logging.getLogger("uvicorn")
 
-# --- PHASE 01: DeepSeek-V3 Intent Analysis ---
+# --- UTILS: Industrial Formatting ---
+def format_zar(value: str) -> str:
+    if not value: return "N/A"
+    if "m" in value.lower(): return "R1,000,000+"
+    if "-" in value:
+        parts = value.replace('k', '000').split('-')
+        try:
+            formatted_parts = [f"R{int(p.strip()):,}" for p in parts]
+            return " - ".join(formatted_parts)
+        except: return value
+    clean_value = "".join(filter(str.isdigit, value))
+    return f"R{int(clean_value):,}" if clean_value else value
+
+# --- PHASE 01: The Orchestrator (Slack x DeepSeek Sync) ---
+
+async def orchestrate_lead_audit(lead_id: int, aura_id: str, payload: dict):
+    """
+    The Central Brain: Ensures DeepSeek analysis is ready before notifying Slack.
+    Uses Mailgun for high-deliverability signals.
+    """
+    logger.info(f"--- 🧠 ORCHESTRATING AUDIT: Lead {lead_id} ---")
+    
+    # 1. Wait for Behavioral Journey & DeepSeek Intent Analysis
+    journey = await get_visitor_journey(aura_id)
+    
+    # 2. Sequential Delay: If intent is still calibrating, give it one short retry
+    if "calibrating" in journey.get("intent_summary", "").lower():
+        await asyncio.sleep(4)
+        journey = await get_visitor_journey(aura_id)
+
+    # 3. Dispatch Clinical Notifications
+    # We pass the formatted payload and the intelligence journey
+    await send_slack_notification(payload, journey)
+    await send_mailgun_welcome(payload.get("email"), payload.get("name"))
+
+# --- PHASE 02: DeepSeek-V3 Intent Analysis ---
 
 async def analyze_corporate_intent(company_name: str, industry: str, pathway: str) -> str:
-    """
-    Uses DeepSeek-V3 to generate a 'Clinical Intent Summary' based on browsing behavior.
-    """
     if not settings.DEEPSEEK_API_KEY:
         return "Intent analysis pending (API Key missing)."
 
-    # Fallbacks to ensure the prompt never fails
-    c_name = company_name or "Industrial Prospect"
-    ind = industry or "Manufacturing/Industrial"
-    path = pathway or "Direct Homepage Entry"
-
     prompt = f"""
-    Analyze the following B2B website traffic for a South African industrial client.
-    Company: {c_name}
-    Industry: {ind}
-    Browsing Pathway: {path}
+    Analyze B2B traffic for:
+    Entity: {company_name or 'Industrial Prospect'}
+    Industry: {industry or 'Manufacturing'}
+    Pathway: {pathway}
 
-    Task: Provide a 2-sentence 'Executive Intent Summary'. 
-    - Sentence 1: Identify the likely buying persona (e.g., Engineering, Procurement, or Executive).
-    - Sentence 2: Assess the 'Temperature' (Cold/Warm/Hot) based on page depth (e.g., Pricing/Docs = High Intent).
-    Tone: Clinical, sophisticated, 'Quiet Premium'. No marketing fluff.
+    Task: Provide a 2-sentence 'Executive Intent Summary'.
+    Tone: Clinical, sophisticated, 'Quiet Premium'. Identify persona and intent 'Temperature'.
     """
 
     async with httpx.AsyncClient() as client:
         try:
-            # Increased timeout to 15s for DeepSeek-V3's complex reasoning
             response = await client.post(
                 "https://api.deepseek.com/v1/chat/completions",
                 headers={
@@ -49,114 +73,130 @@ async def analyze_corporate_intent(company_name: str, industry: str, pathway: st
                 },
                 json={
                     "model": "deepseek-chat",
-                    "messages": [
-                        {"role": "system", "content": "You are a B2B Intelligence Analyst focusing on high-ticket industrial sales."},
-                        {"role": "user", "content": prompt}
-                    ],
+                    "messages": [{"role": "user", "content": prompt}],
                     "temperature": 0.3 
                 },
-                timeout=15.0
+                timeout=20.0 
             )
-            
-            if response.status_code != 200:
-                logger.error(f"DeepSeek Error: {response.text}")
-                return "Intelligence engine calibrating. Analysis deferred."
-
-            result = response.json()
-            return result['choices'][0]['message']['content'].strip()
+            if response.status_code == 200:
+                return response.json()['choices'][0]['message']['content'].strip()
+            return "Intelligence engine calibrating. Analysis deferred."
         except Exception as e:
-            logger.error(f"DeepSeek Analysis Failed: {e}")
+            logger.error(f"DeepSeek Failure: {e}")
             return "Intelligence engine temporarily offline."
 
-# --- PHASE 02: Journey & Stitching Logic ---
+# --- PHASE 03: Journey & Ghost Enrichment ---
 
 async def get_visitor_journey(aura_id: str) -> Dict:
-    """
-    Retrieves the full behavioral ledger for a specific forensic ID.
-    Used to feed the Intent Analysis engine and populate Slack/Dashboards.
-    """
     if not aura_id:
-        return {
-            "total_touches": 0, 
-            "pathway": "Direct/Anonymous", 
-            "intent_summary": "No forensic signature detected.",
-            "is_high_intent": False
-        }
+        return {"total_touches": 0, "pathway": "Direct", "intent_summary": "No forensic signature."}
 
     with Session(engine) as session:
-        # Retrieve all historical visits for this forensic signature
+        # Ghost Enrichment: Pull from local data if external enrichment failed
         statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at)
         history = session.exec(statement).all()
-
-        if not history:
-            return {
-                "total_touches": 0, 
-                "pathway": "First Contact", 
-                "intent_summary": "Initial touchpoint recorded.",
-                "is_high_intent": False
-            }
-
-        # Extract Clean Paths (stripping domain noise)
-        pages = []
-        for v in history:
-            # Clean URL to show only path (e.g. /pricing)
-            p = v.url.split('auraworks.co.za')[-1] if v.url else "/"
-            if not p or p == "" or p == "undefined": p = "/"
-            pages.append(p)
         
-        # Deduplicate pathway sequence while preserving order
+        if not history:
+            return {"total_touches": 0, "pathway": "First Contact", "intent_summary": "Initial touchpoint recorded."}
+
+        # Pathway Mapping
+        pages = [v.url.split('auraworks.co.za')[-1] if v.url else "/" for v in history]
         unique_pathway = []
         for p in pages:
             if not unique_pathway or p != unique_pathway[-1]:
-                unique_pathway.append(p)
+                unique_pathway.append(p if p != "" else "/")
         
         pathway_str = " → ".join(unique_pathway)
         
-        # 🏢 Resolve Company Context for the LLM
+        # Corporate Cluster Detection (Building-Level)
+        cluster_info = await get_building_activity(history[-1].ip_address, aura_id)
+
+        # Context Harvest
         company = None
-        # Check if any visit in history has a company_id (linked via IP or Waitlist)
         linked_visit = next((v for v in history if v.company_id), None)
         if linked_visit:
             company = session.get(Company, linked_visit.company_id)
 
-        # 🧠 Run DeepSeek Intent Analysis
-        # Even if no company is linked, we run it as 'Anonymous Prospect'
-        intent_summary = await analyze_corporate_intent(
-            company.name if company else "Anonymous Industrial Entity", 
-            company.industry if company else "Unknown Industry", 
+        intent = await analyze_corporate_intent(
+            company.name if company else "Anonymous Entity",
+            company.industry if company else "Industrial",
             pathway_str
         )
 
         return {
             "total_touches": len(history),
             "pathway": pathway_str,
-            "first_seen": history[0].created_at.strftime("%Y-%m-%d %H:%M"),
-            "intent_summary": intent_summary,
-            "is_high_intent": any(kw in pathway_str.lower() for kw in ["pricing", "waitlist", "get-started", "audit"])
+            "intent_summary": f"{intent} \n\n{cluster_info}",
+            "is_high_intent": any(kw in pathway_str.lower() for kw in ["pricing", "audit", "waitlist"])
         }
 
-# --- PHASE 03: The 'Building-Level' Cluster ---
+# --- PHASE 04: Industrial Notifications (Slack & Mailgun) ---
+
+async def send_slack_notification(payload: dict, journey: dict):
+    if not settings.SLACK_WEBHOOK_URL: return
+    
+    is_hot = journey.get("is_high_intent", False)
+    emoji = "🔴" if is_hot else "🔵"
+    
+    slack_data = {
+        "blocks": [
+            {"type": "header", "text": {"type": "plain_text", "text": f"{emoji} Phase 01: Identity Promoted"}},
+            {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": f"*🕵️ Executive Intent Summary:*\n_{journey.get('intent_summary')}_"}
+            },
+            {"type": "divider"},
+            {
+                "type": "section",
+                "fields": [
+                    {"type": "mrkdwn", "text": f"*Entity:*\n{payload.get('company_name_final')}"},
+                    {"type": "mrkdwn", "text": f"*Lead:*\n{payload.get('name')} ({payload.get('email')})"},
+                    {"type": "mrkdwn", "text": f"*Project Value:*\n{payload.get('formatted_price') or 'N/A'}"},
+                    {"type": "mrkdwn", "text": f"*Pathway:* `{journey.get('pathway')}`"}
+                ]
+            }
+        ]
+    }
+    async with httpx.AsyncClient() as client:
+        await client.post(settings.SLACK_WEBHOOK_URL, json=slack_data)
+
+async def send_mailgun_welcome(email: str, name: str):
+    """Mailgun Implementation: Reliable delivery for development and production."""
+    if not settings.MAILGUN_API_KEY or not settings.MAILGUN_DOMAIN:
+        logger.warning("Mailgun credentials missing. Skipping email.")
+        return
+
+    async with httpx.AsyncClient() as client:
+        try:
+            await client.post(
+                f"https://api.mailgun.net/v3/{settings.MAILGUN_DOMAIN}/messages",
+                auth=("api", settings.MAILGUN_API_KEY),
+                data={
+                    "from": f"AuraWorks <audit@{settings.MAILGUN_DOMAIN}>",
+                    "to": email,
+                    "subject": "Phase 01: Audit Initiated",
+                    "html": f"""
+                        <div style="font-family: sans-serif; padding: 20px; color: #18181b;">
+                            <h2 style="border-bottom: 1px solid #e4e4e7; padding-bottom: 10px;">Audit Initiated: {name}</h2>
+                            <p>Our systems architect has successfully queued your industrial ROI analysis.</p>
+                            <p style="font-size: 12px; color: #71717a;">AuraWorks (Pty) Ltd // Automated Signal</p>
+                        </div>
+                    """
+                }
+            )
+        except Exception as e:
+            logger.error(f"Mailgun Failure: {e}")
 
 async def get_building_activity(ip_address: str, current_aura_id: str) -> str:
-    """
-    Detects if multiple unique devices from the same IP are interacting.
-    Signifies a 'Company-Wide' evaluation (Building-Level Cluster).
-    """
-    if not ip_address: return "Solo Device"
-    
-    # 72-hour window for active consideration
+    if not ip_address: return ""
     time_threshold = datetime.now(timezone.utc) - timedelta(hours=72)
-    
     with Session(engine) as session:
         statement = select(Visit).where(
-            Visit.ip_address == ip_address,
-            Visit.aura_id != current_aura_id,
+            Visit.ip_address == ip_address, 
+            Visit.aura_id != current_aura_id, 
             Visit.created_at >= time_threshold
         )
-        other_hits = session.exec(statement).all()
-        
-        if not other_hits:
-            return "Solo Device"
-            
-        unique_devices = len({v.aura_id for v in other_hits})
-        return f"🏢 Corporate Cluster: {unique_devices} other device(s) active from this facility."
+        others = session.exec(statement).all()
+        if not others: return "📍 Solo Facility Entry"
+        unique_ids = len({v.aura_id for v in others})
+        return f"🏢 **Corporate Cluster:** {unique_ids} other device(s) active from this facility."
