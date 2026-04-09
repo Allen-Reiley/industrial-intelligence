@@ -1,4 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks, Request, Header
+from fastapi import APIRouter, BackgroundTasks, Request, Header, HTTPException
 from typing import Optional, Dict, Any
 from app.models.visit import VisitCreate, Visit
 from app.models.company import Company
@@ -6,6 +6,7 @@ from app.models.pageview import PageViewCreate
 from app.services.enrichment import enrich_visitor_data
 from app.services.notifications import post_to_visit_channel
 from app.services.intelligence import get_visitor_journey
+from app.services.airtable import airtable_engine  # Phase 1: Airtable Integration
 from sqlmodel import Session, select
 from app.db import engine
 from pydantic import BaseModel
@@ -28,7 +29,7 @@ class IdentityPayload(BaseModel):
 
 async def process_entry_logic(payload: VisitCreate, client_ip: str, background_tasks: BackgroundTasks):
     """
-    Jurisdictive Resolution & Deanonymized Reporting for the #visit channel.
+    Jurisdictive Resolution, Airtable CRM Logging, and Slack Pager Dispatch.
     """
     with Session(engine) as session:
         # 1. Resolve or Create the Jurisdictive Entity (Company)
@@ -57,7 +58,7 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str, background_t
             company.total_visits += 1
             session.add(company)
 
-        # 2. Log the Granular Visit with Network & UTM Attribution
+        # 2. Log the Granular Visit to PostgreSQL (Internal Audit Trail)
         db_visit = Visit(
             company_id=company.id if company else None,
             client_id=payload.client_id,
@@ -79,18 +80,30 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str, background_t
         session.commit()
         session.refresh(db_visit)
 
-        # 3. Deanonymize & Dispatch to #visit channel
-        # This reports the activity even if they never fill in a form
+        # 3. Phase 1: Dispatch to Airtable (Industrial CRM Engine)
+        # We package only the essential forensic data for the CRM interface
+        airtable_data = {
+            "company_name": company.name if company else "Anonymous Facility",
+            "domain": domain or "unknown.com",
+            "ip_address": client_ip,
+            "city": enriched_info.get("city", "Unknown"),
+            "region": enriched_info.get("region", "ZA"),
+            "aura_id": payload.aura_id,
+            "effective_connection_type": payload.effective_connection_type or "Unknown"
+        }
+        background_tasks.add_task(airtable_engine.create_industrial_record, airtable_data)
+
+        # 4. Deanonymize & Dispatch to Slack (The Pager Signal)
         journey = await get_visitor_journey(payload.aura_id)
         
         visit_report = {
-            "company_name": company.name if company else "Anonymous Facility",
+            "company_name": airtable_data["company_name"],
             "network_type": payload.effective_connection_type or "Standard",
             "utm_source": payload.utm_source or "Direct",
             "utm_medium": payload.utm_medium or "None",
             "aura_id": payload.aura_id,
-            "city": enriched_info.get("city", "Unknown"),
-            "region": enriched_info.get("region", "ZA")
+            "city": airtable_data["city"],
+            "region": airtable_data["region"]
         }
         
         background_tasks.add_task(post_to_visit_channel, visit_report, journey)
