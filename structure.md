@@ -68,8 +68,8 @@ The user interface, built with **Next.js 14** (App Router).
 
 The edge layer script provided to your clients.
 
-* **`v2/aura.js`**: The source logic for capturing visitor fingerprints.
-* **`package.json`**: Build scripts to minify the script into `tracker.min.js`.
+* **`src/public/aura.js`**: The source logic for capturing visitor fingerprints.
+* **`package.json`**: Build scripts to minify the script into `aura.min.js`.
 
 ---
 
@@ -119,12 +119,13 @@ The edge layer script provided to your clients.
 │
 ├── infra/                  # Code for infrastructure and deployment
 │ 
-├── tracker/                # The Client-Side Script
-│   ├── v2/
-│   └── aura.js             # The Tracker the system uses
+├── tracker/ 
+│   └── package.json               # The Client-Side Script
+│   ├── v1/
 │   ├── src/
-│   │   └── index.js        # Minified Tracker.js, No longer in use (Served via CDN/S3)
-│   └── package.json
+│   │   ├──public/            
+│   │       └── aura.js         # The Tracker the system uses (Served via CDN/S3)
+│   
 │
 ├── docker-compose.yml      # For local development
 └── .env                    # Root environment variables
