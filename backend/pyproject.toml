@@ -9,6 +9,7 @@ dependencies = [
     "dotenv>=0.9.9",
     "fastapi[all,standard]>=0.128.7",
     "httpx>=0.28.1",
+    "notion-client>=3.0.0",
     "passlib[bcrypt]>=1.7.4",
     "psycopg2-binary>=2.9.11",
     "pyairtable>=3.3.0",

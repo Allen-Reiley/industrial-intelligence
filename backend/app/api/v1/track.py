@@ -7,6 +7,7 @@ from app.services.enrichment import enrich_visitor_data
 from app.services.notifications import post_to_visit_channel
 from app.services.intelligence import get_visitor_journey
 from app.services.airtable import airtable_engine  # Phase 1: Airtable Integration
+from app.services.notion import notion_vault     # Phase 2: Notion Integration
 from sqlmodel import Session, select
 from app.db import engine
 from pydantic import BaseModel
@@ -29,7 +30,7 @@ class IdentityPayload(BaseModel):
 
 async def process_entry_logic(payload: VisitCreate, client_ip: str, background_tasks: BackgroundTasks):
     """
-    Jurisdictive Resolution, Airtable CRM Logging, and Slack Pager Dispatch.
+    Jurisdictive Resolution, Airtable CRM Logging, Notion Vault Archival, and Slack Pager Dispatch.
     """
     with Session(engine) as session:
         # 1. Resolve or Create the Jurisdictive Entity (Company)
@@ -81,7 +82,6 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str, background_t
         session.refresh(db_visit)
 
         # 3. Phase 1: Dispatch to Airtable (Industrial CRM Engine)
-        # We package only the essential forensic data for the CRM interface
         airtable_data = {
             "company_name": company.name if company else "Anonymous Facility",
             "domain": domain or "unknown.com",
@@ -93,7 +93,20 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str, background_t
         }
         background_tasks.add_task(airtable_engine.create_industrial_record, airtable_data)
 
-        # 4. Deanonymize & Dispatch to Slack (The Pager Signal)
+        # 4. Phase 2: Dispatch to Notion (Clinical Vault)
+        # We store this as a permanent archival record
+        notion_data = {
+            "company_name": airtable_data["company_name"],
+            "domain": airtable_data["domain"] if airtable_data["domain"] != "unknown.com" else "N/A",
+            "aura_id": payload.aura_id,
+            "industry": enriched_info.get("industry", "Industrial"),
+            "city": airtable_data["city"],
+            "region": airtable_data["region"],
+            "summary": "Awaiting DeepSeek Audit..."
+        }
+        background_tasks.add_task(notion_vault.archive_corporate_visit, notion_data)
+
+        # 5. Deanonymize & Dispatch to Slack (The Pager Signal)
         journey = await get_visitor_journey(payload.aura_id)
         
         visit_report = {
