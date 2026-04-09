@@ -1,15 +1,16 @@
+import os
 import httpx
 import logging
 from app.core.config import settings
 
 logger = logging.getLogger("uvicorn")
 
-# --- PHASE 01: The #visit Channel (Deanonymization Hub) ---
+# --- PHASE 01: The #visit Channel (Industrial Pager) ---
 
 async def post_to_visit_channel(visit_data: dict, journey: dict):
     """
-    Reporting for the #visit channel: Surfacing anonymous facility traffic.
-    Triggers 'Corporate Cluster' alerts for 3+ unique IDs.
+    High-speed Signal for the #visit channel.
+    Provides immediate forensic links to Airtable and Notion.
     """
     if not settings.SLACK_VISIT_WEBHOOK_URL:
         return
@@ -19,7 +20,12 @@ async def post_to_visit_channel(visit_data: dict, journey: dict):
     
     # Industrial Visual Indicators
     emoji = "🚨" if is_corporate_cluster else "🕵️"
-    header = f"{emoji} Corporate Cluster Detected" if is_corporate_cluster else f"{emoji} Anonymous Facility Entry"
+    header = f"{emoji} Corporate Cluster" if is_corporate_cluster else f"{emoji} Facility Entry"
+
+    # Deep Links for the Industrial Triad
+    # Airtable uses the Base ID, Notion uses the Database ID
+    airtable_url = f"https://airtable.com/{os.getenv('AIRTABLE_BASE_ID')}"
+    notion_url = f"https://www.notion.so/{os.getenv('NOTION_DATABASE_ID')}"
 
     payload = {
         "blocks": [
@@ -32,18 +38,30 @@ async def post_to_visit_channel(visit_data: dict, journey: dict):
                 "fields": [
                     {"type": "mrkdwn", "text": f"*Entity:*\n{visit_data.get('company_name', 'Anonymous Entity')}"},
                     {"type": "mrkdwn", "text": f"*Network Profile:*\n`{visit_data.get('network_type', 'Standard')}`"},
-                    {"type": "mrkdwn", "text": f"*Attribution (UTM):*\n{visit_data.get('utm_source', 'Direct')} / {visit_data.get('utm_medium', 'None')}"},
-                    {"type": "mrkdwn", "text": f"*Facility Cluster:*\n{cluster_count} Unique ID(s)"}
+                    {"type": "mrkdwn", "text": f"*Attribution:*\n{visit_data.get('utm_source', 'Direct')} / {visit_data.get('utm_medium', 'None')}"},
+                    {"type": "mrkdwn", "text": f"*Cluster:*\n{cluster_count} Unique ID(s)"}
                 ]
-            },
-            {
-                "type": "section",
-                "text": {"type": "mrkdwn", "text": f"*Pathway:* `{journey.get('pathway', '/')}`"}
             },
             {
                 "type": "context",
                 "elements": [
                     {"type": "mrkdwn", "text": f"📍 Forensic Lock: `{visit_data.get('aura_id')[:8]}` | Location: {visit_data.get('city', 'Unknown')}, {visit_data.get('region', 'ZA')}"}
+                ]
+            },
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "View Airtable Engine"},
+                        "url": airtable_url,
+                        "style": "primary"
+                    },
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "Open Clinical Vault"},
+                        "url": notion_url
+                    }
                 ]
             }
         ]
@@ -51,15 +69,17 @@ async def post_to_visit_channel(visit_data: dict, journey: dict):
 
     async with httpx.AsyncClient() as client:
         try:
-            await client.post(settings.SLACK_VISIT_WEBHOOK_URL, json=payload)
+            response = await client.post(settings.SLACK_VISIT_WEBHOOK_URL, json=payload)
+            response.raise_for_status()
         except Exception as e:
-            logger.error(f"Visit Channel Dispatch Failure: {e}")
+            logger.error(f"Visit Channel Pager Failure: {e}")
 
-# --- PHASE 02: Lead Notifications (Waitlist Submissions) ---
+# --- PHASE 02: Lead Notifications (Identity Promotion) ---
 
 async def post_to_slack(lead_data: dict, journey: dict = None):
     """
     Standard lead notification for identified conversions.
+    Simplified to prevent Block Kit rendering errors.
     """
     if not settings.SLACK_WEBHOOK_URL:
         return
@@ -68,17 +88,20 @@ async def post_to_slack(lead_data: dict, journey: dict = None):
     is_hot = journey.get("is_high_intent", False)
     status_emoji = "🔴" if is_hot else "🔵"
     
+    # We point to the Vault for the full DeepSeek summary instead of sending it here
+    notion_url = f"https://www.notion.so/{os.getenv('NOTION_DATABASE_ID')}"
+
     payload = {
         "blocks": [
             {
                 "type": "header",
-                "text": {"type": "plain_text", "text": f"{status_emoji} Phase 01: Identity Promoted"}
+                "text": {"type": "plain_text", "text": f"{status_emoji} Identity Promoted"}
             },
             {
                 "type": "section",
                 "text": {
                     "type": "mrkdwn", 
-                    "text": f"*🕵️ Executive Intent Summary (DeepSeek-V3):*\n_{journey.get('intent_summary', 'Forensic analysis pending.')}_"
+                    "text": f"*Audit Status:* Forensic analysis successfully archived to Notion Vault."
                 }
             },
             {"type": "divider"},
@@ -87,17 +110,31 @@ async def post_to_slack(lead_data: dict, journey: dict = None):
                 "fields": [
                     {"type": "mrkdwn", "text": f"*Entity:*\n{lead_data.get('company_name_final', 'Anonymous Entity')}"},
                     {"type": "mrkdwn", "text": f"*Lead:*\n{lead_data.get('name')} ({lead_data.get('email')})"},
-                    {"type": "mrkdwn", "text": f"*Project Value:*\n{lead_data.get('formatted_price', 'N/A')}"},
+                    {"type": "mrkdwn", "text": f"*Value:*\n{lead_data.get('formatted_price', 'N/A')}"},
                     {"type": "mrkdwn", "text": f"*Pathway:* `{journey.get('pathway', 'Direct')}`"}
+                ]
+            },
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "Read Full Audit"},
+                        "url": notion_url,
+                        "style": "primary"
+                    }
                 ]
             }
         ]
     }
     
     async with httpx.AsyncClient() as client:
-        await client.post(settings.SLACK_WEBHOOK_URL, json=payload)
+        try:
+            await client.post(settings.SLACK_WEBHOOK_URL, json=payload)
+        except Exception as e:
+            logger.error(f"Lead Channel Dispatch Failure: {e}")
 
-# --- PHASE 03: Industrial Mailer (Mailgun Replacement for Resend) ---
+# --- PHASE 03: Industrial Mailer (Mailgun) ---
 
 async def send_mailgun_notification(email: str, name: str, subject: str = "Phase 01: Audit Initiated"):
     """

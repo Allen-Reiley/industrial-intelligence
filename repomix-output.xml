@@ -63,11 +63,13 @@ backend/
       visit.py
       waitlist.py
     services/
+      airtable.py
       contacts.py
       email.py
       enrichment.py
       intelligence.py
       notifications.py
+      notion.py
       reports.py
     db.py
     main.py
@@ -188,8 +190,15 @@ frontend/
     tailwind.config.ts
 tracker/
   src/
-    index.js
-    tracker.min.js
+    public/
+      aura.js
+    references/
+      v1/
+        index.js
+        tracker.min.js
+      cookies.js
+      fingerprint.js
+      tracker.js
 docker-compose.yml
 README.md
 REMEMBER.md
@@ -222,6 +231,54 @@ class Department(SQLModel, table=True):
     head_of_dept_linkedin: Optional[str] = None # URL to public profile
     
     company: "Company" = Relationship(back_populates="departments")
+</file>
+
+<file path="backend/app/services/airtable.py">
+import os
+from pyairtable import Api
+from datetime import datetime
+import logging
+
+logger = logging.getLogger("uvicorn")
+
+class AirtableEngine:
+    def __init__(self):
+        token = os.getenv("AIRTABLE_ACCESS_TOKEN")
+        base_id = os.getenv("AIRTABLE_BASE_ID")
+        
+        if not token or not base_id:
+            logger.warning("⚠️ Airtable credentials missing. Engine standby.")
+            self.table = None
+        else:
+            self.api = Api(token)
+            # This matches the table name in your Airtable Base
+            self.table = self.api.table(base_id, "Forensic Ledger")
+
+    async def push_visit(self, data: dict):
+        """Pushes a high-intent corporate visit to the Airtable Ledger."""
+        if not self.table:
+            return
+
+        try:
+            # Preparing the record structure for a 'Quiet Premium' look
+            record = {
+                "Entity Name": data.get("company_name", "Unknown Entity"),
+                "Domain": data.get("domain", "N/A"),
+                "Status": "Raw Capture",
+                "IP Address": data.get("ip_address"),
+                "Location": f"{data.get('city')}, {data.get('region')}",
+                "Intelligence Summary": data.get("summary", "Awaiting DeepSeek Audit..."),
+                "Aura ID": data.get("aura_id"),
+                "Detected At": datetime.utcnow().isoformat()
+            }
+            
+            self.table.create(record)
+            logger.info(f"✅ Industrial Signal logged to Airtable: {record['Entity Name']}")
+            
+        except Exception as e:
+            logger.error(f"❌ Airtable Dispatch Failure: {e}")
+
+airtable_engine = AirtableEngine()
 </file>
 
 <file path="backend/app/services/contacts.py">
@@ -269,6 +326,50 @@ def filter_business_contacts(contacts: List[Dict]) -> List[Dict]:
         if not any(word in c.get("email", "").lower() for word in EXCLUDED_KEYWORDS)
     ]
     return filtered
+</file>
+
+<file path="backend/app/services/notion.py">
+import os
+import logging
+from notion_client import Client
+from datetime import datetime
+
+logger = logging.getLogger("uvicorn")
+
+class NotionVault:
+    def __init__(self):
+        self.token = os.getenv("NOTION_TOKEN")
+        self.database_id = os.getenv("NOTION_DATABASE_ID")
+        
+        if not self.token or not self.database_id:
+            logger.warning("⚠️ Notion credentials missing. Vault on standby.")
+            self.client = None
+        else:
+            self.client = Client(auth=self.token)
+
+    async def archive_corporate_visit(self, data: dict):
+        """Creates a clinical audit page in the Notion Vault."""
+        if not self.client:
+            return None
+
+        try:
+            new_page = self.client.pages.create(
+                parent={"database_id": self.database_id},
+                properties={
+                    "Name": {"title": [{"text": {"content": data.get("company_name", "Anonymous Entity")}}]},
+                    "Domain": {"url": data.get("domain") if data.get("domain") != "N/A" else None},
+                    "Aura ID": {"rich_text": [{"text": {"content": data.get("aura_id", "N/A")}}]},
+                    "Summary": {"rich_text": [{"text": {"content": data.get("summary", "Awaiting DeepSeek Audit...")}}]},
+                    "Industry": {"rich_text": [{"text": {"content": data.get("industry", "Industrial")}}]}
+                }
+            )
+            logger.info(f"🏛️ Forensic Record archived to Notion Vault: {data.get('company_name')}")
+            return new_page["id"]
+        except Exception as e:
+            logger.error(f"❌ Notion Vault Archival Failure: {e}")
+            return None
+
+notion_vault = NotionVault()
 </file>
 
 <file path="backend/app/services/reports.py">
@@ -3328,6 +3429,710 @@ const config = {
 }
 </file>
 
+<file path="tracker/src/public/aura.js">
+/**
+ * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
+ * Version: 2.4.1 (UTM Attribution & Cluster Ready)
+ * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
+ */
+(async function() {
+    const script = document.currentScript;
+    const clientId = window.AURA_ID || script?.getAttribute('data-id');
+    
+    if (!clientId) return console.error("❌ AuraWorks: Missing Client Identity.");
+
+    const getBaseUrl = () => {
+        if (window.AURA_CONFIG?.apiUrl) return window.AURA_CONFIG.apiUrl;
+        if (script?.src.includes('http')) {
+            try { return new URL(script.src).origin; } catch (e) {}
+        }
+        return "http://localhost:8000";
+    };
+    
+    const API_URL = `${getBaseUrl().replace(/\/$/, '')}/api/v1/track`;
+
+    // --- PILLAR 1: PERSISTENCE & ATTRIBUTION ---
+    const AuraPersistence = {
+        key: 'aura_uid',
+        utmKey: 'aura_utm',
+        async init() {
+            let id = await this.getStoredID();
+            // Always check for fresh UTMs on every landing
+            this.captureUTMs(); 
+            
+            if (!id) {
+                id = this.generateUUID();
+            }
+            await this.syncStorage(id);
+            return id;
+        },
+        captureUTMs() {
+            const params = new URLSearchParams(window.location.search);
+            const utms = {};
+            const keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+            
+            keys.forEach(key => {
+                const val = params.get(key);
+                if (val) utms[key] = val;
+            });
+
+            // Persist UTMs if present, otherwise maintain existing ones for the session
+            if (Object.keys(utms).length > 0) {
+                localStorage.setItem(this.utmKey, JSON.stringify({
+                    ...utms,
+                    captured_at: new Date().toISOString()
+                }));
+            }
+        },
+        getStoredUTMs() {
+            try { 
+                return JSON.parse(localStorage.getItem(this.utmKey)) || {}; 
+            } catch(e) { return {}; }
+        },
+        async getStoredID() {
+            const c = document.cookie.split('; ').find(r => r.startsWith(`${this.key}=`))?.split('=')[1];
+            const l = localStorage.getItem(this.key);
+            return c || l || null;
+        },
+        async syncStorage(id) {
+            const exp = new Date(); exp.setFullYear(exp.getFullYear() + 2);
+            document.cookie = `${this.key}=${id}; expires=${exp.toUTCString()}; path=/; SameSite=Lax; Secure`;
+            localStorage.setItem(this.key, id);
+            window.AURA_UID = id;
+        },
+        generateUUID() {
+            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+        }
+    };
+
+    // --- PILLAR 2: FORENSIC IDENTITY (Network & Geometric) ---
+    const AuraFingerprint = {
+        async getFullSignature() {
+            const net = this.getNetworkInfo();
+            return {
+                canvas: this.getCanvas(),
+                webgl: this.getWebGL(),
+                // Flattening network info for direct backend mapping
+                network: net,
+                drift: await this.measureDrift(),
+                screen: `${screen.width}x${screen.height}`,
+                ua: navigator.userAgent
+            };
+        },
+        getNetworkInfo() {
+            const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            if (!conn) return { type: "unsupported" };
+            return {
+                type: conn.effectiveType || "unknown",
+                rtt: conn.rtt,
+                downlink: conn.downlink,
+                saveData: conn.saveData
+            };
+        },
+        getCanvas() {
+            try {
+                const cvs = document.createElement('canvas');
+                const ctx = cvs.getContext('2d');
+                ctx.textBaseline = "top"; ctx.font = "14px 'Arial'";
+                ctx.fillText("AuraWorks_v2.4", 2, 2);
+                return cvs.toDataURL();
+            } catch (e) { return "canvas_blocked"; }
+        },
+        getWebGL() {
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                if (!gl) return "no_gl";
+                const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                const renderer = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : "unknown";
+                canvas.width = 2; canvas.height = 2;
+                gl.clearColor(0.09, 0.09, 0.11, 1.0);
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                const pixels = new Uint8Array(4);
+                gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+                return `${renderer}_sig_${Array.from(pixels).join('-')}`;
+            } catch (e) { return "gl_error"; }
+        },
+        async measureDrift() {
+            return new Promise(r => {
+                const t0 = performance.now(), d0 = Date.now();
+                setTimeout(() => r(Math.round((performance.now() - t0) - (Date.now() - d0))), 500);
+            });
+        }
+    };
+
+    // --- PILLAR 3: MASTER TRACKER ---
+    const AuraTracker = {
+        init(auraId) {
+            this.auraId = auraId;
+            this.trackEntry();
+            this.setupSensors();
+            this.patchSPA();
+        },
+        async dispatch(endpoint, payload, useBeacon = false) {
+            const utms = AuraPersistence.getStoredUTMs();
+            const data = {
+                client_id: clientId,
+                aura_id: this.auraId,
+                timestamp: new Date().toISOString(),
+                // Spreading UTMs directly into the payload for the backend Visit model
+                utm_source: utms.utm_source,
+                utm_medium: utms.utm_medium,
+                utm_campaign: utms.utm_campaign,
+                utm_content: utms.utm_content,
+                utm_term: utms.utm_term,
+                ...payload
+            };
+
+            if (useBeacon && navigator.sendBeacon) {
+                return navigator.sendBeacon(`${API_URL}/${endpoint}`, JSON.stringify(data));
+            }
+            try {
+                await fetch(`${API_URL}/${endpoint}`, {
+                    method: 'POST', mode: 'cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data), keepalive: true
+                });
+            } catch (e) {}
+        },
+        setupSensors() {
+            document.addEventListener('blur', (e) => {
+                const target = e.target;
+                if (!target || !target.value) return;
+                if (target.type === 'email' || target.name?.includes('email')) {
+                    this.dispatch('identity', { email: target.value, capture_source: 'blur' });
+                }
+            }, true);
+
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('a, button');
+                if (!btn) return;
+                const text = btn.innerText?.toLowerCase();
+                const intentKeywords = ['pricing', 'audit', 'feature', 'solution', 'waitlist'];
+                
+                if (intentKeywords.some(kw => text.includes(kw))) {
+                    this.dispatch('event', { 
+                        event_type: 'intent_click', 
+                        target: text.substring(0, 20),
+                        path: window.location.pathname 
+                    });
+                }
+            });
+
+            let sFired = false;
+            window.addEventListener('scroll', () => {
+                if (sFired) return;
+                const pct = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+                if (pct > 40) {
+                    this.dispatch('event', { event_type: 'high_intent_scroll', depth: Math.round(pct) });
+                    sFired = true;
+                }
+            }, { passive: true });
+        },
+        trackEntry() {
+            const net = AuraFingerprint.getNetworkInfo();
+            this.dispatch('entry', { 
+                url: window.location.href, 
+                referrer: document.referrer || "direct",
+                screen_resolution: `${window.innerWidth}x${window.innerHeight}`,
+                // Passing Network Intelligence on Entry for Cluster Detection
+                effective_connection_type: net.type,
+                downlink_speed: net.downlink,
+                rtt: net.rtt
+            });
+        },
+        patchSPA() {
+            const self = this;
+            ['pushState', 'replaceState'].forEach(m => {
+                const orig = history[m];
+                history[m] = function() {
+                    const r = orig.apply(this, arguments);
+                    setTimeout(() => self.trackEntry(), 0);
+                    return r;
+                };
+            });
+        }
+    };
+
+    // --- EXECUTION ---
+    let initStarted = false;
+    const startAura = async () => {
+        if (initStarted) return;
+        initStarted = true;
+        const auraId = await AuraPersistence.init();
+        AuraTracker.init(auraId);
+        
+        setTimeout(async () => {
+            const sig = await AuraFingerprint.getFullSignature();
+            await AuraTracker.dispatch('identity', { signature: sig });
+            console.log("✅ AuraWorks Identity Bridge: Forensic Lock Established.");
+        }, 3000);
+    };
+
+    if (document.readyState === 'complete') startAura();
+    else window.addEventListener('load', startAura);
+    window.addEventListener('mousedown', startAura, { once: true });
+})();
+</file>
+
+<file path="tracker/src/references/v1/index.js">
+/**
+ * Industrial Intelligence Engine - Master Tracker (v2 SPA Support)
+ * Usage: <script src="https://cdn.yourdomain.com/tracker.js" data-id="CLIENT_ID_HERE"></script>
+ * This tracker is rendered obsolete, aura.js is what's being used
+*/
+(function() {
+    // 1. Configuration & Setup
+    const script = document.currentScript;
+    const clientId = script.getAttribute('data-id');
+    // Ensure this matches your FastAPI backend
+    const API_URL = "http://localhost:8000/v1/track"; 
+    
+    // State Variables (Changed from const to let to allow resetting on navigation)
+    let startTime = Date.now();
+    let currentUrl = window.location.href;
+
+    // --- Core Function: Send Entry Ping ---
+    // Captures the new page details immediately
+    const trackEntry = () => {
+        const entryPayload = {
+            client_id: clientId,
+            url: window.location.href, // Always gets the *current* browser URL
+            referrer: document.referrer || "direct", 
+            screen_resolution: `${window.screen.width}x${window.screen.height}`,
+            timestamp: new Date().toISOString()
+        };
+
+        fetch(`${API_URL}/entry`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(entryPayload),
+            keepalive: true
+        }).catch(err => console.error("Tracking Error (Entry):", err));
+    };
+
+    // --- Core Function: Send Exit Ping ---
+    // Calculates duration for the SPECIFIC page being left
+    const trackExit = () => {
+        const endTime = Date.now();
+        const durationSeconds = Math.round((endTime - startTime) / 1000);
+
+        // Filter out zero-second bounces if desired, or keep raw data
+        const exitPayload = {
+            client_id: clientId,
+            url: currentUrl, // Send the URL of the page we are *leaving*
+            duration: durationSeconds,
+            event_type: "exit"
+        };
+
+        const blob = new Blob([JSON.stringify(exitPayload)], { type: 'application/json' });
+        navigator.sendBeacon(`${API_URL}/exit`, blob);
+    };
+
+    // --- 2. Initial Execution ---
+    // Fire immediately on the very first script load
+    trackEntry();
+
+    // --- 3. Single Page Application (SPA) Logic ---
+    // Frameworks like Next.js/React use History API (pushState) instead of real page loads.
+    // We must "patch" these methods to detect when the URL changes.
+
+    const patchHistoryMethod = (method) => {
+        const original = history[method];
+        return function() {
+            // A. Before navigation: Close the session for the CURRENT page
+            trackExit();
+
+            // B. Execute the actual framework navigation
+            const result = original.apply(this, arguments);
+
+            // C. After navigation: Start new session for the NEW page
+            currentUrl = window.location.href;
+            startTime = Date.now();
+            
+            // We wrap this in a tiny timeout to ensure window.location is fully updated
+            setTimeout(trackEntry, 0);
+
+            return result;
+        };
+    };
+
+    // Monkey-patch the history methods
+    history.pushState = patchHistoryMethod('pushState');       // Handles normal link clicks
+    history.replaceState = patchHistoryMethod('replaceState'); // Handles redirects/rewrites
+
+    // Listen for the "Back" and "Forward" browser buttons
+    window.addEventListener('popstate', () => {
+        trackExit(); // Close old page
+        currentUrl = window.location.href;
+        startTime = Date.now();
+        trackEntry(); // Open new page
+    });
+
+    // --- 4. Traditional Visibility Tracking ---
+    // Still critical for when users minimize the tab or close the browser entirely
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'hidden') {
+            trackExit();
+        } else {
+            // Optional: If user comes back to the tab, you could reset startTime here
+            // to avoid counting "tab background time" as active viewing time.
+            startTime = Date.now();
+        }
+    });
+
+})();
+</file>
+
+<file path="tracker/src/references/v1/tracker.min.js">
+!function(){let e=document.currentScript,t=e.getAttribute("data-id"),n="https://api.yourdomain.com/v1/track",a=Date.now(),r=window.location.href;const i=()=>{fetch(`${n}/entry`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({client_id:t,url:window.location.href,referrer:document.referrer||"direct",screen_resolution:`${window.screen.width}x${window.screen.height}`,timestamp:(new Date).toISOString()}),keepalive:!0}).catch((e=>console.error("Tracking Error:",e)))},o=()=>{let e=Math.round((Date.now()-a)/1e3);navigator.sendBeacon(`${n}/exit`,new Blob([JSON.stringify({client_id:t,url:r,duration:e,event_type:"exit"})],{type:"application/json"}))},c=e=>{let t=history[e];return function(){o();let n=t.apply(this,arguments);return r=window.location.href,a=Date.now(),setTimeout(i,0),n}};i(),history.pushState=c("pushState"),history.replaceState=c("replaceState"),window.addEventListener("popstate",(()=>{o(),r=window.location.href,a=Date.now(),i()})),document.addEventListener("visibilitychange",(function(){"hidden"===document.visibilityState?o():a=Date.now()}))}();
+</file>
+
+<file path="tracker/src/references/cookies.js">
+/**
+ * AuraWorks Identity Bridge - cookie.js
+ * Version: 1.0.0 (Persistence Edition)
+ * Purpose: 2026-compliant Triple-Storage (Cookie, LocalStorage, IndexedDB).
+ * For reference purposes, aura.js is used.
+*/
+
+const AuraPersistence = {
+    key: 'aura_uid',
+
+    async init() {
+        let id = await this.getStoredID();
+        
+        if (!id) {
+            id = this.generateUUID();
+            console.log("🆕 AuraWorks: New Unique ID Generated:", id);
+        } else {
+            console.log("🔄 AuraWorks: Existing ID Restored:", id);
+        }
+
+        await this.syncStorage(id);
+        return id;
+    },
+
+    /**
+     * 🛡️ THE TRIPLE-LOCK: Checks all three storage areas
+     */
+    async getStoredID() {
+        // 1. Check Cookie (Partitioned for 2026)
+        const cookieId = document.cookie.split('; ').find(row => row.startsWith(`${this.key}=`))?.split('=')[1];
+        
+        // 2. Check LocalStorage
+        const localId = localStorage.getItem(this.key);
+        
+        // 3. Check IndexedDB (The most durable)
+        const dbId = await this.getFromIndexedDB();
+
+        return cookieId || localId || dbId || null;
+    },
+
+    /**
+     * 🚀 SYNC: Writes the ID to all three locations
+     */
+    async syncStorage(id) {
+        // A. Set CHIPS Cookie (Partitioned; SameSite=None; Secure)
+        // This is the 2026 standard for B2B cross-site persistence
+        const expiry = new Date();
+        expiry.setFullYear(expiry.getFullYear() + 2); // 2-year persistence
+        document.cookie = `${this.key}=${id}; expires=${expiry.toUTCString()}; path=/; SameSite=None; Secure; Partitioned`;
+
+        // B. Set LocalStorage
+        localStorage.setItem(this.key, id);
+
+        // C. Set IndexedDB
+        await this.saveToIndexedDB(id);
+        
+        // Update the global aura_uid for tracker.js to pick up
+        window.AURA_UID = id;
+    },
+
+    /**
+     * 🧬 UTILITY: ID Generation & IndexedDB Logic
+     */
+    generateUUID() {
+        return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+        );
+    },
+
+    async getFromIndexedDB() {
+        return new Promise((resolve) => {
+            const request = indexedDB.open("AuraWorksDB", 1);
+            request.onupgradeneeded = (e) => e.target.result.createObjectStore("identity");
+            request.onsuccess = (e) => {
+                const db = e.target.result;
+                const tx = db.transaction("identity", "readonly");
+                const store = tx.objectStore("identity");
+                const getReq = store.get(this.key);
+                getReq.onsuccess = () => resolve(getReq.result);
+                getReq.onerror = () => resolve(null);
+            };
+            request.onerror = () => resolve(null);
+        });
+    },
+
+    async saveToIndexedDB(id) {
+        const request = indexedDB.open("AuraWorksDB", 1);
+        request.onsuccess = (e) => {
+            const db = e.target.result;
+            const tx = db.transaction("identity", "readwrite");
+            tx.objectStore("identity").put(id, this.key);
+        };
+    }
+};
+
+// Initialize Persistence
+AuraPersistence.init();
+</file>
+
+<file path="tracker/src/references/fingerprint.js">
+/**
+ * AuraWorks Identity Bridge - fingerprint.js
+ * Version: 1.0.0 (Forensic Edition)
+ * Purpose: High-entropy hardware identification using GPU noise and Clock Drift.
+ * For reference purposes, aura.js is used.
+*/
+
+const AuraFingerprint = {
+    async generateHardwareID() {
+        const components = {
+            canvas: this.getCanvasFingerprint(),
+            webgl: this.getWebGLFingerprint(),
+            drift: await this.measureClockDrift(),
+            screen: `${window.screen.width}x${window.screen.height}x${window.screen.colorDepth}`,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            fonts: this.getFontEntropy()
+        };
+
+        // Create a unique hash of the hardware environment
+        const stream = new TextEncoder().encode(JSON.stringify(components));
+        const hashBuffer = await crypto.subtle.digest('SHA-256', stream);
+        return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    },
+
+    getCanvasFingerprint() {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        // Industrial Sophistication: Drawing complex hidden shapes
+        ctx.textBaseline = "top";
+        ctx.font = "14px 'Arial'";
+        ctx.textRendering = "optimizeLegibility";
+        ctx.fillText("AuraWorks_Identity_v1", 2, 2);
+        ctx.fillStyle = "#f60";
+        ctx.fillRect(125, 1, 62, 20);
+        ctx.fillStyle = "#069";
+        ctx.fillText("AuraWorks_Identity_v1", 4, 17);
+        ctx.strokeStyle = "rgba(102, 204, 0, 0.7)";
+        ctx.strokeRect(2, 2, 150, 40);
+        return canvas.toDataURL();
+    },
+
+    getWebGLFingerprint() {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (!gl) return "no_webgl";
+        
+        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        return debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_ID) : "generic_gpu";
+    },
+
+    async measureClockDrift() {
+        /**
+         * The "Tie-Breaker": Measures the delta between Hardware performance 
+         * and System time over a 500ms window.
+         */
+        return new Promise((resolve) => {
+            const t0_perf = performance.now();
+            const t0_date = Date.now();
+
+            setTimeout(() => {
+                const t1_perf = performance.now();
+                const t1_date = Date.now();
+                
+                const perfDelta = t1_perf - t0_perf;
+                const dateDelta = t1_date - t0_date;
+                
+                // The 'Drift' is the microscopic oscillation variance
+                resolve(perfDelta - dateDelta);
+            }, 500);
+        });
+    },
+
+    getFontEntropy() {
+        // Checking for professional/system-specific fonts
+        const fontList = ["cursive", "monospace", "serif", "sans-serif", "Impact", "Arial Black"];
+        return fontList.filter(font => document.fonts.check(`12px ${font}`)).join(',');
+    }
+};
+
+// Execution Pulse: Fires after 2 seconds to ensure page stability
+setTimeout(async () => {
+    const hardwareID = await AuraFingerprint.generateHardwareID();
+    console.log("AuraWorks Signature Generated:", hardwareID);
+    // Send this to your FastAPI backend to begin 'Master Brain' stitching
+}, 2000);
+</file>
+
+<file path="tracker/src/references/tracker.js">
+/**
+ * AuraWorks Industrial Intelligence Engine - Unified Master Tracker
+ * Version: 2.1.0 (Debug & Forensic Edition)
+ * For reference purposes, aura.js is used.
+ */
+(function() {
+    const script = document.currentScript;
+    const clientId = script.getAttribute('data-id');
+    
+    // --- 1. CONFIGURATION & API RESOLUTION ---
+    const getBaseUrl = () => {
+        if (window.AURA_CONFIG?.apiUrl) return window.AURA_CONFIG.apiUrl;
+        if (script && script.src.includes('http')) {
+            try { return new URL(script.src).origin; } catch (e) {}
+        }
+        return "http://localhost:8000";
+    };
+
+    const BASE_URL = getBaseUrl().replace(/\/$/, '');
+    const API_URL = `${BASE_URL}/api/v1/track`; 
+    
+    console.log(`🚀 AuraWorks Tracker Active. Client: ${clientId} | Engine: ${API_URL}`);
+
+    let startTime = Date.now();
+    let currentUrl = window.location.href;
+    const honeyPotId = 'aura-v-check';
+
+    // --- 2. CORE DISPATCHER ---
+    const auraDispatch = async (endpoint, payload, useBeacon = false) => {
+        const fullPayload = {
+            client_id: clientId,
+            aura_id: localStorage.getItem('aura_uid') || 'anonymous',
+            timestamp: new Date().toISOString(),
+            ...payload
+        };
+
+        if (useBeacon && navigator.sendBeacon) {
+            const blob = new Blob([JSON.stringify(fullPayload)], { type: 'application/json' });
+            const success = navigator.sendBeacon(`${API_URL}/${endpoint}`, blob);
+            if (success) console.log(`📤 AuraWorks: Exit Beacon Queued [${endpoint}]`);
+            return success;
+        }
+
+        console.log(`📡 AuraWorks: Sending ${endpoint.toUpperCase()} Log...`, fullPayload);
+
+        try {
+            const response = await fetch(`${API_URL}/${endpoint}`, {
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(fullPayload),
+                keepalive: true
+            });
+            
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            console.log(`✅ AuraWorks: ${endpoint.toUpperCase()} Logged Successfully`, data);
+            return data;
+        } catch (err) {
+            console.error(`❌ AuraWorks [${endpoint}] Error:`, err.message);
+        }
+    };
+
+    // --- 3. SENSORS: BLUR, HONEYPOT, SCROLL ---
+    const initSensors = () => {
+        // A. Blur Capture (The Money)
+        document.querySelectorAll('input[type="email"], input[name*="email"]').forEach(input => {
+            input.addEventListener('blur', (e) => {
+                if (e.target.value.includes('@')) {
+                    console.log("💰 AuraWorks: Capturing Partial Lead (Blur Event)...");
+                    auraDispatch('event', { 
+                        event_type: 'blur_capture', 
+                        captured_email: e.target.value,
+                        field_id: e.target.id || e.target.name
+                    });
+                }
+            });
+        });
+
+        // B. Honey Pot (Bot Filter)
+        const hp = document.getElementById(honeyPotId);
+        if (hp) {
+            hp.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.warn("🛡️ AuraWorks: Bot Triggered Honey Pot!");
+                auraDispatch('event', { is_bot: true, event_type: 'bot_trigger' });
+            });
+        }
+
+        // C. Scroll Depth (Intent Sensor)
+        let scrollFired = false;
+        window.addEventListener('scroll', () => {
+            if (scrollFired) return;
+            const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+            if (scrolled > 30) {
+                console.log("📈 AuraWorks: High Intent Detected (Scroll > 30%)");
+                auraDispatch('event', { event_type: 'high_intent', scroll_depth: Math.round(scrolled) });
+                scrollFired = true;
+            }
+        }, { passive: true });
+    };
+
+    // --- 4. LIFE CYCLE LOGIC ---
+    const trackEntry = () => {
+        auraDispatch('entry', {
+            url: window.location.href,
+            referrer: document.referrer || "direct",
+            screen_res: `${window.screen.width}x${window.screen.height}`
+        });
+        initSensors(); 
+    };
+
+    const trackExit = () => {
+        const duration = Math.round((Date.now() - startTime) / 1000);
+        auraDispatch('exit', {
+            url: currentUrl,
+            duration: duration
+        }, true); 
+    };
+
+    // --- 5. SPA & VISIBILITY HANDLING ---
+    const patchHistory = (method) => {
+        const original = history[method];
+        return function() {
+            trackExit();
+            const result = original.apply(this, arguments);
+            currentUrl = window.location.href;
+            startTime = Date.now();
+            setTimeout(trackEntry, 0);
+            return result;
+        };
+    };
+
+    history.pushState = patchHistory('pushState');
+    history.replaceState = patchHistory('replaceState');
+    window.addEventListener('popstate', () => { 
+        trackExit(); 
+        currentUrl = window.location.href;
+        startTime = Date.now();
+        trackEntry(); 
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            trackExit();
+        } else {
+            console.log("🔄 AuraWorks: Tab Focused - Restarting Timer");
+            startTime = Date.now();
+        }
+    });
+
+    // --- INITIALIZE ---
+    trackEntry();
+})();
+</file>
+
 <file path="docker-compose.yml">
 version: '3.8'
 
@@ -3619,134 +4424,6 @@ def send_welcome_email(to_email: str, first_name: str):
         logger.info(f"📧 Email sent. ID: {r.get('id')}")
     except Exception as e:
         logger.error(f"❌ Resend Error: {str(e)}")
-</file>
-
-<file path="backend/app/services/notifications.py">
-import httpx
-import logging
-from app.core.config import settings
-
-logger = logging.getLogger("uvicorn")
-
-# --- PHASE 01: The #visit Channel (Deanonymization Hub) ---
-
-async def post_to_visit_channel(visit_data: dict, journey: dict):
-    """
-    Reporting for the #visit channel: Surfacing anonymous facility traffic.
-    Triggers 'Corporate Cluster' alerts for 3+ unique IDs.
-    """
-    if not settings.SLACK_VISIT_WEBHOOK_URL:
-        return
-
-    cluster_count = journey.get("cluster_count", 1)
-    is_corporate_cluster = cluster_count >= 3
-    
-    # Industrial Visual Indicators
-    emoji = "🚨" if is_corporate_cluster else "🕵️"
-    header = f"{emoji} Corporate Cluster Detected" if is_corporate_cluster else f"{emoji} Anonymous Facility Entry"
-
-    payload = {
-        "blocks": [
-            {
-                "type": "header",
-                "text": {"type": "plain_text", "text": header}
-            },
-            {
-                "type": "section",
-                "fields": [
-                    {"type": "mrkdwn", "text": f"*Entity:*\n{visit_data.get('company_name', 'Anonymous Entity')}"},
-                    {"type": "mrkdwn", "text": f"*Network Profile:*\n`{visit_data.get('network_type', 'Standard')}`"},
-                    {"type": "mrkdwn", "text": f"*Attribution (UTM):*\n{visit_data.get('utm_source', 'Direct')} / {visit_data.get('utm_medium', 'None')}"},
-                    {"type": "mrkdwn", "text": f"*Facility Cluster:*\n{cluster_count} Unique ID(s)"}
-                ]
-            },
-            {
-                "type": "section",
-                "text": {"type": "mrkdwn", "text": f"*Pathway:* `{journey.get('pathway', '/')}`"}
-            },
-            {
-                "type": "context",
-                "elements": [
-                    {"type": "mrkdwn", "text": f"📍 Forensic Lock: `{visit_data.get('aura_id')[:8]}` | Location: {visit_data.get('city', 'Unknown')}, {visit_data.get('region', 'ZA')}"}
-                ]
-            }
-        ]
-    }
-
-    async with httpx.AsyncClient() as client:
-        try:
-            await client.post(settings.SLACK_VISIT_WEBHOOK_URL, json=payload)
-        except Exception as e:
-            logger.error(f"Visit Channel Dispatch Failure: {e}")
-
-# --- PHASE 02: Lead Notifications (Waitlist Submissions) ---
-
-async def post_to_slack(lead_data: dict, journey: dict = None):
-    """
-    Standard lead notification for identified conversions.
-    """
-    if not settings.SLACK_WEBHOOK_URL:
-        return
-
-    journey = journey or {}
-    is_hot = journey.get("is_high_intent", False)
-    status_emoji = "🔴" if is_hot else "🔵"
-    
-    payload = {
-        "blocks": [
-            {
-                "type": "header",
-                "text": {"type": "plain_text", "text": f"{status_emoji} Phase 01: Identity Promoted"}
-            },
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn", 
-                    "text": f"*🕵️ Executive Intent Summary (DeepSeek-V3):*\n_{journey.get('intent_summary', 'Forensic analysis pending.')}_"
-                }
-            },
-            {"type": "divider"},
-            {
-                "type": "section",
-                "fields": [
-                    {"type": "mrkdwn", "text": f"*Entity:*\n{lead_data.get('company_name_final', 'Anonymous Entity')}"},
-                    {"type": "mrkdwn", "text": f"*Lead:*\n{lead_data.get('name')} ({lead_data.get('email')})"},
-                    {"type": "mrkdwn", "text": f"*Project Value:*\n{lead_data.get('formatted_price', 'N/A')}"},
-                    {"type": "mrkdwn", "text": f"*Pathway:* `{journey.get('pathway', 'Direct')}`"}
-                ]
-            }
-        ]
-    }
-    
-    async with httpx.AsyncClient() as client:
-        await client.post(settings.SLACK_WEBHOOK_URL, json=payload)
-
-# --- PHASE 03: Industrial Mailer (Mailgun Replacement for Resend) ---
-
-async def send_mailgun_notification(email: str, name: str, subject: str = "Phase 01: Audit Initiated"):
-    """
-    Industrial Email Dispatch via Mailgun API.
-    """
-    if not settings.MAILGUN_API_KEY or not settings.MAILGUN_DOMAIN:
-        logger.warning("Mailgun credentials missing. Notification skipped.")
-        return
-
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(
-                f"https://api.mailgun.net/v3/{settings.MAILGUN_DOMAIN}/messages",
-                auth=("api", settings.MAILGUN_API_KEY),
-                data={
-                    "from": f"AuraWorks <audit@{settings.MAILGUN_DOMAIN}>",
-                    "to": email,
-                    "subject": subject,
-                    "html": f"<html><body><h3>System Audit: {name}</h3><p>Your industrial ROI analysis has been queued.</p></body></html>"
-                }
-            )
-            return response.status_code == 200
-        except Exception as e:
-            logger.error(f"Mailgun Dispatch Failure: {e}")
-            return False
 </file>
 
 <file path="backend/app/db.py">
@@ -4188,52 +4865,169 @@ export function cn(...inputs: ClassValue[]) {
 }
 </file>
 
-<file path="tracker/src/tracker.min.js">
-!function(){let e=document.currentScript,t=e.getAttribute("data-id"),n="https://api.yourdomain.com/v1/track",a=Date.now(),r=window.location.href;const i=()=>{fetch(`${n}/entry`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({client_id:t,url:window.location.href,referrer:document.referrer||"direct",screen_resolution:`${window.screen.width}x${window.screen.height}`,timestamp:(new Date).toISOString()}),keepalive:!0}).catch((e=>console.error("Tracking Error:",e)))},o=()=>{let e=Math.round((Date.now()-a)/1e3);navigator.sendBeacon(`${n}/exit`,new Blob([JSON.stringify({client_id:t,url:r,duration:e,event_type:"exit"})],{type:"application/json"}))},c=e=>{let t=history[e];return function(){o();let n=t.apply(this,arguments);return r=window.location.href,a=Date.now(),setTimeout(i,0),n}};i(),history.pushState=c("pushState"),history.replaceState=c("replaceState"),window.addEventListener("popstate",(()=>{o(),r=window.location.href,a=Date.now(),i()})),document.addEventListener("visibilitychange",(function(){"hidden"===document.visibilityState?o():a=Date.now()}))}();
-</file>
+<file path="backend/app/services/notifications.py">
+import os
+import httpx
+import logging
+from app.core.config import settings
 
-<file path="REMEMBER.md">
-# MEMORY.md | AuraWorks 2.2.0: Industrial Intelligence Engine
+logger = logging.getLogger("uvicorn")
 
-## 1. Commercial Logic & Strategy (The R120k/yr Framework)
-* **The Offer:** Hybrid Flat-Rate model. **R10k/month (R120k/year)** base retainer.
-* **Usage Cap:** Includes up to **10,000 resolved B2B identities** per month to protect margins while ensuring high-volume value.
-* **The Guarantee:** **30% Minimum Identity Resolution Rate** for unique B2B visitors. Failure to meet this trigger results in a pro-rata credit for the following billing cycle.
-* **Primary Value Prop:** "Foundational Authority"—moving from "Clicks" to "Boardroom-Ready Leads" for the South African industrial sector.
-* **Delivery Mechanism:** "Push-First" architecture. Automated **Weekly Intelligence Reports (PDF)** delivered via Resend. The live dashboard is a secondary utility for real-time deep dives.
+# --- PHASE 01: The #visit Channel (Industrial Pager) ---
 
-## 2. Technical Forensics & Identity Bridge (`aura.js`)
-* **Persistence Pillar:** Triple-redundancy tracking using **Cookies, LocalStorage, and IndexedDB** to survive cache clears and "Identity Wipes."
-* **Resolution Logic:** * **Deterministic Fingerprinting:** Prioritizes Canvas Rendering, WebGL GPU unmasking, and **Clock Drift** (performance.now vs Date.now) over generic network signals.
-    * **ISP Filtering:** Hard blacklist for residential/mobile CIDR ranges (**Vodacom, MTN, Rain, Telkom**) to isolate fixed-line corporate infrastructure.
-* **Behavioral Gating:**
-    * **2-Second Threshold:** Forensic enrichment calls only fire after 2 seconds of verified "Human" interaction (monitored via scroll velocity and cursor erraticism).
-    * **Bot Defense:** "Honey Pot" traps for `onMouseOver` or hidden link interactions commonly triggered by procurement scrapers.
-* **Intent Capture:** Active "Blur" event monitoring on email input fields to harvest partial leads before form submission.
+async def post_to_visit_channel(visit_data: dict, journey: dict):
+    """
+    High-speed Signal for the #visit channel.
+    Provides immediate forensic links to Airtable and Notion.
+    """
+    if not settings.SLACK_VISIT_WEBHOOK_URL:
+        return
 
-## 3. Infrastructure & High-Precision Security
-* **Stack:** Next.js 15+ (Frontend), FastAPI (Backend), PostgreSQL (Vault), Strapi (CMS/Reporting).
-* **Multi-Tenancy:** **Row-Level Security (RLS)** enforced at the PostgreSQL engine level. Direct `client_id` isolation ensures zero cross-pollination of industrial data.
-* **Encryption (AES-256):** Mandatory field-level encryption for all PII:
-    * `visitor_email`
-    * `phone_number`
-    * `precise_location` (GPS/Coordinates)
-    * *Note: Firmography (Company Name/Industry) remains unencrypted for high-speed indexing and reporting.*
-* **Kill Switch:** Server-side Token Validation. `aura.js` pings the API on initialization; a `403 Forbidden` response for inactive `client_id` tokens terminates all client-side forensic logic instantly.
+    cluster_count = journey.get("cluster_count", 1)
+    is_corporate_cluster = cluster_count >= 3
+    
+    # Industrial Visual Indicators
+    emoji = "🚨" if is_corporate_cluster else "🕵️"
+    header = f"{emoji} Corporate Cluster" if is_corporate_cluster else f"{emoji} Facility Entry"
 
-## 4. Automation & Integration Workflows
-* **Slack Intent Routing:**
-    * `#hot-leads`: Real-time alerts for high-dwell time on "Pricing," "Contact," or "Audit" pages.
-    * `#traffic-audit`: Daily summaries of general corporate footprints and network signals.
-* **Mailgun Nurture Sequence:**
-    * **T+0:** "Intelligence Engine Activated" – Immediate confirmation of Audit Phase 01.
-    * **T+24h:** "First 5 Industrial Signals Identified" – Proof of value delivered within the first business day.
-    * **T+7d:** "Weekly Intelligence Summary" – First automated PDF report detailing unmasked entities.
+    # Deep Links for the Industrial Triad
+    # Airtable uses the Base ID, Notion uses the Database ID
+    airtable_url = f"https://airtable.com/{os.getenv('AIRTABLE_BASE_ID')}"
+    notion_url = f"https://www.notion.so/{os.getenv('NOTION_DATABASE_ID')}"
 
-## 5. Compliance & Local Context (South Africa)
-* **Legal Framework:** POPIA/PAIA compliant. All data handling is governed by the Dynamic Markdown files served at `/legal`, `/privacy-policy`, and `/security`.
-* **Information Officer:** Reitumetse Sethabela (Founder/Agency Owner).
-* **Target ICP:** Industrial, Engineering, Manufacturing, and Law firms specifically within the **South African** economic hub.
+    payload = {
+        "blocks": [
+            {
+                "type": "header",
+                "text": {"type": "plain_text", "text": header}
+            },
+            {
+                "type": "section",
+                "fields": [
+                    {"type": "mrkdwn", "text": f"*Entity:*\n{visit_data.get('company_name', 'Anonymous Entity')}"},
+                    {"type": "mrkdwn", "text": f"*Network Profile:*\n`{visit_data.get('network_type', 'Standard')}`"},
+                    {"type": "mrkdwn", "text": f"*Attribution:*\n{visit_data.get('utm_source', 'Direct')} / {visit_data.get('utm_medium', 'None')}"},
+                    {"type": "mrkdwn", "text": f"*Cluster:*\n{cluster_count} Unique ID(s)"}
+                ]
+            },
+            {
+                "type": "context",
+                "elements": [
+                    {"type": "mrkdwn", "text": f"📍 Forensic Lock: `{visit_data.get('aura_id')[:8]}` | Location: {visit_data.get('city', 'Unknown')}, {visit_data.get('region', 'ZA')}"}
+                ]
+            },
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "View Airtable Engine"},
+                        "url": airtable_url,
+                        "style": "primary"
+                    },
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "Open Clinical Vault"},
+                        "url": notion_url
+                    }
+                ]
+            }
+        ]
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(settings.SLACK_VISIT_WEBHOOK_URL, json=payload)
+            response.raise_for_status()
+        except Exception as e:
+            logger.error(f"Visit Channel Pager Failure: {e}")
+
+# --- PHASE 02: Lead Notifications (Identity Promotion) ---
+
+async def post_to_slack(lead_data: dict, journey: dict = None):
+    """
+    Standard lead notification for identified conversions.
+    Simplified to prevent Block Kit rendering errors.
+    """
+    if not settings.SLACK_WEBHOOK_URL:
+        return
+
+    journey = journey or {}
+    is_hot = journey.get("is_high_intent", False)
+    status_emoji = "🔴" if is_hot else "🔵"
+    
+    # We point to the Vault for the full DeepSeek summary instead of sending it here
+    notion_url = f"https://www.notion.so/{os.getenv('NOTION_DATABASE_ID')}"
+
+    payload = {
+        "blocks": [
+            {
+                "type": "header",
+                "text": {"type": "plain_text", "text": f"{status_emoji} Identity Promoted"}
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn", 
+                    "text": f"*Audit Status:* Forensic analysis successfully archived to Notion Vault."
+                }
+            },
+            {"type": "divider"},
+            {
+                "type": "section",
+                "fields": [
+                    {"type": "mrkdwn", "text": f"*Entity:*\n{lead_data.get('company_name_final', 'Anonymous Entity')}"},
+                    {"type": "mrkdwn", "text": f"*Lead:*\n{lead_data.get('name')} ({lead_data.get('email')})"},
+                    {"type": "mrkdwn", "text": f"*Value:*\n{lead_data.get('formatted_price', 'N/A')}"},
+                    {"type": "mrkdwn", "text": f"*Pathway:* `{journey.get('pathway', 'Direct')}`"}
+                ]
+            },
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "Read Full Audit"},
+                        "url": notion_url,
+                        "style": "primary"
+                    }
+                ]
+            }
+        ]
+    }
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            await client.post(settings.SLACK_WEBHOOK_URL, json=payload)
+        except Exception as e:
+            logger.error(f"Lead Channel Dispatch Failure: {e}")
+
+# --- PHASE 03: Industrial Mailer (Mailgun) ---
+
+async def send_mailgun_notification(email: str, name: str, subject: str = "Phase 01: Audit Initiated"):
+    """
+    Industrial Email Dispatch via Mailgun API.
+    """
+    if not settings.MAILGUN_API_KEY or not settings.MAILGUN_DOMAIN:
+        logger.warning("Mailgun credentials missing. Notification skipped.")
+        return
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                f"https://api.mailgun.net/v3/{settings.MAILGUN_DOMAIN}/messages",
+                auth=("api", settings.MAILGUN_API_KEY),
+                data={
+                    "from": f"AuraWorks <audit@{settings.MAILGUN_DOMAIN}>",
+                    "to": email,
+                    "subject": subject,
+                    "html": f"<html><body><h3>System Audit: {name}</h3><p>Your industrial ROI analysis has been queued.</p></body></html>"
+                }
+            )
+            return response.status_code == 200
+        except Exception as e:
+            logger.error(f"Mailgun Dispatch Failure: {e}")
+            return False
 </file>
 
 <file path="frontend/src/app/(pages)/pricing/page.tsx">
@@ -4906,6 +5700,50 @@ const nextConfig: NextConfig = {
 export default nextConfig;
 </file>
 
+<file path="REMEMBER.md">
+# MEMORY.md | AuraWorks 2.2.0: Industrial Intelligence Engine
+
+## 1. Commercial Logic & Strategy (The R120k/yr Framework)
+* **The Offer:** Hybrid Flat-Rate model. **R10k/month (R120k/year)** base retainer.
+* **Usage Cap:** Includes up to **10,000 resolved B2B identities** per month to protect margins while ensuring high-volume value.
+* **The Guarantee:** **30% Minimum Identity Resolution Rate** for unique B2B visitors. Failure to meet this trigger results in a pro-rata credit for the following billing cycle.
+* **Primary Value Prop:** "Foundational Authority"—moving from "Clicks" to "Boardroom-Ready Leads" for the South African industrial sector.
+* **Delivery Mechanism:** "Push-First" architecture. Automated **Weekly Intelligence Reports (PDF)** delivered via Resend. The live dashboard is a secondary utility for real-time deep dives.
+
+## 2. Technical Forensics & Identity Bridge (`aura.js`)
+* **Persistence Pillar:** Triple-redundancy tracking using **Cookies, LocalStorage, and IndexedDB** to survive cache clears and "Identity Wipes."
+* **Resolution Logic:** * **Deterministic Fingerprinting:** Prioritizes Canvas Rendering, WebGL GPU unmasking, and **Clock Drift** (performance.now vs Date.now) over generic network signals.
+    * **ISP Filtering:** Hard blacklist for residential/mobile CIDR ranges (**Vodacom, MTN, Rain, Telkom**) to isolate fixed-line corporate infrastructure.
+* **Behavioral Gating:**
+    * **2-Second Threshold:** Forensic enrichment calls only fire after 2 seconds of verified "Human" interaction (monitored via scroll velocity and cursor erraticism).
+    * **Bot Defense:** "Honey Pot" traps for `onMouseOver` or hidden link interactions commonly triggered by procurement scrapers.
+* **Intent Capture:** Active "Blur" event monitoring on email input fields to harvest partial leads before form submission.
+
+## 3. Infrastructure & High-Precision Security
+* **Stack:** Next.js 15+ (Frontend), FastAPI (Backend), PostgreSQL (Vault), Strapi (CMS/Reporting).
+* **Multi-Tenancy:** **Row-Level Security (RLS)** enforced at the PostgreSQL engine level. Direct `client_id` isolation ensures zero cross-pollination of industrial data.
+* **Encryption (AES-256):** Mandatory field-level encryption for all PII:
+    * `visitor_email`
+    * `phone_number`
+    * `precise_location` (GPS/Coordinates)
+    * *Note: Firmography (Company Name/Industry) remains unencrypted for high-speed indexing and reporting.*
+* **Kill Switch:** Server-side Token Validation. `aura.js` pings the API on initialization; a `403 Forbidden` response for inactive `client_id` tokens terminates all client-side forensic logic instantly.
+
+## 4. Automation & Integration Workflows
+* **Slack Intent Routing:**
+    * `#hot-leads`: Real-time alerts for high-dwell time on "Pricing," "Contact," or "Audit" pages.
+    * `#traffic-audit`: Daily summaries of general corporate footprints and network signals.
+* **Mailgun Nurture Sequence:**
+    * **T+0:** "Intelligence Engine Activated" – Immediate confirmation of Audit Phase 01.
+    * **T+24h:** "First 5 Industrial Signals Identified" – Proof of value delivered within the first business day.
+    * **T+7d:** "Weekly Intelligence Summary" – First automated PDF report detailing unmasked entities.
+
+## 5. Compliance & Local Context (South Africa)
+* **Legal Framework:** POPIA/PAIA compliant. All data handling is governed by the Dynamic Markdown files served at `/legal`, `/privacy-policy`, and `/security`.
+* **Information Officer:** Reitumetse Sethabela (Founder/Agency Owner).
+* **Target ICP:** Industrial, Engineering, Manufacturing, and Law firms specifically within the **South African** economic hub.
+</file>
+
 <file path="backend/app/api/v1/identity.py">
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlmodel import Session, select
@@ -5341,115 +6179,6 @@ export default function Home() {
 }
 </file>
 
-<file path="tracker/src/index.js">
-/**
- * Industrial Intelligence Engine - Master Tracker (v2 SPA Support)
- * Usage: <script src="https://cdn.yourdomain.com/tracker.js" data-id="CLIENT_ID_HERE"></script>
- * This tracker is rendered obsolete, aura.js is what's being used
-*/
-(function() {
-    // 1. Configuration & Setup
-    const script = document.currentScript;
-    const clientId = script.getAttribute('data-id');
-    // Ensure this matches your FastAPI backend
-    const API_URL = "http://localhost:8000/v1/track"; 
-    
-    // State Variables (Changed from const to let to allow resetting on navigation)
-    let startTime = Date.now();
-    let currentUrl = window.location.href;
-
-    // --- Core Function: Send Entry Ping ---
-    // Captures the new page details immediately
-    const trackEntry = () => {
-        const entryPayload = {
-            client_id: clientId,
-            url: window.location.href, // Always gets the *current* browser URL
-            referrer: document.referrer || "direct", 
-            screen_resolution: `${window.screen.width}x${window.screen.height}`,
-            timestamp: new Date().toISOString()
-        };
-
-        fetch(`${API_URL}/entry`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(entryPayload),
-            keepalive: true
-        }).catch(err => console.error("Tracking Error (Entry):", err));
-    };
-
-    // --- Core Function: Send Exit Ping ---
-    // Calculates duration for the SPECIFIC page being left
-    const trackExit = () => {
-        const endTime = Date.now();
-        const durationSeconds = Math.round((endTime - startTime) / 1000);
-
-        // Filter out zero-second bounces if desired, or keep raw data
-        const exitPayload = {
-            client_id: clientId,
-            url: currentUrl, // Send the URL of the page we are *leaving*
-            duration: durationSeconds,
-            event_type: "exit"
-        };
-
-        const blob = new Blob([JSON.stringify(exitPayload)], { type: 'application/json' });
-        navigator.sendBeacon(`${API_URL}/exit`, blob);
-    };
-
-    // --- 2. Initial Execution ---
-    // Fire immediately on the very first script load
-    trackEntry();
-
-    // --- 3. Single Page Application (SPA) Logic ---
-    // Frameworks like Next.js/React use History API (pushState) instead of real page loads.
-    // We must "patch" these methods to detect when the URL changes.
-
-    const patchHistoryMethod = (method) => {
-        const original = history[method];
-        return function() {
-            // A. Before navigation: Close the session for the CURRENT page
-            trackExit();
-
-            // B. Execute the actual framework navigation
-            const result = original.apply(this, arguments);
-
-            // C. After navigation: Start new session for the NEW page
-            currentUrl = window.location.href;
-            startTime = Date.now();
-            
-            // We wrap this in a tiny timeout to ensure window.location is fully updated
-            setTimeout(trackEntry, 0);
-
-            return result;
-        };
-    };
-
-    // Monkey-patch the history methods
-    history.pushState = patchHistoryMethod('pushState');       // Handles normal link clicks
-    history.replaceState = patchHistoryMethod('replaceState'); // Handles redirects/rewrites
-
-    // Listen for the "Back" and "Forward" browser buttons
-    window.addEventListener('popstate', () => {
-        trackExit(); // Close old page
-        currentUrl = window.location.href;
-        startTime = Date.now();
-        trackEntry(); // Open new page
-    });
-
-    // --- 4. Traditional Visibility Tracking ---
-    // Still critical for when users minimize the tab or close the browser entirely
-    document.addEventListener('visibilitychange', function() {
-        if (document.visibilityState === 'hidden') {
-            trackExit();
-        } else {
-            // Optional: If user comes back to the tab, you could reset startTime here
-            // to avoid counting "tab background time" as active viewing time.
-            startTime = Date.now();
-        }
-    });
-
-})();
-</file>
-
 <file path="frontend/src/components/footer/footer.tsx">
 import { Logo } from '@/components/ui/logo'
 import { Button } from '@/components/ui/button'
@@ -5749,58 +6478,6 @@ export default function Footer() {
 }
 </file>
 
-<file path="backend/app/core/config.py">
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional
-
-class Settings(BaseSettings):
-    # App Settings
-    PROJECT_NAME: str = "Industrial Intelligence Engine"
-    VERSION: str = "1.0.0"
-    API_V1_STR: str = "/api/v1"
-
-    # API Keys for Frontend (Waitlist)
-    NEXT_PUBLIC_WAITLIST_API_KEY: Optional[str] = None
-    NEXT_PUBLIC_WAITLIST_ID: Optional[str] = None
-    
-    # Security
-    SECRET_KEY: str  # Required in .env
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
-    
-    # Database
-    DATABASE_URL: str # Required in .env
-    
-    # Third Party APIs
-    IPINFO_TOKEN: str # Required in .env
-    RESEND_API_KEY: Optional[str] = None
-    
-    # Notifications
-    # Paste your webhook in Railway/Local .env as SLACK_WEBHOOK_URL
-    SLACK_WEBHOOK_URL: Optional[str] = None
-
-    # Add these to your Settings class in app/core/config.py
-    MAILGUN_API_KEY: str = "your-api-key"
-    MAILGUN_DOMAIN: str = "mg.auraworks.co.za"
-    SLACK_VISIT_WEBHOOK_URL: str = "your-visit-channel-webhook" # Dedicated #visit channel
-    
-    # Email Settings
-    SMTP_TLS: bool = True
-    SMTP_PORT: Optional[int] = 587
-    SMTP_HOST: Optional[str] = None
-    SMTP_USER: Optional[str] = None
-    SMTP_PASSWORD: Optional[str] = None
-    EMAILS_FROM_EMAIL: Optional[str] = None
-
-    # Modern Pydantic V2 Configuration
-    model_config = SettingsConfigDict(
-        env_file=".env", 
-        case_sensitive=True,
-        extra="ignore" 
-    )
-
-settings = Settings()
-</file>
-
 <file path="frontend/src/components/pricing/pricing.tsx">
 'use client'
 
@@ -6043,6 +6720,58 @@ This tracker script is proprietary software. Unauthorized copying, modification,
 ---
 </file>
 
+<file path="backend/app/core/config.py">
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional
+
+class Settings(BaseSettings):
+    # App Settings
+    PROJECT_NAME: str = "Industrial Intelligence Engine"
+    VERSION: str = "1.0.0"
+    API_V1_STR: str = "/api/v1"
+
+    # API Keys for Frontend (Waitlist)
+    NEXT_PUBLIC_WAITLIST_API_KEY: Optional[str] = None
+    NEXT_PUBLIC_WAITLIST_ID: Optional[str] = None
+    
+    # Security
+    SECRET_KEY: str  # Required in .env
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
+    
+    # Database
+    DATABASE_URL: str # Required in .env
+    
+    # Third Party APIs
+    IPINFO_TOKEN: str # Required in .env
+    RESEND_API_KEY: Optional[str] = None
+    
+    # Notifications
+    # Paste your webhook in Railway/Local .env as SLACK_WEBHOOK_URL
+    SLACK_WEBHOOK_URL: Optional[str] = None
+
+    # Add these to your Settings class in app/core/config.py
+    MAILGUN_API_KEY: str = "your-api-key"
+    MAILGUN_DOMAIN: str = "mg.auraworks.co.za"
+    SLACK_VISIT_WEBHOOK_URL: str = "your-visit-channel-webhook" # Dedicated #visit channel
+    
+    # Email Settings
+    SMTP_TLS: bool = True
+    SMTP_PORT: Optional[int] = 587
+    SMTP_HOST: Optional[str] = None
+    SMTP_USER: Optional[str] = None
+    SMTP_PASSWORD: Optional[str] = None
+    EMAILS_FROM_EMAIL: Optional[str] = None
+
+    # Modern Pydantic V2 Configuration
+    model_config = SettingsConfigDict(
+        env_file=".env", 
+        case_sensitive=True,
+        extra="ignore" 
+    )
+
+settings = Settings()
+</file>
+
 <file path="backend/app/services/enrichment.py">
 import httpx
 import logging
@@ -6166,6 +6895,234 @@ async def get_departmental_intelligence(domain: str) -> List[Dict]:
         except Exception as e:
             logger.error(f"Apollo Enrichment Failure for {domain}: {e}")
             return []
+</file>
+
+<file path="frontend/src/components/hero-sec/hero-section.tsx">
+import React from 'react'
+import Link from 'next/link'
+import { ArrowRight, ChevronRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import Image from 'next/image'
+import { TextEffect } from '@/components/ui/text-effect'
+import { AnimatedGroup } from '@/components/ui/animated-group'
+import { HeroHeader } from '../header/header'
+{/* 
+import { Spotify } from '@/components/ui/svgs/spotify'
+import { SupabaseFull } from '@/components/ui/svgs/supabase'
+import { Hulu } from '@/components/ui/svgs/hulu'
+import { Bolt } from '@/components/ui/svgs/bolt'
+import { FirebaseFull } from '@/components/ui/svgs/firebase'
+import { Beacon } from '@/components/ui/svgs/beacon'
+import { Claude } from '@/components/ui/svgs/claude'
+import { VercelFull } from '@/components/ui/svgs/vercel'
+*/}
+
+const transitionVariants = {
+    item: {
+        hidden: {
+            opacity: 0,
+            filter: 'blur(12px)',
+            y: 12,
+        },
+        visible: {
+            opacity: 1,
+            filter: 'blur(0px)',
+            y: 0,
+            transition: {
+                type: 'spring',
+                bounce: 0.3,
+                duration: 1.5,
+            },
+        },
+    },
+} as const;
+
+export default function HeroSection() {
+    return (
+        <>
+            <HeroHeader />
+            <main className="overflow-hidden">
+                <div
+                    aria-hidden
+                    className="absolute inset-0 isolate hidden opacity-65 contain-strict lg:block">
+                    <div className="w-140 h-320 -translate-y-87.5 absolute left-0 top-0 -rotate-45 rounded-full bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,hsla(0,0%,85%,.08)_0,hsla(0,0%,55%,.02)_50%,hsla(0,0%,45%,0)_80%)]" />
+                    <div className="h-320 absolute left-0 top-0 w-60 -rotate-45 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.06)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)] [translate:5%_-50%]" />
+                    <div className="h-320 -translate-y-87.5 absolute left-0 top-0 w-60 -rotate-45 bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.04)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)]" />
+                </div>
+                <section>
+                    {/* FIXED: Specific padding to align with the background radial mask */}
+                    <div className="relative pt-24 pb-0 px-0 md:pt-48">
+                        <AnimatedGroup
+                            variants={{
+                                container: {
+                                    visible: {
+                                        transition: {
+                                            delayChildren: 1,
+                                        },
+                                    },
+                                },
+                                item: {
+                                    hidden: {
+                                        opacity: 0,
+                                        y: 20,
+                                    },
+                                    visible: {
+                                        opacity: 1,
+                                        y: 0,
+                                        transition: {
+                                            type: 'spring',
+                                            bounce: 0.3,
+                                            duration: 2,
+                                        },
+                                    },
+                                },
+                            }}
+                            className="mask-b-from-35% mask-b-to-90% absolute inset-0 top-56 -z-20 lg:top-32">
+                            <Image
+                                src="https://ik.imagekit.io/lrigu76hy/tailark/night-background.jpg?updatedAt=1745733451120"
+                                alt="background"
+                                className="hidden size-full dark:block object-cover"
+                                width="3276"
+                                height="4095"
+                                priority
+                            />
+                        </AnimatedGroup>
+
+                        <div
+                            aria-hidden
+                            className="absolute inset-0 -z-10 size-full [background:radial-gradient(125%_125%_at_50%_100%,transparent_0%,var(--color-background)_75%)]"
+                        />
+
+                        <div className="mx-auto max-w-7xl px-6">
+                            <div className="text-center sm:mx-auto lg:mr-auto lg:mt-0">
+                                <AnimatedGroup variants={transitionVariants}>
+                                    <Link
+                                        href="/features"
+                                        className="hover:bg-background dark:hover:border-t-border bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-zinc-950/5 transition-colors duration-300 dark:border-t-white/5 dark:shadow-zinc-950">
+                                        <span className="text-foreground text-sm">Industrial Sales Intelligence</span>
+                                        <span className="dark:border-background block h-4 w-0.5 border-l bg-white dark:bg-zinc-700"></span>
+
+                                        <div className="bg-background group-hover:bg-muted size-6 overflow-hidden rounded-full duration-500">
+                                            <div className="flex w-12 -translate-x-1/2 duration-500 ease-in-out group-hover:translate-x-0">
+                                                <span className="flex size-6">
+                                                    <ArrowRight className="m-auto size-3" />
+                                                </span>
+                                                <span className="flex size-6">
+                                                    <ArrowRight className="m-auto size-3" />
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                </AnimatedGroup>
+
+                                <TextEffect
+                                    preset="fade-in-blur"
+                                    speedSegment={0.3}
+                                    as="h1"
+                                    className="mx-auto mt-8 max-w-4xl text-balance text-5xl font-bold md:text-7xl lg:mt-16 xl:text-[4rem] tracking-tight">
+                                    Know Which Companies Are Researching Your Products
+                                </TextEffect>
+                                <TextEffect
+                                    per="line"
+                                    preset="fade-in-blur"
+                                    speedSegment={0.3}
+                                    delay={0.5}
+                                    as="p"
+                                    className="mx-auto mt-8 max-w-2xl text-balance text-lg text-muted-foreground">
+                                    AuraWorks identifies your anonymous industrial visitors and delivers their contact info to your inbox. Simple, weekly leads for your sales team.
+                                </TextEffect>
+
+                                <AnimatedGroup
+                                    variants={{
+                                        container: {
+                                            visible: {
+                                                transition: {
+                                                    staggerChildren: 0.05,
+                                                    delayChildren: 0.75,
+                                                },
+                                            },
+                                        },
+                                        ...transitionVariants,
+                                    }}
+                                    className="mt-12 flex flex-col items-center justify-center gap-4 md:flex-row">
+                                    <Button
+                                        asChild
+                                        size="lg"
+                                        className="rounded-xl px-8 text-base shadow-xl shadow-primary/20">
+                                        <Link href="/get-started">
+                                            <span className="text-nowrap">Get Started</span>
+                                        </Link>
+                                    </Button>
+                                    <Button
+                                        asChild
+                                        size="lg"
+                                        variant="ghost"
+                                        className="rounded-xl px-8 text-base">
+                                        <Link href="/book-call">
+                                            <span className="text-nowrap">Book a Call</span>
+                                        </Link>
+                                    </Button>
+                                </AnimatedGroup>
+                            </div>
+                        </div>
+
+                        <AnimatedGroup
+                            variants={{
+                                container: {
+                                    visible: {
+                                        transition: {
+                                            staggerChildren: 0.05,
+                                            delayChildren: 0.75,
+                                        },
+                                    },
+                                },
+                                ...transitionVariants,
+                            }}>
+                            <div className="mask-b-from-55% relative mr-0 mt-8 overflow-hidden px-2 sm:mr-0 sm:mt-12 md:mt-20">
+                                
+                                <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-2xl shadow-zinc-950/20 ring-1">
+                                    <Image
+                                        className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
+                                        src="/mail2.png"
+                                        alt="industrial lead report dashboard"
+                                        width="2700"
+                                        height="1440"
+                                        priority
+                                    />
+                                    <Image
+                                        className="z-2 border-border/25 aspect-15/8 relative rounded-2xl border dark:hidden"
+                                        src="/mail2-light.webp"
+                                        alt="industrial lead report dashboard"
+                                        width="2700"
+                                        height="1440"
+                                        priority
+                                    />
+                                </div>
+                            </div>
+                        </AnimatedGroup>
+                    </div>
+                </section>
+                
+                {/* Social Proof Section 
+                <section className="bg-background pb-16 pt-24 md:pb-32">
+                    <div className="group relative m-auto max-w-5xl px-6">
+                        <div className="group-hover:blur-xs **:fill-muted-foreground mx-auto grid max-w-2xl grid-cols-3 gap-x-12 gap-y-8 transition-all duration-500 group-hover:opacity-50 sm:gap-x-16 sm:gap-y-14 md:grid-cols-4">
+                            <Bolt className="mx-auto h-5 w-full" />
+                            <VercelFull className="mx-auto h-4 w-full" />
+                            <SupabaseFull className="mx-auto h-6" />
+                            <Hulu className="mx-auto h-4 w-full" />
+                            <Spotify className="mx-auto h-6 w-full" />
+                            <FirebaseFull className="mx-auto h-6 w-full" />
+                            <Beacon className="mx-auto h-4 w-full" />
+                            <Claude className="mx-auto h-5 w-full" />
+                        </div>
+                    </div>
+                </section>
+                */}
+            </main>
+        </>
+    )
+}
 </file>
 
 <file path="backend/app/services/intelligence.py">
@@ -6481,234 +7438,6 @@ async def get_building_activity(ip_address: str, current_aura_id: str) -> str:
         if not others: return "📍 Solo Facility Entry"
         unique_ids = len({v.aura_id for v in others})
         return f"🏢 **Corporate Cluster:** {unique_ids} other device(s) active from this facility."
-</file>
-
-<file path="frontend/src/components/hero-sec/hero-section.tsx">
-import React from 'react'
-import Link from 'next/link'
-import { ArrowRight, ChevronRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import Image from 'next/image'
-import { TextEffect } from '@/components/ui/text-effect'
-import { AnimatedGroup } from '@/components/ui/animated-group'
-import { HeroHeader } from '../header/header'
-{/* 
-import { Spotify } from '@/components/ui/svgs/spotify'
-import { SupabaseFull } from '@/components/ui/svgs/supabase'
-import { Hulu } from '@/components/ui/svgs/hulu'
-import { Bolt } from '@/components/ui/svgs/bolt'
-import { FirebaseFull } from '@/components/ui/svgs/firebase'
-import { Beacon } from '@/components/ui/svgs/beacon'
-import { Claude } from '@/components/ui/svgs/claude'
-import { VercelFull } from '@/components/ui/svgs/vercel'
-*/}
-
-const transitionVariants = {
-    item: {
-        hidden: {
-            opacity: 0,
-            filter: 'blur(12px)',
-            y: 12,
-        },
-        visible: {
-            opacity: 1,
-            filter: 'blur(0px)',
-            y: 0,
-            transition: {
-                type: 'spring',
-                bounce: 0.3,
-                duration: 1.5,
-            },
-        },
-    },
-} as const;
-
-export default function HeroSection() {
-    return (
-        <>
-            <HeroHeader />
-            <main className="overflow-hidden">
-                <div
-                    aria-hidden
-                    className="absolute inset-0 isolate hidden opacity-65 contain-strict lg:block">
-                    <div className="w-140 h-320 -translate-y-87.5 absolute left-0 top-0 -rotate-45 rounded-full bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,hsla(0,0%,85%,.08)_0,hsla(0,0%,55%,.02)_50%,hsla(0,0%,45%,0)_80%)]" />
-                    <div className="h-320 absolute left-0 top-0 w-60 -rotate-45 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.06)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)] [translate:5%_-50%]" />
-                    <div className="h-320 -translate-y-87.5 absolute left-0 top-0 w-60 -rotate-45 bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.04)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)]" />
-                </div>
-                <section>
-                    {/* FIXED: Specific padding to align with the background radial mask */}
-                    <div className="relative pt-24 pb-0 px-0 md:pt-48">
-                        <AnimatedGroup
-                            variants={{
-                                container: {
-                                    visible: {
-                                        transition: {
-                                            delayChildren: 1,
-                                        },
-                                    },
-                                },
-                                item: {
-                                    hidden: {
-                                        opacity: 0,
-                                        y: 20,
-                                    },
-                                    visible: {
-                                        opacity: 1,
-                                        y: 0,
-                                        transition: {
-                                            type: 'spring',
-                                            bounce: 0.3,
-                                            duration: 2,
-                                        },
-                                    },
-                                },
-                            }}
-                            className="mask-b-from-35% mask-b-to-90% absolute inset-0 top-56 -z-20 lg:top-32">
-                            <Image
-                                src="https://ik.imagekit.io/lrigu76hy/tailark/night-background.jpg?updatedAt=1745733451120"
-                                alt="background"
-                                className="hidden size-full dark:block object-cover"
-                                width="3276"
-                                height="4095"
-                                priority
-                            />
-                        </AnimatedGroup>
-
-                        <div
-                            aria-hidden
-                            className="absolute inset-0 -z-10 size-full [background:radial-gradient(125%_125%_at_50%_100%,transparent_0%,var(--color-background)_75%)]"
-                        />
-
-                        <div className="mx-auto max-w-7xl px-6">
-                            <div className="text-center sm:mx-auto lg:mr-auto lg:mt-0">
-                                <AnimatedGroup variants={transitionVariants}>
-                                    <Link
-                                        href="/features"
-                                        className="hover:bg-background dark:hover:border-t-border bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-zinc-950/5 transition-colors duration-300 dark:border-t-white/5 dark:shadow-zinc-950">
-                                        <span className="text-foreground text-sm">Industrial Sales Intelligence</span>
-                                        <span className="dark:border-background block h-4 w-0.5 border-l bg-white dark:bg-zinc-700"></span>
-
-                                        <div className="bg-background group-hover:bg-muted size-6 overflow-hidden rounded-full duration-500">
-                                            <div className="flex w-12 -translate-x-1/2 duration-500 ease-in-out group-hover:translate-x-0">
-                                                <span className="flex size-6">
-                                                    <ArrowRight className="m-auto size-3" />
-                                                </span>
-                                                <span className="flex size-6">
-                                                    <ArrowRight className="m-auto size-3" />
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                </AnimatedGroup>
-
-                                <TextEffect
-                                    preset="fade-in-blur"
-                                    speedSegment={0.3}
-                                    as="h1"
-                                    className="mx-auto mt-8 max-w-4xl text-balance text-5xl font-bold md:text-7xl lg:mt-16 xl:text-[4rem] tracking-tight">
-                                    Know Which Companies Are Researching Your Products
-                                </TextEffect>
-                                <TextEffect
-                                    per="line"
-                                    preset="fade-in-blur"
-                                    speedSegment={0.3}
-                                    delay={0.5}
-                                    as="p"
-                                    className="mx-auto mt-8 max-w-2xl text-balance text-lg text-muted-foreground">
-                                    AuraWorks identifies your anonymous industrial visitors and delivers their contact info to your inbox. Simple, weekly leads for your sales team.
-                                </TextEffect>
-
-                                <AnimatedGroup
-                                    variants={{
-                                        container: {
-                                            visible: {
-                                                transition: {
-                                                    staggerChildren: 0.05,
-                                                    delayChildren: 0.75,
-                                                },
-                                            },
-                                        },
-                                        ...transitionVariants,
-                                    }}
-                                    className="mt-12 flex flex-col items-center justify-center gap-4 md:flex-row">
-                                    <Button
-                                        asChild
-                                        size="lg"
-                                        className="rounded-xl px-8 text-base shadow-xl shadow-primary/20">
-                                        <Link href="/get-started">
-                                            <span className="text-nowrap">Get Started</span>
-                                        </Link>
-                                    </Button>
-                                    <Button
-                                        asChild
-                                        size="lg"
-                                        variant="ghost"
-                                        className="rounded-xl px-8 text-base">
-                                        <Link href="/book-call">
-                                            <span className="text-nowrap">Book a Call</span>
-                                        </Link>
-                                    </Button>
-                                </AnimatedGroup>
-                            </div>
-                        </div>
-
-                        <AnimatedGroup
-                            variants={{
-                                container: {
-                                    visible: {
-                                        transition: {
-                                            staggerChildren: 0.05,
-                                            delayChildren: 0.75,
-                                        },
-                                    },
-                                },
-                                ...transitionVariants,
-                            }}>
-                            <div className="mask-b-from-55% relative mr-0 mt-8 overflow-hidden px-2 sm:mr-0 sm:mt-12 md:mt-20">
-                                
-                                <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-2xl shadow-zinc-950/20 ring-1">
-                                    <Image
-                                        className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
-                                        src="/mail2.png"
-                                        alt="industrial lead report dashboard"
-                                        width="2700"
-                                        height="1440"
-                                        priority
-                                    />
-                                    <Image
-                                        className="z-2 border-border/25 aspect-15/8 relative rounded-2xl border dark:hidden"
-                                        src="/mail2-light.webp"
-                                        alt="industrial lead report dashboard"
-                                        width="2700"
-                                        height="1440"
-                                        priority
-                                    />
-                                </div>
-                            </div>
-                        </AnimatedGroup>
-                    </div>
-                </section>
-                
-                {/* Social Proof Section 
-                <section className="bg-background pb-16 pt-24 md:pb-32">
-                    <div className="group relative m-auto max-w-5xl px-6">
-                        <div className="group-hover:blur-xs **:fill-muted-foreground mx-auto grid max-w-2xl grid-cols-3 gap-x-12 gap-y-8 transition-all duration-500 group-hover:opacity-50 sm:gap-x-16 sm:gap-y-14 md:grid-cols-4">
-                            <Bolt className="mx-auto h-5 w-full" />
-                            <VercelFull className="mx-auto h-4 w-full" />
-                            <SupabaseFull className="mx-auto h-6" />
-                            <Hulu className="mx-auto h-4 w-full" />
-                            <Spotify className="mx-auto h-6 w-full" />
-                            <FirebaseFull className="mx-auto h-6 w-full" />
-                            <Beacon className="mx-auto h-4 w-full" />
-                            <Claude className="mx-auto h-5 w-full" />
-                        </div>
-                    </div>
-                </section>
-                */}
-            </main>
-        </>
-    )
-}
 </file>
 
 <file path="backend/app/models/visit.py">
@@ -7125,187 +7854,6 @@ export default function GetStartedPage() {
 }
 </file>
 
-<file path="backend/app/api/v1/track.py">
-from fastapi import APIRouter, BackgroundTasks, Request, Header
-from typing import Optional, Dict, Any
-from app.models.visit import VisitCreate, Visit
-from app.models.company import Company
-from app.models.pageview import PageViewCreate
-from app.services.enrichment import enrich_visitor_data
-from app.services.notifications import post_to_visit_channel
-from app.services.intelligence import get_visitor_journey
-from sqlmodel import Session, select
-from app.db import engine
-from pydantic import BaseModel
-import logging
-
-router = APIRouter()
-logger = logging.getLogger("uvicorn")
-
-class ConsentPayload(BaseModel):
-    client_id: str
-    aura_id: str
-    status: str 
-
-class IdentityPayload(BaseModel):
-    client_id: str
-    aura_id: str
-    signature: Optional[Dict[str, Any]] = None
-    email: Optional[str] = None
-    capture_source: Optional[str] = None
-
-async def process_entry_logic(payload: VisitCreate, client_ip: str, background_tasks: BackgroundTasks):
-    """
-    Jurisdictive Resolution & Deanonymized Reporting for the #visit channel.
-    """
-    with Session(engine) as session:
-        # 1. Resolve or Create the Jurisdictive Entity (Company)
-        enriched_info = await enrich_visitor_data(client_ip)
-        domain = enriched_info.get("domain")
-        company_name = enriched_info.get("company_name", "Unknown")
-
-        company = None
-        if domain:
-            company_statement = select(Company).where(Company.domain == domain)
-            company = session.exec(company_statement).first()
-
-        if not company and company_name != "Unknown":
-            company = Company(
-                name=company_name,
-                domain=domain,
-                industry=enriched_info.get("industry"),
-                city=enriched_info.get("city"),
-                region=enriched_info.get("region"),
-                is_b2b=enriched_info.get("is_b2b", True)
-            )
-            session.add(company)
-            session.commit()
-            session.refresh(company)
-        elif company:
-            company.total_visits += 1
-            session.add(company)
-
-        # 2. Log the Granular Visit with Network & UTM Attribution
-        db_visit = Visit(
-            company_id=company.id if company else None,
-            client_id=payload.client_id,
-            aura_id=payload.aura_id,
-            ip_address=client_ip,
-            url=payload.url,
-            referrer=payload.referrer,
-            screen_resolution=payload.screen_resolution,
-            effective_connection_type=payload.effective_connection_type,
-            downlink_speed=payload.downlink_speed,
-            rtt=payload.rtt,
-            utm_source=payload.utm_source,
-            utm_medium=payload.utm_medium,
-            utm_campaign=payload.utm_campaign,
-            is_consented=False 
-        )
-        
-        session.add(db_visit)
-        session.commit()
-        session.refresh(db_visit)
-
-        # 3. Deanonymize & Dispatch to #visit channel
-        # This reports the activity even if they never fill in a form
-        journey = await get_visitor_journey(payload.aura_id)
-        
-        visit_report = {
-            "company_name": company.name if company else "Anonymous Facility",
-            "network_type": payload.effective_connection_type or "Standard",
-            "utm_source": payload.utm_source or "Direct",
-            "utm_medium": payload.utm_medium or "None",
-            "aura_id": payload.aura_id,
-            "city": enriched_info.get("city", "Unknown"),
-            "region": enriched_info.get("region", "ZA")
-        }
-        
-        background_tasks.add_task(post_to_visit_channel, visit_report, journey)
-
-@router.post("/entry")
-async def track_entry(
-    payload: VisitCreate, 
-    request: Request, 
-    background_tasks: BackgroundTasks,
-    x_forwarded_for: Optional[str] = Header(None)
-):
-    client_ip = x_forwarded_for.split(',')[0].strip() if x_forwarded_for else (request.client.host if request.client else "127.0.0.1")
-    background_tasks.add_task(process_entry_logic, payload, client_ip, background_tasks)
-    return {"status": "accepted"}
-
-@router.post("/identity")
-async def track_identity(payload: IdentityPayload):
-    with Session(engine) as session:
-        statement = select(Visit).where(Visit.aura_id == payload.aura_id).order_by(Visit.created_at.desc())
-        visit = session.exec(statement).first()
-        
-        if visit:
-            if payload.signature:
-                sig = payload.signature
-                visit.canvas_hash = sig.get("canvas")
-                visit.webgl_renderer = sig.get("webgl")
-                visit.clock_drift = sig.get("drift")
-                net = sig.get("network")
-                if isinstance(net, dict):
-                    visit.effective_connection_type = net.get("type")
-                    visit.downlink_speed = net.get("downlink")
-                    visit.rtt = net.get("rtt")
-            
-            session.add(visit)
-            session.commit()
-            return {"status": "identity_locked"}
-        return {"status": "visit_not_found"}
-
-@router.post("/event")
-async def track_event(payload: PageViewCreate):
-    with Session(engine) as session:
-        statement = select(Visit).where(
-            Visit.aura_id == payload.client_id
-        ).order_by(Visit.created_at.desc())
-        
-        visit = session.exec(statement).first()
-        if visit:
-            if payload.event_type == "intent_click":
-                visit.intent_cluster = payload.intent_cluster
-                visit.intent_metadata = {"target": payload.url, "path": payload.url}
-            
-            session.commit()
-            return {"status": "event_logged"}
-        return {"status": "pending_entry"}
-
-@router.post("/consent")
-async def track_consent(payload: ConsentPayload):
-    try:
-        with Session(engine) as session:
-            statement = select(Visit).where(Visit.aura_id == payload.aura_id)
-            visits = session.exec(statement).all()
-            for visit in visits:
-                visit.is_consented = True
-                session.add(visit)
-            session.commit()
-            return {"status": "consent_recorded"}
-    except Exception as e:
-        logger.error(f"❌ Consent Error: {e}")
-        return {"status": "error"}
-
-@router.post("/exit")
-async def track_exit(payload: PageViewCreate):
-    with Session(engine) as session:
-        statement = select(Visit).where(
-            Visit.aura_id == payload.client_id,
-            Visit.url == payload.url
-        ).order_by(Visit.created_at.desc())
-        
-        visit = session.exec(statement).first()
-        if visit:
-            visit.duration = payload.duration
-            session.add(visit)
-            session.commit()
-            return {"status": "recorded"}
-        return {"status": "pending"}
-</file>
-
 <file path="backend/app/main.py">
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
@@ -7420,6 +7968,213 @@ async def get_entities():
         # NOISY DEV LOG
         logger.info(f"--- 💡 DEV LOG: FETCHING {len(results)} ENRICHED COMPANIES ---")
         return results
+</file>
+
+<file path="backend/app/api/v1/track.py">
+from fastapi import APIRouter, BackgroundTasks, Request, Header, HTTPException
+from typing import Optional, Dict, Any
+from app.models.visit import VisitCreate, Visit
+from app.models.company import Company
+from app.models.pageview import PageViewCreate
+from app.services.enrichment import enrich_visitor_data
+from app.services.notifications import post_to_visit_channel
+from app.services.intelligence import get_visitor_journey
+from app.services.airtable import airtable_engine  # Phase 1: Airtable Integration
+from app.services.notion import notion_vault     # Phase 2: Notion Integration
+from sqlmodel import Session, select
+from app.db import engine
+from pydantic import BaseModel
+import logging
+
+router = APIRouter()
+logger = logging.getLogger("uvicorn")
+
+class ConsentPayload(BaseModel):
+    client_id: str
+    aura_id: str
+    status: str 
+
+class IdentityPayload(BaseModel):
+    client_id: str
+    aura_id: str
+    signature: Optional[Dict[str, Any]] = None
+    email: Optional[str] = None
+    capture_source: Optional[str] = None
+
+async def process_entry_logic(payload: VisitCreate, client_ip: str, background_tasks: BackgroundTasks):
+    """
+    Jurisdictive Resolution, Airtable CRM Logging, Notion Vault Archival, and Slack Pager Dispatch.
+    """
+    with Session(engine) as session:
+        # 1. Resolve or Create the Jurisdictive Entity (Company)
+        enriched_info = await enrich_visitor_data(client_ip)
+        domain = enriched_info.get("domain")
+        company_name = enriched_info.get("company_name", "Unknown")
+
+        company = None
+        if domain:
+            company_statement = select(Company).where(Company.domain == domain)
+            company = session.exec(company_statement).first()
+
+        if not company and company_name != "Unknown":
+            company = Company(
+                name=company_name,
+                domain=domain,
+                industry=enriched_info.get("industry"),
+                city=enriched_info.get("city"),
+                region=enriched_info.get("region"),
+                is_b2b=enriched_info.get("is_b2b", True)
+            )
+            session.add(company)
+            session.commit()
+            session.refresh(company)
+        elif company:
+            company.total_visits += 1
+            session.add(company)
+
+        # 2. Log the Granular Visit to PostgreSQL (Internal Audit Trail)
+        db_visit = Visit(
+            company_id=company.id if company else None,
+            client_id=payload.client_id,
+            aura_id=payload.aura_id,
+            ip_address=client_ip,
+            url=payload.url,
+            referrer=payload.referrer,
+            screen_resolution=payload.screen_resolution,
+            effective_connection_type=payload.effective_connection_type,
+            downlink_speed=payload.downlink_speed,
+            rtt=payload.rtt,
+            utm_source=payload.utm_source,
+            utm_medium=payload.utm_medium,
+            utm_campaign=payload.utm_campaign,
+            is_consented=False 
+        )
+        
+        session.add(db_visit)
+        session.commit()
+        session.refresh(db_visit)
+
+        # 3. Phase 1: Dispatch to Airtable (Industrial CRM Engine)
+        airtable_data = {
+            "company_name": company.name if company else "Anonymous Facility",
+            "domain": domain or "unknown.com",
+            "ip_address": client_ip,
+            "city": enriched_info.get("city", "Unknown"),
+            "region": enriched_info.get("region", "ZA"),
+            "aura_id": payload.aura_id,
+            "effective_connection_type": payload.effective_connection_type or "Unknown"
+        }
+        background_tasks.add_task(airtable_engine.create_industrial_record, airtable_data)
+
+        # 4. Phase 2: Dispatch to Notion (Clinical Vault)
+        # We store this as a permanent archival record
+        notion_data = {
+            "company_name": airtable_data["company_name"],
+            "domain": airtable_data["domain"] if airtable_data["domain"] != "unknown.com" else "N/A",
+            "aura_id": payload.aura_id,
+            "industry": enriched_info.get("industry", "Industrial"),
+            "city": airtable_data["city"],
+            "region": airtable_data["region"],
+            "summary": "Awaiting DeepSeek Audit..."
+        }
+        background_tasks.add_task(notion_vault.archive_corporate_visit, notion_data)
+
+        # 5. Deanonymize & Dispatch to Slack (The Pager Signal)
+        journey = await get_visitor_journey(payload.aura_id)
+        
+        visit_report = {
+            "company_name": airtable_data["company_name"],
+            "network_type": payload.effective_connection_type or "Standard",
+            "utm_source": payload.utm_source or "Direct",
+            "utm_medium": payload.utm_medium or "None",
+            "aura_id": payload.aura_id,
+            "city": airtable_data["city"],
+            "region": airtable_data["region"]
+        }
+        
+        background_tasks.add_task(post_to_visit_channel, visit_report, journey)
+
+@router.post("/entry")
+async def track_entry(
+    payload: VisitCreate, 
+    request: Request, 
+    background_tasks: BackgroundTasks,
+    x_forwarded_for: Optional[str] = Header(None)
+):
+    client_ip = x_forwarded_for.split(',')[0].strip() if x_forwarded_for else (request.client.host if request.client else "127.0.0.1")
+    background_tasks.add_task(process_entry_logic, payload, client_ip, background_tasks)
+    return {"status": "accepted"}
+
+@router.post("/identity")
+async def track_identity(payload: IdentityPayload):
+    with Session(engine) as session:
+        statement = select(Visit).where(Visit.aura_id == payload.aura_id).order_by(Visit.created_at.desc())
+        visit = session.exec(statement).first()
+        
+        if visit:
+            if payload.signature:
+                sig = payload.signature
+                visit.canvas_hash = sig.get("canvas")
+                visit.webgl_renderer = sig.get("webgl")
+                visit.clock_drift = sig.get("drift")
+                net = sig.get("network")
+                if isinstance(net, dict):
+                    visit.effective_connection_type = net.get("type")
+                    visit.downlink_speed = net.get("downlink")
+                    visit.rtt = net.get("rtt")
+            
+            session.add(visit)
+            session.commit()
+            return {"status": "identity_locked"}
+        return {"status": "visit_not_found"}
+
+@router.post("/event")
+async def track_event(payload: PageViewCreate):
+    with Session(engine) as session:
+        statement = select(Visit).where(
+            Visit.aura_id == payload.client_id
+        ).order_by(Visit.created_at.desc())
+        
+        visit = session.exec(statement).first()
+        if visit:
+            if payload.event_type == "intent_click":
+                visit.intent_cluster = payload.intent_cluster
+                visit.intent_metadata = {"target": payload.url, "path": payload.url}
+            
+            session.commit()
+            return {"status": "event_logged"}
+        return {"status": "pending_entry"}
+
+@router.post("/consent")
+async def track_consent(payload: ConsentPayload):
+    try:
+        with Session(engine) as session:
+            statement = select(Visit).where(Visit.aura_id == payload.aura_id)
+            visits = session.exec(statement).all()
+            for visit in visits:
+                visit.is_consented = True
+                session.add(visit)
+            session.commit()
+            return {"status": "consent_recorded"}
+    except Exception as e:
+        logger.error(f"❌ Consent Error: {e}")
+        return {"status": "error"}
+
+@router.post("/exit")
+async def track_exit(payload: PageViewCreate):
+    with Session(engine) as session:
+        statement = select(Visit).where(
+            Visit.aura_id == payload.client_id,
+            Visit.url == payload.url
+        ).order_by(Visit.created_at.desc())
+        
+        visit = session.exec(statement).first()
+        if visit:
+            visit.duration = payload.duration
+            session.add(visit)
+            session.commit()
+            return {"status": "recorded"}
+        return {"status": "pending"}
 </file>
 
 <file path="backend/app/api/v1/waitlist.py">

@@ -42,7 +42,7 @@ The core intelligence hub, built with **FastAPI** and **SQLModel**.
 
 
 * **`tests/`**: Pytest suite for API reliability.
-* **`requirements.txt`**: Python dependencies.
+* **`pyprojects.toml`**: Python dependencies.
 
 ---
 
