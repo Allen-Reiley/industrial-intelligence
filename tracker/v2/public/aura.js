@@ -1,6 +1,6 @@
 /**
  * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
- * Version: 2.3.0 (UTM Attribution & Intent Clustering)
+ * Version: 2.4.0 (Network Intelligence & Intent Clustering)
  * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
  */
 (async function() {
@@ -27,7 +27,7 @@
             let id = await this.getStoredID();
             if (!id) {
                 id = this.generateUUID();
-                this.captureUTMs(); // Only capture fresh UTMs on new or entry session
+                this.captureUTMs(); 
             }
             await this.syncStorage(id);
             return id;
@@ -63,15 +63,26 @@
         }
     };
 
-    // --- PILLAR 2: FORENSIC IDENTITY (Unchanged - Geometric Draw-and-Hash) ---
+    // --- PILLAR 2: FORENSIC IDENTITY (Network & Geometric) ---
     const AuraFingerprint = {
         async getFullSignature() {
             return {
                 canvas: this.getCanvas(),
                 webgl: this.getWebGL(),
+                network: this.getNetworkInfo(),
                 drift: await this.measureDrift(),
                 screen: `${screen.width}x${screen.height}`,
                 ua: navigator.userAgent
+            };
+        },
+        getNetworkInfo() {
+            const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            if (!conn) return "unsupported";
+            return {
+                type: conn.effectiveType || "unknown",
+                rtt: conn.rtt,
+                downlink: conn.downlink,
+                saveData: conn.saveData
             };
         },
         getCanvas() {
@@ -79,7 +90,7 @@
                 const cvs = document.createElement('canvas');
                 const ctx = cvs.getContext('2d');
                 ctx.textBaseline = "top"; ctx.font = "14px 'Arial'";
-                ctx.fillText("AuraWorks_v2.3", 2, 2);
+                ctx.fillText("AuraWorks_v2.4", 2, 2);
                 return cvs.toDataURL();
             } catch (e) { return "canvas_blocked"; }
         },
@@ -106,7 +117,7 @@
         }
     };
 
-    // --- PILLAR 3: MASTER TRACKER (Updated for Attribution) ---
+    // --- PILLAR 3: MASTER TRACKER ---
     const AuraTracker = {
         init(auraId) {
             this.auraId = auraId;
@@ -119,7 +130,7 @@
                 client_id: clientId,
                 aura_id: this.auraId,
                 timestamp: new Date().toISOString(),
-                attribution: AuraPersistence.getStoredUTMs(), // Attach UTM context to every signal
+                attribution: AuraPersistence.getStoredUTMs(),
                 ...payload
             };
 
@@ -141,6 +152,22 @@
                     this.dispatch('identity', { email: target.value, capture_source: 'blur' });
                 }
             }, true);
+
+            // Intent Cluster (Interaction Tracking)
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('a, button');
+                if (!btn) return;
+                const text = btn.innerText?.toLowerCase();
+                const intentKeywords = ['pricing', 'audit', 'feature', 'solution', 'waitlist'];
+                
+                if (intentKeywords.some(kw => text.includes(kw))) {
+                    this.dispatch('event', { 
+                        event_type: 'intent_click', 
+                        target: text.substring(0, 20),
+                        path: window.location.pathname 
+                    });
+                }
+            });
 
             // Intent Capture (Scroll)
             let sFired = false;
@@ -181,7 +208,6 @@
         const auraId = await AuraPersistence.init();
         AuraTracker.init(auraId);
         
-        // Establish Forensic Lock after a slight delay
         setTimeout(async () => {
             const sig = await AuraFingerprint.getFullSignature();
             await AuraTracker.dispatch('identity', { signature: sig });
@@ -189,7 +215,6 @@
         }, 3000);
     };
 
-    // Boot Logic
     if (document.readyState === 'complete') startAura();
     else window.addEventListener('load', startAura);
     window.addEventListener('mousedown', startAura, { once: true });

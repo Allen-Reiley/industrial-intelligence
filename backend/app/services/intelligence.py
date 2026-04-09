@@ -43,7 +43,6 @@ async def orchestrate_lead_audit(lead_id: int, aura_id: str, payload: dict):
         journey = await get_visitor_journey(aura_id)
 
     # 3. Dispatch Clinical Notifications
-    # We pass the formatted payload and the intelligence journey
     await send_slack_notification(payload, journey)
     await send_mailgun_welcome(payload.get("email"), payload.get("name"))
 
@@ -88,18 +87,22 @@ async def analyze_corporate_intent(company_name: str, industry: str, pathway: st
 # --- PHASE 03: Journey & Ghost Enrichment ---
 
 async def get_visitor_journey(aura_id: str) -> Dict:
+    """
+    Retrieves behavioral ledger. Implements 'Ghost Enrichment' by checking
+    local history if external identifiers are missing.
+    """
     if not aura_id:
         return {"total_touches": 0, "pathway": "Direct", "intent_summary": "No forensic signature."}
 
     with Session(engine) as session:
-        # Ghost Enrichment: Pull from local data if external enrichment failed
+        # Ghost Enrichment: Pull historical visits for this forensic ID
         statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at)
         history = session.exec(statement).all()
         
         if not history:
             return {"total_touches": 0, "pathway": "First Contact", "intent_summary": "Initial touchpoint recorded."}
 
-        # Pathway Mapping
+        # Pathway Mapping: Clean URL paths
         pages = [v.url.split('auraworks.co.za')[-1] if v.url else "/" for v in history]
         unique_pathway = []
         for p in pages:
@@ -108,14 +111,28 @@ async def get_visitor_journey(aura_id: str) -> Dict:
         
         pathway_str = " → ".join(unique_pathway)
         
-        # Corporate Cluster Detection (Building-Level)
-        cluster_info = await get_building_activity(history[-1].ip_address, aura_id)
+        # Corporate Cluster Detection (Facility-Level Grouping)
+        last_visit = history[-1]
+        cluster_info = await get_building_activity(last_visit.ip_address, aura_id)
 
-        # Context Harvest
+        # Context Harvest: Resolve Company Anchor
         company = None
         linked_visit = next((v for v in history if v.company_id), None)
         if linked_visit:
             company = session.get(Company, linked_visit.company_id)
+
+        # Self-Healing: Ghost-linking via IP correlation if company is unknown
+        if not company:
+            last_ip = last_visit.ip_address
+            past_lead = session.exec(
+                select(WaitlistLead)
+                .join(Visit, WaitlistLead.aura_id == Visit.aura_id)
+                .where(Visit.ip_address == last_ip)
+            ).first()
+            
+            if past_lead:
+                company = session.get(Company, past_lead.company_id)
+                cluster_info += f" | 🔗 Ghost-linked via IP to {company.name if company else 'Previous Lead'}"
 
         intent = await analyze_corporate_intent(
             company.name if company else "Anonymous Entity",
@@ -123,11 +140,14 @@ async def get_visitor_journey(aura_id: str) -> Dict:
             pathway_str
         )
 
+        # Intelligence signal for Slack (Network signature context)
+        network_context = f"[{last_visit.effective_connection_type or 'Standard'}]"
+
         return {
             "total_touches": len(history),
             "pathway": pathway_str,
-            "intent_summary": f"{intent} \n\n{cluster_info}",
-            "is_high_intent": any(kw in pathway_str.lower() for kw in ["pricing", "audit", "waitlist"])
+            "intent_summary": f"{intent} \n\n{cluster_info} {network_context}",
+            "is_high_intent": any(kw in pathway_str.lower() for kw in ["pricing", "audit", "waitlist"]) or (last_visit.intent_cluster is not None)
         }
 
 # --- PHASE 04: Industrial Notifications (Slack & Mailgun) ---
@@ -161,7 +181,6 @@ async def send_slack_notification(payload: dict, journey: dict):
         await client.post(settings.SLACK_WEBHOOK_URL, json=slack_data)
 
 async def send_mailgun_welcome(email: str, name: str):
-    """Mailgun Implementation: Reliable delivery for development and production."""
     if not settings.MAILGUN_API_KEY or not settings.MAILGUN_DOMAIN:
         logger.warning("Mailgun credentials missing. Skipping email.")
         return
@@ -179,7 +198,7 @@ async def send_mailgun_welcome(email: str, name: str):
                         <div style="font-family: sans-serif; padding: 20px; color: #18181b;">
                             <h2 style="border-bottom: 1px solid #e4e4e7; padding-bottom: 10px;">Audit Initiated: {name}</h2>
                             <p>Our systems architect has successfully queued your industrial ROI analysis.</p>
-                            <p style="font-size: 12px; color: #71717a;">AuraWorks (Pty) Ltd // Automated Signal</p>
+                            <p style="font-size: 11px; color: #71717a; margin-top: 20px;">AuraWorks (Pty) Ltd // Automated Signal</p>
                         </div>
                     """
                 }
@@ -188,6 +207,10 @@ async def send_mailgun_welcome(email: str, name: str):
             logger.error(f"Mailgun Failure: {e}")
 
 async def get_building_activity(ip_address: str, current_aura_id: str) -> str:
+    """
+    Buying Committee Detection: Identifies multiple unique device signatures 
+    from the same static IP within a 72-hour window.
+    """
     if not ip_address: return ""
     time_threshold = datetime.now(timezone.utc) - timedelta(hours=72)
     with Session(engine) as session:

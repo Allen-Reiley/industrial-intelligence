@@ -9,34 +9,45 @@ logger = logging.getLogger("uvicorn")
 
 def calculate_identity_match(new_sig: dict, existing_visit: Visit) -> float:
     """
-    Calculates a probability score (0.0 to 1.0) based on hardware entropy.
-    Weights normalized to 1.0 for B2B Industrial environments.
+    Calculates a probability score (0.0 to 1.0) based on hardware and network entropy.
+    Updated for Industrial Clusters: Weights adjusted to prioritize network consistency.
     """
     score = 0.0
     
-    # 1. Canvas Match (40% Weight) - Primary hardware rendering signature
+    # 1. Canvas Match (30% Weight) - Hardware rendering fingerprint
     if new_sig.get('canvas') == existing_visit.canvas_hash:
-        score += 0.40
-        
-    # 2. Clock Drift Match (30% Weight) - Precision timing delta
-    # Allow 1ms variance for network jitter
-    drift_diff = abs(new_sig.get('drift', 0) - (existing_visit.clock_drift or 0))
-    if drift_diff <= 1:
         score += 0.30
         
-    # 3. Fonts Match (20% Weight) - OS/Software profile
-    if new_sig.get('fonts') == existing_visit.font_list:
+    # 2. Clock Drift Match (20% Weight) - Precision timing delta
+    drift_diff = abs(new_sig.get('drift', 0) - (existing_visit.clock_drift or 0))
+    if drift_diff <= 1:
         score += 0.20
         
-    # 4. WebGL/Renderer Match (10% Weight) - GPU identification
+    # 3. WebGL/Renderer Match (10% Weight) - GPU identification
     if new_sig.get('webgl') == existing_visit.webgl_renderer:
         score += 0.10
         
+    # 4. Network Intelligence Match (40% Weight) - The Corporate Signal
+    # We compare the effective type, RTT, and downlink speed
+    net = new_sig.get('network', {})
+    if isinstance(net, dict):
+        # Match Connection Type (4g/fiber)
+        if net.get('type') == existing_visit.effective_connection_type:
+            score += 0.15
+            
+        # Match Network Performance (RTT and Downlink)
+        # Allows for small variance in traffic load
+        rtt_match = abs(net.get('rtt', 0) - (existing_visit.rtt or 0)) <= 20
+        downlink_match = abs(net.get('downlink', 0) - (existing_visit.downlink_speed or 0)) < 0.5
+        
+        if rtt_match and downlink_match:
+            score += 0.25
+            
     return score
 
 def merge_sessions_sync(new_id: str, original_id: str):
     """
-    Sync wrapper for the background merge task to unify fragmented session data.
+    Sync wrapper to unify fragmented session data across the forensic ledger.
     """
     with Session(engine) as session:
         try:
@@ -66,34 +77,36 @@ async def resolve_identity(payload: dict, background_tasks: BackgroundTasks):
         existing_visit = session.exec(statement).first()
         
         if existing_visit:
-            logger.info(f"🎯 Direct Match: {aura_id}. Refreshing Forensic Lock.")
-            # Update the fingerprint in case they updated their browser/OS
+            logger.info(f"🎯 Direct Match: {aura_id}. Updating Forensic/Network Lock.")
+            # Update markers to the latest state
             existing_visit.canvas_hash = signature.get('canvas')
             existing_visit.clock_drift = signature.get('drift')
             existing_visit.webgl_renderer = signature.get('webgl')
-            existing_visit.font_list = signature.get('fonts')
+            
+            net = signature.get('network', {})
+            if isinstance(net, dict):
+                existing_visit.effective_connection_type = net.get('type')
+                existing_visit.downlink_speed = net.get('downlink')
+                existing_visit.rtt = net.get('rtt')
+                
             session.add(existing_visit)
             session.commit()
             return {"status": "recognized", "method": "direct_id"}
 
-        # Step 2: Weighted Forensic Search (The "Identity Bridge")
-        # Scan recent industrial footprints for a hardware match
-        all_recent = session.exec(select(Visit).order_by(Visit.created_at.desc()).limit(150)).all()
-        
-        # Deduplicate results by aura_id to only compare unique profiles
+        # Step 2: Weighted Forensic Search
+        # Scan recent footprints (within the last 72 hours for accuracy)
+        all_recent = session.exec(select(Visit).order_by(Visit.created_at.desc()).limit(200)).all()
         unique_profiles = {v.aura_id: v for v in all_recent}.values()
         
         for profile in unique_profiles:
             match_probability = calculate_identity_match(signature, profile)
             
-            # High Confidence Threshold (85%)
-            if match_probability >= 0.85:
+            # High Confidence Threshold for stitching (80% given the new network weight)
+            if match_probability >= 0.80:
                 logger.info(f"🧵 Forensic Stitch Identified! Conf: {match_probability*100}%")
                 
-                # Unify this new ID with the historical profile in the background
                 background_tasks.add_task(merge_sessions_sync, aura_id, profile.aura_id)
                 
-                # Signal the frontend to update its local storage to the original ID
                 return {
                     "status": "stitched", 
                     "stitched_id": profile.aura_id, 
