@@ -4,6 +4,8 @@ from app.models.visit import VisitCreate, Visit
 from app.models.company import Company
 from app.models.pageview import PageViewCreate
 from app.services.enrichment import enrich_visitor_data
+from app.services.notifications import post_to_visit_channel
+from app.services.intelligence import get_visitor_journey
 from sqlmodel import Session, select
 from app.db import engine
 from pydantic import BaseModel
@@ -15,7 +17,7 @@ logger = logging.getLogger("uvicorn")
 class ConsentPayload(BaseModel):
     client_id: str
     aura_id: str
-    status: str  # "accepted"
+    status: str 
 
 class IdentityPayload(BaseModel):
     client_id: str
@@ -24,9 +26,9 @@ class IdentityPayload(BaseModel):
     email: Optional[str] = None
     capture_source: Optional[str] = None
 
-async def process_entry_logic(payload: VisitCreate, client_ip: str):
+async def process_entry_logic(payload: VisitCreate, client_ip: str, background_tasks: BackgroundTasks):
     """
-    Jurisdictive Entity Resolution & Network Intelligence Mapping.
+    Jurisdictive Resolution & Deanonymized Reporting for the #visit channel.
     """
     with Session(engine) as session:
         # 1. Resolve or Create the Jurisdictive Entity (Company)
@@ -51,12 +53,11 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
             session.add(company)
             session.commit()
             session.refresh(company)
-            logger.info(f"🏢 New Jurisdictive Entity: {company.name}")
         elif company:
             company.total_visits += 1
             session.add(company)
 
-        # 2. Log the Granular Visit with Tracker v2.4.0 signals
+        # 2. Log the Granular Visit with Network & UTM Attribution
         db_visit = Visit(
             company_id=company.id if company else None,
             client_id=payload.client_id,
@@ -65,11 +66,9 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
             url=payload.url,
             referrer=payload.referrer,
             screen_resolution=payload.screen_resolution,
-            # Map Industrial Network Signals
             effective_connection_type=payload.effective_connection_type,
             downlink_speed=payload.downlink_speed,
             rtt=payload.rtt,
-            # Map Attribution
             utm_source=payload.utm_source,
             utm_medium=payload.utm_medium,
             utm_campaign=payload.utm_campaign,
@@ -78,7 +77,23 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
         
         session.add(db_visit)
         session.commit()
-        logger.info(f"📍 Visit Recorded | Net: {payload.effective_connection_type or 'N/A'} | ID: {payload.aura_id[:8]}")
+        session.refresh(db_visit)
+
+        # 3. Deanonymize & Dispatch to #visit channel
+        # This reports the activity even if they never fill in a form
+        journey = await get_visitor_journey(payload.aura_id)
+        
+        visit_report = {
+            "company_name": company.name if company else "Anonymous Facility",
+            "network_type": payload.effective_connection_type or "Standard",
+            "utm_source": payload.utm_source or "Direct",
+            "utm_medium": payload.utm_medium or "None",
+            "aura_id": payload.aura_id,
+            "city": enriched_info.get("city", "Unknown"),
+            "region": enriched_info.get("region", "ZA")
+        }
+        
+        background_tasks.add_task(post_to_visit_channel, visit_report, journey)
 
 @router.post("/entry")
 async def track_entry(
@@ -88,16 +103,12 @@ async def track_entry(
     x_forwarded_for: Optional[str] = Header(None)
 ):
     client_ip = x_forwarded_for.split(',')[0].strip() if x_forwarded_for else (request.client.host if request.client else "127.0.0.1")
-    background_tasks.add_task(process_entry_logic, payload, client_ip)
+    background_tasks.add_task(process_entry_logic, payload, client_ip, background_tasks)
     return {"status": "accepted"}
 
 @router.post("/identity")
 async def track_identity(payload: IdentityPayload):
-    """
-    Forensic Lock & Ghost Enrichment: Captures browser signature or blurred emails.
-    """
     with Session(engine) as session:
-        # Find the most recent visit to attach this identity to
         statement = select(Visit).where(Visit.aura_id == payload.aura_id).order_by(Visit.created_at.desc())
         visit = session.exec(statement).first()
         
@@ -107,7 +118,6 @@ async def track_identity(payload: IdentityPayload):
                 visit.canvas_hash = sig.get("canvas")
                 visit.webgl_renderer = sig.get("webgl")
                 visit.clock_drift = sig.get("drift")
-                # Update network info if it came in the signature block
                 net = sig.get("network")
                 if isinstance(net, dict):
                     visit.effective_connection_type = net.get("type")
@@ -121,12 +131,9 @@ async def track_identity(payload: IdentityPayload):
 
 @router.post("/event")
 async def track_event(payload: PageViewCreate):
-    """
-    Intent Cluster Catch: Records high-intent interactions (Pricing, Audit clicks).
-    """
     with Session(engine) as session:
         statement = select(Visit).where(
-            Visit.aura_id == payload.client_id # aura.js uses client_id/aura_id interchangeably in events
+            Visit.aura_id == payload.client_id
         ).order_by(Visit.created_at.desc())
         
         visit = session.exec(statement).first()

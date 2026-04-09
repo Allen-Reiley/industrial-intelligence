@@ -1,6 +1,6 @@
 /**
  * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
- * Version: 2.4.0 (Network Intelligence & Intent Clustering)
+ * Version: 2.4.1 (UTM Attribution & Cluster Ready)
  * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
  */
 (async function() {
@@ -25,9 +25,11 @@
         utmKey: 'aura_utm',
         async init() {
             let id = await this.getStoredID();
+            // Always check for fresh UTMs on every landing
+            this.captureUTMs(); 
+            
             if (!id) {
                 id = this.generateUUID();
-                this.captureUTMs(); 
             }
             await this.syncStorage(id);
             return id;
@@ -35,15 +37,25 @@
         captureUTMs() {
             const params = new URLSearchParams(window.location.search);
             const utms = {};
-            ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(key => {
-                if (params.get(key)) utms[key] = params.get(key);
+            const keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+            
+            keys.forEach(key => {
+                const val = params.get(key);
+                if (val) utms[key] = val;
             });
+
+            // Persist UTMs if present, otherwise maintain existing ones for the session
             if (Object.keys(utms).length > 0) {
-                localStorage.setItem(this.utmKey, JSON.stringify(utms));
+                localStorage.setItem(this.utmKey, JSON.stringify({
+                    ...utms,
+                    captured_at: new Date().toISOString()
+                }));
             }
         },
         getStoredUTMs() {
-            try { return JSON.parse(localStorage.getItem(this.utmKey)) || {}; } catch(e) { return {}; }
+            try { 
+                return JSON.parse(localStorage.getItem(this.utmKey)) || {}; 
+            } catch(e) { return {}; }
         },
         async getStoredID() {
             const c = document.cookie.split('; ').find(r => r.startsWith(`${this.key}=`))?.split('=')[1];
@@ -66,10 +78,12 @@
     // --- PILLAR 2: FORENSIC IDENTITY (Network & Geometric) ---
     const AuraFingerprint = {
         async getFullSignature() {
+            const net = this.getNetworkInfo();
             return {
                 canvas: this.getCanvas(),
                 webgl: this.getWebGL(),
-                network: this.getNetworkInfo(),
+                // Flattening network info for direct backend mapping
+                network: net,
                 drift: await this.measureDrift(),
                 screen: `${screen.width}x${screen.height}`,
                 ua: navigator.userAgent
@@ -77,7 +91,7 @@
         },
         getNetworkInfo() {
             const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-            if (!conn) return "unsupported";
+            if (!conn) return { type: "unsupported" };
             return {
                 type: conn.effectiveType || "unknown",
                 rtt: conn.rtt,
@@ -126,11 +140,17 @@
             this.patchSPA();
         },
         async dispatch(endpoint, payload, useBeacon = false) {
+            const utms = AuraPersistence.getStoredUTMs();
             const data = {
                 client_id: clientId,
                 aura_id: this.auraId,
                 timestamp: new Date().toISOString(),
-                attribution: AuraPersistence.getStoredUTMs(),
+                // Spreading UTMs directly into the payload for the backend Visit model
+                utm_source: utms.utm_source,
+                utm_medium: utms.utm_medium,
+                utm_campaign: utms.utm_campaign,
+                utm_content: utms.utm_content,
+                utm_term: utms.utm_term,
                 ...payload
             };
 
@@ -144,7 +164,6 @@
             } catch (e) {}
         },
         setupSensors() {
-            // Identity Capture (Blur)
             document.addEventListener('blur', (e) => {
                 const target = e.target;
                 if (!target || !target.value) return;
@@ -153,7 +172,6 @@
                 }
             }, true);
 
-            // Intent Cluster (Interaction Tracking)
             document.addEventListener('click', (e) => {
                 const btn = e.target.closest('a, button');
                 if (!btn) return;
@@ -169,7 +187,6 @@
                 }
             });
 
-            // Intent Capture (Scroll)
             let sFired = false;
             window.addEventListener('scroll', () => {
                 if (sFired) return;
@@ -181,10 +198,15 @@
             }, { passive: true });
         },
         trackEntry() {
+            const net = AuraFingerprint.getNetworkInfo();
             this.dispatch('entry', { 
                 url: window.location.href, 
                 referrer: document.referrer || "direct",
-                screen_res: `${window.innerWidth}x${window.innerHeight}`
+                screen_resolution: `${window.innerWidth}x${window.innerHeight}`,
+                // Passing Network Intelligence on Entry for Cluster Detection
+                effective_connection_type: net.type,
+                downlink_speed: net.downlink,
+                rtt: net.rtt
             });
         },
         patchSPA() {

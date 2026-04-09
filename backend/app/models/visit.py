@@ -9,6 +9,12 @@ class VisitBase(SQLModel):
     url: str
     referrer: Optional[str] = "direct"
     timestamp: Optional[str] = None 
+    # Base attribution fields for all tracking schemas
+    utm_source: Optional[str] = None
+    utm_medium: Optional[str] = None
+    utm_campaign: Optional[str] = None
+    utm_content: Optional[str] = None
+    utm_term: Optional[str] = None
 
 class Visit(SQLModel, table=True): 
     """The granular ledger of every touchpoint. Multiple visits map to one Company."""
@@ -23,7 +29,7 @@ class Visit(SQLModel, table=True):
     ip_address: Optional[str] = Field(default="0.0.0.0", index=True)
     is_consented: bool = Field(default=False, index=True) 
     
-    # --- FORENSIC SIGNATURES (Tracker v2.4.0) ---
+    # --- FORENSIC SIGNATURES (Tracker v2.4.0+) ---
     canvas_hash: Optional[str] = None
     webgl_renderer: Optional[str] = None
     clock_drift: Optional[float] = None
@@ -43,10 +49,12 @@ class Visit(SQLModel, table=True):
     intent_cluster: Optional[str] = Field(default=None, index=True)
     intent_metadata: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
     
-    # --- ATTRIBUTION ---
-    utm_source: Optional[str] = None
-    utm_medium: Optional[str] = None
-    utm_campaign: Optional[str] = None
+    # --- ATTRIBUTION (Industrial Grade) ---
+    utm_source: Optional[str] = Field(default=None, index=True)
+    utm_medium: Optional[str] = Field(default=None, index=True)
+    utm_campaign: Optional[str] = Field(default=None, index=True)
+    utm_content: Optional[str] = None
+    utm_term: Optional[str] = None
 
     # --- TIMESTAMPS ---
     created_at: datetime = Field(
@@ -56,13 +64,11 @@ class Visit(SQLModel, table=True):
     company: Optional["Company"] = Relationship(back_populates="visits")
 
 class VisitCreate(VisitBase):
+    """Schema for initial ingestion via track_entry"""
     screen_resolution: Optional[str] = None
     effective_connection_type: Optional[str] = None
     downlink_speed: Optional[float] = None
     rtt: Optional[int] = None
-    utm_source: Optional[str] = None
-    utm_medium: Optional[str] = None
-    utm_campaign: Optional[str] = None
 
 class PageViewCreate(SQLModel):
     client_id: str

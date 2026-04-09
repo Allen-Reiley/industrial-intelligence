@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     # Notifications
     # Paste your webhook in Railway/Local .env as SLACK_WEBHOOK_URL
     SLACK_WEBHOOK_URL: Optional[str] = None
+
+    # Add these to your Settings class in app/core/config.py
+    MAILGUN_API_KEY: str = "your-api-key"
+    MAILGUN_DOMAIN: str = "mg.auraworks.co.za"
+    SLACK_VISIT_WEBHOOK_URL: str = "your-visit-channel-webhook" # Dedicated #visit channel
     
     # Email Settings
     SMTP_TLS: bool = True

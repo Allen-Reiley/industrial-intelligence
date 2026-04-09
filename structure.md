@@ -68,7 +68,7 @@ The user interface, built with **Next.js 14** (App Router).
 
 The edge layer script provided to your clients.
 
-* **`src/index.js`**: The source logic for capturing visitor fingerprints.
+* **`v2/aura.js`**: The source logic for capturing visitor fingerprints.
 * **`package.json`**: Build scripts to minify the script into `tracker.min.js`.
 
 ---

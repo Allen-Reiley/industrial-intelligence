@@ -30,7 +30,7 @@
 * **Slack Intent Routing:**
     * `#hot-leads`: Real-time alerts for high-dwell time on "Pricing," "Contact," or "Audit" pages.
     * `#traffic-audit`: Daily summaries of general corporate footprints and network signals.
-* **Resend Nurture Sequence:**
+* **Mailgun Nurture Sequence:**
     * **T+0:** "Intelligence Engine Activated" – Immediate confirmation of Audit Phase 01.
     * **T+24h:** "First 5 Industrial Signals Identified" – Proof of value delivered within the first business day.
     * **T+7d:** "Weekly Intelligence Summary" – First automated PDF report detailing unmasked entities.

@@ -271,98 +271,6 @@ def filter_business_contacts(contacts: List[Dict]) -> List[Dict]:
     return filtered
 </file>
 
-<file path="backend/app/services/notifications.py">
-import httpx
-import logging
-from app.core.config import settings
-
-logger = logging.getLogger("uvicorn")
-
-async def post_to_slack(lead_data: dict, journey: dict = None):
-    """
-    Industrial Slack Dispatcher: Surfacing forensic signals and intent clusters.
-    """
-    if not settings.SLACK_WEBHOOK_URL:
-        logger.warning("Slack Webhook URL missing. Notification skipped.")
-        return
-
-    # Extract forensic markers from journey/lead data
-    journey = journey or {}
-    is_hot = journey.get("is_high_intent", False)
-    intent_summary = journey.get("intent_summary", "Forensic analysis pending.")
-    
-    # Industrial Status Indicators
-    status_emoji = "🔴" if is_hot else "🔵"
-    header_text = f"{status_emoji} Phase 01: Identity Promoted"
-    
-    # Build a clinical, structured block payload
-    payload = {
-        "blocks": [
-            {
-                "type": "header",
-                "text": {"type": "plain_text", "text": header_text}
-            },
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn", 
-                    "text": f"*🕵️ Executive Intent Summary (DeepSeek-V3):*\n_{intent_summary}_"
-                }
-            },
-            {"type": "divider"},
-            {
-                "type": "section",
-                "fields": [
-                    {"type": "mrkdwn", "text": f"*Entity:*\n{lead_data.get('company_name_final', 'Anonymous Entity')}"},
-                    {"type": "mrkdwn", "text": f"*Lead:*\n{lead_data.get('name')} ({lead_data.get('email')})"},
-                    {"type": "mrkdwn", "text": f"*Project Value:*\n{lead_data.get('formatted_price', 'N/A')}"},
-                    {"type": "mrkdwn", "text": f"*Pathway:* `{journey.get('pathway', 'Direct')}`"}
-                ]
-            },
-            {
-                "type": "context",
-                "elements": [
-                    {
-                        "type": "mrkdwn", 
-                        "text": f"📍 *Network:* {lead_data.get('network_type', 'Standard')} | *Touches:* {journey.get('total_touches', 1)}"
-                    }
-                ]
-            }
-        ]
-    }
-    
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(settings.SLACK_WEBHOOK_URL, json=payload)
-            if response.status_code != 200:
-                logger.error(f"Slack Error {response.status_code}: {response.text}")
-        except Exception as e:
-            logger.error(f"Slack Dispatch Failure: {e}")
-
-async def notify_buying_committee(ip_address: str, count: int, company_name: str):
-    """
-    High-Priority Alert: Triggered when multiple unique devices from one building
-    show intent activity simultaneously.
-    """
-    if not settings.SLACK_WEBHOOK_URL: return
-
-    payload = {
-        "blocks": [
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn", 
-                    "text": f"🚨 *Buying Committee Detected: {company_name}*\n"
-                           f"Forensic logic identified *{count} unique devices* active from this facility "
-                           f"under IP `{ip_address}`. High probability of internal procurement discussion."
-                }
-            }
-        ]
-    }
-    async with httpx.AsyncClient() as client:
-        await client.post(settings.SLACK_WEBHOOK_URL, json=payload)
-</file>
-
 <file path="backend/app/services/reports.py">
 
 </file>
@@ -3713,6 +3621,134 @@ def send_welcome_email(to_email: str, first_name: str):
         logger.error(f"❌ Resend Error: {str(e)}")
 </file>
 
+<file path="backend/app/services/notifications.py">
+import httpx
+import logging
+from app.core.config import settings
+
+logger = logging.getLogger("uvicorn")
+
+# --- PHASE 01: The #visit Channel (Deanonymization Hub) ---
+
+async def post_to_visit_channel(visit_data: dict, journey: dict):
+    """
+    Reporting for the #visit channel: Surfacing anonymous facility traffic.
+    Triggers 'Corporate Cluster' alerts for 3+ unique IDs.
+    """
+    if not settings.SLACK_VISIT_WEBHOOK_URL:
+        return
+
+    cluster_count = journey.get("cluster_count", 1)
+    is_corporate_cluster = cluster_count >= 3
+    
+    # Industrial Visual Indicators
+    emoji = "🚨" if is_corporate_cluster else "🕵️"
+    header = f"{emoji} Corporate Cluster Detected" if is_corporate_cluster else f"{emoji} Anonymous Facility Entry"
+
+    payload = {
+        "blocks": [
+            {
+                "type": "header",
+                "text": {"type": "plain_text", "text": header}
+            },
+            {
+                "type": "section",
+                "fields": [
+                    {"type": "mrkdwn", "text": f"*Entity:*\n{visit_data.get('company_name', 'Anonymous Entity')}"},
+                    {"type": "mrkdwn", "text": f"*Network Profile:*\n`{visit_data.get('network_type', 'Standard')}`"},
+                    {"type": "mrkdwn", "text": f"*Attribution (UTM):*\n{visit_data.get('utm_source', 'Direct')} / {visit_data.get('utm_medium', 'None')}"},
+                    {"type": "mrkdwn", "text": f"*Facility Cluster:*\n{cluster_count} Unique ID(s)"}
+                ]
+            },
+            {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": f"*Pathway:* `{journey.get('pathway', '/')}`"}
+            },
+            {
+                "type": "context",
+                "elements": [
+                    {"type": "mrkdwn", "text": f"📍 Forensic Lock: `{visit_data.get('aura_id')[:8]}` | Location: {visit_data.get('city', 'Unknown')}, {visit_data.get('region', 'ZA')}"}
+                ]
+            }
+        ]
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            await client.post(settings.SLACK_VISIT_WEBHOOK_URL, json=payload)
+        except Exception as e:
+            logger.error(f"Visit Channel Dispatch Failure: {e}")
+
+# --- PHASE 02: Lead Notifications (Waitlist Submissions) ---
+
+async def post_to_slack(lead_data: dict, journey: dict = None):
+    """
+    Standard lead notification for identified conversions.
+    """
+    if not settings.SLACK_WEBHOOK_URL:
+        return
+
+    journey = journey or {}
+    is_hot = journey.get("is_high_intent", False)
+    status_emoji = "🔴" if is_hot else "🔵"
+    
+    payload = {
+        "blocks": [
+            {
+                "type": "header",
+                "text": {"type": "plain_text", "text": f"{status_emoji} Phase 01: Identity Promoted"}
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn", 
+                    "text": f"*🕵️ Executive Intent Summary (DeepSeek-V3):*\n_{journey.get('intent_summary', 'Forensic analysis pending.')}_"
+                }
+            },
+            {"type": "divider"},
+            {
+                "type": "section",
+                "fields": [
+                    {"type": "mrkdwn", "text": f"*Entity:*\n{lead_data.get('company_name_final', 'Anonymous Entity')}"},
+                    {"type": "mrkdwn", "text": f"*Lead:*\n{lead_data.get('name')} ({lead_data.get('email')})"},
+                    {"type": "mrkdwn", "text": f"*Project Value:*\n{lead_data.get('formatted_price', 'N/A')}"},
+                    {"type": "mrkdwn", "text": f"*Pathway:* `{journey.get('pathway', 'Direct')}`"}
+                ]
+            }
+        ]
+    }
+    
+    async with httpx.AsyncClient() as client:
+        await client.post(settings.SLACK_WEBHOOK_URL, json=payload)
+
+# --- PHASE 03: Industrial Mailer (Mailgun Replacement for Resend) ---
+
+async def send_mailgun_notification(email: str, name: str, subject: str = "Phase 01: Audit Initiated"):
+    """
+    Industrial Email Dispatch via Mailgun API.
+    """
+    if not settings.MAILGUN_API_KEY or not settings.MAILGUN_DOMAIN:
+        logger.warning("Mailgun credentials missing. Notification skipped.")
+        return
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                f"https://api.mailgun.net/v3/{settings.MAILGUN_DOMAIN}/messages",
+                auth=("api", settings.MAILGUN_API_KEY),
+                data={
+                    "from": f"AuraWorks <audit@{settings.MAILGUN_DOMAIN}>",
+                    "to": email,
+                    "subject": subject,
+                    "html": f"<html><body><h3>System Audit: {name}</h3><p>Your industrial ROI analysis has been queued.</p></body></html>"
+                }
+            )
+            return response.status_code == 200
+        except Exception as e:
+            logger.error(f"Mailgun Dispatch Failure: {e}")
+            return False
+</file>
+
 <file path="backend/app/db.py">
 from sqlmodel import create_engine, SQLModel, Session
 from app.core.config import settings
@@ -4189,7 +4225,7 @@ export function cn(...inputs: ClassValue[]) {
 * **Slack Intent Routing:**
     * `#hot-leads`: Real-time alerts for high-dwell time on "Pricing," "Contact," or "Audit" pages.
     * `#traffic-audit`: Daily summaries of general corporate footprints and network signals.
-* **Resend Nurture Sequence:**
+* **Mailgun Nurture Sequence:**
     * **T+0:** "Intelligence Engine Activated" – Immediate confirmation of Audit Phase 01.
     * **T+24h:** "First 5 Industrial Signals Identified" – Proof of value delivered within the first business day.
     * **T+7d:** "Weekly Intelligence Summary" – First automated PDF report detailing unmasked entities.
@@ -4198,125 +4234,6 @@ export function cn(...inputs: ClassValue[]) {
 * **Legal Framework:** POPIA/PAIA compliant. All data handling is governed by the Dynamic Markdown files served at `/legal`, `/privacy-policy`, and `/security`.
 * **Information Officer:** Reitumetse Sethabela (Founder/Agency Owner).
 * **Target ICP:** Industrial, Engineering, Manufacturing, and Law firms specifically within the **South African** economic hub.
-</file>
-
-<file path="backend/app/api/v1/identity.py">
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
-from sqlmodel import Session, select
-from app.db import engine
-from app.models.visit import Visit
-import logging
-
-router = APIRouter()
-logger = logging.getLogger("uvicorn")
-
-def calculate_identity_match(new_sig: dict, existing_visit: Visit) -> float:
-    """
-    Calculates a probability score (0.0 to 1.0) based on hardware and network entropy.
-    Updated for Industrial Clusters: Weights adjusted to prioritize network consistency.
-    """
-    score = 0.0
-    
-    # 1. Canvas Match (30% Weight) - Hardware rendering fingerprint
-    if new_sig.get('canvas') == existing_visit.canvas_hash:
-        score += 0.30
-        
-    # 2. Clock Drift Match (20% Weight) - Precision timing delta
-    drift_diff = abs(new_sig.get('drift', 0) - (existing_visit.clock_drift or 0))
-    if drift_diff <= 1:
-        score += 0.20
-        
-    # 3. WebGL/Renderer Match (10% Weight) - GPU identification
-    if new_sig.get('webgl') == existing_visit.webgl_renderer:
-        score += 0.10
-        
-    # 4. Network Intelligence Match (40% Weight) - The Corporate Signal
-    # We compare the effective type, RTT, and downlink speed
-    net = new_sig.get('network', {})
-    if isinstance(net, dict):
-        # Match Connection Type (4g/fiber)
-        if net.get('type') == existing_visit.effective_connection_type:
-            score += 0.15
-            
-        # Match Network Performance (RTT and Downlink)
-        # Allows for small variance in traffic load
-        rtt_match = abs(net.get('rtt', 0) - (existing_visit.rtt or 0)) <= 20
-        downlink_match = abs(net.get('downlink', 0) - (existing_visit.downlink_speed or 0)) < 0.5
-        
-        if rtt_match and downlink_match:
-            score += 0.25
-            
-    return score
-
-def merge_sessions_sync(new_id: str, original_id: str):
-    """
-    Sync wrapper to unify fragmented session data across the forensic ledger.
-    """
-    with Session(engine) as session:
-        try:
-            statement = select(Visit).where(Visit.aura_id == new_id)
-            visits_to_update = session.exec(statement).all()
-            
-            for visit in visits_to_update:
-                visit.aura_id = original_id
-                session.add(visit)
-            
-            session.commit()
-            logger.info(f"🔗 Forensic Stitch Success: {new_id} unified into {original_id}")
-        except Exception as e:
-            logger.error(f"❌ Session Merge Failure: {e}")
-
-@router.post("/resolve")
-async def resolve_identity(payload: dict, background_tasks: BackgroundTasks):
-    aura_id = payload.get("aura_id")
-    signature = payload.get("signature", {})
-    
-    if not aura_id:
-        raise HTTPException(status_code=400, detail="Missing aura_id")
-
-    with Session(engine) as session:
-        # Step 1: Check for direct ID match (Existing browser session)
-        statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at.desc())
-        existing_visit = session.exec(statement).first()
-        
-        if existing_visit:
-            logger.info(f"🎯 Direct Match: {aura_id}. Updating Forensic/Network Lock.")
-            # Update markers to the latest state
-            existing_visit.canvas_hash = signature.get('canvas')
-            existing_visit.clock_drift = signature.get('drift')
-            existing_visit.webgl_renderer = signature.get('webgl')
-            
-            net = signature.get('network', {})
-            if isinstance(net, dict):
-                existing_visit.effective_connection_type = net.get('type')
-                existing_visit.downlink_speed = net.get('downlink')
-                existing_visit.rtt = net.get('rtt')
-                
-            session.add(existing_visit)
-            session.commit()
-            return {"status": "recognized", "method": "direct_id"}
-
-        # Step 2: Weighted Forensic Search
-        # Scan recent footprints (within the last 72 hours for accuracy)
-        all_recent = session.exec(select(Visit).order_by(Visit.created_at.desc()).limit(200)).all()
-        unique_profiles = {v.aura_id: v for v in all_recent}.values()
-        
-        for profile in unique_profiles:
-            match_probability = calculate_identity_match(signature, profile)
-            
-            # High Confidence Threshold for stitching (80% given the new network weight)
-            if match_probability >= 0.80:
-                logger.info(f"🧵 Forensic Stitch Identified! Conf: {match_probability*100}%")
-                
-                background_tasks.add_task(merge_sessions_sync, aura_id, profile.aura_id)
-                
-                return {
-                    "status": "stitched", 
-                    "stitched_id": profile.aura_id, 
-                    "confidence": match_probability
-                }
-
-    return {"status": "new_identity", "message": "Forensic profile initialized."}
 </file>
 
 <file path="frontend/src/app/(pages)/pricing/page.tsx">
@@ -4987,6 +4904,125 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+</file>
+
+<file path="backend/app/api/v1/identity.py">
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from sqlmodel import Session, select
+from app.db import engine
+from app.models.visit import Visit
+import logging
+
+router = APIRouter()
+logger = logging.getLogger("uvicorn")
+
+def calculate_identity_match(new_sig: dict, existing_visit: Visit) -> float:
+    """
+    Calculates a probability score (0.0 to 1.0) based on hardware and network entropy.
+    Updated for Industrial Clusters: Weights adjusted to prioritize network consistency.
+    """
+    score = 0.0
+    
+    # 1. Canvas Match (30% Weight) - Hardware rendering fingerprint
+    if new_sig.get('canvas') == existing_visit.canvas_hash:
+        score += 0.30
+        
+    # 2. Clock Drift Match (20% Weight) - Precision timing delta
+    drift_diff = abs(new_sig.get('drift', 0) - (existing_visit.clock_drift or 0))
+    if drift_diff <= 1:
+        score += 0.20
+        
+    # 3. WebGL/Renderer Match (10% Weight) - GPU identification
+    if new_sig.get('webgl') == existing_visit.webgl_renderer:
+        score += 0.10
+        
+    # 4. Network Intelligence Match (40% Weight) - The Corporate Signal
+    # We compare the effective type, RTT, and downlink speed
+    net = new_sig.get('network', {})
+    if isinstance(net, dict):
+        # Match Connection Type (4g/fiber)
+        if net.get('type') == existing_visit.effective_connection_type:
+            score += 0.15
+            
+        # Match Network Performance (RTT and Downlink)
+        # Allows for small variance in traffic load
+        rtt_match = abs(net.get('rtt', 0) - (existing_visit.rtt or 0)) <= 20
+        downlink_match = abs(net.get('downlink', 0) - (existing_visit.downlink_speed or 0)) < 0.5
+        
+        if rtt_match and downlink_match:
+            score += 0.25
+            
+    return score
+
+def merge_sessions_sync(new_id: str, original_id: str):
+    """
+    Sync wrapper to unify fragmented session data across the forensic ledger.
+    """
+    with Session(engine) as session:
+        try:
+            statement = select(Visit).where(Visit.aura_id == new_id)
+            visits_to_update = session.exec(statement).all()
+            
+            for visit in visits_to_update:
+                visit.aura_id = original_id
+                session.add(visit)
+            
+            session.commit()
+            logger.info(f"🔗 Forensic Stitch Success: {new_id} unified into {original_id}")
+        except Exception as e:
+            logger.error(f"❌ Session Merge Failure: {e}")
+
+@router.post("/resolve")
+async def resolve_identity(payload: dict, background_tasks: BackgroundTasks):
+    aura_id = payload.get("aura_id")
+    signature = payload.get("signature", {})
+    
+    if not aura_id:
+        raise HTTPException(status_code=400, detail="Missing aura_id")
+
+    with Session(engine) as session:
+        # Step 1: Check for direct ID match (Existing browser session)
+        statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at.desc())
+        existing_visit = session.exec(statement).first()
+        
+        if existing_visit:
+            logger.info(f"🎯 Direct Match: {aura_id}. Updating Forensic/Network Lock.")
+            # Update markers to the latest state
+            existing_visit.canvas_hash = signature.get('canvas')
+            existing_visit.clock_drift = signature.get('drift')
+            existing_visit.webgl_renderer = signature.get('webgl')
+            
+            net = signature.get('network', {})
+            if isinstance(net, dict):
+                existing_visit.effective_connection_type = net.get('type')
+                existing_visit.downlink_speed = net.get('downlink')
+                existing_visit.rtt = net.get('rtt')
+                
+            session.add(existing_visit)
+            session.commit()
+            return {"status": "recognized", "method": "direct_id"}
+
+        # Step 2: Weighted Forensic Search
+        # Scan recent footprints (within the last 72 hours for accuracy)
+        all_recent = session.exec(select(Visit).order_by(Visit.created_at.desc()).limit(200)).all()
+        unique_profiles = {v.aura_id: v for v in all_recent}.values()
+        
+        for profile in unique_profiles:
+            match_probability = calculate_identity_match(signature, profile)
+            
+            # High Confidence Threshold for stitching (80% given the new network weight)
+            if match_probability >= 0.80:
+                logger.info(f"🧵 Forensic Stitch Identified! Conf: {match_probability*100}%")
+                
+                background_tasks.add_task(merge_sessions_sync, aura_id, profile.aura_id)
+                
+                return {
+                    "status": "stitched", 
+                    "stitched_id": profile.aura_id, 
+                    "confidence": match_probability
+                }
+
+    return {"status": "new_identity", "message": "Forensic profile initialized."}
 </file>
 
 <file path="frontend/src/app/(pages)/about/page.tsx">
@@ -5741,6 +5777,11 @@ class Settings(BaseSettings):
     # Notifications
     # Paste your webhook in Railway/Local .env as SLACK_WEBHOOK_URL
     SLACK_WEBHOOK_URL: Optional[str] = None
+
+    # Add these to your Settings class in app/core/config.py
+    MAILGUN_API_KEY: str = "your-api-key"
+    MAILGUN_DOMAIN: str = "mg.auraworks.co.za"
+    SLACK_VISIT_WEBHOOK_URL: str = "your-visit-channel-webhook" # Dedicated #visit channel
     
     # Email Settings
     SMTP_TLS: bool = True
@@ -5758,234 +5799,6 @@ class Settings(BaseSettings):
     )
 
 settings = Settings()
-</file>
-
-<file path="backend/app/services/intelligence.py">
-import httpx
-import logging
-import asyncio
-from datetime import datetime, timedelta, timezone
-from typing import List, Optional, Dict
-from sqlmodel import Session, select
-from app.models.visit import Visit
-from app.models.company import Company
-from app.models.waitlist import WaitlistLead
-from app.db import engine
-from app.core.config import settings
-
-logger = logging.getLogger("uvicorn")
-
-# --- UTILS: Industrial Formatting ---
-def format_zar(value: str) -> str:
-    if not value: return "N/A"
-    if "m" in value.lower(): return "R1,000,000+"
-    if "-" in value:
-        parts = value.replace('k', '000').split('-')
-        try:
-            formatted_parts = [f"R{int(p.strip()):,}" for p in parts]
-            return " - ".join(formatted_parts)
-        except: return value
-    clean_value = "".join(filter(str.isdigit, value))
-    return f"R{int(clean_value):,}" if clean_value else value
-
-# --- PHASE 01: The Orchestrator (Slack x DeepSeek Sync) ---
-
-async def orchestrate_lead_audit(lead_id: int, aura_id: str, payload: dict):
-    """
-    The Central Brain: Ensures DeepSeek analysis is ready before notifying Slack.
-    Uses Mailgun for high-deliverability signals.
-    """
-    logger.info(f"--- 🧠 ORCHESTRATING AUDIT: Lead {lead_id} ---")
-    
-    # 1. Wait for Behavioral Journey & DeepSeek Intent Analysis
-    journey = await get_visitor_journey(aura_id)
-    
-    # 2. Sequential Delay: If intent is still calibrating, give it one short retry
-    if "calibrating" in journey.get("intent_summary", "").lower():
-        await asyncio.sleep(4)
-        journey = await get_visitor_journey(aura_id)
-
-    # 3. Dispatch Clinical Notifications
-    await send_slack_notification(payload, journey)
-    await send_mailgun_welcome(payload.get("email"), payload.get("name"))
-
-# --- PHASE 02: DeepSeek-V3 Intent Analysis ---
-
-async def analyze_corporate_intent(company_name: str, industry: str, pathway: str) -> str:
-    if not settings.DEEPSEEK_API_KEY:
-        return "Intent analysis pending (API Key missing)."
-
-    prompt = f"""
-    Analyze B2B traffic for:
-    Entity: {company_name or 'Industrial Prospect'}
-    Industry: {industry or 'Manufacturing'}
-    Pathway: {pathway}
-
-    Task: Provide a 2-sentence 'Executive Intent Summary'.
-    Tone: Clinical, sophisticated, 'Quiet Premium'. Identify persona and intent 'Temperature'.
-    """
-
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(
-                "https://api.deepseek.com/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "deepseek-chat",
-                    "messages": [{"role": "user", "content": prompt}],
-                    "temperature": 0.3 
-                },
-                timeout=20.0 
-            )
-            if response.status_code == 200:
-                return response.json()['choices'][0]['message']['content'].strip()
-            return "Intelligence engine calibrating. Analysis deferred."
-        except Exception as e:
-            logger.error(f"DeepSeek Failure: {e}")
-            return "Intelligence engine temporarily offline."
-
-# --- PHASE 03: Journey & Ghost Enrichment ---
-
-async def get_visitor_journey(aura_id: str) -> Dict:
-    """
-    Retrieves behavioral ledger. Implements 'Ghost Enrichment' by checking
-    local history if external identifiers are missing.
-    """
-    if not aura_id:
-        return {"total_touches": 0, "pathway": "Direct", "intent_summary": "No forensic signature."}
-
-    with Session(engine) as session:
-        # Ghost Enrichment: Pull historical visits for this forensic ID
-        statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at)
-        history = session.exec(statement).all()
-        
-        if not history:
-            return {"total_touches": 0, "pathway": "First Contact", "intent_summary": "Initial touchpoint recorded."}
-
-        # Pathway Mapping: Clean URL paths
-        pages = [v.url.split('auraworks.co.za')[-1] if v.url else "/" for v in history]
-        unique_pathway = []
-        for p in pages:
-            if not unique_pathway or p != unique_pathway[-1]:
-                unique_pathway.append(p if p != "" else "/")
-        
-        pathway_str = " → ".join(unique_pathway)
-        
-        # Corporate Cluster Detection (Facility-Level Grouping)
-        last_visit = history[-1]
-        cluster_info = await get_building_activity(last_visit.ip_address, aura_id)
-
-        # Context Harvest: Resolve Company Anchor
-        company = None
-        linked_visit = next((v for v in history if v.company_id), None)
-        if linked_visit:
-            company = session.get(Company, linked_visit.company_id)
-
-        # Self-Healing: Ghost-linking via IP correlation if company is unknown
-        if not company:
-            last_ip = last_visit.ip_address
-            past_lead = session.exec(
-                select(WaitlistLead)
-                .join(Visit, WaitlistLead.aura_id == Visit.aura_id)
-                .where(Visit.ip_address == last_ip)
-            ).first()
-            
-            if past_lead:
-                company = session.get(Company, past_lead.company_id)
-                cluster_info += f" | 🔗 Ghost-linked via IP to {company.name if company else 'Previous Lead'}"
-
-        intent = await analyze_corporate_intent(
-            company.name if company else "Anonymous Entity",
-            company.industry if company else "Industrial",
-            pathway_str
-        )
-
-        # Intelligence signal for Slack (Network signature context)
-        network_context = f"[{last_visit.effective_connection_type or 'Standard'}]"
-
-        return {
-            "total_touches": len(history),
-            "pathway": pathway_str,
-            "intent_summary": f"{intent} \n\n{cluster_info} {network_context}",
-            "is_high_intent": any(kw in pathway_str.lower() for kw in ["pricing", "audit", "waitlist"]) or (last_visit.intent_cluster is not None)
-        }
-
-# --- PHASE 04: Industrial Notifications (Slack & Mailgun) ---
-
-async def send_slack_notification(payload: dict, journey: dict):
-    if not settings.SLACK_WEBHOOK_URL: return
-    
-    is_hot = journey.get("is_high_intent", False)
-    emoji = "🔴" if is_hot else "🔵"
-    
-    slack_data = {
-        "blocks": [
-            {"type": "header", "text": {"type": "plain_text", "text": f"{emoji} Phase 01: Identity Promoted"}},
-            {
-                "type": "section",
-                "text": {"type": "mrkdwn", "text": f"*🕵️ Executive Intent Summary:*\n_{journey.get('intent_summary')}_"}
-            },
-            {"type": "divider"},
-            {
-                "type": "section",
-                "fields": [
-                    {"type": "mrkdwn", "text": f"*Entity:*\n{payload.get('company_name_final')}"},
-                    {"type": "mrkdwn", "text": f"*Lead:*\n{payload.get('name')} ({payload.get('email')})"},
-                    {"type": "mrkdwn", "text": f"*Project Value:*\n{payload.get('formatted_price') or 'N/A'}"},
-                    {"type": "mrkdwn", "text": f"*Pathway:* `{journey.get('pathway')}`"}
-                ]
-            }
-        ]
-    }
-    async with httpx.AsyncClient() as client:
-        await client.post(settings.SLACK_WEBHOOK_URL, json=slack_data)
-
-async def send_mailgun_welcome(email: str, name: str):
-    if not settings.MAILGUN_API_KEY or not settings.MAILGUN_DOMAIN:
-        logger.warning("Mailgun credentials missing. Skipping email.")
-        return
-
-    async with httpx.AsyncClient() as client:
-        try:
-            await client.post(
-                f"https://api.mailgun.net/v3/{settings.MAILGUN_DOMAIN}/messages",
-                auth=("api", settings.MAILGUN_API_KEY),
-                data={
-                    "from": f"AuraWorks <audit@{settings.MAILGUN_DOMAIN}>",
-                    "to": email,
-                    "subject": "Phase 01: Audit Initiated",
-                    "html": f"""
-                        <div style="font-family: sans-serif; padding: 20px; color: #18181b;">
-                            <h2 style="border-bottom: 1px solid #e4e4e7; padding-bottom: 10px;">Audit Initiated: {name}</h2>
-                            <p>Our systems architect has successfully queued your industrial ROI analysis.</p>
-                            <p style="font-size: 11px; color: #71717a; margin-top: 20px;">AuraWorks (Pty) Ltd // Automated Signal</p>
-                        </div>
-                    """
-                }
-            )
-        except Exception as e:
-            logger.error(f"Mailgun Failure: {e}")
-
-async def get_building_activity(ip_address: str, current_aura_id: str) -> str:
-    """
-    Buying Committee Detection: Identifies multiple unique device signatures 
-    from the same static IP within a 72-hour window.
-    """
-    if not ip_address: return ""
-    time_threshold = datetime.now(timezone.utc) - timedelta(hours=72)
-    with Session(engine) as session:
-        statement = select(Visit).where(
-            Visit.ip_address == ip_address, 
-            Visit.aura_id != current_aura_id, 
-            Visit.created_at >= time_threshold
-        )
-        others = session.exec(statement).all()
-        if not others: return "📍 Solo Facility Entry"
-        unique_ids = len({v.aura_id for v in others})
-        return f"🏢 **Corporate Cluster:** {unique_ids} other device(s) active from this facility."
 </file>
 
 <file path="frontend/src/components/pricing/pricing.tsx">
@@ -6230,81 +6043,6 @@ This tracker script is proprietary software. Unauthorized copying, modification,
 ---
 </file>
 
-<file path="backend/app/models/visit.py">
-from typing import Optional, List, Dict, Any
-from datetime import datetime
-from sqlmodel import SQLModel, Field, Column, DateTime, Relationship, JSON
-import sqlalchemy as sa
-
-class VisitBase(SQLModel):
-    client_id: str = Field(index=True)
-    aura_id: str = Field(index=True)
-    url: str
-    referrer: Optional[str] = "direct"
-    timestamp: Optional[str] = None 
-
-class Visit(SQLModel, table=True): 
-    """The granular ledger of every touchpoint. Multiple visits map to one Company."""
-    id: Optional[int] = Field(default=None, primary_key=True)
-    
-    # --- RELATIONS ---
-    company_id: Optional[int] = Field(default=None, foreign_key="company.id", index=True)
-    
-    # --- IDENTITY & CONSENT ---
-    client_id: str = Field(index=True)
-    aura_id: str = Field(index=True) # Browser fingerprint
-    ip_address: Optional[str] = Field(default="0.0.0.0", index=True)
-    is_consented: bool = Field(default=False, index=True) 
-    
-    # --- FORENSIC SIGNATURES (Tracker v2.4.0) ---
-    canvas_hash: Optional[str] = None
-    webgl_renderer: Optional[str] = None
-    clock_drift: Optional[float] = None
-    
-    # --- NETWORK INTELLIGENCE (For Buying Committee Detection) ---
-    effective_connection_type: Optional[str] = Field(default=None, description="e.g., 4g, fiber")
-    downlink_speed: Optional[float] = Field(default=None, description="Mbps")
-    rtt: Optional[int] = Field(default=None, description="Round-trip time in ms")
-    
-    # --- BEHAVIORAL & INTENT CLUSTERING ---
-    url: str
-    referrer: Optional[str] = "direct"
-    screen_resolution: Optional[str] = None
-    duration: int = Field(default=0)
-    
-    # Captures specific high-intent clicks (Pricing, Audit, Features)
-    intent_cluster: Optional[str] = Field(default=None, index=True)
-    intent_metadata: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
-    
-    # --- ATTRIBUTION ---
-    utm_source: Optional[str] = None
-    utm_medium: Optional[str] = None
-    utm_campaign: Optional[str] = None
-
-    # --- TIMESTAMPS ---
-    created_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), nullable=False)
-    )
-
-    company: Optional["Company"] = Relationship(back_populates="visits")
-
-class VisitCreate(VisitBase):
-    screen_resolution: Optional[str] = None
-    effective_connection_type: Optional[str] = None
-    downlink_speed: Optional[float] = None
-    rtt: Optional[int] = None
-    utm_source: Optional[str] = None
-    utm_medium: Optional[str] = None
-    utm_campaign: Optional[str] = None
-
-class PageViewCreate(SQLModel):
-    client_id: str
-    url: str
-    duration: int
-    event_type: str = "exit"
-    intent_cluster: Optional[str] = None
-</file>
-
 <file path="backend/app/services/enrichment.py">
 import httpx
 import logging
@@ -6428,6 +6166,321 @@ async def get_departmental_intelligence(domain: str) -> List[Dict]:
         except Exception as e:
             logger.error(f"Apollo Enrichment Failure for {domain}: {e}")
             return []
+</file>
+
+<file path="backend/app/services/intelligence.py">
+import httpx
+import logging
+import asyncio
+from datetime import datetime, timedelta, timezone
+from typing import List, Optional, Dict
+from sqlmodel import Session, select
+from app.models.visit import Visit
+from app.models.company import Company
+from app.models.waitlist import WaitlistLead
+from app.db import engine
+from app.core.config import settings
+
+logger = logging.getLogger("uvicorn")
+
+# --- UTILS: Industrial Formatting ---
+def format_zar(value: str) -> str:
+    if not value: return "N/A"
+    if "m" in value.lower(): return "R1,000,000+"
+    if "-" in value:
+        parts = value.replace('k', '000').split('-')
+        try:
+            formatted_parts = [f"R{int(p.strip()):,}" for p in parts]
+            return " - ".join(formatted_parts)
+        except: return value
+    clean_value = "".join(filter(str.isdigit, value))
+    return f"R{int(clean_value):,}" if clean_value else value
+
+# --- PHASE 01: The Orchestrator (Slack x DeepSeek Sync) ---
+
+async def orchestrate_lead_audit(lead_id: int, aura_id: str, payload: dict):
+    """
+    The Central Brain: Ensures DeepSeek analysis is ready before notifying Slack.
+    Uses Mailgun for high-deliverability signals.
+    """
+    logger.info(f"--- 🧠 ORCHESTRATING AUDIT: Lead {lead_id} ---")
+    
+    # 1. Wait for Behavioral Journey & DeepSeek Intent Analysis
+    journey = await get_visitor_journey(aura_id)
+    
+    # 2. Sequential Delay: If intent is still calibrating, give it one short retry
+    if "calibrating" in journey.get("intent_summary", "").lower():
+        await asyncio.sleep(4)
+        journey = await get_visitor_journey(aura_id)
+
+    # 3. Dispatch Clinical Notifications
+    await send_slack_notification(payload, journey)
+    await send_mailgun_welcome(payload.get("email"), payload.get("name"))
+
+# --- PHASE 02: DeepSeek-V3 Intent Analysis ---
+
+async def analyze_corporate_intent(
+    company_name: str, 
+    industry: str, 
+    pathway: str, 
+    is_cluster: bool = False
+) -> str:
+    """
+    Industrial Intent Analysis: Calibrated for B2B facility detection.
+    """
+    if not settings.DEEPSEEK_API_KEY:
+        return "Intelligence engine calibrating. Analysis deferred."
+
+    # Strategic Context: Alerts DeepSeek to a Buying Committee presence
+    context_signal = "BUYING COMMITTEE ALERT: 3+ unique devices detected." if is_cluster else "Individual Facility Entry."
+
+    prompt = f"""
+    Analyze B2B industrial traffic for:
+    Entity: {company_name or 'Industrial Prospect'}
+    Industry: {industry or 'Manufacturing'}
+    Pathway: {pathway}
+    Context: {context_signal}
+
+    Task: Provide a 2-sentence 'Executive Intent Summary'.
+    Tone: Clinical, sophisticated, 'Quiet Premium'. Identify persona and intent 'Temperature'.
+    Labels: Categorize as 'Discovery', 'Technical Evaluation', or 'Procurement' phase.
+    """
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                "https://api.deepseek.com/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "deepseek-chat",
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.2 
+                },
+                timeout=20.0 
+            )
+            if response.status_code == 200:
+                return response.json()['choices'][0]['message']['content'].strip()
+            return "Intelligence engine calibrating. Analysis deferred."
+        except Exception as e:
+            logger.error(f"DeepSeek Failure: {e}")
+            return "Intelligence engine temporarily offline."
+
+# --- PHASE 03: Journey & Ghost Enrichment ---
+
+async def get_visitor_journey(aura_id: str) -> Dict:
+    """
+    Retrieves behavioral ledger. Implements 'Ghost Enrichment' and 
+    Corporate Cluster (3+ ID) detection for the #visit channel.
+    """
+    if not aura_id:
+        return {"total_touches": 0, "pathway": "Direct", "intent_summary": "No forensic signature.", "cluster_count": 0}
+
+    with Session(engine) as session:
+        # 1. Forensic History Retrieval
+        statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at)
+        history = session.exec(statement).all()
+        
+        if not history:
+            return {"total_touches": 0, "pathway": "First Contact", "intent_summary": "Initial touchpoint recorded.", "cluster_count": 0}
+
+        last_visit = history[-1]
+
+        # 2. Corporate Cluster Detection (The 3+ Unique ID Rule)
+        time_threshold = datetime.now(timezone.utc) - timedelta(hours=72)
+        cluster_statement = select(Visit).where(
+            Visit.ip_address == last_visit.ip_address,
+            Visit.created_at >= time_threshold
+        )
+        cluster_records = session.exec(cluster_statement).all()
+        unique_id_count = len({v.aura_id for v in cluster_records})
+        is_buying_committee = unique_id_count >= 3
+
+        # 3. Pathway Mapping (Deduplicated URL sequence)
+        pages = [v.url.split('auraworks.co.za')[-1] if v.url else "/" for v in history]
+        unique_pathway = []
+        for p in pages:
+            if not unique_pathway or p != unique_pathway[-1]:
+                unique_pathway.append(p if p != "" else "/")
+        pathway_str = " → ".join(unique_pathway)
+
+        # 4. Context Harvest: Resolve Company Anchor
+        company = None
+        linked_visit = next((v for v in history if v.company_id), None)
+        if linked_visit:
+            company = session.get(Company, linked_visit.company_id)
+
+        # 5. Ghost-linking & Cluster Metadata
+        cluster_info = f"📍 Facility Activity: {unique_id_count} IDs"
+        if not company:
+            last_ip = last_visit.ip_address
+            # Check if anyone from this IP previously filled out the waitlist
+            past_lead = session.exec(
+                select(WaitlistLead)
+                .join(Visit, WaitlistLead.aura_id == Visit.aura_id)
+                .where(Visit.ip_address == last_ip)
+            ).first()
+            
+            if past_lead:
+                company = session.get(Company, past_lead.company_id)
+                cluster_info += f" | 🔗 Ghost-linked via IP to {company.name if company else 'Previous Lead'}"
+
+        # 6. DeepSeek Synthesis
+        intent = await analyze_corporate_intent(
+            company_name=company.name if company else "Anonymous Entity",
+            industry=company.industry if company else "Industrial",
+            pathway=pathway_str,
+            is_cluster=is_buying_committee
+        )
+
+        network_context = f"[{last_visit.effective_connection_type or 'Standard'}]"
+
+        return {
+            "total_touches": len(history),
+            "pathway": pathway_str,
+            "intent_summary": f"{intent} \n\n{cluster_info} {network_context}",
+            "cluster_count": unique_id_count,
+            "is_cluster": is_buying_committee,
+            "is_high_intent": is_buying_committee or any(kw in pathway_str.lower() for kw in ["pricing", "audit", "waitlist"]) or (last_visit.intent_cluster is not None)
+        }
+    """
+    Retrieves behavioral ledger. Implements 'Ghost Enrichment' by checking
+    local history if external identifiers are missing.
+    """
+    if not aura_id:
+        return {"total_touches": 0, "pathway": "Direct", "intent_summary": "No forensic signature."}
+
+    with Session(engine) as session:
+        # Ghost Enrichment: Pull historical visits for this forensic ID
+        statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at)
+        history = session.exec(statement).all()
+        
+        if not history:
+            return {"total_touches": 0, "pathway": "First Contact", "intent_summary": "Initial touchpoint recorded."}
+
+        # Pathway Mapping: Clean URL paths
+        pages = [v.url.split('auraworks.co.za')[-1] if v.url else "/" for v in history]
+        unique_pathway = []
+        for p in pages:
+            if not unique_pathway or p != unique_pathway[-1]:
+                unique_pathway.append(p if p != "" else "/")
+        
+        pathway_str = " → ".join(unique_pathway)
+        
+        # Corporate Cluster Detection (Facility-Level Grouping)
+        last_visit = history[-1]
+        cluster_info = await get_building_activity(last_visit.ip_address, aura_id)
+
+        # Context Harvest: Resolve Company Anchor
+        company = None
+        linked_visit = next((v for v in history if v.company_id), None)
+        if linked_visit:
+            company = session.get(Company, linked_visit.company_id)
+
+        # Self-Healing: Ghost-linking via IP correlation if company is unknown
+        if not company:
+            last_ip = last_visit.ip_address
+            past_lead = session.exec(
+                select(WaitlistLead)
+                .join(Visit, WaitlistLead.aura_id == Visit.aura_id)
+                .where(Visit.ip_address == last_ip)
+            ).first()
+            
+            if past_lead:
+                company = session.get(Company, past_lead.company_id)
+                cluster_info += f" | 🔗 Ghost-linked via IP to {company.name if company else 'Previous Lead'}"
+
+        intent = await analyze_corporate_intent(
+            company.name if company else "Anonymous Entity",
+            company.industry if company else "Industrial",
+            pathway_str
+        )
+
+        # Intelligence signal for Slack (Network signature context)
+        network_context = f"[{last_visit.effective_connection_type or 'Standard'}]"
+
+        return {
+            "total_touches": len(history),
+            "pathway": pathway_str,
+            "intent_summary": f"{intent} \n\n{cluster_info} {network_context}",
+            "is_high_intent": any(kw in pathway_str.lower() for kw in ["pricing", "audit", "waitlist"]) or (last_visit.intent_cluster is not None)
+        }
+
+# --- PHASE 04: Industrial Notifications (Slack & Mailgun) ---
+
+async def send_slack_notification(payload: dict, journey: dict):
+    if not settings.SLACK_WEBHOOK_URL: return
+    
+    is_hot = journey.get("is_high_intent", False)
+    emoji = "🔴" if is_hot else "🔵"
+    
+    slack_data = {
+        "blocks": [
+            {"type": "header", "text": {"type": "plain_text", "text": f"{emoji} Phase 01: Identity Promoted"}},
+            {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": f"*🕵️ Executive Intent Summary:*\n_{journey.get('intent_summary')}_"}
+            },
+            {"type": "divider"},
+            {
+                "type": "section",
+                "fields": [
+                    {"type": "mrkdwn", "text": f"*Entity:*\n{payload.get('company_name_final')}"},
+                    {"type": "mrkdwn", "text": f"*Lead:*\n{payload.get('name')} ({payload.get('email')})"},
+                    {"type": "mrkdwn", "text": f"*Project Value:*\n{payload.get('formatted_price') or 'N/A'}"},
+                    {"type": "mrkdwn", "text": f"*Pathway:* `{journey.get('pathway')}`"}
+                ]
+            }
+        ]
+    }
+    async with httpx.AsyncClient() as client:
+        await client.post(settings.SLACK_WEBHOOK_URL, json=slack_data)
+
+async def send_mailgun_welcome(email: str, name: str):
+    if not settings.MAILGUN_API_KEY or not settings.MAILGUN_DOMAIN:
+        logger.warning("Mailgun credentials missing. Skipping email.")
+        return
+
+    async with httpx.AsyncClient() as client:
+        try:
+            await client.post(
+                f"https://api.mailgun.net/v3/{settings.MAILGUN_DOMAIN}/messages",
+                auth=("api", settings.MAILGUN_API_KEY),
+                data={
+                    "from": f"AuraWorks <audit@{settings.MAILGUN_DOMAIN}>",
+                    "to": email,
+                    "subject": "Phase 01: Audit Initiated",
+                    "html": f"""
+                        <div style="font-family: sans-serif; padding: 20px; color: #18181b;">
+                            <h2 style="border-bottom: 1px solid #e4e4e7; padding-bottom: 10px;">Audit Initiated: {name}</h2>
+                            <p>Our systems architect has successfully queued your industrial ROI analysis.</p>
+                            <p style="font-size: 11px; color: #71717a; margin-top: 20px;">AuraWorks (Pty) Ltd // Automated Signal</p>
+                        </div>
+                    """
+                }
+            )
+        except Exception as e:
+            logger.error(f"Mailgun Failure: {e}")
+
+async def get_building_activity(ip_address: str, current_aura_id: str) -> str:
+    """
+    Buying Committee Detection: Identifies multiple unique device signatures 
+    from the same static IP within a 72-hour window.
+    """
+    if not ip_address: return ""
+    time_threshold = datetime.now(timezone.utc) - timedelta(hours=72)
+    with Session(engine) as session:
+        statement = select(Visit).where(
+            Visit.ip_address == ip_address, 
+            Visit.aura_id != current_aura_id, 
+            Visit.created_at >= time_threshold
+        )
+        others = session.exec(statement).all()
+        if not others: return "📍 Solo Facility Entry"
+        unique_ids = len({v.aura_id for v in others})
+        return f"🏢 **Corporate Cluster:** {unique_ids} other device(s) active from this facility."
 </file>
 
 <file path="frontend/src/components/hero-sec/hero-section.tsx">
@@ -6656,6 +6709,87 @@ export default function HeroSection() {
         </>
     )
 }
+</file>
+
+<file path="backend/app/models/visit.py">
+from typing import Optional, List, Dict, Any
+from datetime import datetime
+from sqlmodel import SQLModel, Field, Column, DateTime, Relationship, JSON
+import sqlalchemy as sa
+
+class VisitBase(SQLModel):
+    client_id: str = Field(index=True)
+    aura_id: str = Field(index=True)
+    url: str
+    referrer: Optional[str] = "direct"
+    timestamp: Optional[str] = None 
+    # Base attribution fields for all tracking schemas
+    utm_source: Optional[str] = None
+    utm_medium: Optional[str] = None
+    utm_campaign: Optional[str] = None
+    utm_content: Optional[str] = None
+    utm_term: Optional[str] = None
+
+class Visit(SQLModel, table=True): 
+    """The granular ledger of every touchpoint. Multiple visits map to one Company."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    
+    # --- RELATIONS ---
+    company_id: Optional[int] = Field(default=None, foreign_key="company.id", index=True)
+    
+    # --- IDENTITY & CONSENT ---
+    client_id: str = Field(index=True)
+    aura_id: str = Field(index=True) # Browser fingerprint
+    ip_address: Optional[str] = Field(default="0.0.0.0", index=True)
+    is_consented: bool = Field(default=False, index=True) 
+    
+    # --- FORENSIC SIGNATURES (Tracker v2.4.0+) ---
+    canvas_hash: Optional[str] = None
+    webgl_renderer: Optional[str] = None
+    clock_drift: Optional[float] = None
+    
+    # --- NETWORK INTELLIGENCE (For Buying Committee Detection) ---
+    effective_connection_type: Optional[str] = Field(default=None, description="e.g., 4g, fiber")
+    downlink_speed: Optional[float] = Field(default=None, description="Mbps")
+    rtt: Optional[int] = Field(default=None, description="Round-trip time in ms")
+    
+    # --- BEHAVIORAL & INTENT CLUSTERING ---
+    url: str
+    referrer: Optional[str] = "direct"
+    screen_resolution: Optional[str] = None
+    duration: int = Field(default=0)
+    
+    # Captures specific high-intent clicks (Pricing, Audit, Features)
+    intent_cluster: Optional[str] = Field(default=None, index=True)
+    intent_metadata: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
+    
+    # --- ATTRIBUTION (Industrial Grade) ---
+    utm_source: Optional[str] = Field(default=None, index=True)
+    utm_medium: Optional[str] = Field(default=None, index=True)
+    utm_campaign: Optional[str] = Field(default=None, index=True)
+    utm_content: Optional[str] = None
+    utm_term: Optional[str] = None
+
+    # --- TIMESTAMPS ---
+    created_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), nullable=False)
+    )
+
+    company: Optional["Company"] = Relationship(back_populates="visits")
+
+class VisitCreate(VisitBase):
+    """Schema for initial ingestion via track_entry"""
+    screen_resolution: Optional[str] = None
+    effective_connection_type: Optional[str] = None
+    downlink_speed: Optional[float] = None
+    rtt: Optional[int] = None
+
+class PageViewCreate(SQLModel):
+    client_id: str
+    url: str
+    duration: int
+    event_type: str = "exit"
+    intent_cluster: Optional[str] = None
 </file>
 
 <file path="backend/app/models/waitlist.py">
@@ -6998,6 +7132,8 @@ from app.models.visit import VisitCreate, Visit
 from app.models.company import Company
 from app.models.pageview import PageViewCreate
 from app.services.enrichment import enrich_visitor_data
+from app.services.notifications import post_to_visit_channel
+from app.services.intelligence import get_visitor_journey
 from sqlmodel import Session, select
 from app.db import engine
 from pydantic import BaseModel
@@ -7009,7 +7145,7 @@ logger = logging.getLogger("uvicorn")
 class ConsentPayload(BaseModel):
     client_id: str
     aura_id: str
-    status: str  # "accepted"
+    status: str 
 
 class IdentityPayload(BaseModel):
     client_id: str
@@ -7018,9 +7154,9 @@ class IdentityPayload(BaseModel):
     email: Optional[str] = None
     capture_source: Optional[str] = None
 
-async def process_entry_logic(payload: VisitCreate, client_ip: str):
+async def process_entry_logic(payload: VisitCreate, client_ip: str, background_tasks: BackgroundTasks):
     """
-    Jurisdictive Entity Resolution & Network Intelligence Mapping.
+    Jurisdictive Resolution & Deanonymized Reporting for the #visit channel.
     """
     with Session(engine) as session:
         # 1. Resolve or Create the Jurisdictive Entity (Company)
@@ -7045,12 +7181,11 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
             session.add(company)
             session.commit()
             session.refresh(company)
-            logger.info(f"🏢 New Jurisdictive Entity: {company.name}")
         elif company:
             company.total_visits += 1
             session.add(company)
 
-        # 2. Log the Granular Visit with Tracker v2.4.0 signals
+        # 2. Log the Granular Visit with Network & UTM Attribution
         db_visit = Visit(
             company_id=company.id if company else None,
             client_id=payload.client_id,
@@ -7059,11 +7194,9 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
             url=payload.url,
             referrer=payload.referrer,
             screen_resolution=payload.screen_resolution,
-            # Map Industrial Network Signals
             effective_connection_type=payload.effective_connection_type,
             downlink_speed=payload.downlink_speed,
             rtt=payload.rtt,
-            # Map Attribution
             utm_source=payload.utm_source,
             utm_medium=payload.utm_medium,
             utm_campaign=payload.utm_campaign,
@@ -7072,7 +7205,23 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
         
         session.add(db_visit)
         session.commit()
-        logger.info(f"📍 Visit Recorded | Net: {payload.effective_connection_type or 'N/A'} | ID: {payload.aura_id[:8]}")
+        session.refresh(db_visit)
+
+        # 3. Deanonymize & Dispatch to #visit channel
+        # This reports the activity even if they never fill in a form
+        journey = await get_visitor_journey(payload.aura_id)
+        
+        visit_report = {
+            "company_name": company.name if company else "Anonymous Facility",
+            "network_type": payload.effective_connection_type or "Standard",
+            "utm_source": payload.utm_source or "Direct",
+            "utm_medium": payload.utm_medium or "None",
+            "aura_id": payload.aura_id,
+            "city": enriched_info.get("city", "Unknown"),
+            "region": enriched_info.get("region", "ZA")
+        }
+        
+        background_tasks.add_task(post_to_visit_channel, visit_report, journey)
 
 @router.post("/entry")
 async def track_entry(
@@ -7082,16 +7231,12 @@ async def track_entry(
     x_forwarded_for: Optional[str] = Header(None)
 ):
     client_ip = x_forwarded_for.split(',')[0].strip() if x_forwarded_for else (request.client.host if request.client else "127.0.0.1")
-    background_tasks.add_task(process_entry_logic, payload, client_ip)
+    background_tasks.add_task(process_entry_logic, payload, client_ip, background_tasks)
     return {"status": "accepted"}
 
 @router.post("/identity")
 async def track_identity(payload: IdentityPayload):
-    """
-    Forensic Lock & Ghost Enrichment: Captures browser signature or blurred emails.
-    """
     with Session(engine) as session:
-        # Find the most recent visit to attach this identity to
         statement = select(Visit).where(Visit.aura_id == payload.aura_id).order_by(Visit.created_at.desc())
         visit = session.exec(statement).first()
         
@@ -7101,7 +7246,6 @@ async def track_identity(payload: IdentityPayload):
                 visit.canvas_hash = sig.get("canvas")
                 visit.webgl_renderer = sig.get("webgl")
                 visit.clock_drift = sig.get("drift")
-                # Update network info if it came in the signature block
                 net = sig.get("network")
                 if isinstance(net, dict):
                     visit.effective_connection_type = net.get("type")
@@ -7115,12 +7259,9 @@ async def track_identity(payload: IdentityPayload):
 
 @router.post("/event")
 async def track_event(payload: PageViewCreate):
-    """
-    Intent Cluster Catch: Records high-intent interactions (Pricing, Audit clicks).
-    """
     with Session(engine) as session:
         statement = select(Visit).where(
-            Visit.aura_id == payload.client_id # aura.js uses client_id/aura_id interchangeably in events
+            Visit.aura_id == payload.client_id
         ).order_by(Visit.created_at.desc())
         
         visit = session.exec(statement).first()
