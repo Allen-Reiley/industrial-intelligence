@@ -6,12 +6,13 @@ from app.models.pageview import PageViewCreate
 from app.services.enrichment import enrich_visitor_data
 from app.services.notifications import post_to_visit_channel
 from app.services.intelligence import get_visitor_journey
-from app.services.airtable import airtable_engine  # Phase 1: Airtable Integration
-from app.services.notion import notion_vault     # Phase 2: Notion Integration
+from app.services.airtable import airtable_engine
+from app.services.notion import notion_vault
 from sqlmodel import Session, select
 from app.db import engine
 from pydantic import BaseModel
 import logging
+from datetime import datetime
 
 router = APIRouter()
 logger = logging.getLogger("uvicorn")
@@ -30,27 +31,32 @@ class IdentityPayload(BaseModel):
 
 async def process_entry_logic(payload: VisitCreate, client_ip: str, background_tasks: BackgroundTasks):
     """
-    Jurisdictive Resolution, Airtable CRM Logging, Notion Vault Archival, and Slack Pager Dispatch.
+    Refined Ingestion: Quarantines hits for 24hr audit. 
+    Matches against Confidence Scores rather than hard binary filters.
     """
     with Session(engine) as session:
-        # 1. Resolve or Create the Jurisdictive Entity (Company)
+        # 1. Resolve Firmographics & Confidence Score
         enriched_info = await enrich_visitor_data(client_ip)
         domain = enriched_info.get("domain")
         company_name = enriched_info.get("company_name", "Unknown")
+        confidence = enriched_info.get("confidence_score", 0.0)
 
+        # 2. Check for Existing Whitelisted Company (is_verified)
         company = None
-        if domain:
+        if domain and domain not in ["unknown.com", "n/a"]:
             company_statement = select(Company).where(Company.domain == domain)
             company = session.exec(company_statement).first()
 
-        if not company and company_name != "Unknown":
+        # 3. Handle Company Creation (Logic: Always create if domain found, else defer)
+        if not company and domain and domain not in ["unknown.com", "n/a"]:
             company = Company(
                 name=company_name,
                 domain=domain,
                 industry=enriched_info.get("industry"),
                 city=enriched_info.get("city"),
                 region=enriched_info.get("region"),
-                is_b2b=enriched_info.get("is_b2b", True)
+                is_b2b=enriched_info.get("is_b2b", True),
+                is_verified=False
             )
             session.add(company)
             session.commit()
@@ -59,7 +65,10 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str, background_t
             company.total_visits += 1
             session.add(company)
 
-        # 2. Log the Granular Visit to PostgreSQL (Internal Audit Trail)
+        # 4. Log the Granular Visit with 'Verifying' Status
+        # If company is already verified, we can auto-verify the visit.
+        initial_status = "verified" if (company and company.is_verified) else "verifying"
+        
         db_visit = Visit(
             company_id=company.id if company else None,
             client_id=payload.client_id,
@@ -67,10 +76,8 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str, background_t
             ip_address=client_ip,
             url=payload.url,
             referrer=payload.referrer,
-            screen_resolution=payload.screen_resolution,
-            effective_connection_type=payload.effective_connection_type,
-            downlink_speed=payload.downlink_speed,
-            rtt=payload.rtt,
+            verification_status=initial_status,
+            last_audit_at=datetime.now(),
             utm_source=payload.utm_source,
             utm_medium=payload.utm_medium,
             utm_campaign=payload.utm_campaign,
@@ -81,45 +88,31 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str, background_t
         session.commit()
         session.refresh(db_visit)
 
-        # 3. Phase 1: Dispatch to Airtable (Industrial CRM Engine)
-        airtable_data = {
-            "company_name": company.name if company else "Anonymous Facility",
-            "domain": domain or "unknown.com",
-            "ip_address": client_ip,
-            "city": enriched_info.get("city", "Unknown"),
-            "region": enriched_info.get("region", "ZA"),
-            "aura_id": payload.aura_id,
-            "effective_connection_type": payload.effective_connection_type or "Unknown"
-        }
-        background_tasks.add_task(airtable_engine.create_industrial_record, airtable_data)
+        # 5. Background Dispatch (Airtable/Notion/Slack)
+        # We only notify Slack for High-Confidence or Verified traffic to reduce noise
+        if confidence >= 0.5 or (company and company.is_verified):
+            airtable_data = {
+                "company_name": company.name if company else "Anonymous Facility",
+                "domain": domain or "unknown.com",
+                "ip_address": client_ip,
+                "city": enriched_info.get("city", "Unknown"),
+                "region": enriched_info.get("region", "ZA"),
+                "aura_id": payload.aura_id,
+                "effective_connection_type": payload.effective_connection_type or "Unknown"
+            }
+            background_tasks.add_task(airtable_engine.create_industrial_record, airtable_data)
 
-        # 4. Phase 2: Dispatch to Notion (Clinical Vault)
-        # We store this as a permanent archival record
-        notion_data = {
-            "company_name": airtable_data["company_name"],
-            "domain": airtable_data["domain"] if airtable_data["domain"] != "unknown.com" else "N/A",
-            "aura_id": payload.aura_id,
-            "industry": enriched_info.get("industry", "Industrial"),
-            "city": airtable_data["city"],
-            "region": airtable_data["region"],
-            "summary": "Awaiting DeepSeek Audit..."
-        }
-        background_tasks.add_task(notion_vault.archive_corporate_visit, notion_data)
-
-        # 5. Deanonymize & Dispatch to Slack (The Pager Signal)
-        journey = await get_visitor_journey(payload.aura_id)
-        
-        visit_report = {
-            "company_name": airtable_data["company_name"],
-            "network_type": payload.effective_connection_type or "Standard",
-            "utm_source": payload.utm_source or "Direct",
-            "utm_medium": payload.utm_medium or "None",
-            "aura_id": payload.aura_id,
-            "city": airtable_data["city"],
-            "region": airtable_data["region"]
-        }
-        
-        background_tasks.add_task(post_to_visit_channel, visit_report, journey)
+            journey = await get_visitor_journey(payload.aura_id)
+            visit_report = {
+                "company_name": airtable_data["company_name"],
+                "network_type": payload.effective_connection_type or "Standard",
+                "utm_source": payload.utm_source or "Direct",
+                "utm_medium": payload.utm_medium or "None",
+                "aura_id": payload.aura_id,
+                "city": airtable_data["city"],
+                "region": airtable_data["region"]
+            }
+            background_tasks.add_task(post_to_visit_channel, visit_report, journey)
 
 @router.post("/entry")
 async def track_entry(

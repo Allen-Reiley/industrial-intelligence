@@ -29,6 +29,15 @@ class Visit(SQLModel, table=True):
     ip_address: Optional[str] = Field(default="0.0.0.0", index=True)
     is_consented: bool = Field(default=False, index=True) 
     
+    # --- QUARANTINE & AUDIT (Rigid Logic v3.0) ---
+    # verifying: Currently under 24hr review
+    # verified: Confirmed industrial/lead match
+    # unverified: Marked for Janitor deletion
+    verification_status: str = Field(default="verifying", index=True)
+    last_audit_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), nullable=False)
+    )
+    
     # --- FORENSIC SIGNATURES (Tracker v2.4.0+) ---
     canvas_hash: Optional[str] = None
     webgl_renderer: Optional[str] = None

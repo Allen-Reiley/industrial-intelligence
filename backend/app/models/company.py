@@ -22,9 +22,13 @@ class Company(SQLModel, table=True):
     region: Optional[str] = None # e.g., "Gauteng"
     is_b2b: bool = Field(default=True, index=True)
     
+    # --- QUARANTINE & AUDIT (Rigid Logic v3.0) ---
+    # Once True, this entity and its visits are immune to the 24hr Janitor purge.
+    is_verified: bool = Field(default=False, index=True)
+    
     # --- AGGREGATED INTELLIGENCE ---
     total_visits: int = Field(default=1)
-    unique_visitors_count: int = Field(default=1) # Count of unique aura_ids
+    unique_visitors_count: int = Field(default=1) # Distinct count of unique aura_ids
     
     # DeepSeek Generated "Corporate Intent" Summary
     intent_summary: Optional[str] = None 

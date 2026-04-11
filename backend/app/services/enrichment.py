@@ -1,83 +1,111 @@
 import httpx
 import logging
+import socket
 from app.core.config import settings
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 
 logger = logging.getLogger("uvicorn")
 
 # --- AuraWorks Identity Bridge: Consumer ISP & Infrastructure Blacklist ---
+CONSUMER_ISP_KEYWORDS = [
+    "vodacom", "mtn", "telkom", "liquid", "cool ideas", "vumatel", "rain", 
+    "isp", "residential", "pool", "dynamic", "dsl", "fiber", "mobile"
+]
 
 def is_consumer_traffic(target_name: str) -> bool:
-    """Detects if a visit is originating from a residential/consumer ISP."""
+    """Detects if a visit originates from a known consumer ISP."""
     if not target_name:
         return False
     normalized = target_name.lower()
     return any(keyword in normalized for keyword in CONSUMER_ISP_KEYWORDS)
 
+def perform_local_reverse_dns(ip_address: str) -> Dict[str, Any]:
+    """
+    Layer 1: Zero-Cost Classification.
+    Identifies cloud providers and obvious ISPs without burning API credits.
+    """
+    try:
+        hostname, _, _ = socket.gethostbyaddr(ip_address)
+        hostname = hostname.lower()
+        
+        if any(cloud in hostname for cloud in ["amazonaws", "googleusercontent", "azure", "static.cloud"]):
+            return {"type": "cloud", "provider": "Infrastructure", "confidence": 0.5}
+        if is_consumer_traffic(hostname):
+            return {"type": "isp", "provider": "Consumer ISP", "confidence": 0.2}
+        
+        return {"type": "business_static", "provider": hostname, "confidence": 0.7}
+    except Exception:
+        return {"type": "unknown", "provider": "Unknown", "confidence": 0.0}
+
 async def enrich_visitor_data(ip_address: str) -> dict:
     """
     Phase 01: Forensic IP Resolution.
-    Separates Industrial Entities from Residential Noise.
+    Calculates a 'B2B Confidence Score' instead of hard filtering.
     """
     if ip_address in ("127.0.0.1", "localhost", "::1"):
-        return {"company_name": "Local Test Environment", "is_b2b": False}
+        return {"company_name": "Local Test Environment", "is_b2b": False, "confidence_score": 1.0}
 
+    # 1. Layer 1 Check (Local)
+    local_intel = perform_local_reverse_dns(ip_address)
+
+    # 2. Layer 2 Check (IPinfo)
     url = f"https://ipinfo.io/{ip_address}?token={settings.IPINFO_TOKEN}"
 
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(url, timeout=5.0)
             if response.status_code != 200:
-                return {"company_name": "Unknown", "is_b2b": False}
+                return {"company_name": "Unknown", "is_b2b": False, "confidence_score": 0.0}
 
             data = response.json()
             company_data = data.get("company", {})
+            asn_data = data.get("asn", {})
+            
             final_name = company_data.get("name")
             final_domain = company_data.get("domain")
 
-            # If IPinfo 'company' block is empty, fallback to 'org' parsing
+            # Fallback to org parsing if company block is empty
             if not final_name:
                 org_full = data.get("org", "Unknown")
-                parts = org_full.split(" ")
-                final_name = " ".join(parts[1:]) if parts[0].startswith("AS") and len(parts) > 1 else org_full
+                final_name = " ".join(org_full.split(" ")[1:]) if org_full.startswith("AS") else org_full
 
-            asn_type = data.get("asn", {}).get("type", "").lower()
+            asn_type = asn_data.get("type", "").lower()
             
-            # THE JURISTIC FILTER: Only allow actual Companies
-            is_b2b = True
+            # --- CALCULATE CONFIDENCE SCORE ---
+            # 1.0 = Definite Corporate HQ | 0.0 = Definite Residential Noise
+            confidence = 0.5 # Baseline
+            
+            if asn_type == "business": confidence += 0.4
+            if asn_type == "hosting": confidence -= 0.2
             if is_consumer_traffic(final_name) or is_consumer_traffic(data.get("org", "")):
-                is_b2b = False
-            elif asn_type in ["hosting", "isp"]:
-                is_b2b = False
+                confidence -= 0.4
+            
+            # Final determination for the 'Industrial' threshold
+            is_b2b = confidence >= 0.5
 
             return {
                 "company_name": final_name,
-                "domain": final_domain or data.get("asn", {}).get("domain"),
+                "domain": final_domain or asn_data.get("domain"),
                 "is_b2b": is_b2b,
+                "confidence_score": round(max(0.0, min(1.0, confidence)), 2),
                 "industry": asn_type or "unknown",
                 "city": data.get("city"),
-                "region": data.get("region")
+                "region": data.get("region"),
+                "provider_type": local_intel["type"]
             }
         except Exception as e:
             logger.error(f"IPinfo Failure: {e}")
-            return {"company_name": "Error", "is_b2b": False}
+            return {"company_name": "Error", "is_b2b": False, "confidence_score": 0.0}
 
 async def get_departmental_intelligence(domain: str) -> List[Dict]:
     """
     Phase 02: Industrial Cluster Mapping (Apollo.io).
-    Scans the corporate domain for decision makers in key departments.
     """
-    if not settings.APOLLO_API_KEY or not domain:
+    if not settings.APOLLO_API_KEY or not domain or domain in ["unknown.com", "n/a"]:
         return []
 
-    # API endpoint for person search
     url = "https://api.apollo.io/v1/people/search"
-    
-    # Targeting the 'Industrial Buying Committee'
-    target_departments = [
-        "Procurement", "Operations", "Engineering", 
-        "Maintenance", "Supply Chain", "Technical Director"
-    ]
+    target_departments = ["Procurement", "Operations", "Engineering", "Maintenance", "Supply Chain"]
 
     payload = {
         "api_key": settings.APOLLO_API_KEY,
@@ -85,14 +113,13 @@ async def get_departmental_intelligence(domain: str) -> List[Dict]:
         "person_titles": target_departments,
         "organization_locations": ["South Africa"],
         "display_mode": "regular",
-        "per_page": 10
+        "per_page": 5 # Leaner query to save credits
     }
 
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(url, json=payload, timeout=12.0)
             if response.status_code != 200:
-                logger.warning(f"Apollo API returned status {response.status_code}")
                 return []
 
             data = response.json()
@@ -100,16 +127,8 @@ async def get_departmental_intelligence(domain: str) -> List[Dict]:
             
             departments_found = []
             for person in people:
-                # Map titles to a simplified department name
-                title = person.get("title", "").lower()
-                matched_dept = "Operations" # Default
-                for dept in target_departments:
-                    if dept.lower() in title:
-                        matched_dept = dept
-                        break
-                
                 departments_found.append({
-                    "name": matched_dept,
+                    "name": person.get("title", "Lead"),
                     "email": person.get("email"),
                     "phone": person.get("phone_numbers", [{}])[0].get("raw_number"),
                     "head_of_dept_linkedin": person.get("linkedin_url")
@@ -118,5 +137,5 @@ async def get_departmental_intelligence(domain: str) -> List[Dict]:
             return departments_found
 
         except Exception as e:
-            logger.error(f"Apollo Enrichment Failure for {domain}: {e}")
             return []
+            logger.error(f"Apollo Enrichment Failure for {domain}: {e}")

@@ -10,22 +10,27 @@ logger = logging.getLogger("uvicorn")
 async def post_to_visit_channel(visit_data: dict, journey: dict):
     """
     High-speed Signal for the #visit channel.
-    Provides immediate forensic links to Airtable and Notion.
+    Only triggers for High-Confidence (>= 0.5) or Verified traffic.
     """
     if not settings.SLACK_VISIT_WEBHOOK_URL:
+        return
+
+    # SPRINT B FILTER: Stop notification fatigue from residential noise
+    confidence = visit_data.get("confidence_score", 0.0)
+    if confidence < 0.5 and not visit_data.get("is_verified", False):
+        logger.info(f"🤫 Noise Suppression: Skip Slack for {visit_data.get('aura_id')[:8]} (Score: {confidence})")
         return
 
     cluster_count = journey.get("cluster_count", 1)
     is_corporate_cluster = cluster_count >= 3
     
-    # Industrial Visual Indicators
-    emoji = "🚨" if is_corporate_cluster else "🕵️"
-    header = f"{emoji} Corporate Cluster" if is_corporate_cluster else f"{emoji} Facility Entry"
+    # Industrial Visual Indicators: Clean & Clinical
+    emoji = "🏢" if is_corporate_cluster else "🏭"
+    header = f"{emoji} Corporate Cluster" if is_corporate_cluster else f"{emoji} Industrial Facility"
 
     # Deep Links for the Industrial Triad
-    # Airtable uses the Base ID, Notion uses the Database ID
-    airtable_url = f"https://airtable.com/{os.getenv('AIRTABLE_BASE_ID')}"
-    notion_url = f"https://www.notion.so/{os.getenv('NOTION_DATABASE_ID')}"
+    airtable_url = f"https://airtable.com/{os.getenv('AIRTABLE_BASE_ID', '')}"
+    notion_url = f"https://www.notion.so/{os.getenv('NOTION_DATABASE_ID', '')}"
 
     payload = {
         "blocks": [
@@ -37,9 +42,9 @@ async def post_to_visit_channel(visit_data: dict, journey: dict):
                 "type": "section",
                 "fields": [
                     {"type": "mrkdwn", "text": f"*Entity:*\n{visit_data.get('company_name', 'Anonymous Entity')}"},
-                    {"type": "mrkdwn", "text": f"*Network Profile:*\n`{visit_data.get('network_type', 'Standard')}`"},
+                    {"type": "mrkdwn", "text": f"*Confidence:*\n`{confidence * 100}%`"},
                     {"type": "mrkdwn", "text": f"*Attribution:*\n{visit_data.get('utm_source', 'Direct')} / {visit_data.get('utm_medium', 'None')}"},
-                    {"type": "mrkdwn", "text": f"*Cluster:*\n{cluster_count} Unique ID(s)"}
+                    {"type": "mrkdwn", "text": f"*Intent Score:*\n{journey.get('intent_score', 'Audit Pending')}"}
                 ]
             },
             {
@@ -53,13 +58,13 @@ async def post_to_visit_channel(visit_data: dict, journey: dict):
                 "elements": [
                     {
                         "type": "button",
-                        "text": {"type": "plain_text", "text": "View Airtable Engine"},
+                        "text": {"type": "plain_text", "text": "Airtable CRM"},
                         "url": airtable_url,
                         "style": "primary"
                     },
                     {
                         "type": "button",
-                        "text": {"type": "plain_text", "text": "Open Clinical Vault"},
+                        "text": {"type": "plain_text", "text": "Notion Vault"},
                         "url": notion_url
                     }
                 ]
@@ -69,7 +74,7 @@ async def post_to_visit_channel(visit_data: dict, journey: dict):
 
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post(settings.SLACK_VISIT_WEBHOOK_URL, json=payload)
+            response = await client.post(settings.SLACK_VISIT_WEBHOOK_URL, json=payload, timeout=10.0)
             response.raise_for_status()
         except Exception as e:
             logger.error(f"Visit Channel Pager Failure: {e}")
@@ -78,18 +83,14 @@ async def post_to_visit_channel(visit_data: dict, journey: dict):
 
 async def post_to_slack(lead_data: dict, journey: dict = None):
     """
-    Standard lead notification for identified conversions.
-    Simplified to prevent Block Kit rendering errors.
+    Standard lead notification for identified conversions (Promotion).
     """
     if not settings.SLACK_WEBHOOK_URL:
         return
 
     journey = journey or {}
-    is_hot = journey.get("is_high_intent", False)
-    status_emoji = "🔴" if is_hot else "🔵"
-    
-    # We point to the Vault for the full DeepSeek summary instead of sending it here
-    notion_url = f"https://www.notion.so/{os.getenv('NOTION_DATABASE_ID')}"
+    status_emoji = "💎" # Premium Lead Icon
+    notion_url = f"https://www.notion.so/{os.getenv('NOTION_DATABASE_ID', '')}"
 
     payload = {
         "blocks": [
@@ -99,19 +100,11 @@ async def post_to_slack(lead_data: dict, journey: dict = None):
             },
             {
                 "type": "section",
-                "text": {
-                    "type": "mrkdwn", 
-                    "text": f"*Audit Status:* Forensic analysis successfully archived to Notion Vault."
-                }
-            },
-            {"type": "divider"},
-            {
-                "type": "section",
                 "fields": [
                     {"type": "mrkdwn", "text": f"*Entity:*\n{lead_data.get('company_name_final', 'Anonymous Entity')}"},
                     {"type": "mrkdwn", "text": f"*Lead:*\n{lead_data.get('name')} ({lead_data.get('email')})"},
-                    {"type": "mrkdwn", "text": f"*Value:*\n{lead_data.get('formatted_price', 'N/A')}"},
-                    {"type": "mrkdwn", "text": f"*Pathway:* `{journey.get('pathway', 'Direct')}`"}
+                    {"type": "mrkdwn", "text": f"*Capture Source:*\n`{lead_data.get('capture_source', 'Verification')}`"},
+                    {"type": "mrkdwn", "text": f"*Pathway:*\n{journey.get('pathway', 'Direct Entry')}"}
                 ]
             },
             {
@@ -130,7 +123,7 @@ async def post_to_slack(lead_data: dict, journey: dict = None):
     
     async with httpx.AsyncClient() as client:
         try:
-            await client.post(settings.SLACK_WEBHOOK_URL, json=payload)
+            await client.post(settings.SLACK_WEBHOOK_URL, json=payload, timeout=10.0)
         except Exception as e:
             logger.error(f"Lead Channel Dispatch Failure: {e}")
 
@@ -138,10 +131,10 @@ async def post_to_slack(lead_data: dict, journey: dict = None):
 
 async def send_mailgun_notification(email: str, name: str, subject: str = "Phase 01: Audit Initiated"):
     """
-    Industrial Email Dispatch via Mailgun API.
+    Industrial Email Dispatch via Mailgun API for Client Onboarding.
     """
     if not settings.MAILGUN_API_KEY or not settings.MAILGUN_DOMAIN:
-        logger.warning("Mailgun credentials missing. Notification skipped.")
+        logger.warning("Mailgun credentials missing. Email skipped.")
         return
 
     async with httpx.AsyncClient() as client:
@@ -153,7 +146,13 @@ async def send_mailgun_notification(email: str, name: str, subject: str = "Phase
                     "from": f"AuraWorks <audit@{settings.MAILGUN_DOMAIN}>",
                     "to": email,
                     "subject": subject,
-                    "html": f"<html><body><h3>System Audit: {name}</h3><p>Your industrial ROI analysis has been queued.</p></body></html>"
+                    "html": f"""
+                    <div style="font-family: sans-serif; color: #18181b;">
+                        <h3>System Audit: {name}</h3>
+                        <p>Your industrial intelligence audit has been queued for processing.</p>
+                        <p style="color: #71717a; font-size: 12px;">Ref: Industrial Forensic Bridge v3.0</p>
+                    </div>
+                    """
                 }
             )
             return response.status_code == 200
