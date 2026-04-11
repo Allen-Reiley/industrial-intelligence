@@ -46,6 +46,7 @@ backend/
   app/
     api/
       v1/
+        __init__.py
         clients.py
         identity.py
         leads.py
@@ -212,52 +213,15 @@ VOID_CONTEXT.md
 <files>
 This section contains the contents of the repository's files.
 
-<file path="backend/app/api/v1/leads.py">
-from fastapi import APIRouter, Depends, Query
-from typing import List, Optional
-from sqlmodel import Session, select
-from app.db import engine
-from app.models.waitlist import WaitlistLead
-from app.models.company import Company
-import logging
+<file path="backend/app/api/v1/__init__.py">
+from fastapi import APIRouter
+from app.api.v1 import leads, track
 
-router = APIRouter()
-logger = logging.getLogger("uvicorn")
+api_router = APIRouter()
 
-@router.get("/")
-async def get_leads(
-    aura_id: Optional[str] = Query(None),
-    limit: int = Query(default=10, le=100)
-):
-    """
-    Retrieves captured leads for the Identity Bridge.
-    If aura_id is provided, it filters for a specific user's identification.
-    """
-    with Session(engine) as session:
-        statement = select(WaitlistLead).order_by(WaitlistLead.created_at.desc())
-        
-        if aura_id:
-            statement = statement.where(WaitlistLead.aura_id == aura_id)
-        
-        statement = statement.limit(limit)
-        results = session.exec(statement).all()
-        
-        # Return as a simple list for the frontend to map over
-        return results
-
-@router.get("/intelligence")
-async def get_lead_intelligence(domain: str):
-    """
-    Provides firmographic context for a specific lead's company.
-    """
-    with Session(engine) as session:
-        statement = select(Company).where(Company.domain == domain)
-        company = session.exec(statement).first()
-        
-        if not company:
-            return {"status": "not_enriched", "reason": "Company not yet verified"}
-            
-        return company
+# Register the logic here
+api_router.include_router(track.router, prefix="/track", tags=["tracking"])
+api_router.include_router(leads.router, prefix="/leads", tags=["leads"])
 </file>
 
 <file path="backend/app/core/security.py">
@@ -265,11 +229,12 @@ async def get_lead_intelligence(domain: str):
 </file>
 
 <file path="backend/app/models/__init__.py">
-# backend/app/models/__init__.py
 from .company import Company
 from .department import Department
 from .visit import Visit
 from .waitlist import WaitlistLead
+
+# Do NOT include router logic here
 </file>
 
 <file path="backend/app/services/notion.py">
@@ -318,6 +283,40 @@ notion_vault = NotionVault()
 
 <file path="backend/app/services/reports.py">
 
+</file>
+
+<file path="backend/app/db.py">
+from sqlmodel import create_engine, SQLModel, Session
+from app.core.config import settings
+
+# 1. Create the Engine
+# 'echo=True' will log every SQL query to your terminal (great for debugging)
+# We disable it for production to keep logs clean.
+engine = create_engine(
+    settings.DATABASE_URL, 
+    echo=False,
+    # pool_pre_ping ensures the connection is still alive before using it
+    pool_pre_ping=True 
+)
+
+def init_db():
+    """
+    Creates all tables defined in your SQLModel models.
+    Run this when the app starts.
+    """
+    # Note: Ensure all models are imported before calling this
+    from app.models.visit import Visit
+    from app.models.client import Client 
+    
+    SQLModel.metadata.create_all(engine)
+
+def get_session():
+    """
+    Dependency generator for FastAPI routes.
+    Ensures the session is closed after the request is finished.
+    """
+    with Session(engine) as session:
+        yield session
 </file>
 
 <file path="frontend/src/app/(pages)/cookies-policy/page.tsx">
@@ -3910,6 +3909,61 @@ def create_client(client_in: ClientCreate, session: Session = Depends(get_sessio
     return db_client
 </file>
 
+<file path="backend/app/api/v1/leads.py">
+from fastapi import APIRouter, Query, HTTPException
+from typing import List, Optional
+from sqlmodel import Session, select
+from app.db import engine
+from app.models.waitlist import WaitlistLead
+from app.models.company import Company
+import logging
+
+router = APIRouter()
+logger = logging.getLogger("uvicorn")
+
+@router.get("/", response_model=List[WaitlistLead])
+async def get_leads(
+    aura_id: Optional[str] = Query(None),
+    limit: int = Query(default=10, le=100)
+):
+    """
+    Retrieves captured leads. Returns an empty list if no leads are found,
+    preventing 422 errors on the frontend.
+    """
+    try:
+        with Session(engine) as session:
+            statement = select(WaitlistLead).order_by(WaitlistLead.created_at.desc())
+            
+            if aura_id:
+                statement = statement.where(WaitlistLead.aura_id == aura_id)
+            
+            statement = statement.limit(limit)
+            results = session.exec(statement).all()
+            
+            return results
+    except Exception as e:
+        logger.error(f"🚨 Lead Retrieval Failure: {e}")
+        raise HTTPException(status_code=500, detail="Internal Ledger Error")
+
+@router.get("/intelligence")
+async def get_lead_intelligence(domain: str):
+    """
+    Provides firmographic context for a specific lead's company.
+    """
+    try:
+        with Session(engine) as session:
+            statement = select(Company).where(Company.domain == domain)
+            company = session.exec(statement).first()
+            
+            if not company:
+                return {"status": "not_enriched", "reason": "Company not yet verified"}
+                
+            return company
+    except Exception as e:
+        logger.error(f"🚨 Intelligence Retrieval Failure: {e}")
+        raise HTTPException(status_code=500, detail="Intelligence Engine Offline")
+</file>
+
 <file path="backend/app/core/scheduler.py">
 from apscheduler.schedulers.background import BackgroundScheduler
 from sqlmodel import Session, select
@@ -4254,40 +4308,6 @@ def send_welcome_email(to_email: str, first_name: str):
         logger.info(f"📧 Email sent. ID: {r.get('id')}")
     except Exception as e:
         logger.error(f"❌ Resend Error: {str(e)}")
-</file>
-
-<file path="backend/app/db.py">
-from sqlmodel import create_engine, SQLModel, Session
-from app.core.config import settings
-
-# 1. Create the Engine
-# 'echo=True' will log every SQL query to your terminal (great for debugging)
-# We disable it for production to keep logs clean.
-engine = create_engine(
-    settings.DATABASE_URL, 
-    echo=False,
-    # pool_pre_ping ensures the connection is still alive before using it
-    pool_pre_ping=True 
-)
-
-def init_db():
-    """
-    Creates all tables defined in your SQLModel models.
-    Run this when the app starts.
-    """
-    # Note: Ensure all models are imported before calling this
-    from app.models.visit import Visit
-    from app.models.client import Client 
-    
-    SQLModel.metadata.create_all(engine)
-
-def get_session():
-    """
-    Dependency generator for FastAPI routes.
-    Ensures the session is closed after the request is finished.
-    """
-    with Session(engine) as session:
-        yield session
 </file>
 
 <file path="frontend/src/app/(pages)/book-call/page.tsx">
@@ -5615,6 +5635,116 @@ const nextConfig: NextConfig = {
 export default nextConfig;
 </file>
 
+<file path="README.md">
+# 🏭 Industrial Intelligence Engine (Master)
+
+⚠️ Proprietary Software Notice: This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited.
+
+The **Industrial Intelligence Engine** is a specialized B2B intent-tracking SaaS. It deanonymizes website traffic for industrial firms in the East Rand (and beyond), turning anonymous IP addresses into actionable sales leads.
+
+
+## 📂 Project Structure
+
+```text
+industrial-intelligence/
+├── backend/       # FastAPI + SQLModel + PostgreSQL (The Core)
+├── frontend/      # Next.js 16 + Tailwind (The Interface & Lead Funnel)
+├── tracker/       # Vanilla JS (The Edge Script)
+└── infra/         # Docker, Nginx, or CI/CD configs
+
+```
+
+---
+
+## ⚡ Quick Start (Development Mode)
+
+### 1. Clone & Environment
+
+Ensure you are using **WSL 2** and have **Docker Desktop** running.
+
+```bash
+git clone https://github.com/Allen-Reiley/industrial-intelligence.git
+cd industrial-intelligence
+
+```
+
+### 2. Infrastructure (Postgres)
+
+Spin up the local database using Docker:
+
+```bash
+docker compose up -d
+
+```
+
+### 3. Backend Setup (FastAPI)
+
+Using `uv` for high-speed dependency management:
+
+```bash
+cd backend
+uv venv
+source .venv/bin/activate
+uvicorn main:app --reload
+
+```
+
+### 4. Frontend Setup (Next.js)
+
+```bash
+cd frontend
+npm install
+npm run dev
+
+```
+
+---
+
+## 🛰️ How it Works (The Data Loop)
+
+1. **Capture:** The `tracker.min.js` fires on a client's site.
+2. **Identify:** The Backend receives the IP, queries **IPinfo**, and filters out residential ISPs.
+3. **Store:** Valid B2B visits are saved to **PostgreSQL**.
+4. **Report:** The Client Dashboard visualizes the traffic, and a weekly PDF is generated for the client's sales team.
+
+---
+
+## 🛠️ Tech Stack Summary
+
+* **Backend:** FastAPI, Python 3.11, SQLModel, Uvicorn.
+* **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS, Shadcn/UI.
+* **Database:** PostgreSQL (Neon.tech for Production).
+* **Deployment:** Vercel (Frontend) + Render (Backend) + Cloudflare (CDN).
+
+---
+
+## 🛡️ Business Logic & Compliance
+
+* **Targeting:** Specifically engineered for the Industrial/Manufacturing sector.
+* **Pricing:** R10,000/month managed service.
+* **Privacy:** Designed for POPIA compliance—identifying Juristic Persons (Companies), not natural individuals.
+
+---
+
+## 📅 Roadmap (Phase 1)
+
+* [x] Technical Specification & Architecture.
+* [x] WSL 2 & Docker Environment Setup.
+* [ ] Database Schema Design (SQLModel).
+* [ ] API Ingestion Endpoints (`/entry`, `/exit`).
+* [ ] Lead Qualification Funnel build.
+
+---
+
+## ⚖️ License & Proprietary Notice
+
+**Copyright (c) 2026 AuraWorks Pty (ltd). All Rights Reserved.**
+
+This tracker script is proprietary software. Unauthorized copying, modification, or redistribution is strictly prohibited. Use is granted only to active subscribers of the Industrial Intelligence Engine managed service.
+
+---
+</file>
+
 <file path="REMEMBER.md">
 # MEMORY.md | AuraWorks 2.2.0: Industrial Intelligence Engine
 
@@ -6383,116 +6513,6 @@ export default function Home() {
     if (document.readyState === 'complete') startAura();
     else window.addEventListener('load', startAura);
 })();
-</file>
-
-<file path="README.md">
-# 🏭 Industrial Intelligence Engine (Master)
-
-⚠️ Proprietary Software Notice: This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited.
-
-The **Industrial Intelligence Engine** is a specialized B2B intent-tracking SaaS. It deanonymizes website traffic for industrial firms in the East Rand (and beyond), turning anonymous IP addresses into actionable sales leads.
-
-
-## 📂 Project Structure
-
-```text
-industrial-intelligence/
-├── backend/       # FastAPI + SQLModel + PostgreSQL (The Core)
-├── frontend/      # Next.js 16 + Tailwind (The Interface & Lead Funnel)
-├── tracker/       # Vanilla JS (The Edge Script)
-└── infra/         # Docker, Nginx, or CI/CD configs
-
-```
-
----
-
-## ⚡ Quick Start (Development Mode)
-
-### 1. Clone & Environment
-
-Ensure you are using **WSL 2** and have **Docker Desktop** running.
-
-```bash
-git clone https://github.com/Allen-Reiley/industrial-intelligence.git
-cd industrial-intelligence
-
-```
-
-### 2. Infrastructure (Postgres)
-
-Spin up the local database using Docker:
-
-```bash
-docker compose up -d
-
-```
-
-### 3. Backend Setup (FastAPI)
-
-Using `uv` for high-speed dependency management:
-
-```bash
-cd backend
-uv venv
-source .venv/bin/activate
-uvicorn main:app --reload
-
-```
-
-### 4. Frontend Setup (Next.js)
-
-```bash
-cd frontend
-npm install
-npm run dev
-
-```
-
----
-
-## 🛰️ How it Works (The Data Loop)
-
-1. **Capture:** The `tracker.min.js` fires on a client's site.
-2. **Identify:** The Backend receives the IP, queries **IPinfo**, and filters out residential ISPs.
-3. **Store:** Valid B2B visits are saved to **PostgreSQL**.
-4. **Report:** The Client Dashboard visualizes the traffic, and a weekly PDF is generated for the client's sales team.
-
----
-
-## 🛠️ Tech Stack Summary
-
-* **Backend:** FastAPI, Python 3.11, SQLModel, Uvicorn.
-* **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS, Shadcn/UI.
-* **Database:** PostgreSQL (Neon.tech for Production).
-* **Deployment:** Vercel (Frontend) + Render (Backend) + Cloudflare (CDN).
-
----
-
-## 🛡️ Business Logic & Compliance
-
-* **Targeting:** Specifically engineered for the Industrial/Manufacturing sector.
-* **Pricing:** R10,000/month managed service.
-* **Privacy:** Designed for POPIA compliance—identifying Juristic Persons (Companies), not natural individuals.
-
----
-
-## 📅 Roadmap (Phase 1)
-
-* [x] Technical Specification & Architecture.
-* [x] WSL 2 & Docker Environment Setup.
-* [ ] Database Schema Design (SQLModel).
-* [ ] API Ingestion Endpoints (`/entry`, `/exit`).
-* [ ] Lead Qualification Funnel build.
-
----
-
-## ⚖️ License & Proprietary Notice
-
-**Copyright (c) 2026 AuraWorks Pty (ltd). All Rights Reserved.**
-
-This tracker script is proprietary software. Unauthorized copying, modification, or redistribution is strictly prohibited. Use is granted only to active subscribers of the Industrial Intelligence Engine managed service.
-
----
 </file>
 
 <file path="backend/app/services/notifications.py">
@@ -8233,6 +8253,130 @@ async def join_waitlist(payload: dict, request: Request, background_tasks: Backg
             raise HTTPException(status_code=500, detail="Synchronization delay.")
 </file>
 
+<file path="backend/app/main.py">
+import asyncio
+import logging
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Request, HTTPException, Depends, Header
+from fastapi.middleware.cors import CORSMiddleware
+from sqlmodel import Session, select
+from datetime import datetime, timezone
+
+from app.core.config import settings
+from app.db import init_db, engine
+from app.api.v1 import track, clients, identity, waitlist
+from app.models.visit import Visit
+from app.models.company import Company 
+from app.tasks.janitor import cleanup_unverified_visits
+
+# Setup logging - Industrial Clinical Style
+logger = logging.getLogger("uvicorn")
+
+# --- SECURITY: Admin Access Guard ---
+def verify_admin_token(x_aura_token: str = Header(...)):
+    """
+    Hardens debug routes. Rejects any request missing the correct ADMIN_API_KEY.
+    """
+    if x_aura_token != settings.ADMIN_API_KEY:
+        logger.warning(f"🚨 UNAUTHORIZED ACCESS ATTEMPT: {datetime.now(timezone.utc)}")
+        raise HTTPException(status_code=403, detail="Unauthorized Forensic Access")
+
+async def run_janitor_loop():
+    """
+    Background worker that executes the 48-hour sweep every 6 hours.
+    """
+    while True:
+        try:
+            await cleanup_unverified_visits()
+            # Sleep for 6 hours between sweeps
+            await asyncio.sleep(21600) 
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            logger.error(f"Janitor Loop Error: {e}")
+            await asyncio.sleep(60)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    The AuraWorks OS Lifecycle Manager.
+    """
+    logger.info("🚀 AuraWorks OS: Initializing Database Ledger...")
+    init_db()
+    
+    # Activate the Janitor as a background coroutine
+    janitor_task = asyncio.create_task(run_janitor_loop())
+    
+    yield
+    
+    logger.info("🛑 AuraWorks OS: Orderly shutdown initiated...")
+    janitor_task.cancel()
+    try:
+        await janitor_task
+    except asyncio.CancelledError:
+        pass
+
+app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
+
+# --- CORS CONFIGURATION ---
+origins = [ 
+    "https://industrial-intelligence-xi.vercel.app", 
+    "http://localhost:3000",
+    "https://auraworks.co.za",
+    "https://www.auraworks.co.za",
+    "https://cdn.auraworks.co.za",
+    "https://dynamic-flow-production-a5d6.up.railway.app"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# --- ROUTE REGISTRATION ---
+app.include_router(track.router, prefix=f"{settings.API_V1_STR}/track", tags=["tracking"])
+app.include_router(clients.router, prefix=f"{settings.API_V1_STR}/clients", tags=["clients"])
+app.include_router(identity.router, prefix=f"{settings.API_V1_STR}/identity", tags=["identity"])
+app.include_router(waitlist.router, prefix=f"{settings.API_V1_STR}/waitlist", tags=["waitlist"])
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy", "timestamp": datetime.now(timezone.utc)}
+
+# --- INDUSTRIAL DASHBOARD ENDPOINTS (Hardened) ---
+
+@app.get(
+    f"{settings.API_V1_STR}/leads", 
+    dependencies=[Depends(verify_admin_token)],
+    tags=["admin"]
+)
+async def get_leads():
+    """
+    Access point for verified leads. Requires ADMIN_API_KEY.
+    """
+    with Session(engine) as session:
+        statement = select(Visit).where(Visit.verification_status == "verified").order_by(Visit.created_at.desc())
+        results = session.exec(statement).all()
+        return results
+
+@app.get(
+    f"{settings.API_V1_STR}/debug/entities", 
+    dependencies=[Depends(verify_admin_token)],
+    tags=["admin"]
+)
+async def get_entities():
+    """
+    Direct access to the Juristic Entity ledger. Requires ADMIN_API_KEY.
+    """
+    with Session(engine) as session:
+        statement = select(Company).order_by(Company.created_at.desc())
+        results = session.exec(statement).all()
+        return results
+</file>
+
 <file path="backend/app/api/v1/track.py">
 from fastapi import APIRouter, BackgroundTasks, Request, Header, HTTPException
 from typing import Optional, Dict, Any, List
@@ -8428,130 +8572,6 @@ async def track_exit(payload: PageViewCreate):
             session.commit()
             return {"status": "recorded"}
         return {"status": "pending"}
-</file>
-
-<file path="backend/app/main.py">
-import asyncio
-import logging
-from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, HTTPException, Depends, Header
-from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import Session, select
-from datetime import datetime, timezone
-
-from app.core.config import settings
-from app.db import init_db, engine
-from app.api.v1 import track, clients, identity, waitlist
-from app.models.visit import Visit
-from app.models.company import Company 
-from app.tasks.janitor import cleanup_unverified_visits
-
-# Setup logging - Industrial Clinical Style
-logger = logging.getLogger("uvicorn")
-
-# --- SECURITY: Admin Access Guard ---
-def verify_admin_token(x_aura_token: str = Header(...)):
-    """
-    Hardens debug routes. Rejects any request missing the correct ADMIN_API_KEY.
-    """
-    if x_aura_token != settings.ADMIN_API_KEY:
-        logger.warning(f"🚨 UNAUTHORIZED ACCESS ATTEMPT: {datetime.now(timezone.utc)}")
-        raise HTTPException(status_code=403, detail="Unauthorized Forensic Access")
-
-async def run_janitor_loop():
-    """
-    Background worker that executes the 48-hour sweep every 6 hours.
-    """
-    while True:
-        try:
-            await cleanup_unverified_visits()
-            # Sleep for 6 hours between sweeps
-            await asyncio.sleep(21600) 
-        except asyncio.CancelledError:
-            break
-        except Exception as e:
-            logger.error(f"Janitor Loop Error: {e}")
-            await asyncio.sleep(60)
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """
-    The AuraWorks OS Lifecycle Manager.
-    """
-    logger.info("🚀 AuraWorks OS: Initializing Database Ledger...")
-    init_db()
-    
-    # Activate the Janitor as a background coroutine
-    janitor_task = asyncio.create_task(run_janitor_loop())
-    
-    yield
-    
-    logger.info("🛑 AuraWorks OS: Orderly shutdown initiated...")
-    janitor_task.cancel()
-    try:
-        await janitor_task
-    except asyncio.CancelledError:
-        pass
-
-app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
-
-# --- CORS CONFIGURATION ---
-origins = [ 
-    "https://industrial-intelligence-xi.vercel.app", 
-    "http://localhost:3000",
-    "https://auraworks.co.za",
-    "https://www.auraworks.co.za",
-    "https://cdn.auraworks.co.za",
-    "https://dynamic-flow-production-a5d6.up.railway.app"
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# --- ROUTE REGISTRATION ---
-app.include_router(track.router, prefix=f"{settings.API_V1_STR}/track", tags=["tracking"])
-app.include_router(clients.router, prefix=f"{settings.API_V1_STR}/clients", tags=["clients"])
-app.include_router(identity.router, prefix=f"{settings.API_V1_STR}/identity", tags=["identity"])
-app.include_router(waitlist.router, prefix=f"{settings.API_V1_STR}/waitlist", tags=["waitlist"])
-
-@app.get("/health")
-def health_check():
-    return {"status": "healthy", "timestamp": datetime.now(timezone.utc)}
-
-# --- INDUSTRIAL DASHBOARD ENDPOINTS (Hardened) ---
-
-@app.get(
-    f"{settings.API_V1_STR}/leads", 
-    dependencies=[Depends(verify_admin_token)],
-    tags=["admin"]
-)
-async def get_leads():
-    """
-    Access point for verified leads. Requires ADMIN_API_KEY.
-    """
-    with Session(engine) as session:
-        statement = select(Visit).where(Visit.verification_status == "verified").order_by(Visit.created_at.desc())
-        results = session.exec(statement).all()
-        return results
-
-@app.get(
-    f"{settings.API_V1_STR}/debug/entities", 
-    dependencies=[Depends(verify_admin_token)],
-    tags=["admin"]
-)
-async def get_entities():
-    """
-    Direct access to the Juristic Entity ledger. Requires ADMIN_API_KEY.
-    """
-    with Session(engine) as session:
-        statement = select(Company).order_by(Company.created_at.desc())
-        results = session.exec(statement).all()
-        return results
 </file>
 
 </files>
