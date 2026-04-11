@@ -56,6 +56,7 @@ backend/
       scheduler.py
       security.py
     models/
+      __init__.py
       client.py
       company.py
       department.py
@@ -211,6 +212,14 @@ VOID_CONTEXT.md
 <files>
 This section contains the contents of the repository's files.
 
+<file path="backend/app/models/__init__.py">
+# backend/app/models/__init__.py
+from .company import Company
+from .department import Department
+from .visit import Visit
+from .waitlist import WaitlistLead
+</file>
+
 <file path="backend/app/api/v1/leads.py">
 
 </file>
@@ -220,12 +229,19 @@ This section contains the contents of the repository's files.
 </file>
 
 <file path="backend/app/models/department.py">
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
+
+# We use TYPE_CHECKING to prevent circular imports at runtime
+# while still allowing type checkers (like Mypy/Pyright) to see the Company class.
+if TYPE_CHECKING:
+    from .company import Company
 
 class Department(SQLModel, table=True):
     """Public corporate contact points per department (POPIA Exempt)"""
     id: Optional[int] = Field(default=None, primary_key=True)
+    
+    # Foreign key to the company table
     company_id: int = Field(foreign_key="company.id")
     
     name: str = Field(index=True) # e.g., "Procurement", "Engineering"
@@ -233,6 +249,9 @@ class Department(SQLModel, table=True):
     phone: Optional[str] = None   # Department direct line
     head_of_dept_linkedin: Optional[str] = None # URL to public profile
     
+    # Relationship definition
+    # Using the string "Company" is critical here to avoid the 
+    # 'failed to locate a name' error during mapper initialization.
     company: "Company" = Relationship(back_populates="departments")
 </file>
 
@@ -4193,67 +4212,6 @@ def send_welcome_email(to_email: str, first_name: str):
         logger.error(f"❌ Resend Error: {str(e)}")
 </file>
 
-<file path="backend/app/tasks/janitor.py">
-import logging
-from datetime import datetime, timedelta, timezone
-from sqlmodel import Session, select
-from app.db import engine
-from app.models.visit import Visit
-from app.models.waitlist import WaitlistLead
-
-logger = logging.getLogger("uvicorn")
-
-async def cleanup_unverified_visits():
-    """
-    The Industrial Janitor: Purges residential/bot noise while 
-    protecting high-intent leads and the 'Ghost Bridge'.
-    """
-    logger.info("🧹 AuraWorks OS: Activating 48-hour Janitor Sweep...")
-    
-    # 1. Define the 'Noise' Threshold (48 hours)
-    # We extended this from 24h to 48h to allow for 'Late Promotion'
-    threshold = datetime.now(timezone.utc) - timedelta(hours=48)
-    
-    with Session(engine) as session:
-        try:
-            # 2. Identify 'Verifying' records older than the threshold
-            statement = select(Visit).where(
-                Visit.verification_status == "verifying",
-                Visit.created_at < threshold
-            )
-            candidates = session.exec(statement).all()
-            
-            if not candidates:
-                logger.info("✅ Janitor: Forensic vault is already optimized.")
-                return
-
-            purged_count = 0
-            for visit in candidates:
-                # 3. SAFETY CHECK: The 'Waitlist Shield'
-                # If an aura_id has a matching WaitlistLead, we NEVER delete it,
-                # even if the individual visit status is still 'verifying'.
-                has_lead = session.exec(
-                    select(WaitlistLead).where(WaitlistLead.aura_id == visit.aura_id)
-                ).first()
-                
-                if has_lead:
-                    # Upgrade the visit instead of deleting
-                    visit.verification_status = "verified"
-                    session.add(visit)
-                    continue
-
-                # 4. Final Purge for actual noise (Residential/Bot traffic)
-                session.delete(visit)
-                purged_count += 1
-
-            session.commit()
-            logger.info(f"🗑️ Janitor: Purged {purged_count} noise signatures. Vault optimized.")
-
-        except Exception as e:
-            session.rollback()
-            logger.error(f"🚨 Janitor Failure: {e}")
-</file>
-
 <file path="backend/app/db.py">
 from sqlmodel import create_engine, SQLModel, Session
 from app.core.config import settings
@@ -4363,158 +4321,6 @@ export default function NotFound() {
         </main>
     )
 }
-</file>
-
-<file path="frontend/src/components/consent-banner/lead-enrichment-slide.tsx">
-'use client';
-
-import React, { useState } from 'react';
-import { ArrowRight, X } from 'lucide-react';
-
-// 1. Fixed Interface: Explicitly define onComplete to satisfy TS(2322)
-interface LeadEnrichmentProps {
-  auraId: string | null;
-  onComplete: () => void; // Critical addition
-  onDismiss: () => void;
-}
-
-const LeadEnrichmentSlide = ({ auraId, onComplete, onDismiss }: LeadEnrichmentProps) => {
-  const [step, setStep] = useState(1);
-  const [email, setEmail] = useState('');
-  const [position, setPosition] = useState({ company: '', department: '', role: '' });
-
-  const handleEmailNext = async () => {
-    if (!email) return;
-    
-    // Immediate storage of email on 'Next'
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/waitlist/join`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          aura_id: auraId,
-          partial_capture: true 
-        })
-      });
-      setStep(2);
-    } catch (err) {
-      console.error("Partial capture failed", err);
-      setStep(2); 
-    }
-  };
-
-  const handleFinalSubmit = async () => {
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/waitlist/join`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          aura_id: auraId,
-          company_name_raw: position.company, // Aligned with backend column name from logs
-          industry: position.department,
-          avg_price: position.role, 
-          full_capture: true
-        })
-      });
-      onComplete(); // Successfully close the bridge
-    } catch (err) {
-      onComplete();
-    }
-  };
-
-  return (
-    <div className="bg-[#0a0a0a]/95 backdrop-blur-3xl border border-slate-800/50 p-8 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] w-full max-w-[400px] animate-in slide-in-from-right-10 duration-500">
-      <div className="flex justify-between items-start mb-6">
-        <div className="flex items-center space-x-3">
-          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-          <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-500">Intelligence Phase 02</span>
-        </div>
-        <button onClick={onDismiss} className="text-slate-600 hover:text-slate-300 transition-colors">
-          <X size={16}/>
-        </button>
-      </div>
-
-      {step === 1 ? (
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <h3 className="text-slate-100 text-lg font-semibold italic tracking-tight">Refine Signal Quality</h3>
-            <p className="text-slate-400 text-[13px] leading-relaxed font-light">
-              Provide your work email to receive clinical B2B outreach and facility-specific ROI reports.
-            </p>
-          </div>
-          
-          <input 
-            type="email" 
-            placeholder="Work Email" 
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-transparent border-b border-slate-800 py-3 text-slate-100 text-sm focus:border-emerald-500 transition-colors outline-none"
-          />
-
-          <div className="flex items-center gap-4 pt-2">
-            <button 
-              onClick={handleEmailNext} 
-              className="flex-1 py-3 bg-slate-50 hover:bg-white text-black text-[10px] font-black uppercase tracking-wider rounded flex items-center justify-center gap-2 transition-all active:scale-95"
-            >
-              Next Step <ArrowRight size={14} />
-            </button>
-            <button onClick={onDismiss} className="text-slate-500 text-[10px] font-bold uppercase hover:text-slate-300">
-              No Thanks
-            </button>
-          </div>
-          
-          <div className="pt-4 border-t border-slate-900">
-             <p className="text-[9px] text-slate-600 leading-tight">
-              By proceeding, you authorize industrial synchronization. View our <a href="/legal/privacy" className="underline hover:text-slate-400">Privacy Policy</a>.
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-6 animate-in fade-in slide-in-from-right-5">
-          <div className="space-y-2">
-            <h3 className="text-slate-100 text-lg font-semibold tracking-tight">Organizational Role</h3>
-            <p className="text-slate-400 text-[13px] font-light leading-relaxed">Categorize your professional influence.</p>
-          </div>
-
-          <div className="space-y-4">
-            <input 
-              type="text" 
-              placeholder="Company" 
-              value={position.company}
-              onChange={(e) => setPosition({...position, company: e.target.value})}
-              className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none"
-            />
-            <input 
-              type="text" 
-              placeholder="Department" 
-              value={position.department}
-              onChange={(e) => setPosition({...position, department: e.target.value})}
-              className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none"
-            />
-            <input 
-              type="text" 
-              placeholder="Position" 
-              value={position.role}
-              onChange={(e) => setPosition({...position, role: e.target.value})}
-              className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none"
-            />
-          </div>
-
-          <button 
-            onClick={handleFinalSubmit} 
-            className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded transition-all shadow-lg"
-          >
-            Complete Industrial Sync
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default LeadEnrichmentSlide;
 </file>
 
 <file path="frontend/src/components/sections/features/features-hero.tsx">
@@ -4720,6 +4526,7 @@ from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
 import sqlalchemy as sa
 
 # Use TYPE_CHECKING to avoid circular imports between models
+# These are only used by type checkers (IDE/Mypy) and ignored at runtime
 if TYPE_CHECKING:
     from app.models.visit import Visit
     from app.models.department import Department
@@ -4739,22 +4546,22 @@ class Company(SQLModel, table=True):
     is_b2b: bool = Field(default=True, index=True)
     
     # --- QUARANTINE & AUDIT (Rigid Logic v3.0) ---
-    # Once True, this entity and its visits are immune to the 24hr Janitor purge.
     is_verified: bool = Field(default=False, index=True)
     
     # --- AGGREGATED INTELLIGENCE ---
     total_visits: int = Field(default=1)
-    unique_visitors_count: int = Field(default=1) # Distinct count of unique aura_ids
+    unique_visitors_count: int = Field(default=1)
     
     # DeepSeek Generated "Corporate Intent" Summary
     intent_summary: Optional[str] = None 
     
     # --- RELATIONS ---
-    # Unified naming to match back_populates in WaitlistLead and Visit
+    # CRITICAL: Using string literals ("Visit", "Department", "WaitlistLead") 
+    # allows SQLAlchemy to resolve these names AFTER all models are loaded.
     visits: List["Visit"] = Relationship(back_populates="company")
     departments: List["Department"] = Relationship(back_populates="company")
     
-    # UPDATED: Renamed from 'visitors' to 'leads' to fix the 500 Promotion Failure
+    # Renamed to 'leads' to match the back_populates in WaitlistLead
     leads: List["WaitlistLead"] = Relationship(back_populates="company")
 
     # --- TIMEKEEPING ---
@@ -4764,6 +4571,67 @@ class Company(SQLModel, table=True):
     updated_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), onupdate=sa.func.now())
     )
+</file>
+
+<file path="backend/app/tasks/janitor.py">
+import logging
+from datetime import datetime, timedelta, timezone
+from sqlmodel import Session, select
+from app.db import engine
+from app.models.visit import Visit
+from app.models.waitlist import WaitlistLead
+
+logger = logging.getLogger("uvicorn")
+
+async def cleanup_unverified_visits():
+    """
+    The Industrial Janitor: Purges residential/bot noise while 
+    protecting high-intent leads and the 'Ghost Bridge'.
+    """
+    logger.info("🧹 AuraWorks OS: Activating 48-hour Janitor Sweep...")
+    
+    # 1. Define the 'Noise' Threshold (48 hours)
+    # We extended this from 24h to 48h to allow for 'Late Promotion'
+    threshold = datetime.now(timezone.utc) - timedelta(hours=48)
+    
+    with Session(engine) as session:
+        try:
+            # 2. Identify 'Verifying' records older than the threshold
+            statement = select(Visit).where(
+                Visit.verification_status == "verifying",
+                Visit.created_at < threshold
+            )
+            candidates = session.exec(statement).all()
+            
+            if not candidates:
+                logger.info("✅ Janitor: Forensic vault is already optimized.")
+                return
+
+            purged_count = 0
+            for visit in candidates:
+                # 3. SAFETY CHECK: The 'Waitlist Shield'
+                # If an aura_id has a matching WaitlistLead, we NEVER delete it,
+                # even if the individual visit status is still 'verifying'.
+                has_lead = session.exec(
+                    select(WaitlistLead).where(WaitlistLead.aura_id == visit.aura_id)
+                ).first()
+                
+                if has_lead:
+                    # Upgrade the visit instead of deleting
+                    visit.verification_status = "verified"
+                    session.add(visit)
+                    continue
+
+                # 4. Final Purge for actual noise (Residential/Bot traffic)
+                session.delete(visit)
+                purged_count += 1
+
+            session.commit()
+            logger.info(f"🗑️ Janitor: Purged {purged_count} noise signatures. Vault optimized.")
+
+        except Exception as e:
+            session.rollback()
+            logger.error(f"🚨 Janitor Failure: {e}")
 </file>
 
 <file path="frontend/src/app/(pages)/pricing/page.tsx">
@@ -5130,6 +4998,158 @@ const AuraConsentBanner = () => {
 };
 
 export default AuraConsentBanner;
+</file>
+
+<file path="frontend/src/components/consent-banner/lead-enrichment-slide.tsx">
+'use client';
+
+import React, { useState } from 'react';
+import { ArrowRight, X } from 'lucide-react';
+
+// 1. Fixed Interface: Explicitly define onComplete to satisfy TS(2322)
+interface LeadEnrichmentProps {
+  auraId: string | null;
+  onComplete: () => void; // Critical addition
+  onDismiss: () => void;
+}
+
+const LeadEnrichmentSlide = ({ auraId, onComplete, onDismiss }: LeadEnrichmentProps) => {
+  const [step, setStep] = useState(1);
+  const [email, setEmail] = useState('');
+  const [position, setPosition] = useState({ company: '', department: '', role: '' });
+
+  const handleEmailNext = async () => {
+    if (!email) return;
+    
+    // Immediate storage of email on 'Next'
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/waitlist/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          aura_id: auraId,
+          partial_capture: true 
+        })
+      });
+      setStep(2);
+    } catch (err) {
+      console.error("Partial capture failed", err);
+      setStep(2); 
+    }
+  };
+
+  const handleFinalSubmit = async () => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/waitlist/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          aura_id: auraId,
+          company_name_raw: position.company, // Aligned with backend column name from logs
+          industry: position.department,
+          avg_price: position.role, 
+          full_capture: true
+        })
+      });
+      onComplete(); // Successfully close the bridge
+    } catch (err) {
+      onComplete();
+    }
+  };
+
+  return (
+    <div className="bg-[#0a0a0a]/95 backdrop-blur-3xl border border-slate-800/50 p-8 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] w-full max-w-[400px] animate-in slide-in-from-right-10 duration-500">
+      <div className="flex justify-between items-start mb-6">
+        <div className="flex items-center space-x-3">
+          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+          <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-500">Intelligence Phase 02</span>
+        </div>
+        <button onClick={onDismiss} className="text-slate-600 hover:text-slate-300 transition-colors">
+          <X size={16}/>
+        </button>
+      </div>
+
+      {step === 1 ? (
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <h3 className="text-slate-100 text-lg font-semibold italic tracking-tight">Refine Signal Quality</h3>
+            <p className="text-slate-400 text-[13px] leading-relaxed font-light">
+              Provide your work email to receive clinical B2B outreach and facility-specific ROI reports.
+            </p>
+          </div>
+          
+          <input 
+            type="email" 
+            placeholder="Work Email" 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full bg-transparent border-b border-slate-800 py-3 text-slate-100 text-sm focus:border-emerald-500 transition-colors outline-none"
+          />
+
+          <div className="flex items-center gap-4 pt-2">
+            <button 
+              onClick={handleEmailNext} 
+              className="flex-1 py-3 bg-slate-50 hover:bg-white text-black text-[10px] font-black uppercase tracking-wider rounded flex items-center justify-center gap-2 transition-all active:scale-95"
+            >
+              Next Step <ArrowRight size={14} />
+            </button>
+            <button onClick={onDismiss} className="text-slate-500 text-[10px] font-bold uppercase hover:text-slate-300">
+              No Thanks
+            </button>
+          </div>
+          
+          <div className="pt-4 border-t border-slate-900">
+             <p className="text-[9px] text-slate-600 leading-tight">
+              By proceeding, you authorize industrial synchronization. View our <a href="/legal/privacy" className="underline hover:text-slate-400">Privacy Policy</a>.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-6 animate-in fade-in slide-in-from-right-5">
+          <div className="space-y-2">
+            <h3 className="text-slate-100 text-lg font-semibold tracking-tight">Organizational Role</h3>
+            <p className="text-slate-400 text-[13px] font-light leading-relaxed">Categorize your professional influence.</p>
+          </div>
+
+          <div className="space-y-4">
+            <input 
+              type="text" 
+              placeholder="Company" 
+              value={position.company}
+              onChange={(e) => setPosition({...position, company: e.target.value})}
+              className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none"
+            />
+            <input 
+              type="text" 
+              placeholder="Department" 
+              value={position.department}
+              onChange={(e) => setPosition({...position, department: e.target.value})}
+              className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none"
+            />
+            <input 
+              type="text" 
+              placeholder="Position" 
+              value={position.role}
+              onChange={(e) => setPosition({...position, role: e.target.value})}
+              className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none"
+            />
+          </div>
+
+          <button 
+            onClick={handleFinalSubmit} 
+            className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded transition-all shadow-lg"
+          >
+            Complete Industrial Sync
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default LeadEnrichmentSlide;
 </file>
 
 <file path="frontend/src/components/content/content-1.tsx">
@@ -8054,129 +8074,6 @@ export default function GetStartedPage() {
 }
 </file>
 
-<file path="backend/app/main.py">
-import asyncio
-import logging
-from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, HTTPException, Depends, Header
-from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import Session, select
-from datetime import datetime, timezone
-
-from app.core.config import settings
-from app.db import init_db, engine
-from app.api.v1 import track, clients, identity, waitlist
-from app.models.visit import Visit
-from app.models.company import Company 
-from app.tasks.janitor import cleanup_unverified_visits
-
-# Setup logging - Industrial Clinical Style
-logger = logging.getLogger("uvicorn")
-
-# --- SECURITY: Admin Access Guard ---
-def verify_admin_token(x_aura_token: str = Header(...)):
-    """
-    Hardens debug routes. Rejects any request missing the correct ADMIN_API_KEY.
-    """
-    if x_aura_token != settings.ADMIN_API_KEY:
-        logger.warning(f"🚨 UNAUTHORIZED ACCESS ATTEMPT: {datetime.now(timezone.utc)}")
-        raise HTTPException(status_code=403, detail="Unauthorized Forensic Access")
-
-async def run_janitor_loop():
-    """
-    Background worker that executes the 48-hour sweep every 6 hours.
-    """
-    while True:
-        try:
-            await cleanup_unverified_visits()
-            # Sleep for 6 hours between sweeps
-            await asyncio.sleep(21600) 
-        except asyncio.CancelledError:
-            break
-        except Exception as e:
-            logger.error(f"Janitor Loop Error: {e}")
-            await asyncio.sleep(60)
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """
-    The AuraWorks OS Lifecycle Manager.
-    """
-    logger.info("🚀 AuraWorks OS: Initializing Database Ledger...")
-    init_db()
-    
-    # Activate the Janitor as a background coroutine
-    janitor_task = asyncio.create_task(run_janitor_loop())
-    
-    yield
-    
-    logger.info("🛑 AuraWorks OS: Orderly shutdown initiated...")
-    janitor_task.cancel()
-    try:
-        await janitor_task
-    except asyncio.CancelledError:
-        pass
-
-app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
-
-# --- CORS CONFIGURATION ---
-origins = [ 
-    "https://industrial-intelligence-xi.vercel.app", 
-    "http://localhost:3000",
-    "https://auraworks.co.za",
-    "https://www.auraworks.co.za",
-    "https://cdn.auraworks.co.za"
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# --- ROUTE REGISTRATION ---
-app.include_router(track.router, prefix=f"{settings.API_V1_STR}/track", tags=["tracking"])
-app.include_router(clients.router, prefix=f"{settings.API_V1_STR}/clients", tags=["clients"])
-app.include_router(identity.router, prefix=f"{settings.API_V1_STR}/identity", tags=["identity"])
-app.include_router(waitlist.router, prefix=f"{settings.API_V1_STR}/waitlist", tags=["waitlist"])
-
-@app.get("/health")
-def health_check():
-    return {"status": "healthy", "timestamp": datetime.now(timezone.utc)}
-
-# --- INDUSTRIAL DASHBOARD ENDPOINTS (Hardened) ---
-
-@app.get(
-    f"{settings.API_V1_STR}/leads", 
-    dependencies=[Depends(verify_admin_token)],
-    tags=["admin"]
-)
-async def get_leads():
-    """
-    Access point for verified leads. Requires ADMIN_API_KEY.
-    """
-    with Session(engine) as session:
-        statement = select(Visit).where(Visit.verification_status == "verified").order_by(Visit.created_at.desc())
-        results = session.exec(statement).all()
-        return results
-
-@app.get(
-    f"{settings.API_V1_STR}/debug/entities", 
-    dependencies=[Depends(verify_admin_token)],
-    tags=["admin"]
-)
-async def get_entities():
-    """
-    Direct access to the Juristic Entity ledger. Requires ADMIN_API_KEY.
-    """
-    with Session(engine) as session:
-        statement = select(Company).order_by(Company.created_at.desc())
-        results = session.exec(statement).all()
-        return results
-</file>
-
 <file path="backend/app/api/v1/waitlist.py">
 import logging
 from fastapi import APIRouter, HTTPException, Request, BackgroundTasks
@@ -8290,6 +8187,130 @@ async def join_waitlist(payload: dict, request: Request, background_tasks: Backg
             session.rollback()
             logger.error(f"🚨 Promotion Failure: {e}")
             raise HTTPException(status_code=500, detail="Synchronization delay.")
+</file>
+
+<file path="backend/app/main.py">
+import asyncio
+import logging
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Request, HTTPException, Depends, Header
+from fastapi.middleware.cors import CORSMiddleware
+from sqlmodel import Session, select
+from datetime import datetime, timezone
+
+from app.core.config import settings
+from app.db import init_db, engine
+from app.api.v1 import track, clients, identity, waitlist
+from app.models.visit import Visit
+from app.models.company import Company 
+from app.tasks.janitor import cleanup_unverified_visits
+
+# Setup logging - Industrial Clinical Style
+logger = logging.getLogger("uvicorn")
+
+# --- SECURITY: Admin Access Guard ---
+def verify_admin_token(x_aura_token: str = Header(...)):
+    """
+    Hardens debug routes. Rejects any request missing the correct ADMIN_API_KEY.
+    """
+    if x_aura_token != settings.ADMIN_API_KEY:
+        logger.warning(f"🚨 UNAUTHORIZED ACCESS ATTEMPT: {datetime.now(timezone.utc)}")
+        raise HTTPException(status_code=403, detail="Unauthorized Forensic Access")
+
+async def run_janitor_loop():
+    """
+    Background worker that executes the 48-hour sweep every 6 hours.
+    """
+    while True:
+        try:
+            await cleanup_unverified_visits()
+            # Sleep for 6 hours between sweeps
+            await asyncio.sleep(21600) 
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            logger.error(f"Janitor Loop Error: {e}")
+            await asyncio.sleep(60)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    The AuraWorks OS Lifecycle Manager.
+    """
+    logger.info("🚀 AuraWorks OS: Initializing Database Ledger...")
+    init_db()
+    
+    # Activate the Janitor as a background coroutine
+    janitor_task = asyncio.create_task(run_janitor_loop())
+    
+    yield
+    
+    logger.info("🛑 AuraWorks OS: Orderly shutdown initiated...")
+    janitor_task.cancel()
+    try:
+        await janitor_task
+    except asyncio.CancelledError:
+        pass
+
+app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
+
+# --- CORS CONFIGURATION ---
+origins = [ 
+    "https://industrial-intelligence-xi.vercel.app", 
+    "http://localhost:3000",
+    "https://auraworks.co.za",
+    "https://www.auraworks.co.za",
+    "https://cdn.auraworks.co.za",
+    "https://dynamic-flow-production-a5d6.up.railway.app"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# --- ROUTE REGISTRATION ---
+app.include_router(track.router, prefix=f"{settings.API_V1_STR}/track", tags=["tracking"])
+app.include_router(clients.router, prefix=f"{settings.API_V1_STR}/clients", tags=["clients"])
+app.include_router(identity.router, prefix=f"{settings.API_V1_STR}/identity", tags=["identity"])
+app.include_router(waitlist.router, prefix=f"{settings.API_V1_STR}/waitlist", tags=["waitlist"])
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy", "timestamp": datetime.now(timezone.utc)}
+
+# --- INDUSTRIAL DASHBOARD ENDPOINTS (Hardened) ---
+
+@app.get(
+    f"{settings.API_V1_STR}/leads", 
+    dependencies=[Depends(verify_admin_token)],
+    tags=["admin"]
+)
+async def get_leads():
+    """
+    Access point for verified leads. Requires ADMIN_API_KEY.
+    """
+    with Session(engine) as session:
+        statement = select(Visit).where(Visit.verification_status == "verified").order_by(Visit.created_at.desc())
+        results = session.exec(statement).all()
+        return results
+
+@app.get(
+    f"{settings.API_V1_STR}/debug/entities", 
+    dependencies=[Depends(verify_admin_token)],
+    tags=["admin"]
+)
+async def get_entities():
+    """
+    Direct access to the Juristic Entity ledger. Requires ADMIN_API_KEY.
+    """
+    with Session(engine) as session:
+        statement = select(Company).order_by(Company.created_at.desc())
+        results = session.exec(statement).all()
+        return results
 </file>
 
 <file path="backend/app/api/v1/track.py">

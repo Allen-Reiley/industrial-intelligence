@@ -68,7 +68,8 @@ origins = [
     "http://localhost:3000",
     "https://auraworks.co.za",
     "https://www.auraworks.co.za",
-    "https://cdn.auraworks.co.za"
+    "https://cdn.auraworks.co.za",
+    "https://dynamic-flow-production-a5d6.up.railway.app"
 ]
 
 app.add_middleware(

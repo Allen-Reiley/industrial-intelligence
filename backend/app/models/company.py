@@ -4,6 +4,7 @@ from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
 import sqlalchemy as sa
 
 # Use TYPE_CHECKING to avoid circular imports between models
+# These are only used by type checkers (IDE/Mypy) and ignored at runtime
 if TYPE_CHECKING:
     from app.models.visit import Visit
     from app.models.department import Department
@@ -23,22 +24,22 @@ class Company(SQLModel, table=True):
     is_b2b: bool = Field(default=True, index=True)
     
     # --- QUARANTINE & AUDIT (Rigid Logic v3.0) ---
-    # Once True, this entity and its visits are immune to the 24hr Janitor purge.
     is_verified: bool = Field(default=False, index=True)
     
     # --- AGGREGATED INTELLIGENCE ---
     total_visits: int = Field(default=1)
-    unique_visitors_count: int = Field(default=1) # Distinct count of unique aura_ids
+    unique_visitors_count: int = Field(default=1)
     
     # DeepSeek Generated "Corporate Intent" Summary
     intent_summary: Optional[str] = None 
     
     # --- RELATIONS ---
-    # Unified naming to match back_populates in WaitlistLead and Visit
+    # CRITICAL: Using string literals ("Visit", "Department", "WaitlistLead") 
+    # allows SQLAlchemy to resolve these names AFTER all models are loaded.
     visits: List["Visit"] = Relationship(back_populates="company")
     departments: List["Department"] = Relationship(back_populates="company")
     
-    # UPDATED: Renamed from 'visitors' to 'leads' to fix the 500 Promotion Failure
+    # Renamed to 'leads' to match the back_populates in WaitlistLead
     leads: List["WaitlistLead"] = Relationship(back_populates="company")
 
     # --- TIMEKEEPING ---
