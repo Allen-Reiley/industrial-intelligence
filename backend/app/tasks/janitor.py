@@ -15,8 +15,8 @@ async def cleanup_unverified_visits():
     logger.info("🧹 AuraWorks OS: Activating 48-hour Janitor Sweep...")
     
     # 1. Define the 'Noise' Threshold (48 hours)
-    # We extended this from 24h to 480h to allow for 'Late Promotion'
-    threshold = datetime.now(timezone.utc) - timedelta(hours=480)
+    # We extended this from 24h to 48h to allow for 'Late Promotion'
+    threshold = datetime.now(timezone.utc) - timedelta(hours=48)
     
     with Session(engine) as session:
         try:

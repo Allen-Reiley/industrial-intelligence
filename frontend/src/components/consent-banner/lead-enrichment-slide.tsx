@@ -44,7 +44,7 @@ const LeadEnrichmentSlide = ({ auraId, onComplete, onDismiss }: LeadEnrichmentPr
         body: JSON.stringify({
           email,
           aura_id: auraId,
-          company: position.company,
+          company_name_raw: position.company, // Aligned with backend column name from logs
           industry: position.department,
           avg_price: position.role, 
           full_capture: true
@@ -114,18 +114,21 @@ const LeadEnrichmentSlide = ({ auraId, onComplete, onDismiss }: LeadEnrichmentPr
             <input 
               type="text" 
               placeholder="Company" 
+              value={position.company}
               onChange={(e) => setPosition({...position, company: e.target.value})}
               className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none"
             />
             <input 
               type="text" 
               placeholder="Department" 
+              value={position.department}
               onChange={(e) => setPosition({...position, department: e.target.value})}
               className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none"
             />
             <input 
               type="text" 
               placeholder="Position" 
+              value={position.role}
               onChange={(e) => setPosition({...position, role: e.target.value})}
               className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none"
             />

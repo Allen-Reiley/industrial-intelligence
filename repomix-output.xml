@@ -211,151 +211,6 @@ VOID_CONTEXT.md
 <files>
 This section contains the contents of the repository's files.
 
-<file path="frontend/src/components/consent-banner/lead-enrichment-slide.tsx">
-'use client';
-
-import React, { useState } from 'react';
-import { ArrowRight, X, Shield } from 'lucide-react';
-
-// --- THE INTERFACE ALIGNMENT ---
-interface LeadEnrichmentProps {
-  auraId: string | null;
-  onComplete: () => void; // This matches the call in consent-banner.tsx
-  onDismiss: () => void;
-}
-
-const LeadEnrichmentSlide = ({ auraId, onComplete, onDismiss }: LeadEnrichmentProps) => {
-  const [step, setStep] = useState(1);
-  const [email, setEmail] = useState('');
-  const [position, setPosition] = useState({ department: '', role: '' });
-
-  const handleEmailNext = async () => {
-    if (!email) return;
-    
-    // Store email immediately on 'Next'
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/waitlist/join`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          aura_id: auraId,
-          partial_capture: true 
-        })
-      });
-      setStep(2);
-    } catch (err) {
-      setStep(2); // UX Resilience: Proceed even if sync hangs
-    }
-  };
-
-  const handleFinalSubmit = async () => {
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/waitlist/join`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          aura_id: auraId,
-          industry: position.department,
-          avg_price: position.role, 
-          full_capture: true
-        })
-      });
-      onComplete(); // Effectively sets 'aura_lead_captured' in parent
-    } catch (err) {
-      onComplete();
-    }
-  };
-
-  return (
-    <div className="bg-[#0a0a0a]/95 backdrop-blur-3xl border border-slate-800/50 p-8 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] w-full max-w-[400px] animate-in slide-in-from-right-10 duration-500">
-      <div className="flex justify-between items-start mb-6">
-        <div className="flex items-center space-x-3">
-          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-          <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-500">Intelligence Phase 02</span>
-        </div>
-        <button onClick={onDismiss} className="text-slate-600 hover:text-slate-300 transition-colors">
-          <X size={16}/>
-        </button>
-      </div>
-
-      {step === 1 ? (
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <h3 className="text-slate-100 text-lg font-semibold italic tracking-tight">Refine Signal Quality</h3>
-            <p className="text-slate-400 text-[13px] leading-relaxed font-light">
-              Provide your work email to receive clinical B2B outreach and facility-specific ROI reports.
-            </p>
-          </div>
-          
-          <input 
-            type="email" 
-            placeholder="Work Email" 
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-transparent border-b border-slate-800 py-3 text-slate-100 text-sm focus:border-emerald-500 transition-colors outline-none"
-          />
-
-          <div className="flex items-center gap-4 pt-2">
-            <button 
-              onClick={handleEmailNext} 
-              className="flex-1 py-3 bg-slate-50 hover:bg-white text-black text-[10px] font-black uppercase tracking-wider rounded flex items-center justify-center gap-2 transition-all active:scale-95"
-            >
-              Next Step <ArrowRight size={14} />
-            </button>
-            <button 
-              onClick={onDismiss} 
-              className="text-slate-500 text-[10px] font-bold uppercase hover:text-slate-300 transition-colors"
-            >
-              No Thanks
-            </button>
-          </div>
-          
-          <div className="flex items-center gap-2 pt-4">
-            <Shield size={10} className="text-slate-600" />
-            <p className="text-[9px] text-slate-600 leading-tight">
-              Subject to <a href="/legal/privacy" className="underline hover:text-slate-400">Privacy Policy</a> and <a href="/legal/terms" className="underline hover:text-slate-400">Data Processing Addenda</a>.
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-6 animate-in fade-in slide-in-from-right-5">
-          <div className="space-y-2">
-            <h3 className="text-slate-100 text-lg font-semibold tracking-tight">Organizational Role</h3>
-            <p className="text-slate-400 text-[13px] font-light leading-relaxed">Categorize your professional influence within the facility.</p>
-          </div>
-
-          <div className="space-y-4">
-            <input 
-              type="text" 
-              placeholder="Department (e.g. Procurement)" 
-              onChange={(e) => setPosition({...position, department: e.target.value})}
-              className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none transition-colors"
-            />
-            <input 
-              type="text" 
-              placeholder="Current Position" 
-              onChange={(e) => setPosition({...position, role: e.target.value})}
-              className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none transition-colors"
-            />
-          </div>
-
-          <button 
-            onClick={handleFinalSubmit} 
-            className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded transition-all shadow-lg shadow-emerald-900/20 active:scale-95"
-          >
-            Complete Industrial Sync
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default LeadEnrichmentSlide;
-</file>
-
 <file path="backend/app/api/v1/leads.py">
 
 </file>
@@ -4356,8 +4211,8 @@ async def cleanup_unverified_visits():
     logger.info("🧹 AuraWorks OS: Activating 48-hour Janitor Sweep...")
     
     # 1. Define the 'Noise' Threshold (48 hours)
-    # We extended this from 24h to 480h to allow for 'Late Promotion'
-    threshold = datetime.now(timezone.utc) - timedelta(hours=480)
+    # We extended this from 24h to 48h to allow for 'Late Promotion'
+    threshold = datetime.now(timezone.utc) - timedelta(hours=48)
     
     with Session(engine) as session:
         try:
@@ -4510,173 +4365,156 @@ export default function NotFound() {
 }
 </file>
 
-<file path="frontend/src/components/consent-banner/consent-banner.tsx">
+<file path="frontend/src/components/consent-banner/lead-enrichment-slide.tsx">
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import LeadEnrichmentSlide from './lead-enrichment-slide';
+import React, { useState } from 'react';
+import { ArrowRight, X } from 'lucide-react';
 
-const AuraConsentBanner = () => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [showEnrichment, setShowEnrichment] = useState(false);
-  const [auraId, setAuraId] = useState<string | null>(null);
+// 1. Fixed Interface: Explicitly define onComplete to satisfy TS(2322)
+interface LeadEnrichmentProps {
+  auraId: string | null;
+  onComplete: () => void; // Critical addition
+  onDismiss: () => void;
+}
 
-  useEffect(() => {
-    const hasConsent = typeof window !== 'undefined' && localStorage.getItem('aura_consent_given');
-    const hasEnriched = typeof window !== 'undefined' && localStorage.getItem('aura_lead_captured');
+const LeadEnrichmentSlide = ({ auraId, onComplete, onDismiss }: LeadEnrichmentProps) => {
+  const [step, setStep] = useState(1);
+  const [email, setEmail] = useState('');
+  const [position, setPosition] = useState({ company: '', department: '', role: '' });
 
-    // Logic: Trigger enrichment only after consent is given and significant dwell time occurs
-    if (hasConsent && !hasEnriched) {
-      const enrichmentTimer = setTimeout(() => {
-        const id = localStorage.getItem('aura_uid') || (window as any).AURA_UID;
-        setAuraId(id);
-        setShowEnrichment(true);
-      }, 10000); // 10s = Significant interest
-      return () => clearTimeout(enrichmentTimer);
-    }
-
-    if (!hasConsent) {
-      const timer = setTimeout(() => {
-        setIsVisible(true);
-      }, 2500);
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
-  const handleAccept = async () => {
-    const id = typeof window !== 'undefined' ? (localStorage.getItem('aura_uid') || (window as any).AURA_UID) : null;
-    const clientId = typeof window !== 'undefined' ? (window as any).AURA_ID : null;
-    setAuraId(id);
-
-    // 1. Mark consent in LocalStorage for UI persistence
-    localStorage.setItem('aura_consent_given', 'true');
+  const handleEmailNext = async () => {
+    if (!email) return;
     
-    // 2. GATE 1 HANDSHAKE: Notify Backend for Identity Promotion
-    if (id && clientId) {
-      try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/track/consent`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            client_id: clientId,
-            aura_id: id,
-            status: 'accepted'
-          })
-        });
-      } catch (err) {
-        console.error("⚠️ AuraWorks: Background consent sync failed.", err);
-      }
+    // Immediate storage of email on 'Next'
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/waitlist/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          aura_id: auraId,
+          partial_capture: true 
+        })
+      });
+      setStep(2);
+    } catch (err) {
+      console.error("Partial capture failed", err);
+      setStep(2); 
     }
+  };
 
-    // 3. Dispatch CustomEvent for aura.js (Triggers immediate forensic reveal)
-    if (typeof window !== 'undefined' && window.dispatchEvent) {
-      window.dispatchEvent(new CustomEvent('aura_consent_updated', { 
-        detail: { status: 'accepted', source: 'executive_bridge' } 
-      }));
+  const handleFinalSubmit = async () => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/waitlist/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          aura_id: auraId,
+          company_name_raw: position.company, // Aligned with backend column name from logs
+          industry: position.department,
+          avg_price: position.role, 
+          full_capture: true
+        })
+      });
+      onComplete(); // Successfully close the bridge
+    } catch (err) {
+      onComplete();
     }
-
-    setIsVisible(false);
-    
-    // Smooth transition to Phase 02 (Enrichment Slide) after a short delay
-    setTimeout(() => {
-      setShowEnrichment(true);
-    }, 1500);
   };
-
-  const handleDismiss = () => {
-    setIsVisible(false);
-    // Note: We don't set 'aura_consent_given' here, ensuring the lead is reminded on return.
-  };
-  
-  const handleEnrichmentComplete = () => {
-    localStorage.setItem('aura_lead_captured', 'true');
-    setShowEnrichment(false);
-  };
-
-  // Phase 02: Lead Enrichment Slide
-  if (showEnrichment) {
-    return (
-      <div className="fixed bottom-8 right-8 z-[9999]">
-        <LeadEnrichmentSlide 
-          auraId={auraId} 
-          onComplete={handleEnrichmentComplete}
-          onDismiss={() => setShowEnrichment(false)} 
-        />
-      </div>
-    );
-  }
-
-  // Phase 01: Initial Consent Banner
-  if (!isVisible) return null;
 
   return (
-    <>
-      {/* 🛡️ THE HONEY POT: Bot Detection */}
-      <a 
-        href="#" 
-        id="aura-v-check" 
-        style={{ display: 'none', position: 'absolute', opacity: 0, pointerEvents: 'none' }}
-        aria-hidden="true"
-        tabIndex={-1}
-      >
-        Verify Browser Architecture
-      </a>
+    <div className="bg-[#0a0a0a]/95 backdrop-blur-3xl border border-slate-800/50 p-8 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] w-full max-w-[400px] animate-in slide-in-from-right-10 duration-500">
+      <div className="flex justify-between items-start mb-6">
+        <div className="flex items-center space-x-3">
+          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+          <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-500">Intelligence Phase 02</span>
+        </div>
+        <button onClick={onDismiss} className="text-slate-600 hover:text-slate-300 transition-colors">
+          <X size={16}/>
+        </button>
+      </div>
 
-      {/* 🎨 THE UI: Executive Identity Bridge Banner */}
-      <div 
-        className="fixed bottom-8 right-8 z-[9999] max-w-[400px] animate-in fade-in slide-in-from-bottom-8 duration-1000 ease-out"
-        role="alert"
-        aria-labelledby="aura-banner-title"
-      >
-        <div className="bg-[#0a0a0a]/95 backdrop-blur-3xl border border-slate-800/50 p-8 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
-          <div className="flex flex-col space-y-6">
-            
-            {/* Live Status Header */}
-            <div className="flex items-center space-x-3">
-              <div className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-500">
-                Identity Bridge v2.2.2
-              </span>
-            </div>
-            
-            <div className="space-y-3">
-              <h3 id="aura-banner-title" className="text-slate-100 text-lg font-semibold tracking-tight">
-                Business Identity Resolution
-              </h3>
-              <p className="text-slate-400 text-[13px] leading-relaxed font-light">
-                Utilize forensic hardware signals to synchronize your professional persona with our B2B intelligence suite. This authorized sync enables strategic outreach via <span className="text-slate-100 font-medium border-b border-slate-700">LinkedIn and Corporate Channels</span>.
-              </p>
-            </div>
+      {step === 1 ? (
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <h3 className="text-slate-100 text-lg font-semibold italic tracking-tight">Refine Signal Quality</h3>
+            <p className="text-slate-400 text-[13px] leading-relaxed font-light">
+              Provide your work email to receive clinical B2B outreach and facility-specific ROI reports.
+            </p>
+          </div>
+          
+          <input 
+            type="email" 
+            placeholder="Work Email" 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full bg-transparent border-b border-slate-800 py-3 text-slate-100 text-sm focus:border-emerald-500 transition-colors outline-none"
+          />
 
-            <div className="flex items-center gap-4 pt-2">
-              <button
-                onClick={handleAccept}
-                className="flex-1 py-3 bg-slate-50 hover:bg-white text-black text-xs font-black uppercase tracking-wider rounded transition-all active:scale-95 shadow-xl shadow-white/5"
-              >
-                Authorize Sync
-              </button>
-              <button
-                onClick={handleDismiss}
-                className="px-5 py-3 text-slate-500 hover:text-slate-300 text-[11px] font-semibold transition-colors"
-              >
-                Dismiss
-              </button>
-            </div>
-
-            <p className="text-[9px] text-slate-600 italic text-center">
-              AuraWorks (Pty) Ltd - Industrial-Grade Precision Analytics
+          <div className="flex items-center gap-4 pt-2">
+            <button 
+              onClick={handleEmailNext} 
+              className="flex-1 py-3 bg-slate-50 hover:bg-white text-black text-[10px] font-black uppercase tracking-wider rounded flex items-center justify-center gap-2 transition-all active:scale-95"
+            >
+              Next Step <ArrowRight size={14} />
+            </button>
+            <button onClick={onDismiss} className="text-slate-500 text-[10px] font-bold uppercase hover:text-slate-300">
+              No Thanks
+            </button>
+          </div>
+          
+          <div className="pt-4 border-t border-slate-900">
+             <p className="text-[9px] text-slate-600 leading-tight">
+              By proceeding, you authorize industrial synchronization. View our <a href="/legal/privacy" className="underline hover:text-slate-400">Privacy Policy</a>.
             </p>
           </div>
         </div>
-      </div>
-    </>
+      ) : (
+        <div className="space-y-6 animate-in fade-in slide-in-from-right-5">
+          <div className="space-y-2">
+            <h3 className="text-slate-100 text-lg font-semibold tracking-tight">Organizational Role</h3>
+            <p className="text-slate-400 text-[13px] font-light leading-relaxed">Categorize your professional influence.</p>
+          </div>
+
+          <div className="space-y-4">
+            <input 
+              type="text" 
+              placeholder="Company" 
+              value={position.company}
+              onChange={(e) => setPosition({...position, company: e.target.value})}
+              className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none"
+            />
+            <input 
+              type="text" 
+              placeholder="Department" 
+              value={position.department}
+              onChange={(e) => setPosition({...position, department: e.target.value})}
+              className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none"
+            />
+            <input 
+              type="text" 
+              placeholder="Position" 
+              value={position.role}
+              onChange={(e) => setPosition({...position, role: e.target.value})}
+              className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none"
+            />
+          </div>
+
+          <button 
+            onClick={handleFinalSubmit} 
+            className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded transition-all shadow-lg"
+          >
+            Complete Industrial Sync
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
 
-export default AuraConsentBanner;
+export default LeadEnrichmentSlide;
 </file>
 
 <file path="frontend/src/components/sections/features/features-hero.tsx">
@@ -5123,6 +4961,175 @@ export default function BookCallPage() {
         </main>
     </>
 }
+</file>
+
+<file path="frontend/src/components/consent-banner/consent-banner.tsx">
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import LeadEnrichmentSlide from './lead-enrichment-slide';
+
+const AuraConsentBanner = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [showEnrichment, setShowEnrichment] = useState(false);
+  const [auraId, setAuraId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const hasConsent = typeof window !== 'undefined' && localStorage.getItem('aura_consent_given');
+    const hasEnriched = typeof window !== 'undefined' && localStorage.getItem('aura_lead_captured');
+
+    // Logic: Trigger enrichment only after consent is given and significant dwell time occurs
+    if (hasConsent && !hasEnriched) {
+      const enrichmentTimer = setTimeout(() => {
+        const id = localStorage.getItem('aura_uid') || (window as any).AURA_UID;
+        setAuraId(id);
+        setShowEnrichment(true);
+      }, 10000); // 10s = Significant interest
+      return () => clearTimeout(enrichmentTimer);
+    }
+
+    if (!hasConsent) {
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleAccept = async () => {
+    const id = typeof window !== 'undefined' ? (localStorage.getItem('aura_uid') || (window as any).AURA_UID) : null;
+    const clientId = typeof window !== 'undefined' ? (window as any).AURA_ID : null;
+    setAuraId(id);
+
+    // 1. Mark consent in LocalStorage for UI persistence
+    localStorage.setItem('aura_consent_given', 'true');
+    
+    // 2. GATE 1 HANDSHAKE: Notify Backend for Identity Promotion
+    if (id && clientId) {
+      try {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/track/consent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            client_id: clientId,
+            aura_id: id,
+            status: 'accepted'
+          })
+        });
+      } catch (err) {
+        console.error("⚠️ AuraWorks: Background consent sync failed.", err);
+      }
+    }
+
+    // 3. Dispatch CustomEvent for aura.js (Triggers immediate forensic reveal)
+    if (typeof window !== 'undefined' && window.dispatchEvent) {
+      window.dispatchEvent(new CustomEvent('aura_consent_updated', { 
+        detail: { status: 'accepted', source: 'executive_bridge' } 
+      }));
+    }
+
+    setIsVisible(false);
+    
+    // Smooth transition to Phase 02 (Enrichment Slide) after a short delay
+    setTimeout(() => {
+      setShowEnrichment(true);
+    }, 1500);
+  };
+
+  const handleDismiss = () => {
+    setIsVisible(false);
+    // Note: We don't set 'aura_consent_given' here, ensuring the lead is reminded on return.
+  };
+  
+  const handleEnrichmentComplete = () => {
+    localStorage.setItem('aura_lead_captured', 'true');
+    setShowEnrichment(false);
+  };
+
+  // Phase 02: Lead Enrichment Slide
+  if (showEnrichment) {
+    return (
+      <div className="fixed bottom-8 right-8 z-[9999]">
+        <LeadEnrichmentSlide 
+          auraId={auraId} 
+          onComplete={handleEnrichmentComplete}
+          onDismiss={() => setShowEnrichment(false)} 
+        />
+      </div>
+    );
+  }
+
+  // Phase 01: Initial Consent Banner
+  if (!isVisible) return null;
+
+  return (
+    <>
+      {/* 🛡️ THE HONEY POT: Bot Detection */}
+      <a 
+        href="#" 
+        id="aura-v-check" 
+        style={{ display: 'none', position: 'absolute', opacity: 0, pointerEvents: 'none' }}
+        aria-hidden="true"
+        tabIndex={-1}
+      >
+        Verify Browser Architecture
+      </a>
+
+      {/* 🎨 THE UI: Executive Identity Bridge Banner */}
+      <div 
+        className="fixed bottom-8 right-8 z-[9999] max-w-[400px] animate-in fade-in slide-in-from-bottom-8 duration-1000 ease-out"
+        role="alert"
+        aria-labelledby="aura-banner-title"
+      >
+        <div className="bg-[#0a0a0a]/95 backdrop-blur-3xl border border-slate-800/50 p-8 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+          <div className="flex flex-col space-y-6">
+            
+            {/* Live Status Header */}
+            <div className="flex items-center space-x-3">
+              <div className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-500">
+                Identity Bridge v2.2.2
+              </span>
+            </div>
+            
+            <div className="space-y-3">
+              <h3 id="aura-banner-title" className="text-slate-100 text-lg font-semibold tracking-tight">
+                Business Identity Resolution
+              </h3>
+              <p className="text-slate-400 text-[13px] leading-relaxed font-light">
+                Utilize forensic hardware signals to synchronize your professional persona with our B2B intelligence suite. This authorized sync enables strategic outreach via <span className="text-slate-100 font-medium border-b border-slate-700">LinkedIn and Corporate Channels</span>.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4 pt-2">
+              <button
+                onClick={handleAccept}
+                className="flex-1 py-3 bg-slate-50 hover:bg-white text-black text-xs font-black uppercase tracking-wider rounded transition-all active:scale-95 shadow-xl shadow-white/5"
+              >
+                Authorize Sync
+              </button>
+              <button
+                onClick={handleDismiss}
+                className="px-5 py-3 text-slate-500 hover:text-slate-300 text-[11px] font-semibold transition-colors"
+              >
+                Dismiss
+              </button>
+            </div>
+
+            <p className="text-[9px] text-slate-600 italic text-center">
+              AuraWorks (Pty) Ltd - Industrial-Grade Precision Analytics
+            </p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default AuraConsentBanner;
 </file>
 
 <file path="frontend/src/components/content/content-1.tsx">
@@ -6314,6 +6321,116 @@ export default function Home() {
 })();
 </file>
 
+<file path="README.md">
+# 🏭 Industrial Intelligence Engine (Master)
+
+⚠️ Proprietary Software Notice: This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited.
+
+The **Industrial Intelligence Engine** is a specialized B2B intent-tracking SaaS. It deanonymizes website traffic for industrial firms in the East Rand (and beyond), turning anonymous IP addresses into actionable sales leads.
+
+
+## 📂 Project Structure
+
+```text
+industrial-intelligence/
+├── backend/       # FastAPI + SQLModel + PostgreSQL (The Core)
+├── frontend/      # Next.js 16 + Tailwind (The Interface & Lead Funnel)
+├── tracker/       # Vanilla JS (The Edge Script)
+└── infra/         # Docker, Nginx, or CI/CD configs
+
+```
+
+---
+
+## ⚡ Quick Start (Development Mode)
+
+### 1. Clone & Environment
+
+Ensure you are using **WSL 2** and have **Docker Desktop** running.
+
+```bash
+git clone https://github.com/Allen-Reiley/industrial-intelligence.git
+cd industrial-intelligence
+
+```
+
+### 2. Infrastructure (Postgres)
+
+Spin up the local database using Docker:
+
+```bash
+docker compose up -d
+
+```
+
+### 3. Backend Setup (FastAPI)
+
+Using `uv` for high-speed dependency management:
+
+```bash
+cd backend
+uv venv
+source .venv/bin/activate
+uvicorn main:app --reload
+
+```
+
+### 4. Frontend Setup (Next.js)
+
+```bash
+cd frontend
+npm install
+npm run dev
+
+```
+
+---
+
+## 🛰️ How it Works (The Data Loop)
+
+1. **Capture:** The `tracker.min.js` fires on a client's site.
+2. **Identify:** The Backend receives the IP, queries **IPinfo**, and filters out residential ISPs.
+3. **Store:** Valid B2B visits are saved to **PostgreSQL**.
+4. **Report:** The Client Dashboard visualizes the traffic, and a weekly PDF is generated for the client's sales team.
+
+---
+
+## 🛠️ Tech Stack Summary
+
+* **Backend:** FastAPI, Python 3.11, SQLModel, Uvicorn.
+* **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS, Shadcn/UI.
+* **Database:** PostgreSQL (Neon.tech for Production).
+* **Deployment:** Vercel (Frontend) + Render (Backend) + Cloudflare (CDN).
+
+---
+
+## 🛡️ Business Logic & Compliance
+
+* **Targeting:** Specifically engineered for the Industrial/Manufacturing sector.
+* **Pricing:** R10,000/month managed service.
+* **Privacy:** Designed for POPIA compliance—identifying Juristic Persons (Companies), not natural individuals.
+
+---
+
+## 📅 Roadmap (Phase 1)
+
+* [x] Technical Specification & Architecture.
+* [x] WSL 2 & Docker Environment Setup.
+* [ ] Database Schema Design (SQLModel).
+* [ ] API Ingestion Endpoints (`/entry`, `/exit`).
+* [ ] Lead Qualification Funnel build.
+
+---
+
+## ⚖️ License & Proprietary Notice
+
+**Copyright (c) 2026 AuraWorks Pty (ltd). All Rights Reserved.**
+
+This tracker script is proprietary software. Unauthorized copying, modification, or redistribution is strictly prohibited. Use is granted only to active subscribers of the Industrial Intelligence Engine managed service.
+
+---
+</file>
+
 <file path="backend/app/services/notifications.py">
 import os
 import httpx
@@ -6775,116 +6892,6 @@ export default function Footer() {
         </footer>
     )
 }
-</file>
-
-<file path="README.md">
-# 🏭 Industrial Intelligence Engine (Master)
-
-⚠️ Proprietary Software Notice: This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited.
-
-The **Industrial Intelligence Engine** is a specialized B2B intent-tracking SaaS. It deanonymizes website traffic for industrial firms in the East Rand (and beyond), turning anonymous IP addresses into actionable sales leads.
-
-
-## 📂 Project Structure
-
-```text
-industrial-intelligence/
-├── backend/       # FastAPI + SQLModel + PostgreSQL (The Core)
-├── frontend/      # Next.js 16 + Tailwind (The Interface & Lead Funnel)
-├── tracker/       # Vanilla JS (The Edge Script)
-└── infra/         # Docker, Nginx, or CI/CD configs
-
-```
-
----
-
-## ⚡ Quick Start (Development Mode)
-
-### 1. Clone & Environment
-
-Ensure you are using **WSL 2** and have **Docker Desktop** running.
-
-```bash
-git clone https://github.com/Allen-Reiley/industrial-intelligence.git
-cd industrial-intelligence
-
-```
-
-### 2. Infrastructure (Postgres)
-
-Spin up the local database using Docker:
-
-```bash
-docker compose up -d
-
-```
-
-### 3. Backend Setup (FastAPI)
-
-Using `uv` for high-speed dependency management:
-
-```bash
-cd backend
-uv venv
-source .venv/bin/activate
-uvicorn main:app --reload
-
-```
-
-### 4. Frontend Setup (Next.js)
-
-```bash
-cd frontend
-npm install
-npm run dev
-
-```
-
----
-
-## 🛰️ How it Works (The Data Loop)
-
-1. **Capture:** The `tracker.min.js` fires on a client's site.
-2. **Identify:** The Backend receives the IP, queries **IPinfo**, and filters out residential ISPs.
-3. **Store:** Valid B2B visits are saved to **PostgreSQL**.
-4. **Report:** The Client Dashboard visualizes the traffic, and a weekly PDF is generated for the client's sales team.
-
----
-
-## 🛠️ Tech Stack Summary
-
-* **Backend:** FastAPI, Python 3.11, SQLModel, Uvicorn.
-* **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS, Shadcn/UI.
-* **Database:** PostgreSQL (Neon.tech for Production).
-* **Deployment:** Vercel (Frontend) + Render (Backend) + Cloudflare (CDN).
-
----
-
-## 🛡️ Business Logic & Compliance
-
-* **Targeting:** Specifically engineered for the Industrial/Manufacturing sector.
-* **Pricing:** R10,000/month managed service.
-* **Privacy:** Designed for POPIA compliance—identifying Juristic Persons (Companies), not natural individuals.
-
----
-
-## 📅 Roadmap (Phase 1)
-
-* [x] Technical Specification & Architecture.
-* [x] WSL 2 & Docker Environment Setup.
-* [ ] Database Schema Design (SQLModel).
-* [ ] API Ingestion Endpoints (`/entry`, `/exit`).
-* [ ] Lead Qualification Funnel build.
-
----
-
-## ⚖️ License & Proprietary Notice
-
-**Copyright (c) 2026 AuraWorks Pty (ltd). All Rights Reserved.**
-
-This tracker script is proprietary software. Unauthorized copying, modification, or redistribution is strictly prohibited. Use is granted only to active subscribers of the Industrial Intelligence Engine managed service.
-
----
 </file>
 
 <file path="frontend/src/components/pricing/pricing.tsx">
@@ -8125,7 +8132,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"], 
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
