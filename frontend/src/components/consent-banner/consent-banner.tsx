@@ -1,14 +1,27 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import LeadEnrichmentSlide from './lead-enrichment-slide';
 
 const AuraConsentBanner = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [showEnrichment, setShowEnrichment] = useState(false);
+  const [auraId, setAuraId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if user has already interacted
     const hasConsent = typeof window !== 'undefined' && localStorage.getItem('aura_consent_given');
-    
+    const hasEnriched = typeof window !== 'undefined' && localStorage.getItem('aura_lead_captured');
+
+    // Logic: Trigger enrichment only after consent is given and significant dwell time occurs
+    if (hasConsent && !hasEnriched) {
+      const enrichmentTimer = setTimeout(() => {
+        const id = localStorage.getItem('aura_uid') || (window as any).AURA_UID;
+        setAuraId(id);
+        setShowEnrichment(true);
+      }, 10000); // 10s = Significant interest
+      return () => clearTimeout(enrichmentTimer);
+    }
+
     if (!hasConsent) {
       const timer = setTimeout(() => {
         setIsVisible(true);
@@ -18,21 +31,22 @@ const AuraConsentBanner = () => {
   }, []);
 
   const handleAccept = async () => {
-    const auraId = typeof window !== 'undefined' ? (localStorage.getItem('aura_uid') || (window as any).AURA_UID) : null;
+    const id = typeof window !== 'undefined' ? (localStorage.getItem('aura_uid') || (window as any).AURA_UID) : null;
     const clientId = typeof window !== 'undefined' ? (window as any).AURA_ID : null;
+    setAuraId(id);
 
     // 1. Mark consent in LocalStorage for UI persistence
     localStorage.setItem('aura_consent_given', 'true');
     
     // 2. GATE 1 HANDSHAKE: Notify Backend for Identity Promotion
-    if (auraId && clientId) {
+    if (id && clientId) {
       try {
         await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/track/consent`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             client_id: clientId,
-            aura_id: auraId,
+            aura_id: id,
             status: 'accepted'
           })
         });
@@ -49,14 +63,37 @@ const AuraConsentBanner = () => {
     }
 
     setIsVisible(false);
-    console.log("✅ AuraWorks: Identity Resolution Authorized. Jurisdictive Entity Research Initiated.");
+    
+    // Smooth transition to Phase 02 (Enrichment Slide) after a short delay
+    setTimeout(() => {
+      setShowEnrichment(true);
+    }, 1500);
   };
 
   const handleDismiss = () => {
     setIsVisible(false);
     // Note: We don't set 'aura_consent_given' here, ensuring the lead is reminded on return.
   };
+  
+  const handleEnrichmentComplete = () => {
+    localStorage.setItem('aura_lead_captured', 'true');
+    setShowEnrichment(false);
+  };
 
+  // Phase 02: Lead Enrichment Slide
+  if (showEnrichment) {
+    return (
+      <div className="fixed bottom-8 right-8 z-[9999]">
+        <LeadEnrichmentSlide 
+          auraId={auraId} 
+          onComplete={handleEnrichmentComplete}
+          onDismiss={() => setShowEnrichment(false)} 
+        />
+      </div>
+    );
+  }
+
+  // Phase 01: Initial Consent Banner
   if (!isVisible) return null;
 
   return (

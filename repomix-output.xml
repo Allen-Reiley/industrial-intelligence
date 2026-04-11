@@ -125,6 +125,7 @@ frontend/
         call-page.tsx
       consent-banner/
         consent-banner.tsx
+        lead-enrichment-slide.tsx
       content/
         content-1.tsx
         content-2.tsx
@@ -210,6 +211,151 @@ VOID_CONTEXT.md
 <files>
 This section contains the contents of the repository's files.
 
+<file path="frontend/src/components/consent-banner/lead-enrichment-slide.tsx">
+'use client';
+
+import React, { useState } from 'react';
+import { ArrowRight, X, Shield } from 'lucide-react';
+
+// --- THE INTERFACE ALIGNMENT ---
+interface LeadEnrichmentProps {
+  auraId: string | null;
+  onComplete: () => void; // This matches the call in consent-banner.tsx
+  onDismiss: () => void;
+}
+
+const LeadEnrichmentSlide = ({ auraId, onComplete, onDismiss }: LeadEnrichmentProps) => {
+  const [step, setStep] = useState(1);
+  const [email, setEmail] = useState('');
+  const [position, setPosition] = useState({ department: '', role: '' });
+
+  const handleEmailNext = async () => {
+    if (!email) return;
+    
+    // Store email immediately on 'Next'
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/waitlist/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          aura_id: auraId,
+          partial_capture: true 
+        })
+      });
+      setStep(2);
+    } catch (err) {
+      setStep(2); // UX Resilience: Proceed even if sync hangs
+    }
+  };
+
+  const handleFinalSubmit = async () => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/waitlist/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          aura_id: auraId,
+          industry: position.department,
+          avg_price: position.role, 
+          full_capture: true
+        })
+      });
+      onComplete(); // Effectively sets 'aura_lead_captured' in parent
+    } catch (err) {
+      onComplete();
+    }
+  };
+
+  return (
+    <div className="bg-[#0a0a0a]/95 backdrop-blur-3xl border border-slate-800/50 p-8 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] w-full max-w-[400px] animate-in slide-in-from-right-10 duration-500">
+      <div className="flex justify-between items-start mb-6">
+        <div className="flex items-center space-x-3">
+          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+          <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-500">Intelligence Phase 02</span>
+        </div>
+        <button onClick={onDismiss} className="text-slate-600 hover:text-slate-300 transition-colors">
+          <X size={16}/>
+        </button>
+      </div>
+
+      {step === 1 ? (
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <h3 className="text-slate-100 text-lg font-semibold italic tracking-tight">Refine Signal Quality</h3>
+            <p className="text-slate-400 text-[13px] leading-relaxed font-light">
+              Provide your work email to receive clinical B2B outreach and facility-specific ROI reports.
+            </p>
+          </div>
+          
+          <input 
+            type="email" 
+            placeholder="Work Email" 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full bg-transparent border-b border-slate-800 py-3 text-slate-100 text-sm focus:border-emerald-500 transition-colors outline-none"
+          />
+
+          <div className="flex items-center gap-4 pt-2">
+            <button 
+              onClick={handleEmailNext} 
+              className="flex-1 py-3 bg-slate-50 hover:bg-white text-black text-[10px] font-black uppercase tracking-wider rounded flex items-center justify-center gap-2 transition-all active:scale-95"
+            >
+              Next Step <ArrowRight size={14} />
+            </button>
+            <button 
+              onClick={onDismiss} 
+              className="text-slate-500 text-[10px] font-bold uppercase hover:text-slate-300 transition-colors"
+            >
+              No Thanks
+            </button>
+          </div>
+          
+          <div className="flex items-center gap-2 pt-4">
+            <Shield size={10} className="text-slate-600" />
+            <p className="text-[9px] text-slate-600 leading-tight">
+              Subject to <a href="/legal/privacy" className="underline hover:text-slate-400">Privacy Policy</a> and <a href="/legal/terms" className="underline hover:text-slate-400">Data Processing Addenda</a>.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-6 animate-in fade-in slide-in-from-right-5">
+          <div className="space-y-2">
+            <h3 className="text-slate-100 text-lg font-semibold tracking-tight">Organizational Role</h3>
+            <p className="text-slate-400 text-[13px] font-light leading-relaxed">Categorize your professional influence within the facility.</p>
+          </div>
+
+          <div className="space-y-4">
+            <input 
+              type="text" 
+              placeholder="Department (e.g. Procurement)" 
+              onChange={(e) => setPosition({...position, department: e.target.value})}
+              className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none transition-colors"
+            />
+            <input 
+              type="text" 
+              placeholder="Current Position" 
+              onChange={(e) => setPosition({...position, role: e.target.value})}
+              className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none transition-colors"
+            />
+          </div>
+
+          <button 
+            onClick={handleFinalSubmit} 
+            className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded transition-all shadow-lg shadow-emerald-900/20 active:scale-95"
+          >
+            Complete Industrial Sync
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default LeadEnrichmentSlide;
+</file>
+
 <file path="backend/app/api/v1/leads.py">
 
 </file>
@@ -233,61 +379,6 @@ class Department(SQLModel, table=True):
     head_of_dept_linkedin: Optional[str] = None # URL to public profile
     
     company: "Company" = Relationship(back_populates="departments")
-</file>
-
-<file path="backend/app/services/airtable.py">
-import logging
-from datetime import datetime, timezone
-from app.core.config import settings
-from pyairtable import Api
-
-logger = logging.getLogger("uvicorn")
-
-class AirtableEngine:
-    def __init__(self):
-        # Using the centralized settings instead of direct os.getenv
-        token = settings.AIRTABLE_API_KEY
-        base_id = settings.AIRTABLE_BASE_ID
-        
-        if not token or not base_id:
-            logger.warning("⚠️ Airtable credentials missing in settings. Engine on standby.")
-            self.table = None
-        else:
-            self.api = Api(token)
-            # Table name is 'Forensic Ledger' as per your B2B design
-            self.table = self.api.table(base_id, "Forensic Ledger")
-
-    async def push_visit(self, data: dict):
-        """
-        Pushes high-intent corporate signals to the Airtable Ledger.
-        Matches the call in track.py to prevent AttributeErrors.
-        """
-        if not self.table:
-            return
-
-        try:
-            # Structuring the record for industrial-grade reporting
-            record = {
-                "Entity Name": data.get("company_name", "Anonymous Facility"),
-                "Domain": data.get("domain", "unknown.com"),
-                "Status": "Forensic Capture",
-                "IP Address": data.get("ip_address"),
-                "Location": f"{data.get('city', 'Unknown')}, {data.get('region', 'ZA')}",
-                "Intelligence Summary": data.get("summary", "Awaiting DeepSeek-V3 Audit..."),
-                "Aura ID": data.get("aura_id"),
-                "Connection Type": data.get("effective_connection_type", "Standard"),
-                "Detected At": datetime.now(timezone.utc).isoformat()
-            }
-            
-            # Sync execution within the async wrapper
-            self.table.create(record)
-            logger.info(f"✅ Airtable: Industrial Signal logged for {record['Entity Name']}")
-            
-        except Exception as e:
-            logger.error(f"❌ Airtable Sync Failure: {e}")
-
-# Instantiate the engine for use in background tasks
-airtable_engine = AirtableEngine()
 </file>
 
 <file path="backend/app/services/notion.py">
@@ -336,67 +427,6 @@ notion_vault = NotionVault()
 
 <file path="backend/app/services/reports.py">
 
-</file>
-
-<file path="backend/app/tasks/janitor.py">
-import logging
-from datetime import datetime, timedelta, timezone
-from sqlmodel import Session, select
-from app.db import engine
-from app.models.visit import Visit
-from app.models.waitlist import WaitlistLead
-
-logger = logging.getLogger("uvicorn")
-
-async def cleanup_unverified_visits():
-    """
-    The Industrial Janitor: Purges residential/bot noise while 
-    protecting high-intent leads and the 'Ghost Bridge'.
-    """
-    logger.info("🧹 AuraWorks OS: Activating 48-hour Janitor Sweep...")
-    
-    # 1. Define the 'Noise' Threshold (48 hours)
-    # We extended this from 24h to 480h to allow for 'Late Promotion'
-    threshold = datetime.now(timezone.utc) - timedelta(hours=480)
-    
-    with Session(engine) as session:
-        try:
-            # 2. Identify 'Verifying' records older than the threshold
-            statement = select(Visit).where(
-                Visit.verification_status == "verifying",
-                Visit.created_at < threshold
-            )
-            candidates = session.exec(statement).all()
-            
-            if not candidates:
-                logger.info("✅ Janitor: Forensic vault is already optimized.")
-                return
-
-            purged_count = 0
-            for visit in candidates:
-                # 3. SAFETY CHECK: The 'Waitlist Shield'
-                # If an aura_id has a matching WaitlistLead, we NEVER delete it,
-                # even if the individual visit status is still 'verifying'.
-                has_lead = session.exec(
-                    select(WaitlistLead).where(WaitlistLead.aura_id == visit.aura_id)
-                ).first()
-                
-                if has_lead:
-                    # Upgrade the visit instead of deleting
-                    visit.verification_status = "verified"
-                    session.add(visit)
-                    continue
-
-                # 4. Final Purge for actual noise (Residential/Bot traffic)
-                session.delete(visit)
-                purged_count += 1
-
-            session.commit()
-            logger.info(f"🗑️ Janitor: Purged {purged_count} noise signatures. Vault optimized.")
-
-        except Exception as e:
-            session.rollback()
-            logger.error(f"🚨 Janitor Failure: {e}")
 </file>
 
 <file path="frontend/src/app/(pages)/cookies-policy/page.tsx">
@@ -4132,6 +4162,61 @@ class PageViewCreate(PageViewBase):
 # track.py needs the class definition to stop crashing.
 </file>
 
+<file path="backend/app/services/airtable.py">
+import logging
+from datetime import datetime, timezone
+from app.core.config import settings
+from pyairtable import Api
+
+logger = logging.getLogger("uvicorn")
+
+class AirtableEngine:
+    def __init__(self):
+        # Using the centralized settings instead of direct os.getenv
+        token = settings.AIRTABLE_API_KEY
+        base_id = settings.AIRTABLE_BASE_ID
+        
+        if not token or not base_id:
+            logger.warning("⚠️ Airtable credentials missing in settings. Engine on standby.")
+            self.table = None
+        else:
+            self.api = Api(token)
+            # Table name is 'Forensic Ledger' as per your B2B design
+            self.table = self.api.table(base_id, "Forensic Ledger")
+
+    async def push_visit(self, data: dict):
+        """
+        Pushes high-intent corporate signals to the Airtable Ledger.
+        Matches the call in track.py to prevent AttributeErrors.
+        """
+        if not self.table:
+            return
+
+        try:
+            # Structuring the record for industrial-grade reporting
+            record = {
+                "Entity Name": data.get("company_name", "Anonymous Facility"),
+                "Domain": data.get("domain", "unknown.com"),
+                "Status": "Forensic Capture",
+                "IP Address": data.get("ip_address"),
+                "Location": f"{data.get('city', 'Unknown')}, {data.get('region', 'ZA')}",
+                "Intelligence Summary": data.get("summary", "Awaiting DeepSeek-V3 Audit..."),
+                "Aura ID": data.get("aura_id"),
+                "Connection Type": data.get("effective_connection_type", "Standard"),
+                "Detected At": datetime.now(timezone.utc).isoformat()
+            }
+            
+            # Sync execution within the async wrapper
+            self.table.create(record)
+            logger.info(f"✅ Airtable: Industrial Signal logged for {record['Entity Name']}")
+            
+        except Exception as e:
+            logger.error(f"❌ Airtable Sync Failure: {e}")
+
+# Instantiate the engine for use in background tasks
+airtable_engine = AirtableEngine()
+</file>
+
 <file path="backend/app/services/contacts.py">
 import httpx
 import logging
@@ -4253,6 +4338,67 @@ def send_welcome_email(to_email: str, first_name: str):
         logger.error(f"❌ Resend Error: {str(e)}")
 </file>
 
+<file path="backend/app/tasks/janitor.py">
+import logging
+from datetime import datetime, timedelta, timezone
+from sqlmodel import Session, select
+from app.db import engine
+from app.models.visit import Visit
+from app.models.waitlist import WaitlistLead
+
+logger = logging.getLogger("uvicorn")
+
+async def cleanup_unverified_visits():
+    """
+    The Industrial Janitor: Purges residential/bot noise while 
+    protecting high-intent leads and the 'Ghost Bridge'.
+    """
+    logger.info("🧹 AuraWorks OS: Activating 48-hour Janitor Sweep...")
+    
+    # 1. Define the 'Noise' Threshold (48 hours)
+    # We extended this from 24h to 480h to allow for 'Late Promotion'
+    threshold = datetime.now(timezone.utc) - timedelta(hours=480)
+    
+    with Session(engine) as session:
+        try:
+            # 2. Identify 'Verifying' records older than the threshold
+            statement = select(Visit).where(
+                Visit.verification_status == "verifying",
+                Visit.created_at < threshold
+            )
+            candidates = session.exec(statement).all()
+            
+            if not candidates:
+                logger.info("✅ Janitor: Forensic vault is already optimized.")
+                return
+
+            purged_count = 0
+            for visit in candidates:
+                # 3. SAFETY CHECK: The 'Waitlist Shield'
+                # If an aura_id has a matching WaitlistLead, we NEVER delete it,
+                # even if the individual visit status is still 'verifying'.
+                has_lead = session.exec(
+                    select(WaitlistLead).where(WaitlistLead.aura_id == visit.aura_id)
+                ).first()
+                
+                if has_lead:
+                    # Upgrade the visit instead of deleting
+                    visit.verification_status = "verified"
+                    session.add(visit)
+                    continue
+
+                # 4. Final Purge for actual noise (Residential/Bot traffic)
+                session.delete(visit)
+                purged_count += 1
+
+            session.commit()
+            logger.info(f"🗑️ Janitor: Purged {purged_count} noise signatures. Vault optimized.")
+
+        except Exception as e:
+            session.rollback()
+            logger.error(f"🚨 Janitor Failure: {e}")
+</file>
+
 <file path="backend/app/db.py">
 from sqlmodel import create_engine, SQLModel, Session
 from app.core.config import settings
@@ -4368,14 +4514,27 @@ export default function NotFound() {
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import LeadEnrichmentSlide from './lead-enrichment-slide';
 
 const AuraConsentBanner = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [showEnrichment, setShowEnrichment] = useState(false);
+  const [auraId, setAuraId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if user has already interacted
     const hasConsent = typeof window !== 'undefined' && localStorage.getItem('aura_consent_given');
-    
+    const hasEnriched = typeof window !== 'undefined' && localStorage.getItem('aura_lead_captured');
+
+    // Logic: Trigger enrichment only after consent is given and significant dwell time occurs
+    if (hasConsent && !hasEnriched) {
+      const enrichmentTimer = setTimeout(() => {
+        const id = localStorage.getItem('aura_uid') || (window as any).AURA_UID;
+        setAuraId(id);
+        setShowEnrichment(true);
+      }, 10000); // 10s = Significant interest
+      return () => clearTimeout(enrichmentTimer);
+    }
+
     if (!hasConsent) {
       const timer = setTimeout(() => {
         setIsVisible(true);
@@ -4385,21 +4544,22 @@ const AuraConsentBanner = () => {
   }, []);
 
   const handleAccept = async () => {
-    const auraId = typeof window !== 'undefined' ? (localStorage.getItem('aura_uid') || (window as any).AURA_UID) : null;
+    const id = typeof window !== 'undefined' ? (localStorage.getItem('aura_uid') || (window as any).AURA_UID) : null;
     const clientId = typeof window !== 'undefined' ? (window as any).AURA_ID : null;
+    setAuraId(id);
 
     // 1. Mark consent in LocalStorage for UI persistence
     localStorage.setItem('aura_consent_given', 'true');
     
     // 2. GATE 1 HANDSHAKE: Notify Backend for Identity Promotion
-    if (auraId && clientId) {
+    if (id && clientId) {
       try {
         await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/track/consent`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             client_id: clientId,
-            aura_id: auraId,
+            aura_id: id,
             status: 'accepted'
           })
         });
@@ -4416,14 +4576,37 @@ const AuraConsentBanner = () => {
     }
 
     setIsVisible(false);
-    console.log("✅ AuraWorks: Identity Resolution Authorized. Jurisdictive Entity Research Initiated.");
+    
+    // Smooth transition to Phase 02 (Enrichment Slide) after a short delay
+    setTimeout(() => {
+      setShowEnrichment(true);
+    }, 1500);
   };
 
   const handleDismiss = () => {
     setIsVisible(false);
     // Note: We don't set 'aura_consent_given' here, ensuring the lead is reminded on return.
   };
+  
+  const handleEnrichmentComplete = () => {
+    localStorage.setItem('aura_lead_captured', 'true');
+    setShowEnrichment(false);
+  };
 
+  // Phase 02: Lead Enrichment Slide
+  if (showEnrichment) {
+    return (
+      <div className="fixed bottom-8 right-8 z-[9999]">
+        <LeadEnrichmentSlide 
+          auraId={auraId} 
+          onComplete={handleEnrichmentComplete}
+          onDismiss={() => setShowEnrichment(false)} 
+        />
+      </div>
+    );
+  }
+
+  // Phase 01: Initial Consent Banner
   if (!isVisible) return null;
 
   return (
@@ -5415,243 +5598,6 @@ const nextConfig: NextConfig = {
 export default nextConfig;
 </file>
 
-<file path="tracker/src/public/aura.js">
-/**
- * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
- * Version: 3.2.0 (POPIA Compliant & Beacon Locked)
- * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
- */
-(async function() {
-    const script = document.currentScript;
-    const clientId = window.AURA_ID || script?.getAttribute('data-id');
-    window.AURA_START_TIME = performance.now();
-    
-    if (!clientId) return console.error("❌ AuraWorks: Missing Client Identity.");
-
-    const getBaseUrl = () => {
-        if (window.AURA_CONFIG?.apiUrl) return window.AURA_CONFIG.apiUrl;
-        if (script?.src.includes('http')) {
-            try { return new URL(script.src).origin; } catch (e) {}
-        }
-        return "https://industrial-intelligence-xi.vercel.app";
-    };
-    
-    const API_URL = `${getBaseUrl().replace(/\/$/, '')}/api/v1/track`;
-
-    const AuraPersistence = {
-        key: 'aura_uid',
-        utmKey: 'aura_utm',
-        async init() {
-            let id = await this.getStoredID();
-            this.captureUTMs(); 
-            if (!id) id = this.generateUUID();
-            await this.syncStorage(id);
-            return id;
-        },
-        captureUTMs() {
-            const params = new URLSearchParams(window.location.search);
-            const utms = {};
-            ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(key => {
-                const val = params.get(key);
-                if (val) utms[key] = val;
-            });
-            if (Object.keys(utms).length > 0) {
-                localStorage.setItem(this.utmKey, JSON.stringify({...utms, captured_at: new Date().toISOString()}));
-            }
-        },
-        getStoredUTMs() {
-            try { return JSON.parse(localStorage.getItem(this.utmKey)) || {}; } catch(e) { return {}; }
-        },
-        async getStoredID() {
-            const c = document.cookie.split('; ').find(r => r.startsWith(`${this.key}=`))?.split('=')[1];
-            const l = localStorage.getItem(this.key);
-            return c || l || null;
-        },
-        async syncStorage(id) {
-            const exp = new Date(); exp.setFullYear(exp.getFullYear() + 2);
-            document.cookie = `${this.key}=${id}; expires=${exp.toUTCString()}; path=/; SameSite=Lax; Secure`;
-            localStorage.setItem(this.key, id);
-            window.AURA_UID = id;
-        },
-        generateUUID() {
-            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-            );
-        }
-    };
-
-    const AuraFingerprint = {
-        async getFullSignature() {
-            return {
-                canvas: this.getCanvas(),
-                webgl: this.getWebGL(),
-                network: this.getNetworkInfo(),
-                drift: await this.measureDrift(),
-                screen: `${screen.width}x${screen.height}`,
-                is_incognito: await this.isIncognito()
-            };
-        },
-        getNetworkInfo() {
-            const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-            return {
-                type: conn?.effectiveType || "unknown",
-                rtt: conn?.rtt,
-                downlink: conn?.downlink,
-                is_residential_prob: (conn?.saveData || (conn?.downlink && conn.downlink < 10))
-            };
-        },
-        getCanvas() {
-            try {
-                const cvs = document.createElement('canvas');
-                const ctx = cvs.getContext('2d');
-                ctx.textBaseline = "top"; ctx.font = "14px 'Arial'";
-                ctx.fillText("AuraWorks_v3.2", 2, 2);
-                return cvs.toDataURL().substring(0, 100);
-            } catch (e) { return "blocked"; }
-        },
-        getWebGL() {
-            try {
-                const canvas = document.createElement('canvas');
-                const gl = canvas.getContext('webgl');
-                const debug = gl.getExtension('WEBGL_debug_renderer_info');
-                return debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : "standard";
-            } catch (e) { return "standard"; }
-        },
-        async measureDrift() {
-            return new Promise(r => {
-                const t0 = performance.now(), d0 = Date.now();
-                setTimeout(() => r(Math.round((performance.now() - t0) - (Date.now() - d0))), 500);
-            });
-        },
-        async isIncognito() {
-            if ('storage' in navigator && 'estimate' in navigator.storage) {
-                const {quota} = await navigator.storage.estimate();
-                return quota < 120000000;
-            }
-            return false;
-        }
-    };
-
-    const AuraTracker = {
-        isArmed: false, // POPIA Guard
-
-        init(auraId) {
-            this.auraId = auraId;
-            this.trackEntry();
-            this.setupSensors();
-            this.patchSPA();
-
-            // Listen for the "Authorize Sync" event from the consent banner
-            window.addEventListener('aura_consent_granted', () => {
-                this.isArmed = true;
-                this.dispatch('event', { event_type: 'consent_granted' });
-            });
-        },
-        async dispatch(endpoint, payload, useBeacon = false) {
-            const utms = AuraPersistence.getStoredUTMs();
-            const data = {
-                client_id: clientId,
-                aura_id: this.auraId,
-                timestamp: new Date().toISOString(),
-                ...utms,
-                ...payload
-            };
-
-            const url = `${API_URL}/${endpoint}`;
-
-            if (useBeacon && navigator.sendBeacon) {
-                return navigator.sendBeacon(url, JSON.stringify(data));
-            }
-            try {
-                await fetch(url, {
-                    method: 'POST', mode: 'cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data), keepalive: true
-                });
-            } catch (e) { console.error("Aura dispatch error", e); }
-        },
-        setupSensors() {
-            // Email Capture: Guarded by isArmed
-            document.addEventListener('blur', (e) => {
-                if (!this.isArmed) return; 
-
-                const target = e.target;
-                if (target.type === 'email' || target.name?.includes('email')) {
-                    if (target.value.includes('@')) {
-                        this.dispatch('identity', { email: target.value, capture_source: 'authorized_blur' });
-                    }
-                }
-            }, true);
-
-            // Intent Clicks
-            document.addEventListener('click', (e) => {
-                const btn = e.target.closest('a, button');
-                if (!btn) return;
-                const text = btn.innerText?.toLowerCase();
-                const intentKeywords = ['pricing', 'audit', 'feature', 'solution', 'waitlist', 'get started'];
-                if (intentKeywords.some(kw => text.includes(kw))) {
-                    this.dispatch('event', { event_type: 'intent_click', intent_cluster: text.substring(0, 20), url: window.location.pathname });
-                }
-            });
-
-            // Visibility API for Mobile Exit
-            document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'hidden') {
-                    this.trackExit();
-                }
-            });
-
-            window.addEventListener('pagehide', () => this.trackExit());
-        },
-        trackEntry() {
-            const sig = AuraFingerprint.getNetworkInfo();
-            this.dispatch('entry', { 
-                url: window.location.href, 
-                referrer: document.referrer || "direct",
-                screen_resolution: `${window.innerWidth}x${window.innerHeight}`,
-                effective_connection_type: sig.type,
-                downlink_speed: sig.downlink,
-                rtt: sig.rtt
-            });
-        },
-        trackExit() {
-            const duration = Math.round((performance.now() - window.AURA_START_TIME) / 1000);
-            if (duration < 1) return;
-            
-            this.dispatch('exit', {
-                event_type: 'exit',
-                duration: duration,
-                url: window.location.href
-            }, true); 
-        },
-        patchSPA() {
-            const self = this;
-            ['pushState', 'replaceState'].forEach(m => {
-                const orig = history[m];
-                history[m] = function() {
-                    const r = orig.apply(this, arguments);
-                    setTimeout(() => self.trackEntry(), 0);
-                    return r;
-                };
-            });
-        }
-    };
-
-    const startAura = async () => {
-        if (window.AURA_INITIALIZED) return;
-        window.AURA_INITIALIZED = true;
-        const auraId = await AuraPersistence.init();
-        AuraTracker.init(auraId);
-        
-        setTimeout(async () => {
-            const sig = await AuraFingerprint.getFullSignature();
-            await AuraTracker.dispatch('identity', { signature: sig });
-        }, 2000);
-    };
-
-    if (document.readyState === 'complete') startAura();
-    else window.addEventListener('load', startAura);
-})();
-</file>
-
 <file path="REMEMBER.md">
 # MEMORY.md | AuraWorks 2.2.0: Industrial Intelligence Engine
 
@@ -6129,6 +6075,243 @@ export default function Home() {
     </main>
   );
 }
+</file>
+
+<file path="tracker/src/public/aura.js">
+/**
+ * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
+ * Version: 3.2.0 (POPIA Compliant & Beacon Locked)
+ * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
+ */
+(async function() {
+    const script = document.currentScript;
+    const clientId = window.AURA_ID || script?.getAttribute('data-id');
+    window.AURA_START_TIME = performance.now();
+    
+    if (!clientId) return console.error("❌ AuraWorks: Missing Client Identity.");
+
+    const getBaseUrl = () => {
+        if (window.AURA_CONFIG?.apiUrl) return window.AURA_CONFIG.apiUrl;
+        if (script?.src.includes('http')) {
+            try { return new URL(script.src).origin; } catch (e) {}
+        }
+        return "https://industrial-intelligence-xi.vercel.app";
+    };
+    
+    const API_URL = `${getBaseUrl().replace(/\/$/, '')}/api/v1/track`;
+
+    const AuraPersistence = {
+        key: 'aura_uid',
+        utmKey: 'aura_utm',
+        async init() {
+            let id = await this.getStoredID();
+            this.captureUTMs(); 
+            if (!id) id = this.generateUUID();
+            await this.syncStorage(id);
+            return id;
+        },
+        captureUTMs() {
+            const params = new URLSearchParams(window.location.search);
+            const utms = {};
+            ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(key => {
+                const val = params.get(key);
+                if (val) utms[key] = val;
+            });
+            if (Object.keys(utms).length > 0) {
+                localStorage.setItem(this.utmKey, JSON.stringify({...utms, captured_at: new Date().toISOString()}));
+            }
+        },
+        getStoredUTMs() {
+            try { return JSON.parse(localStorage.getItem(this.utmKey)) || {}; } catch(e) { return {}; }
+        },
+        async getStoredID() {
+            const c = document.cookie.split('; ').find(r => r.startsWith(`${this.key}=`))?.split('=')[1];
+            const l = localStorage.getItem(this.key);
+            return c || l || null;
+        },
+        async syncStorage(id) {
+            const exp = new Date(); exp.setFullYear(exp.getFullYear() + 2);
+            document.cookie = `${this.key}=${id}; expires=${exp.toUTCString()}; path=/; SameSite=Lax; Secure`;
+            localStorage.setItem(this.key, id);
+            window.AURA_UID = id;
+        },
+        generateUUID() {
+            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+        }
+    };
+
+    const AuraFingerprint = {
+        async getFullSignature() {
+            return {
+                canvas: this.getCanvas(),
+                webgl: this.getWebGL(),
+                network: this.getNetworkInfo(),
+                drift: await this.measureDrift(),
+                screen: `${screen.width}x${screen.height}`,
+                is_incognito: await this.isIncognito()
+            };
+        },
+        getNetworkInfo() {
+            const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            return {
+                type: conn?.effectiveType || "unknown",
+                rtt: conn?.rtt,
+                downlink: conn?.downlink,
+                is_residential_prob: (conn?.saveData || (conn?.downlink && conn.downlink < 10))
+            };
+        },
+        getCanvas() {
+            try {
+                const cvs = document.createElement('canvas');
+                const ctx = cvs.getContext('2d');
+                ctx.textBaseline = "top"; ctx.font = "14px 'Arial'";
+                ctx.fillText("AuraWorks_v3.2", 2, 2);
+                return cvs.toDataURL().substring(0, 100);
+            } catch (e) { return "blocked"; }
+        },
+        getWebGL() {
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl');
+                const debug = gl.getExtension('WEBGL_debug_renderer_info');
+                return debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : "standard";
+            } catch (e) { return "standard"; }
+        },
+        async measureDrift() {
+            return new Promise(r => {
+                const t0 = performance.now(), d0 = Date.now();
+                setTimeout(() => r(Math.round((performance.now() - t0) - (Date.now() - d0))), 500);
+            });
+        },
+        async isIncognito() {
+            if ('storage' in navigator && 'estimate' in navigator.storage) {
+                const {quota} = await navigator.storage.estimate();
+                return quota < 120000000;
+            }
+            return false;
+        }
+    };
+
+    const AuraTracker = {
+        isArmed: false, // POPIA Guard
+
+        init(auraId) {
+            this.auraId = auraId;
+            this.trackEntry();
+            this.setupSensors();
+            this.patchSPA();
+
+            // Listen for the "Authorize Sync" event from the consent banner
+            window.addEventListener('aura_consent_granted', () => {
+                this.isArmed = true;
+                this.dispatch('event', { event_type: 'consent_granted' });
+            });
+        },
+        async dispatch(endpoint, payload, useBeacon = false) {
+            const utms = AuraPersistence.getStoredUTMs();
+            const data = {
+                client_id: clientId,
+                aura_id: this.auraId,
+                timestamp: new Date().toISOString(),
+                ...utms,
+                ...payload
+            };
+
+            const url = `${API_URL}/${endpoint}`;
+
+            if (useBeacon && navigator.sendBeacon) {
+                return navigator.sendBeacon(url, JSON.stringify(data));
+            }
+            try {
+                await fetch(url, {
+                    method: 'POST', mode: 'cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data), keepalive: true
+                });
+            } catch (e) { console.error("Aura dispatch error", e); }
+        },
+        setupSensors() {
+            // Email Capture: Guarded by isArmed
+            document.addEventListener('blur', (e) => {
+                if (!this.isArmed) return; 
+
+                const target = e.target;
+                if (target.type === 'email' || target.name?.includes('email')) {
+                    if (target.value.includes('@')) {
+                        this.dispatch('identity', { email: target.value, capture_source: 'authorized_blur' });
+                    }
+                }
+            }, true);
+
+            // Intent Clicks
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('a, button');
+                if (!btn) return;
+                const text = btn.innerText?.toLowerCase();
+                const intentKeywords = ['pricing', 'audit', 'feature', 'solution', 'waitlist', 'get started'];
+                if (intentKeywords.some(kw => text.includes(kw))) {
+                    this.dispatch('event', { event_type: 'intent_click', intent_cluster: text.substring(0, 20), url: window.location.pathname });
+                }
+            });
+
+            // Visibility API for Mobile Exit
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') {
+                    this.trackExit();
+                }
+            });
+
+            window.addEventListener('pagehide', () => this.trackExit());
+        },
+        trackEntry() {
+            const sig = AuraFingerprint.getNetworkInfo();
+            this.dispatch('entry', { 
+                url: window.location.href, 
+                referrer: document.referrer || "direct",
+                screen_resolution: `${window.innerWidth}x${window.innerHeight}`,
+                effective_connection_type: sig.type,
+                downlink_speed: sig.downlink,
+                rtt: sig.rtt
+            });
+        },
+        trackExit() {
+            const duration = Math.round((performance.now() - window.AURA_START_TIME) / 1000);
+            if (duration < 1) return;
+            
+            this.dispatch('exit', {
+                event_type: 'exit',
+                duration: duration,
+                url: window.location.href
+            }, true); 
+        },
+        patchSPA() {
+            const self = this;
+            ['pushState', 'replaceState'].forEach(m => {
+                const orig = history[m];
+                history[m] = function() {
+                    const r = orig.apply(this, arguments);
+                    setTimeout(() => self.trackEntry(), 0);
+                    return r;
+                };
+            });
+        }
+    };
+
+    const startAura = async () => {
+        if (window.AURA_INITIALIZED) return;
+        window.AURA_INITIALIZED = true;
+        const auraId = await AuraPersistence.init();
+        AuraTracker.init(auraId);
+        
+        setTimeout(async () => {
+            const sig = await AuraFingerprint.getFullSignature();
+            await AuraTracker.dispatch('identity', { signature: sig });
+        }, 2000);
+    };
+
+    if (document.readyState === 'complete') startAura();
+    else window.addEventListener('load', startAura);
+})();
 </file>
 
 <file path="backend/app/services/notifications.py">
@@ -6836,59 +7019,6 @@ export default function Pricing() {
 }
 </file>
 
-<file path="backend/app/core/config.py">
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional
-
-class Settings(BaseSettings):
-    # --- APP SETTINGS ---
-    PROJECT_NAME: str = "AuraWorks Industrial Intelligence OS"
-    VERSION: str = "3.2.0"
-    API_V1_STR: str = "/api/v1"
-
-    # --- SECURITY & AUTH ---
-    # Used to secure /api/v1/leads and /api/v1/debug/entities
-    ADMIN_API_KEY: str = "change-me-in-production" 
-    SECRET_KEY: str  # Required in .env
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 11520  # 8 days
-    
-    # --- DATABASE ---
-    DATABASE_URL: str # Required in .env
-    
-    # --- INDUSTRIAL TRIAD (ENRICHMENT) ---
-    IPINFO_TOKEN: str # Required in .env
-    APOLLO_API_KEY: Optional[str] = None # Added for contact discovery
-    
-    # --- INTELLIGENCE BRAIN ---
-    DEEPSEEK_API_KEY: Optional[str] = None # Added for juristic research
-    
-    # --- VAULT & ENGINE (SINK) ---
-    AIRTABLE_BASE_ID: Optional[str] = None # Moved from os.getenv
-    AIRTABLE_API_KEY: Optional[str] = None
-    NOTION_DATABASE_ID: Optional[str] = None # Moved from os.getenv
-    NOTION_TOKEN: Optional[str] = None
-
-    # --- NOTIFICATIONS & DISPATCH ---
-    SLACK_WEBHOOK_URL: Optional[str] = None        # #leads channel
-    SLACK_VISIT_WEBHOOK_URL: Optional[str] = None  # #visit channel
-    MAILGUN_API_KEY: Optional[str] = None
-    MAILGUN_DOMAIN: str = "mg.auraworks.co.za"
-    
-    # --- LEGACY / OTHER ---
-    NEXT_PUBLIC_WAITLIST_API_KEY: Optional[str] = None
-    NEXT_PUBLIC_WAITLIST_ID: Optional[str] = None
-    RESEND_API_KEY: Optional[str] = None
-
-    # Modern Pydantic V2 Configuration
-    model_config = SettingsConfigDict(
-        env_file=".env", 
-        case_sensitive=True,
-        extra="ignore" 
-    )
-
-settings = Settings()
-</file>
-
 <file path="frontend/src/components/hero-sec/hero-section.tsx">
 import React from 'react'
 import Link from 'next/link'
@@ -7115,6 +7245,59 @@ export default function HeroSection() {
         </>
     )
 }
+</file>
+
+<file path="backend/app/core/config.py">
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional
+
+class Settings(BaseSettings):
+    # --- APP SETTINGS ---
+    PROJECT_NAME: str = "AuraWorks Industrial Intelligence OS"
+    VERSION: str = "3.2.0"
+    API_V1_STR: str = "/api/v1"
+
+    # --- SECURITY & AUTH ---
+    # Used to secure /api/v1/leads and /api/v1/debug/entities
+    ADMIN_API_KEY: str = "change-me-in-production" 
+    SECRET_KEY: str  # Required in .env
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 11520  # 8 days
+    
+    # --- DATABASE ---
+    DATABASE_URL: str # Required in .env
+    
+    # --- INDUSTRIAL TRIAD (ENRICHMENT) ---
+    IPINFO_TOKEN: str # Required in .env
+    APOLLO_API_KEY: Optional[str] = None # Added for contact discovery
+    
+    # --- INTELLIGENCE BRAIN ---
+    DEEPSEEK_API_KEY: Optional[str] = None # Added for juristic research
+    
+    # --- VAULT & ENGINE (SINK) ---
+    AIRTABLE_BASE_ID: Optional[str] = None # Moved from os.getenv
+    AIRTABLE_API_KEY: Optional[str] = None
+    NOTION_DATABASE_ID: Optional[str] = None # Moved from os.getenv
+    NOTION_TOKEN: Optional[str] = None
+
+    # --- NOTIFICATIONS & DISPATCH ---
+    SLACK_WEBHOOK_URL: Optional[str] = None        # #leads channel
+    SLACK_VISIT_WEBHOOK_URL: Optional[str] = None  # #visit channel
+    MAILGUN_API_KEY: Optional[str] = None
+    MAILGUN_DOMAIN: str = "mg.auraworks.co.za"
+    
+    # --- LEGACY / OTHER ---
+    NEXT_PUBLIC_WAITLIST_API_KEY: Optional[str] = None
+    NEXT_PUBLIC_WAITLIST_ID: Optional[str] = None
+    RESEND_API_KEY: Optional[str] = None
+
+    # Modern Pydantic V2 Configuration
+    model_config = SettingsConfigDict(
+        env_file=".env", 
+        case_sensitive=True,
+        extra="ignore" 
+    )
+
+settings = Settings()
 </file>
 
 <file path="backend/app/services/enrichment.py">
