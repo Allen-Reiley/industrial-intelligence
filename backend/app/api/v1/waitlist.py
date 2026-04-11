@@ -6,7 +6,6 @@ from app.models.waitlist import WaitlistLead
 from app.models.company import Company
 from app.models.visit import Visit
 from app.core.config import settings
-# We will create orchestrate_lead_audit in the next step
 from app.services.intelligence import orchestrate_lead_audit 
 
 router = APIRouter()
@@ -14,7 +13,6 @@ logger = logging.getLogger("uvicorn")
 
 # --- UTILS: Industrial Formatting ---
 def format_zar(value: str) -> str:
-    """Handles both raw numbers and dropdown ranges for industrial pricing."""
     if not value: return "N/A"
     if "m" in value.lower(): return "R1,000,000+"
     if "-" in value:
@@ -30,7 +28,7 @@ def format_zar(value: str) -> str:
 async def join_waitlist(payload: dict, request: Request, background_tasks: BackgroundTasks):
     """
     Entry point for the AuraWorks Intelligence Pipeline.
-    Promotes a Forensic Signature to a Consented Lead.
+    Promotes a Forensic Signature to a Consented Lead and immunizes history.
     """
     logger.info(f"--- 📡 AURA SIGNAL: [PROMOTION INITIATED] ---")
     
@@ -82,20 +80,20 @@ async def join_waitlist(payload: dict, request: Request, background_tasks: Backg
             
             session.add(lead)
 
-            # 3. Forensic Stitching: Anchor anonymous history to this identity
+            # 3. Forensic Stitching & Janitor Shield
+            # CRITICAL: We promote history to 'verified' so the Janitor ignores them.
             if aura_id:
                 past_visits = session.exec(select(Visit).where(Visit.aura_id == aura_id)).all()
                 for v in past_visits:
                     v.is_consented = True
+                    v.verification_status = "verified" # The Janitor Shield
                     v.company_id = company.id
                     session.add(v)
 
             session.commit()
             session.refresh(lead)
 
-            # 4. CHAINED EXECUTION: 
-            # We move away from immediate Slack triggers.
-            # We hand off to a single orchestrator that manages DeepSeek -> Slack -> Postmark
+            # 4. CHAINED EXECUTION
             payload["formatted_price"] = format_zar(payload.get('avg_price'))
             payload["company_name_final"] = company.name
 

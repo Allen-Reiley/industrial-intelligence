@@ -1,39 +1,64 @@
 import asyncio
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, HTTPException, Depends
+from fastapi import FastAPI, Request, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.core.config import settings
 from app.db import init_db, engine
 from app.api.v1 import track, clients, identity, waitlist
 from app.models.visit import Visit
 from app.models.company import Company 
-from app.tasks.janitor import run_janitor_sweep
+from app.tasks.janitor import cleanup_unverified_visits
 
 # Setup logging - Industrial Clinical Style
 logger = logging.getLogger("uvicorn")
+
+# --- SECURITY: Admin Access Guard ---
+def verify_admin_token(x_aura_token: str = Header(...)):
+    """
+    Hardens debug routes. Rejects any request missing the correct ADMIN_API_KEY.
+    """
+    if x_aura_token != settings.ADMIN_API_KEY:
+        logger.warning(f"🚨 UNAUTHORIZED ACCESS ATTEMPT: {datetime.now(timezone.utc)}")
+        raise HTTPException(status_code=403, detail="Unauthorized Forensic Access")
+
+async def run_janitor_loop():
+    """
+    Background worker that executes the 48-hour sweep every 6 hours.
+    """
+    while True:
+        try:
+            await cleanup_unverified_visits()
+            # Sleep for 6 hours between sweeps
+            await asyncio.sleep(21600) 
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            logger.error(f"Janitor Loop Error: {e}")
+            await asyncio.sleep(60)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
     The AuraWorks OS Lifecycle Manager.
-    Initializes the Juristic Ledger and activates the 24-hour Janitor Sweep.
     """
     logger.info("🚀 AuraWorks OS: Initializing Database Ledger...")
     init_db()
     
-    # STARTING SPRINT C: THE JANITOR TASK
-    # This runs as a background coroutine for the duration of the app life.
-    logger.info("🧹 AuraWorks OS: Activating 24-hour Janitor Sweep...")
-    janitor_task = asyncio.create_task(run_janitor_sweep())
+    # Activate the Janitor as a background coroutine
+    janitor_task = asyncio.create_task(run_janitor_loop())
     
     yield
     
-    logger.info("🛑 AuraWorks OS: Orderly shutdown of systems...")
+    logger.info("🛑 AuraWorks OS: Orderly shutdown initiated...")
     janitor_task.cancel()
+    try:
+        await janitor_task
+    except asyncio.CancelledError:
+        pass
 
 app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
 
@@ -54,26 +79,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- AURAWORKS FORENSIC DEBUGGER (Hardened for Production) ---
-@app.post(f"{settings.API_V1_STR}/track/{{endpoint}}")
-async def debug_aura_signal(endpoint: str, request: Request):
-    """
-    Intercepts signals for monitoring. Sanitizes logs to prevent PII leakage.
-    """
-    try:
-        data = await request.json()
-        # Clinical Log: No raw PII in production-level logging
-        logger.info(f"📡 AURA_SIGNAL | Endpoint: {endpoint.upper()} | ID: {data.get('aura_id')}")
-        
-        if endpoint == "identity":
-            sig = data.get('signature', {})
-            logger.debug(f"🧬 Forensic Signature Received: Drift={sig.get('drift')}ms")
-            
-        return {"status": "debug_captured"}
-    except Exception as e:
-        logger.error(f"❌ Debug Capture Error: {str(e)}")
-        return {"status": "error"}
-
 # --- ROUTE REGISTRATION ---
 app.include_router(track.router, prefix=f"{settings.API_V1_STR}/track", tags=["tracking"])
 app.include_router(clients.router, prefix=f"{settings.API_V1_STR}/clients", tags=["clients"])
@@ -82,25 +87,32 @@ app.include_router(waitlist.router, prefix=f"{settings.API_V1_STR}/waitlist", ta
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "timestamp": datetime.now()}
+    return {"status": "healthy", "timestamp": datetime.now(timezone.utc)}
 
-# --- INDUSTRIAL DASHBOARD ENDPOINTS ---
+# --- INDUSTRIAL DASHBOARD ENDPOINTS (Hardened) ---
 
-@app.get(f"{settings.API_V1_STR}/leads")
+@app.get(
+    f"{settings.API_V1_STR}/leads", 
+    dependencies=[Depends(verify_admin_token)],
+    tags=["admin"]
+)
 async def get_leads():
     """
-    Fetches visits that have passed the 24-hour quarantine or been verified.
+    Access point for verified leads. Requires ADMIN_API_KEY.
     """
     with Session(engine) as session:
-        # Filter: Show only verified or active 'verifying' hits (hide purged data)
-        statement = select(Visit).where(Visit.verification_status != "unverified").order_by(Visit.created_at.desc())
+        statement = select(Visit).where(Visit.verification_status == "verified").order_by(Visit.created_at.desc())
         results = session.exec(statement).all()
         return results
 
-@app.get(f"{settings.API_V1_STR}/debug/entities")
+@app.get(
+    f"{settings.API_V1_STR}/debug/entities", 
+    dependencies=[Depends(verify_admin_token)],
+    tags=["admin"]
+)
 async def get_entities():
     """
-    Direct access to the Juristic Entity ledger for manual audit.
+    Direct access to the Juristic Entity ledger. Requires ADMIN_API_KEY.
     """
     with Session(engine) as session:
         statement = select(Company).order_by(Company.created_at.desc())

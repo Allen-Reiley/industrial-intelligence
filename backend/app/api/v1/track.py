@@ -7,12 +7,12 @@ from app.services.enrichment import enrich_visitor_data
 from app.services.notifications import post_to_visit_channel
 from app.services.intelligence import get_visitor_journey
 from app.services.airtable import airtable_engine
-from app.services.notion import notion_vault
+# from app.services.notion import notion_vault # Available for future expansion
 from sqlmodel import Session, select
 from app.db import engine
 from pydantic import BaseModel
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 router = APIRouter()
 logger = logging.getLogger("uvicorn")
@@ -31,8 +31,7 @@ class IdentityPayload(BaseModel):
 
 async def process_entry_logic(payload: VisitCreate, client_ip: str, background_tasks: BackgroundTasks):
     """
-    Refined Ingestion: Quarantines hits for 24hr audit. 
-    Matches against Confidence Scores rather than hard binary filters.
+    Refined Ingestion: Quarantines hits for audit while auto-verifying whitelisted entities.
     """
     with Session(engine) as session:
         # 1. Resolve Firmographics & Confidence Score
@@ -41,13 +40,13 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str, background_t
         company_name = enriched_info.get("company_name", "Unknown")
         confidence = enriched_info.get("confidence_score", 0.0)
 
-        # 2. Check for Existing Whitelisted Company (is_verified)
+        # 2. Check for Existing Whitelisted Company
         company = None
         if domain and domain not in ["unknown.com", "n/a"]:
             company_statement = select(Company).where(Company.domain == domain)
             company = session.exec(company_statement).first()
 
-        # 3. Handle Company Creation (Logic: Always create if domain found, else defer)
+        # 3. Handle Company Creation / Visit Increment
         if not company and domain and domain not in ["unknown.com", "n/a"]:
             company = Company(
                 name=company_name,
@@ -65,8 +64,8 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str, background_t
             company.total_visits += 1
             session.add(company)
 
-        # 4. Log the Granular Visit with 'Verifying' Status
-        # If company is already verified, we can auto-verify the visit.
+        # 4. Auto-Verification Logic
+        # Logic: If company is already verified, the visit is instantly trusted.
         initial_status = "verified" if (company and company.is_verified) else "verifying"
         
         db_visit = Visit(
@@ -77,7 +76,7 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str, background_t
             url=payload.url,
             referrer=payload.referrer,
             verification_status=initial_status,
-            last_audit_at=datetime.now(),
+            last_audit_at=datetime.now(timezone.utc),
             utm_source=payload.utm_source,
             utm_medium=payload.utm_medium,
             utm_campaign=payload.utm_campaign,
@@ -88,8 +87,8 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str, background_t
         session.commit()
         session.refresh(db_visit)
 
-        # 5. Background Dispatch (Airtable/Notion/Slack)
-        # We only notify Slack for High-Confidence or Verified traffic to reduce noise
+        # 5. Background Dispatch (Airtable & Slack)
+        # FIXED: Call 'push_visit' to match the method name in airtable.py
         if confidence >= 0.5 or (company and company.is_verified):
             airtable_data = {
                 "company_name": company.name if company else "Anonymous Facility",
@@ -100,8 +99,9 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str, background_t
                 "aura_id": payload.aura_id,
                 "effective_connection_type": payload.effective_connection_type or "Unknown"
             }
-            background_tasks.add_task(airtable_engine.create_industrial_record, airtable_data)
+            background_tasks.add_task(airtable_engine.push_visit, airtable_data)
 
+            # Generate Intelligence Journey for Slack notification
             journey = await get_visitor_journey(payload.aura_id)
             visit_report = {
                 "company_name": airtable_data["company_name"],
@@ -121,12 +121,16 @@ async def track_entry(
     background_tasks: BackgroundTasks,
     x_forwarded_for: Optional[str] = Header(None)
 ):
+    # Standard IP extraction from Proxy/Load Balancer
     client_ip = x_forwarded_for.split(',')[0].strip() if x_forwarded_for else (request.client.host if request.client else "127.0.0.1")
     background_tasks.add_task(process_entry_logic, payload, client_ip, background_tasks)
     return {"status": "accepted"}
 
 @router.post("/identity")
 async def track_identity(payload: IdentityPayload):
+    """
+    Stitches browser signatures and mobile connection types to the forensic ID.
+    """
     with Session(engine) as session:
         statement = select(Visit).where(Visit.aura_id == payload.aura_id).order_by(Visit.created_at.desc())
         visit = session.exec(statement).first()
@@ -143,6 +147,12 @@ async def track_identity(payload: IdentityPayload):
                     visit.downlink_speed = net.get("downlink")
                     visit.rtt = net.get("rtt")
             
+            # Record email from authorized blur if provided
+            if payload.email:
+                visit.capture_source = payload.capture_source or "authorized_blur"
+                # Note: Actual PII storage happens via waitlist promotion, 
+                # this is for internal verification.
+            
             session.add(visit)
             session.commit()
             return {"status": "identity_locked"}
@@ -150,6 +160,9 @@ async def track_identity(payload: IdentityPayload):
 
 @router.post("/event")
 async def track_event(payload: PageViewCreate):
+    """
+    Logs intent clicks and micro-conversions.
+    """
     with Session(engine) as session:
         statement = select(Visit).where(
             Visit.aura_id == payload.client_id
@@ -167,21 +180,27 @@ async def track_event(payload: PageViewCreate):
 
 @router.post("/consent")
 async def track_consent(payload: ConsentPayload):
+    """
+    Explicitly updates historical records to 'consented' state.
+    """
     try:
         with Session(engine) as session:
             statement = select(Visit).where(Visit.aura_id == payload.aura_id)
             visits = session.exec(statement).all()
-            for visit in visits:
-                visit.is_consented = True
-                session.add(visit)
+            for v in visits:
+                v.is_consented = True
+                session.add(v)
             session.commit()
             return {"status": "consent_recorded"}
     except Exception as e:
-        logger.error(f"❌ Consent Error: {e}")
+        logger.error(f"❌ Consent Sync Error: {e}")
         return {"status": "error"}
 
 @router.post("/exit")
 async def track_exit(payload: PageViewCreate):
+    """
+    Logs dwell time using Beacon API data.
+    """
     with Session(engine) as session:
         statement = select(Visit).where(
             Visit.aura_id == payload.client_id,

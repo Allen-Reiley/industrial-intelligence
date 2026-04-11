@@ -1,6 +1,6 @@
 /**
  * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
- * Version: 3.1.0 (Mobile Exit Optimization & Beacon Locked)
+ * Version: 3.2.0 (POPIA Compliant & Beacon Locked)
  * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
  */
 (async function() {
@@ -15,7 +15,7 @@
         if (script?.src.includes('http')) {
             try { return new URL(script.src).origin; } catch (e) {}
         }
-        return "https://industrial-intelligence-xi.vercel.app"; // Default to production
+        return "https://industrial-intelligence-xi.vercel.app";
     };
     
     const API_URL = `${getBaseUrl().replace(/\/$/, '')}/api/v1/track`;
@@ -87,7 +87,7 @@
                 const cvs = document.createElement('canvas');
                 const ctx = cvs.getContext('2d');
                 ctx.textBaseline = "top"; ctx.font = "14px 'Arial'";
-                ctx.fillText("AuraWorks_v3.1", 2, 2);
+                ctx.fillText("AuraWorks_v3.2", 2, 2);
                 return cvs.toDataURL().substring(0, 100);
             } catch (e) { return "blocked"; }
         },
@@ -115,11 +115,19 @@
     };
 
     const AuraTracker = {
+        isArmed: false, // POPIA Guard
+
         init(auraId) {
             this.auraId = auraId;
             this.trackEntry();
             this.setupSensors();
             this.patchSPA();
+
+            // Listen for the "Authorize Sync" event from the consent banner
+            window.addEventListener('aura_consent_granted', () => {
+                this.isArmed = true;
+                this.dispatch('event', { event_type: 'consent_granted' });
+            });
         },
         async dispatch(endpoint, payload, useBeacon = false) {
             const utms = AuraPersistence.getStoredUTMs();
@@ -143,12 +151,14 @@
             } catch (e) { console.error("Aura dispatch error", e); }
         },
         setupSensors() {
-            // Email Blur Capture
+            // Email Capture: Guarded by isArmed
             document.addEventListener('blur', (e) => {
+                if (!this.isArmed) return; 
+
                 const target = e.target;
                 if (target.type === 'email' || target.name?.includes('email')) {
                     if (target.value.includes('@')) {
-                        this.dispatch('identity', { email: target.value, capture_source: 'blur' });
+                        this.dispatch('identity', { email: target.value, capture_source: 'authorized_blur' });
                     }
                 }
             }, true);
@@ -164,7 +174,7 @@
                 }
             });
 
-            // --- MOBILE & DESKTOP EXIT ENGINE ---
+            // Visibility API for Mobile Exit
             document.addEventListener('visibilitychange', () => {
                 if (document.visibilityState === 'hidden') {
                     this.trackExit();
@@ -186,13 +196,13 @@
         },
         trackExit() {
             const duration = Math.round((performance.now() - window.AURA_START_TIME) / 1000);
-            if (duration < 1) return; // Ignore micro-glitches
+            if (duration < 1) return;
             
             this.dispatch('exit', {
                 event_type: 'exit',
                 duration: duration,
                 url: window.location.href
-            }, true); // Forced Beacon
+            }, true); 
         },
         patchSPA() {
             const self = this;
