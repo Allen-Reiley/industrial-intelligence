@@ -1,11 +1,12 @@
 /**
  * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
- * Version: 3.0.0 (Quarantine & Forensic Lock Ready)
+ * Version: 3.1.0 (Mobile Exit Optimization & Beacon Locked)
  * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
  */
 (async function() {
     const script = document.currentScript;
     const clientId = window.AURA_ID || script?.getAttribute('data-id');
+    window.AURA_START_TIME = performance.now();
     
     if (!clientId) return console.error("❌ AuraWorks: Missing Client Identity.");
 
@@ -14,12 +15,11 @@
         if (script?.src.includes('http')) {
             try { return new URL(script.src).origin; } catch (e) {}
         }
-        return "http://localhost:8000";
+        return "https://industrial-intelligence-xi.vercel.app"; // Default to production
     };
     
     const API_URL = `${getBaseUrl().replace(/\/$/, '')}/api/v1/track`;
 
-    // --- PILLAR 1: PERSISTENCE (Triple-Lock Storage) ---
     const AuraPersistence = {
         key: 'aura_uid',
         utmKey: 'aura_utm',
@@ -62,7 +62,6 @@
         }
     };
 
-    // --- PILLAR 2: FORENSIC SIGNATURES ---
     const AuraFingerprint = {
         async getFullSignature() {
             return {
@@ -80,7 +79,7 @@
                 type: conn?.effectiveType || "unknown",
                 rtt: conn?.rtt,
                 downlink: conn?.downlink,
-                is_residential_prob: (conn?.saveData || conn?.downlink < 10) // Heuristic for mobile/DSL
+                is_residential_prob: (conn?.saveData || (conn?.downlink && conn.downlink < 10))
             };
         },
         getCanvas() {
@@ -88,8 +87,8 @@
                 const cvs = document.createElement('canvas');
                 const ctx = cvs.getContext('2d');
                 ctx.textBaseline = "top"; ctx.font = "14px 'Arial'";
-                ctx.fillText("AuraWorks_v3.0", 2, 2);
-                return cvs.toDataURL().substring(0, 100); // Send hash snippet
+                ctx.fillText("AuraWorks_v3.1", 2, 2);
+                return cvs.toDataURL().substring(0, 100);
             } catch (e) { return "blocked"; }
         },
         getWebGL() {
@@ -115,7 +114,6 @@
         }
     };
 
-    // --- PILLAR 3: TRACKER & COMPLIANCE UI ---
     const AuraTracker = {
         init(auraId) {
             this.auraId = auraId;
@@ -133,43 +131,47 @@
                 ...payload
             };
 
+            const url = `${API_URL}/${endpoint}`;
+
             if (useBeacon && navigator.sendBeacon) {
-                return navigator.sendBeacon(`${API_URL}/${endpoint}`, JSON.stringify(data));
+                return navigator.sendBeacon(url, JSON.stringify(data));
             }
             try {
-                await fetch(`${API_URL}/${endpoint}`, {
+                await fetch(url, {
                     method: 'POST', mode: 'cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data), keepalive: true
                 });
-            } catch (e) {}
-        },
-        showHandshake() {
-            // POPIA Compliance: Brief visual feedback on identity capture
-            const toast = document.createElement('div');
-            toast.style = "position:fixed;bottom:20px;right:20px;background:#18181b;color:#fff;padding:10px 15px;border-radius:4px;font-size:12px;border:1px solid #27272a;z-index:99999;font-family:sans-serif;box-shadow:0 4px 12px rgba(0,0,0,0.5);";
-            toast.innerHTML = "🛡️ AuraWorks: Industrial Identity Secure";
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            } catch (e) { console.error("Aura dispatch error", e); }
         },
         setupSensors() {
+            // Email Blur Capture
             document.addEventListener('blur', (e) => {
                 const target = e.target;
                 if (target.type === 'email' || target.name?.includes('email')) {
                     if (target.value.includes('@')) {
                         this.dispatch('identity', { email: target.value, capture_source: 'blur' });
-                        this.showHandshake();
                     }
                 }
             }, true);
 
+            // Intent Clicks
             document.addEventListener('click', (e) => {
                 const btn = e.target.closest('a, button');
                 if (!btn) return;
                 const text = btn.innerText?.toLowerCase();
-                const intentKeywords = ['pricing', 'audit', 'feature', 'solution', 'waitlist'];
+                const intentKeywords = ['pricing', 'audit', 'feature', 'solution', 'waitlist', 'get started'];
                 if (intentKeywords.some(kw => text.includes(kw))) {
                     this.dispatch('event', { event_type: 'intent_click', intent_cluster: text.substring(0, 20), url: window.location.pathname });
                 }
             });
+
+            // --- MOBILE & DESKTOP EXIT ENGINE ---
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') {
+                    this.trackExit();
+                }
+            });
+
+            window.addEventListener('pagehide', () => this.trackExit());
         },
         trackEntry() {
             const sig = AuraFingerprint.getNetworkInfo();
@@ -181,6 +183,16 @@
                 downlink_speed: sig.downlink,
                 rtt: sig.rtt
             });
+        },
+        trackExit() {
+            const duration = Math.round((performance.now() - window.AURA_START_TIME) / 1000);
+            if (duration < 1) return; // Ignore micro-glitches
+            
+            this.dispatch('exit', {
+                event_type: 'exit',
+                duration: duration,
+                url: window.location.href
+            }, true); // Forced Beacon
         },
         patchSPA() {
             const self = this;
@@ -195,7 +207,6 @@
         }
     };
 
-    // --- EXECUTION ---
     const startAura = async () => {
         if (window.AURA_INITIALIZED) return;
         window.AURA_INITIALIZED = true;
