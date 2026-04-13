@@ -1,4 +1,5 @@
 from typing import Optional
+from typing import Union, Optional  
 from sqlmodel import SQLModel, Field
 
 class PageViewBase(SQLModel):
@@ -15,7 +16,7 @@ class PageViewBase(SQLModel):
     class Config:
         # This ensures that even if a float like 10.5 comes in, it doesn't crash
         smart_union = True
-        
+
 class PageViewCreate(PageViewBase):
     """
     Validation schema for 'Exit' and 'Event' pings.
