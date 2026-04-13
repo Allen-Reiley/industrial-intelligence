@@ -12,11 +12,18 @@
     if (!clientSecret) return console.error("❌ AuraWorks: Missing Client Identity.");
 
     const getBaseUrl = () => {
+        // 1. Highest Priority: Explicit config (Manual override)
         if (window.AURA_CONFIG?.apiUrl) return window.AURA_CONFIG.apiUrl;
+        
+        // 2. Intelligence: Auto-detect where the script is being served from
         if (script?.src.includes('http')) {
             try { return new URL(script.src).origin; } catch (e) {}
         }
-        return "https://industrial-intelligence-xi.vercel.app";
+        
+        // 3. The Safeguard: Direct path to the Railway Engine
+        // Using the Railway URL ensures that even if the main site is down, 
+        // the forensic tracking still hits the backend.
+        return "https://dynamic-flow-production-a5d6.up.railway.app";
     };
     
     const API_URL = `${getBaseUrl().replace(/\/$/, '')}/api/v1/track`;

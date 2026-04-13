@@ -177,6 +177,8 @@ frontend/
         thanks/
           thank-you.tsx
         get-started-modal.tsx
+      tracker/
+        aura-tracker.tsx
       ui/
         animated-group.tsx
         button.tsx
@@ -218,6 +220,53 @@ This section contains the contents of the repository's files.
 
 <file path="backend/app/services/reports.py">
 
+</file>
+
+<file path="frontend/src/components/tracker/aura-tracker.tsx">
+"use client";
+
+import { useEffect } from "react";
+
+interface AuraTrackerProps {
+  clientId: string;
+  apiUrl?: string;
+  cdnUrl?: string;
+}
+
+/**
+ * AuraTracker: A modular forensic intelligence loader.
+ * Injects the tracking script with cache-busting and configuration.
+ */
+export default function AuraTracker({
+  clientId,
+  apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://dynamic-flow-production-a5d6.up.railway.app",
+  cdnUrl = "https://cdn.auraworks.co.za/aura.js",
+}: AuraTrackerProps) {
+  useEffect(() => {
+    // 1. Initialize Global Configuration
+    (window as any).AURA_CONFIG = { apiUrl };
+    (window as any).AURA_ID = clientId;
+
+    // 2. Create and Inject Script
+    const script = document.createElement("script");
+    script.async = true;
+    
+    // Hourly cache-busting (v parameter)
+    const version = Math.floor(Date.now() / 3600000);
+    script.src = `${cdnUrl}?v=${version}`;
+
+    document.head.appendChild(script);
+
+    return () => {
+      // Clean up on unmount if necessary
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
+    };
+  }, [clientId, apiUrl, cdnUrl]);
+
+  return null; // This component doesn't render any UI
+}
 </file>
 
 <file path="backend/app/api/v1/__init__.py">
@@ -4053,6 +4102,7 @@ class Department(SQLModel, table=True):
 
 <file path="backend/app/services/airtable.py">
 import logging
+import asyncio
 from datetime import datetime, timezone
 from app.core.config import settings
 from pyairtable import Api
@@ -4061,48 +4111,73 @@ logger = logging.getLogger("uvicorn")
 
 class AirtableEngine:
     def __init__(self):
-        # Using the centralized settings instead of direct os.getenv
-        token = settings.AIRTABLE_API_KEY
-        base_id = settings.AIRTABLE_BASE_ID
+        """
+        Initializes the Airtable connection using ProductionSettings.
+        """
+        # Centralized configuration access from settings
+        self.token = settings.AIRTABLE_API_KEY
+        self.base_id = settings.AIRTABLE_BASE_ID
+        self.table_name = settings.AIRTABLE_TABLE_NAME 
         
-        if not token or not base_id:
-            logger.warning("⚠️ Airtable credentials missing in settings. Engine on standby.")
+        if not self.token or not self.base_id:
+            logger.warning("⚠️ Airtable Engine: Missing credentials in environment. Standing by...")
             self.table = None
         else:
-            self.api = Api(token)
-            # Table name is 'Forensic Ledger' as per your B2B design
-            self.table = self.api.table(base_id, "Forensic Ledger")
+            try:
+                self.api = Api(self.token)
+                self.table = self.api.table(self.base_id, self.table_name)
+                logger.info(f"✅ Airtable Engine: Linked to Vault '{self.table_name}'")
+            except Exception as e:
+                logger.error(f"❌ Airtable Engine: Initialization failed: {e}")
+                self.table = None
 
     async def push_visit(self, data: dict):
         """
         Pushes high-intent corporate signals to the Airtable Ledger.
-        Matches the call in track.py to prevent AttributeErrors.
+        Uses clinical validation and thread offloading for production performance.
         """
+        # Final safety check: Pull fresh state from settings
+        # This prevents crashes if credentials are changed in Railway during runtime
+        current_token = settings.AIRTABLE_API_KEY
+        current_base = settings.AIRTABLE_BASE_ID
+
+        if not all([current_token, current_base]):
+            # Silently exit if credentials are removed in production variables
+            return {"status": "standby", "reason": "missing_credentials"}
+
         if not self.table:
-            return
+            # Re-attempt initialization if keys were provided after startup
+            try:
+                self.api = Api(current_token)
+                self.table = self.api.table(current_base, self.table_name)
+            except:
+                return {"status": "error", "reason": "vault_not_initialized"}
 
         try:
-            # Structuring the record for industrial-grade reporting
+            # Map Jura-level data to the Airtable Schema
             record = {
                 "Entity Name": data.get("company_name", "Anonymous Facility"),
                 "Domain": data.get("domain", "unknown.com"),
                 "Status": "Forensic Capture",
                 "IP Address": data.get("ip_address"),
-                "Location": f"{data.get('city', 'Unknown')}, {data.get('region', 'ZA')}",
-                "Intelligence Summary": data.get("summary", "Awaiting DeepSeek-V3 Audit..."),
+                "Location": f"{data.get('city', 'Unknown')}, {data.get('country_name', 'South Africa')}",
+                "Intelligence Summary": data.get("summary", "Awaiting Intelligence Audit..."),
                 "Aura ID": data.get("aura_id"),
-                "Connection Type": data.get("effective_connection_type", "Standard"),
+                "Connection": data.get("effective_connection_type", "Standard"),
                 "Detected At": datetime.now(timezone.utc).isoformat()
             }
             
-            # Sync execution within the async wrapper
-            self.table.create(record)
-            logger.info(f"✅ Airtable: Industrial Signal logged for {record['Entity Name']}")
+            # Execute blocking pyairtable call in a separate thread
+            await asyncio.to_thread(self.table.create, record)
+            
+            logger.info(f"💼 Vault: Industrial Signal logged for {record['Entity Name']}")
+            return {"status": "success"}
             
         except Exception as e:
-            logger.error(f"❌ Airtable Sync Failure: {e}")
+            logger.error(f"❌ Vault Sync Failure: {e}")
+            return {"status": "error", "message": str(e)}
 
-# Instantiate the engine for use in background tasks
+# Global instantiation for use throughout AuraWorks OS
 airtable_engine = AirtableEngine()
 </file>
 
@@ -5600,15 +5675,20 @@ export { Label }
 
 /**
  * The BASE_URL resolves the backend address.
- * Ensure NEXT_PUBLIC_API_URL is set in your .env.local or production environment.
+ * In Production: https://dynamic-flow-production-a5d6.up.railway.app
+ * In Local: http://localhost:8000
  */
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 /**
  * Normalizes the API URL. 
- * Removes trailing and leading slashes to prevent standard FastAPI route mismatches.
+ * Removes trailing slashes to prevent 307 Temporary Redirects or 404s in FastAPI.
  */
 const getEndpoint = (path: string) => {
+    // Check if BASE_URL is valid to prevent silent failures
+    if (!BASE_URL) {
+        console.warn("⚠️ AuraWorks OS: NEXT_PUBLIC_API_URL is undefined.");
+    }
     const cleanBase = BASE_URL.replace(/\/$/, '');
     const cleanPath = path.replace(/^\//, '').replace(/\/$/, '');
     return `${cleanBase}/${cleanPath}`;
@@ -5621,38 +5701,42 @@ export async function submitToWaitlist(formData: any) {
      */
     const endpoint = getEndpoint('api/v1/waitlist/join');
 
-    const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            ...formData,
-            /**
-             * THE STITCH:
-             * Automatically grab the aura_id (forensic signature) from storage.
-             * This upgrades the anonymous session to a 'Consented' identity.
-             */
-            aura_id: typeof window !== 'undefined' ? localStorage.getItem('aura_uid') : null,
-            source: "industrial_intelligence_v1",
-            timestamp: new Date().toISOString()
-        }),
-    });
+    try {
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                ...formData,
+                /**
+                 * THE STITCH:
+                 * Automatically grab the aura_id (forensic signature) from storage.
+                 * This upgrades the anonymous session to a 'Consented' identity.
+                 */
+                aura_id: typeof window !== 'undefined' ? localStorage.getItem('aura_uid') : null,
+                source: "industrial_intelligence_v1",
+                timestamp: new Date().toISOString()
+            }),
+        });
 
-    if (!response.ok) {
-        // Attempt to parse the structured error from FastAPI
-        const errorData = await response.json().catch(() => ({}));
-        
-        // Logical Check: If the route is missing entirely
-        if (response.status === 404) {
-            throw new Error(`Intelligence Gateway not found at ${endpoint}. Please verify backend deployment.`);
+        if (!response.ok) {
+            // Attempt to parse the structured error from FastAPI
+            const errorData = await response.json().catch(() => ({}));
+            
+            if (response.status === 404) {
+                throw new Error(`Intelligence Gateway not found at ${endpoint}. Please verify backend deployment.`);
+            }
+
+            // Return the detailed error (e.g. 'Work email required')
+            throw new Error(errorData.detail || 'The intelligence engine is currently synchronizing. Please try again.');
         }
 
-        // Return the detailed error (e.g. 'Work email required') or a generic fallback
-        throw new Error(errorData.detail || 'The intelligence engine is currently synchronizing. Please try again.');
+        return await response.json();
+    } catch (error: any) {
+        console.error("🚨 API Dispatch Error:", error);
+        throw error;
     }
-
-    return response.json();
 }
 </file>
 
@@ -5901,38 +5985,6 @@ class Company(SQLModel, table=True):
     )
 </file>
 
-<file path="backend/app/models/pageview.py">
-from typing import Optional
-from typing import Union, Optional  
-from pydantic import ConfigDict
-from sqlmodel import SQLModel, Field
-
-class PageViewBase(SQLModel):
-    client_id: str = Field(description="The visitor's unique forensic ID (aura_id)")
-    url: str = Field(description="The URL the visitor is exiting from")
-    
-    # Union handles the incoming data variations from the browser
-    duration: Union[int, float, str] = Field(
-        default=0, 
-        description="Dwell time in seconds. Coerced from string if necessary."
-    )
-
-    # Pydantic V2 replacement for 'class Config'
-    model_config = ConfigDict(
-        # 'smart_union' is the default behavior in V2, but we can set 
-        # extra='ignore' or other flags here if needed for industrial resilience.
-        populate_by_name=True
-    )
-
-class PageViewCreate(PageViewBase):
-    """
-    Validation schema for 'Exit' and 'Event' pings.
-    Matches the payload structure in AuraWorks v3.2.1
-    """
-    event_type: Optional[str] = "exit"
-    intent_cluster: Optional[str] = None
-</file>
-
 <file path="frontend/src/app/(pages)/about/page.tsx">
 import { AboutHero } from "@/components/sections/about/about-hero";
 import { FounderProfile } from "@/components/sections/about/founder-profile";
@@ -6018,6 +6070,38 @@ export default function Home() {
     </main>
   );
 }
+</file>
+
+<file path="backend/app/models/pageview.py">
+from typing import Optional
+from typing import Union, Optional  
+from pydantic import ConfigDict
+from sqlmodel import SQLModel, Field
+
+class PageViewBase(SQLModel):
+    client_id: str = Field(description="The visitor's unique forensic ID (aura_id)")
+    url: str = Field(description="The URL the visitor is exiting from")
+    
+    # Union handles the incoming data variations from the browser
+    duration: Union[int, float, str] = Field(
+        default=0, 
+        description="Dwell time in seconds. Coerced from string if necessary."
+    )
+
+    # Pydantic V2 replacement for 'class Config'
+    model_config = ConfigDict(
+        # 'smart_union' is the default behavior in V2, but we can set 
+        # extra='ignore' or other flags here if needed for industrial resilience.
+        populate_by_name=True
+    )
+
+class PageViewCreate(PageViewBase):
+    """
+    Validation schema for 'Exit' and 'Event' pings.
+    Matches the payload structure in AuraWorks v3.2.1
+    """
+    event_type: Optional[str] = "exit"
+    intent_cluster: Optional[str] = None
 </file>
 
 <file path="backend/app/services/notifications.py">
@@ -6792,11 +6876,18 @@ export default function Footer() {
     if (!clientSecret) return console.error("❌ AuraWorks: Missing Client Identity.");
 
     const getBaseUrl = () => {
+        // 1. Highest Priority: Explicit config (Manual override)
         if (window.AURA_CONFIG?.apiUrl) return window.AURA_CONFIG.apiUrl;
+        
+        // 2. Intelligence: Auto-detect where the script is being served from
         if (script?.src.includes('http')) {
             try { return new URL(script.src).origin; } catch (e) {}
         }
-        return "https://industrial-intelligence-xi.vercel.app";
+        
+        // 3. The Safeguard: Direct path to the Railway Engine
+        // Using the Railway URL ensures that even if the main site is down, 
+        // the forensic tracking still hits the backend.
+        return "https://dynamic-flow-production-a5d6.up.railway.app";
     };
     
     const API_URL = `${getBaseUrl().replace(/\/$/, '')}/api/v1/track`;
@@ -7150,71 +7241,6 @@ export default function Pricing() {
         </>
     )
 }
-</file>
-
-<file path="backend/app/core/config.py">
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional, Union
-
-class Settings(BaseSettings):
-    # --- APP SETTINGS ---
-    PROJECT_NAME: str = "AuraWorks Industrial Intelligence OS"
-    VERSION: str = "3.2.0"
-    API_V1_STR: str = "/api/v1"
-
-    # --- SECURITY & AUTH ---
-    # Used to secure /api/v1/leads and /api/v1/debug/entities
-    ADMIN_API_KEY: str = "change-me-in-production" 
-    SECRET_KEY: str  # Injected via Railway Vars
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 11520  # 8 days
-    
-    # --- DATABASE ---
-    # Railway provides this automatically when linked
-    DATABASE_URL: str 
-    
-    # --- INDUSTRIAL TRIAD (ENRICHMENT) ---
-    IPINFO_TOKEN: str 
-    APOLLO_API_KEY: Optional[str] = None 
-    
-    # --- INTELLIGENCE BRAIN ---
-    DEEPSEEK_API_KEY: Optional[str] = None 
-    
-    # --- VAULT & ENGINE (SINK) ---
-    # These now match the tokens you added to Railway
-    AIRTABLE_BASE_ID: Optional[str] = None 
-    AIRTABLE_API_KEY: Optional[str] = None
-    AIRTABLE_TABLE_NAME: str = "Forensic_Leads" # Added for consistency
-    NOTION_DATABASE_ID: Optional[str] = None 
-    NOTION_TOKEN: Optional[str] = None
-
-    # --- NOTIFICATIONS & DISPATCH ---
-    SLACK_WEBHOOK_URL: Optional[str] = None        # #leads channel
-    SLACK_VISIT_WEBHOOK_URL: Optional[str] = None  # #visit channel
-    MAILGUN_API_KEY: Optional[str] = None
-    MAILGUN_DOMAIN: str = "mg.auraworks.co.za"
-    
-    # --- LEGACY / OTHER ---
-    NEXT_PUBLIC_WAITLIST_API_KEY: Optional[str] = None
-    NEXT_PUBLIC_WAITLIST_ID: Optional[str] = None
-    RESEND_API_KEY: Optional[str] = None
-
-    # --- CORS SETTINGS ---
-    # Authorizing your production domains explicitly
-    ALLOWED_ORIGINS: list[str] = [
-        "https://www.auraworks.co.za",
-        "https://auraworks.co.za",
-        "https://dynamic-flow-production-a5d6.up.railway.app"
-    ]
-
-    # Modern Pydantic V2 Configuration
-    model_config = SettingsConfigDict(
-        # In production, env_file is ignored if variables are in the environment
-        env_file=None, 
-        case_sensitive=True,
-        extra="ignore" 
-    )
-
-settings = Settings()
 </file>
 
 <file path="backend/app/services/enrichment.py">
@@ -7587,6 +7613,73 @@ export default function HeroSection() {
         </>
     )
 }
+</file>
+
+<file path="backend/app/core/config.py">
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional, Union
+
+class Settings(BaseSettings):
+    # --- APP SETTINGS ---
+    PROJECT_NAME: str = "AuraWorks Industrial Intelligence OS"
+    VERSION: str = "3.2.0"
+    API_V1_STR: str = "/api/v1"
+
+    # --- SECURITY & AUTH ---
+    ADMIN_API_KEY: str = "change-me-in-production" 
+    # Change: Made Optional to prevent boot crash if Railway hasn't synced yet
+    SECRET_KEY: Optional[str] = None  
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 11520  # 8 days
+    
+    # --- DATABASE ---
+    # Change: This was the direct cause of the ValidationError. 
+    # Making it Optional allows the app to start and show health/logs.
+    DATABASE_URL: Optional[str] = None 
+    
+    # --- INDUSTRIAL TRIAD (ENRICHMENT) ---
+    # Change: Set to Optional
+    IPINFO_TOKEN: Optional[str] = None 
+    APOLLO_API_KEY: Optional[str] = None 
+    
+    # --- INTELLIGENCE BRAIN ---
+    DEEPSEEK_API_KEY: Optional[str] = None 
+    
+    # --- VAULT & ENGINE (SINK) ---
+    AIRTABLE_BASE_ID: Optional[str] = None 
+    AIRTABLE_API_KEY: Optional[str] = None
+    AIRTABLE_TABLE_NAME: str = "Forensic_Leads" 
+    NOTION_DATABASE_ID: Optional[str] = None 
+    NOTION_TOKEN: Optional[str] = None
+
+    # --- NOTIFICATIONS & DISPATCH ---
+    SLACK_WEBHOOK_URL: Optional[str] = None        
+    SLACK_VISIT_WEBHOOK_URL: Optional[str] = None  
+    MAILGUN_API_KEY: Optional[str] = None
+    MAILGUN_DOMAIN: str = "mg.auraworks.co.za"
+    
+    # --- LEGACY / OTHER ---
+    NEXT_PUBLIC_WAITLIST_API_KEY: Optional[str] = None
+    NEXT_PUBLIC_WAITLIST_ID: Optional[str] = None
+    RESEND_API_KEY: Optional[str] = None
+
+    # --- CORS SETTINGS ---
+    ALLOWED_ORIGINS: list[str] = [
+        "https://industrial-intelligence-xi.vercel.app", 
+        "http://localhost:3000",
+        "https://auraworks.co.za",
+        "https://www.auraworks.co.za",
+        "https://cdn.auraworks.co.za",
+        "https://dynamic-flow-production-a5d6.up.railway.app"
+    ]
+
+    # Modern Pydantic V2 Configuration
+    model_config = SettingsConfigDict(
+        env_file=None, 
+        case_sensitive=True,
+        extra="ignore" 
+    )
+
+settings = Settings()
 </file>
 
 <file path="backend/app/models/visit.py">
@@ -8349,13 +8442,22 @@ async def lifespan(app: FastAPI):
     The AuraWorks OS Lifecycle Manager.
     """
     logger.info(f"🚀 {settings.PROJECT_NAME} v{settings.VERSION}: Initializing...")
-    init_db()
+    
+    # RESILIENT DATABASE INITIALIZATION
+    if settings.DATABASE_URL:
+        try:
+            init_db()
+            logger.info("✅ Database Ledger: Connection established and tables verified.")
+        except Exception as e:
+            logger.error(f"❌ Database Ledger: Failed to initialize. {e}")
+    else:
+        logger.warning("⚠️ Database Ledger: DATABASE_URL missing. Operating in restricted mode.")
     
     # Audit secondary engine status at startup
     if settings.AIRTABLE_API_KEY and settings.AIRTABLE_BASE_ID:
         logger.info("✅ Vault Engine: Airtable Sync Active.")
     else:
-        logger.warning("⚠️ Vault Engine: Airtable on Standby (Missing Credentials).")
+        logger.warning("⚠️ Vault Engine: Airtable on Standby.")
 
     # Activate the Janitor as a background coroutine
     janitor_task = asyncio.create_task(run_janitor_loop())
@@ -8377,10 +8479,10 @@ app = FastAPI(
 )
 
 # --- CORS CONFIGURATION ---
-# Now pulling directly from the centralized ProductionSettings
+# Dynamically pull from settings to prevent production pre-flight blocks
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origins=settings.ALLOWED_ORIGINS or ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -8397,6 +8499,7 @@ def health_check():
     return {
         "status": "healthy", 
         "engine": settings.PROJECT_NAME,
+        "database_connected": bool(settings.DATABASE_URL),
         "timestamp": datetime.now(timezone.utc)
     }
 
@@ -8411,6 +8514,9 @@ async def get_leads():
     """
     Access point for verified leads. Requires ADMIN_API_KEY.
     """
+    if not settings.DATABASE_URL:
+        raise HTTPException(status_code=503, detail="Database Unavailable")
+        
     with Session(engine) as session:
         statement = select(Visit).where(Visit.verification_status == "verified").order_by(Visit.created_at.desc())
         results = session.exec(statement).all()
@@ -8425,6 +8531,9 @@ async def get_entities():
     """
     Direct access to the Juristic Entity ledger. Requires ADMIN_API_KEY.
     """
+    if not settings.DATABASE_URL:
+        raise HTTPException(status_code=503, detail="Database Unavailable")
+
     with Session(engine) as session:
         statement = select(Company).order_by(Company.created_at.desc())
         results = session.exec(statement).all()

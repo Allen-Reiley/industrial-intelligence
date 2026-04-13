@@ -47,13 +47,22 @@ async def lifespan(app: FastAPI):
     The AuraWorks OS Lifecycle Manager.
     """
     logger.info(f"🚀 {settings.PROJECT_NAME} v{settings.VERSION}: Initializing...")
-    init_db()
+    
+    # RESILIENT DATABASE INITIALIZATION
+    if settings.DATABASE_URL:
+        try:
+            init_db()
+            logger.info("✅ Database Ledger: Connection established and tables verified.")
+        except Exception as e:
+            logger.error(f"❌ Database Ledger: Failed to initialize. {e}")
+    else:
+        logger.warning("⚠️ Database Ledger: DATABASE_URL missing. Operating in restricted mode.")
     
     # Audit secondary engine status at startup
     if settings.AIRTABLE_API_KEY and settings.AIRTABLE_BASE_ID:
         logger.info("✅ Vault Engine: Airtable Sync Active.")
     else:
-        logger.warning("⚠️ Vault Engine: Airtable on Standby (Missing Credentials).")
+        logger.warning("⚠️ Vault Engine: Airtable on Standby.")
 
     # Activate the Janitor as a background coroutine
     janitor_task = asyncio.create_task(run_janitor_loop())
@@ -75,10 +84,10 @@ app = FastAPI(
 )
 
 # --- CORS CONFIGURATION ---
-# Now pulling directly from the centralized ProductionSettings
+# Dynamically pull from settings to prevent production pre-flight blocks
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origins=settings.ALLOWED_ORIGINS or ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -95,6 +104,7 @@ def health_check():
     return {
         "status": "healthy", 
         "engine": settings.PROJECT_NAME,
+        "database_connected": bool(settings.DATABASE_URL),
         "timestamp": datetime.now(timezone.utc)
     }
 
@@ -109,6 +119,9 @@ async def get_leads():
     """
     Access point for verified leads. Requires ADMIN_API_KEY.
     """
+    if not settings.DATABASE_URL:
+        raise HTTPException(status_code=503, detail="Database Unavailable")
+        
     with Session(engine) as session:
         statement = select(Visit).where(Visit.verification_status == "verified").order_by(Visit.created_at.desc())
         results = session.exec(statement).all()
@@ -123,6 +136,9 @@ async def get_entities():
     """
     Direct access to the Juristic Entity ledger. Requires ADMIN_API_KEY.
     """
+    if not settings.DATABASE_URL:
+        raise HTTPException(status_code=503, detail="Database Unavailable")
+
     with Session(engine) as session:
         statement = select(Company).order_by(Company.created_at.desc())
         results = session.exec(statement).all()

@@ -8,33 +8,34 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
 
     # --- SECURITY & AUTH ---
-    # Used to secure /api/v1/leads and /api/v1/debug/entities
     ADMIN_API_KEY: str = "change-me-in-production" 
-    SECRET_KEY: str  # Injected via Railway Vars
+    # Change: Made Optional to prevent boot crash if Railway hasn't synced yet
+    SECRET_KEY: Optional[str] = None  
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 11520  # 8 days
     
     # --- DATABASE ---
-    # Railway provides this automatically when linked
-    DATABASE_URL: str 
+    # Change: This was the direct cause of the ValidationError. 
+    # Making it Optional allows the app to start and show health/logs.
+    DATABASE_URL: Optional[str] = None 
     
     # --- INDUSTRIAL TRIAD (ENRICHMENT) ---
-    IPINFO_TOKEN: str 
+    # Change: Set to Optional
+    IPINFO_TOKEN: Optional[str] = None 
     APOLLO_API_KEY: Optional[str] = None 
     
     # --- INTELLIGENCE BRAIN ---
     DEEPSEEK_API_KEY: Optional[str] = None 
     
     # --- VAULT & ENGINE (SINK) ---
-    # These now match the tokens you added to Railway
     AIRTABLE_BASE_ID: Optional[str] = None 
     AIRTABLE_API_KEY: Optional[str] = None
-    AIRTABLE_TABLE_NAME: str = "Forensic_Leads" # Added for consistency
+    AIRTABLE_TABLE_NAME: str = "Forensic_Leads" 
     NOTION_DATABASE_ID: Optional[str] = None 
     NOTION_TOKEN: Optional[str] = None
 
     # --- NOTIFICATIONS & DISPATCH ---
-    SLACK_WEBHOOK_URL: Optional[str] = None        # #leads channel
-    SLACK_VISIT_WEBHOOK_URL: Optional[str] = None  # #visit channel
+    SLACK_WEBHOOK_URL: Optional[str] = None        
+    SLACK_VISIT_WEBHOOK_URL: Optional[str] = None  
     MAILGUN_API_KEY: Optional[str] = None
     MAILGUN_DOMAIN: str = "mg.auraworks.co.za"
     
@@ -44,16 +45,17 @@ class Settings(BaseSettings):
     RESEND_API_KEY: Optional[str] = None
 
     # --- CORS SETTINGS ---
-    # Authorizing your production domains explicitly
     ALLOWED_ORIGINS: list[str] = [
-        "https://www.auraworks.co.za",
+        "https://industrial-intelligence-xi.vercel.app", 
+        "http://localhost:3000",
         "https://auraworks.co.za",
+        "https://www.auraworks.co.za",
+        "https://cdn.auraworks.co.za",
         "https://dynamic-flow-production-a5d6.up.railway.app"
     ]
 
     # Modern Pydantic V2 Configuration
     model_config = SettingsConfigDict(
-        # In production, env_file is ignored if variables are in the environment
         env_file=None, 
         case_sensitive=True,
         extra="ignore" 

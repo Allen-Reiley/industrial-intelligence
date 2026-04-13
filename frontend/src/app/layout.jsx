@@ -5,6 +5,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { Analytics } from "@vercel/analytics/next";
 import AuraConsentBanner from "@/components/consent-banner/consent-banner";
+import AuraTracker from "@/components/tracker/aura-tracker";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -99,38 +100,17 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-  const CLIENT_ID = "c4a6c9b1-8355-4de2-985d-a04f4dcd63a0";
-  const CDN_BASE_URL = "https://cdn.auraworks.co.za/aura.js";
-
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className="antialiased">
         {children}
 
-        {/* ADVANCED IMMUTABLE LOADER 
-            1. Sets global AURA_CONFIG for backend comms.
-            2. Injects the tracker with a time-based 'v' parameter.
-            3. The 'v' updates automatically every hour (3600000ms).
-        */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function(w,d,s,i,u,a){
-                w.AURA_CONFIG = { apiUrl: "${API_BASE_URL}" };
-                w.AURA_ID = i; 
-                a=d.createElement(s);
-                a.async=1;
-                let v = Math.floor(Date.now()/3600000);
-                a.src= u + '?v=' + v;
-                d.head.appendChild(a);
-              })(window,document,'script','${CLIENT_ID}','${CDN_BASE_URL}');
-            `,
-          }}
+        {/* Modular Forensic Intelligence Loader */}
+        <AuraTracker 
+          clientId="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0" 
         />
 
         <AuraConsentBanner />
-
         <SpeedInsights />
         <GoogleAnalytics gaId="G-2LE9FLFM12" />
         <Analytics />
