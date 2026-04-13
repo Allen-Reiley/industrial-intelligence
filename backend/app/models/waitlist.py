@@ -1,22 +1,14 @@
 from datetime import datetime, timezone
-from sqlmodel import SQLModel, Field, Column, DateTime, String, Relationship
-from typing import Optional
-import sqlalchemy as sa
-
-# Industrial-grade UTC timestamp factory
-def get_utc_now():
-    return datetime.now(timezone.utc)
-
 from typing import Optional, TYPE_CHECKING
-from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Relationship, Column, DateTime, String
 import sqlalchemy as sa
 
-# Forward reference for Type Checking
+# Forward reference for Type Checking to avoid circular imports
 if TYPE_CHECKING:
     from app.models.company import Company
 
 def get_utc_now():
+    """Industrial-grade UTC timestamp factory for POPIA compliance."""
     return datetime.now(timezone.utc)
 
 class WaitlistLead(SQLModel, table=True):

@@ -116,7 +116,6 @@ frontend/
       admin/
         page.tsx
       dashboard/
-        entity-ledger.tsx
         page.tsx
       not-found.tsx
       page.tsx
@@ -213,6 +212,14 @@ VOID_CONTEXT.md
 <files>
 This section contains the contents of the repository's files.
 
+<file path="backend/app/core/security.py">
+
+</file>
+
+<file path="backend/app/services/reports.py">
+
+</file>
+
 <file path="backend/app/api/v1/__init__.py">
 from fastapi import APIRouter
 from app.api.v1 import leads, track
@@ -224,17 +231,68 @@ api_router.include_router(track.router, prefix="/track", tags=["tracking"])
 api_router.include_router(leads.router, prefix="/leads", tags=["leads"])
 </file>
 
-<file path="backend/app/core/security.py">
+<file path="backend/app/api/v1/clients.py">
+from fastapi import APIRouter, Depends, HTTPException
+from sqlmodel import Session, select
+from app.db import get_session
+from app.models.client import Client, ClientCreate, ClientPublic
 
+router = APIRouter()
+
+@router.post("/", response_model=ClientPublic)
+def create_client(client_in: ClientCreate, session: Session = Depends(get_session)):
+    db_client = Client.model_validate(client_in) # or Client.from_orm(client_in)
+    session.add(db_client)
+    session.commit()
+    session.refresh(db_client)
+    return db_client
 </file>
 
-<file path="backend/app/models/__init__.py">
-from .company import Company
-from .department import Department
-from .visit import Visit
-from .waitlist import WaitlistLead
+<file path="backend/app/models/client.py">
+# backend/app/models/client.py
+from typing import Optional
+from datetime import datetime
+import uuid
+from sqlmodel import SQLModel, Field
 
-# Do NOT include router logic here
+class Client(SQLModel, table=True):  # <--- This must be named 'Client'
+    id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()), 
+        primary_key=True,
+        index=True
+    )
+    name: str = Field(index=True, unique=True)
+    website_url: Optional[str] = None
+    is_active: bool = Field(default=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+# These helper classes are useful for the API later
+class ClientCreate(SQLModel):
+    name: str
+    website_url: Optional[str] = None
+
+class ClientPublic(SQLModel):
+    id: str
+    name: str
+    is_active: bool
+</file>
+
+<file path="backend/app/models/pageview.py">
+from typing import Optional
+from sqlmodel import SQLModel, Field
+
+class PageViewBase(SQLModel):
+    client_id: str = Field(description="The visitor's unique forensic ID (aura_id)")
+    url: str = Field(description="The URL the visitor is exiting from")
+    duration: int = Field(default=0, description="Dwell time in seconds")
+
+class PageViewCreate(PageViewBase):
+    """
+    Validation schema for 'Exit' and 'Event' pings.
+    Matches the payload structure in AuraWorks v3.2.1
+    """
+    event_type: Optional[str] = "exit"
+    intent_cluster: Optional[str] = None
 </file>
 
 <file path="backend/app/services/notion.py">
@@ -279,10 +337,6 @@ class NotionVault:
             return None
 
 notion_vault = NotionVault()
-</file>
-
-<file path="backend/app/services/reports.py">
-
 </file>
 
 <file path="backend/app/db.py">
@@ -540,19 +594,24 @@ export default function GlobalError500() {
 "use client";
 import { useEffect, useState } from 'react';
 
-// Define the shape of our Lead based on the Backend Model
+// Optimized Lead interface to match the WaitlistLead + Visit forensics
 interface Lead {
   id: number;
-  company_name: string;
-  domain: string;
-  ip_address: string;
-  city: string;
-  region: string;
-  duration: number;
-  url: string;
-  hq_phone: string | null;
-  corp_emails: string | null;
+  name?: string;           // Consented Name
+  email?: string;          // Consented Email
+  company_name_raw?: string; 
+  website?: string;
+  industry?: string;
+  avg_price?: string;
+  aura_id: string;         // Forensic Anchor
   created_at: string;
+  // Fields merged from the Intelligence Engine
+  domain?: string;
+  ip_address?: string;
+  city?: string;
+  region?: string;
+  duration?: number;
+  url?: string;
 }
 
 export default function AdminDashboard() {
@@ -560,154 +619,107 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Calling our new FastAPI endpoint
-    fetch('http://localhost:8000/api/v1/leads')
-      .then((res) => res.json())
+    // Dynamically target the backend based on environment
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    
+    fetch(`${API_BASE}/api/v1/leads/`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })
       .then((data) => {
         setLeads(data);
         setLoading(false);
       })
-      .catch((err) => console.error("Error fetching leads:", err));
+      .catch((err) => {
+        console.error("🚨 Dashboard Fetch Error:", err);
+        setLoading(false);
+      });
   }, []);
 
-  if (loading) return <div className="p-10 text-center">Loading Lead Intelligence...</div>;
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="text-sm font-medium text-gray-400 animate-pulse tracking-widest uppercase">
+        Initializing Intelligence Feed...
+      </div>
+    </div>
+  );
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
+    <div className="p-8 bg-gray-50 min-h-screen font-sans">
       <div className="max-w-7xl mx-auto">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Internal Lead Feed</h1>
-          <p className="text-gray-500">Real-time B2B traffic and firmographic data.</p>
+        <header className="mb-12 flex justify-between items-end">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Internal Lead Ledger</h1>
+            <p className="text-sm text-gray-500 mt-1">Forensic B2B traffic and high-intent identity capture.</p>
+          </div>
+          <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 border-b border-gray-200 pb-1">
+            System Status: Operational
+          </div>
         </header>
 
-        <div className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-100">
+            <thead className="bg-gray-50/50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company / Domain</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">IP Address</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Engagement</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact Info</th>
+                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Entity / Identity</th>
+                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Firmographics</th>
+                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Forensics</th>
+                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Engagement</th>
+                <th className="px-6 py-4 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">Captured At</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-100">
               {leads.map((lead) => (
-                <tr key={lead.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="font-semibold text-gray-900">{lead.company_name || "Unknown"}</div>
-                    <div className="text-sm text-blue-500">{lead.domain}</div>
+                <tr key={lead.id} className="hover:bg-gray-50/80 transition-all duration-200">
+                  <td className="px-6 py-5">
+                    <div className="font-medium text-gray-900 text-sm">{lead.name || "Anonymous Prospect"}</div>
+                    <div className="text-xs text-gray-400 lowercase">{lead.email || "Identity Hidden"}</div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900">{lead.city}</div>
-                    <div className="text-xs text-gray-500">{lead.region}</div>
+                  <td className="px-6 py-5">
+                    <div className="text-sm text-gray-800">{lead.company_name_raw || "Unverified Entity"}</div>
+                    <div className="text-[11px] text-blue-600 font-medium">{lead.website || lead.domain || "no-domain.io"}</div>
                   </td>
-                  <td className="px-6 py-4 text-sm font-mono text-gray-600">
-                    {lead.ip_address}
+                  <td className="px-6 py-5">
+                    <div className="text-xs font-mono text-gray-500">{lead.ip_address || "0.0.0.0"}</div>
+                    <div className="text-[10px] text-gray-400 uppercase tracking-tighter">{lead.city}, {lead.region}</div>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${lead.duration > 30 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                      {lead.duration}s on site
-                    </span>
-                    <div className="text-[10px] text-gray-400 mt-1 truncate max-w-[150px]">{lead.url}</div>
+                  <td className="px-6 py-5">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-1.5 h-1.5 rounded-full ${Number(lead.duration) > 60 ? 'bg-emerald-500' : 'bg-amber-400'}`}></div>
+                      <span className="text-xs font-semibold text-gray-700">
+                        {lead.duration || 0}s <span className="text-gray-400 font-normal">dwell</span>
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-gray-400 mt-1 font-mono truncate max-w-[120px]">
+                      {lead.industry || "General Industry"}
+                    </div>
                   </td>
-                  <td className="px-6 py-4 text-sm">
-                    <div className="text-gray-900">{lead.hq_phone || "No Phone"}</div>
-                    <div className="text-xs text-gray-500 truncate max-w-[150px]">{lead.corp_emails || "Fetching emails..."}</div>
+                  <td className="px-6 py-5 text-right">
+                    <div className="text-xs text-gray-600 tabular-nums">
+                      {new Date(lead.created_at).toLocaleDateString()}
+                    </div>
+                    <div className="text-[10px] text-gray-400">
+                      {new Date(lead.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          
           {leads.length === 0 && (
-            <div className="p-20 text-center text-gray-400">No B2B leads captured yet. Keep the tracker running!</div>
+            <div className="py-24 text-center">
+              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-300">
+                Awaiting Data Ingress
+              </div>
+            </div>
           )}
         </div>
       </div>
     </div>
   );
 }
-</file>
-
-<file path="frontend/src/app/dashboard/entity-ledger.tsx">
-'use client';
-
-import React, { useEffect, useState } from 'react';
-
-interface Company {
-  id: number;
-  name: string;
-  domain: string;
-  industry: string;
-  city: string;
-  total_visits: number;
-  created_at: string;
-}
-
-const EntityLedger = () => {
-  const [entities, setEntities] = useState<Company[]>([]);
-
-  useEffect(() => {
-    const fetchEntities = async () => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/debug/entities`);
-      const data = await res.json();
-      setEntities(data);
-    };
-    fetchEntities();
-  }, []);
-
-  return (
-    <div className="bg-[#09090b] min-h-screen p-12 font-sans text-slate-200">
-      <div className="max-w-6xl mx-auto space-y-8">
-        
-        <header className="space-y-2">
-          <div className="flex items-center space-x-2 text-[10px] tracking-[0.3em] text-emerald-500 font-bold uppercase">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>Live Identity Ledger</span>
-          </div>
-          <h1 className="text-3xl font-light tracking-tight text-white">Juristic Entities</h1>
-        </header>
-
-        <div className="border border-slate-800/60 rounded-lg overflow-hidden bg-[#0c0c0e]">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-900/50 text-slate-500 text-[10px] uppercase tracking-widest border-b border-slate-800/60">
-              <tr>
-                <th className="px-6 py-4 font-semibold">Entity Name</th>
-                <th className="px-6 py-4 font-semibold">Jurisdiction</th>
-                <th className="px-6 py-4 font-semibold text-center">Engagement</th>
-                <th className="px-6 py-4 font-semibold text-right">Detected</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/40">
-              {entities.map((company) => (
-                <tr key={company.id} className="hover:bg-slate-800/20 transition-colors group">
-                  <td className="px-6 py-5">
-                    <div className="font-medium text-slate-100 group-hover:text-white">{company.name}</div>
-                    <div className="text-[11px] text-slate-500 font-mono">{company.domain}</div>
-                  </td>
-                  <td className="px-6 py-5">
-                    <div className="text-slate-300">{company.industry || 'Industrial'}</div>
-                    <div className="text-[11px] text-slate-500">{company.city}, ZA</div>
-                  </td>
-                  <td className="px-6 py-5 text-center">
-                    <span className="px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 text-[10px] font-bold">
-                      {company.total_visits} SESSIONS
-                    </span>
-                  </td>
-                  <td className="px-6 py-5 text-right text-slate-500 tabular-nums text-xs">
-                    {new Date(company.created_at).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default EntityLedger;
 </file>
 
 <file path="frontend/src/components/sections/about/about-cta.tsx">
@@ -3892,23 +3904,6 @@ Refer to docs/api_references.md for identity provider schemas.
 Refer to docs/security_manual.md for POPIA encryption standards.
 </file>
 
-<file path="backend/app/api/v1/clients.py">
-from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
-from app.db import get_session
-from app.models.client import Client, ClientCreate, ClientPublic
-
-router = APIRouter()
-
-@router.post("/", response_model=ClientPublic)
-def create_client(client_in: ClientCreate, session: Session = Depends(get_session)):
-    db_client = Client.model_validate(client_in) # or Client.from_orm(client_in)
-    session.add(db_client)
-    session.commit()
-    session.refresh(db_client)
-    return db_client
-</file>
-
 <file path="backend/app/api/v1/leads.py">
 from fastapi import APIRouter, Query, HTTPException
 from typing import List, Optional
@@ -4060,33 +4055,13 @@ def start_scheduler():
     logger.info("🚀 AuraWorks Scheduler: Online. Monitoring Juristic Entities.")
 </file>
 
-<file path="backend/app/models/client.py">
-# backend/app/models/client.py
-from typing import Optional
-from datetime import datetime
-import uuid
-from sqlmodel import SQLModel, Field
+<file path="backend/app/models/__init__.py">
+from .company import Company
+from .department import Department
+from .visit import Visit
+from .waitlist import WaitlistLead
 
-class Client(SQLModel, table=True):  # <--- This must be named 'Client'
-    id: str = Field(
-        default_factory=lambda: str(uuid.uuid4()), 
-        primary_key=True,
-        index=True
-    )
-    name: str = Field(index=True, unique=True)
-    website_url: Optional[str] = None
-    is_active: bool = Field(default=True)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-
-# These helper classes are useful for the API later
-class ClientCreate(SQLModel):
-    name: str
-    website_url: Optional[str] = None
-
-class ClientPublic(SQLModel):
-    id: str
-    name: str
-    is_active: bool
+# Do NOT include router logic here
 </file>
 
 <file path="backend/app/models/department.py">
@@ -4114,24 +4089,6 @@ class Department(SQLModel, table=True):
     # Using the string "Company" is critical here to avoid the 
     # 'failed to locate a name' error during mapper initialization.
     company: "Company" = Relationship(back_populates="departments")
-</file>
-
-<file path="backend/app/models/pageview.py">
-from typing import Optional
-from sqlmodel import SQLModel
-
-class PageViewBase(SQLModel):
-    client_id: str
-    url: str
-    duration: int = 0
-
-class PageViewCreate(PageViewBase):
-    """Used for the 'Exit' ping data validation"""
-    event_type: str = "exit"
-
-# We don't necessarily need a 'table=True' for this yet 
-# if you're just updating the Visit duration, but 
-# track.py needs the class definition to stop crashing.
 </file>
 
 <file path="backend/app/services/airtable.py">
@@ -4581,6 +4538,116 @@ import { twMerge } from "tailwind-merge"
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+</file>
+
+<file path="README.md">
+# 🏭 Industrial Intelligence Engine (Master)
+
+⚠️ Proprietary Software Notice: This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited.
+
+The **Industrial Intelligence Engine** is a specialized B2B intent-tracking SaaS. It deanonymizes website traffic for industrial firms in the East Rand (and beyond), turning anonymous IP addresses into actionable sales leads.
+
+
+## 📂 Project Structure
+
+```text
+industrial-intelligence/
+├── backend/       # FastAPI + SQLModel + PostgreSQL (The Core)
+├── frontend/      # Next.js 16 + Tailwind (The Interface & Lead Funnel)
+├── tracker/       # Vanilla JS (The Edge Script)
+└── infra/         # Docker, Nginx, or CI/CD configs
+
+```
+
+---
+
+## ⚡ Quick Start (Development Mode)
+
+### 1. Clone & Environment
+
+Ensure you are using **WSL 2** and have **Docker Desktop** running.
+
+```bash
+git clone https://github.com/Allen-Reiley/industrial-intelligence.git
+cd industrial-intelligence
+
+```
+
+### 2. Infrastructure (Postgres)
+
+Spin up the local database using Docker:
+
+```bash
+docker compose up -d
+
+```
+
+### 3. Backend Setup (FastAPI)
+
+Using `uv` for high-speed dependency management:
+
+```bash
+cd backend
+uv venv
+source .venv/bin/activate
+uvicorn main:app --reload
+
+```
+
+### 4. Frontend Setup (Next.js)
+
+```bash
+cd frontend
+npm install
+npm run dev
+
+```
+
+---
+
+## 🛰️ How it Works (The Data Loop)
+
+1. **Capture:** The `tracker.min.js` fires on a client's site.
+2. **Identify:** The Backend receives the IP, queries **IPinfo**, and filters out residential ISPs.
+3. **Store:** Valid B2B visits are saved to **PostgreSQL**.
+4. **Report:** The Client Dashboard visualizes the traffic, and a weekly PDF is generated for the client's sales team.
+
+---
+
+## 🛠️ Tech Stack Summary
+
+* **Backend:** FastAPI, Python 3.11, SQLModel, Uvicorn.
+* **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS, Shadcn/UI.
+* **Database:** PostgreSQL (Neon.tech for Production).
+* **Deployment:** Vercel (Frontend) + Render (Backend) + Cloudflare (CDN).
+
+---
+
+## 🛡️ Business Logic & Compliance
+
+* **Targeting:** Specifically engineered for the Industrial/Manufacturing sector.
+* **Pricing:** R10,000/month managed service.
+* **Privacy:** Designed for POPIA compliance—identifying Juristic Persons (Companies), not natural individuals.
+
+---
+
+## 📅 Roadmap (Phase 1)
+
+* [x] Technical Specification & Architecture.
+* [x] WSL 2 & Docker Environment Setup.
+* [ ] Database Schema Design (SQLModel).
+* [ ] API Ingestion Endpoints (`/entry`, `/exit`).
+* [ ] Lead Qualification Funnel build.
+
+---
+
+## ⚖️ License & Proprietary Notice
+
+**Copyright (c) 2026 AuraWorks Pty (ltd). All Rights Reserved.**
+
+This tracker script is proprietary software. Unauthorized copying, modification, or redistribution is strictly prohibited. Use is granted only to active subscribers of the Industrial Intelligence Engine managed service.
+
+---
 </file>
 
 <file path="backend/app/tasks/janitor.py">
@@ -5635,116 +5702,6 @@ const nextConfig: NextConfig = {
 export default nextConfig;
 </file>
 
-<file path="README.md">
-# 🏭 Industrial Intelligence Engine (Master)
-
-⚠️ Proprietary Software Notice: This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited.
-
-The **Industrial Intelligence Engine** is a specialized B2B intent-tracking SaaS. It deanonymizes website traffic for industrial firms in the East Rand (and beyond), turning anonymous IP addresses into actionable sales leads.
-
-
-## 📂 Project Structure
-
-```text
-industrial-intelligence/
-├── backend/       # FastAPI + SQLModel + PostgreSQL (The Core)
-├── frontend/      # Next.js 16 + Tailwind (The Interface & Lead Funnel)
-├── tracker/       # Vanilla JS (The Edge Script)
-└── infra/         # Docker, Nginx, or CI/CD configs
-
-```
-
----
-
-## ⚡ Quick Start (Development Mode)
-
-### 1. Clone & Environment
-
-Ensure you are using **WSL 2** and have **Docker Desktop** running.
-
-```bash
-git clone https://github.com/Allen-Reiley/industrial-intelligence.git
-cd industrial-intelligence
-
-```
-
-### 2. Infrastructure (Postgres)
-
-Spin up the local database using Docker:
-
-```bash
-docker compose up -d
-
-```
-
-### 3. Backend Setup (FastAPI)
-
-Using `uv` for high-speed dependency management:
-
-```bash
-cd backend
-uv venv
-source .venv/bin/activate
-uvicorn main:app --reload
-
-```
-
-### 4. Frontend Setup (Next.js)
-
-```bash
-cd frontend
-npm install
-npm run dev
-
-```
-
----
-
-## 🛰️ How it Works (The Data Loop)
-
-1. **Capture:** The `tracker.min.js` fires on a client's site.
-2. **Identify:** The Backend receives the IP, queries **IPinfo**, and filters out residential ISPs.
-3. **Store:** Valid B2B visits are saved to **PostgreSQL**.
-4. **Report:** The Client Dashboard visualizes the traffic, and a weekly PDF is generated for the client's sales team.
-
----
-
-## 🛠️ Tech Stack Summary
-
-* **Backend:** FastAPI, Python 3.11, SQLModel, Uvicorn.
-* **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS, Shadcn/UI.
-* **Database:** PostgreSQL (Neon.tech for Production).
-* **Deployment:** Vercel (Frontend) + Render (Backend) + Cloudflare (CDN).
-
----
-
-## 🛡️ Business Logic & Compliance
-
-* **Targeting:** Specifically engineered for the Industrial/Manufacturing sector.
-* **Pricing:** R10,000/month managed service.
-* **Privacy:** Designed for POPIA compliance—identifying Juristic Persons (Companies), not natural individuals.
-
----
-
-## 📅 Roadmap (Phase 1)
-
-* [x] Technical Specification & Architecture.
-* [x] WSL 2 & Docker Environment Setup.
-* [ ] Database Schema Design (SQLModel).
-* [ ] API Ingestion Endpoints (`/entry`, `/exit`).
-* [ ] Lead Qualification Funnel build.
-
----
-
-## ⚖️ License & Proprietary Notice
-
-**Copyright (c) 2026 AuraWorks Pty (ltd). All Rights Reserved.**
-
-This tracker script is proprietary software. Unauthorized copying, modification, or redistribution is strictly prohibited. Use is granted only to active subscribers of the Industrial Intelligence Engine managed service.
-
----
-</file>
-
 <file path="REMEMBER.md">
 # MEMORY.md | AuraWorks 2.2.0: Industrial Intelligence Engine
 
@@ -6030,22 +5987,24 @@ export default function SolutionPage() {
 
 <file path="frontend/src/app/dashboard/page.tsx">
 "use client";
-import { useEffect, useState, useMemo } from 'react';
+
+import React, { useEffect, useState, useMemo } from 'react';
 import { 
   Building2, 
   MapPin, 
   Clock, 
   Globe, 
-  ExternalLink, 
   ShieldCheck, 
   Zap,
   Activity,
   RefreshCcw,
   MousePointer2,
-  ChevronRight
+  ChevronRight,
+  LayoutGrid,
+  List
 } from 'lucide-react';
 
-// --- Types ---
+// --- DATA CONTRACTS ---
 interface Lead {
   id: number;
   company_name: string | null;
@@ -6059,39 +6018,49 @@ interface Lead {
   url: string | null;
   referrer: string | null;
   created_at: string;
-  hit_count?: number; // Added for the new backend logic
+  hit_count?: number;
 }
 
-export default function DashboardPage() {
+interface GroupedEntity {
+  main: Lead;
+  totalHits: number;
+  totalDuration: number;
+  paths: { url: string; duration: number; hits: number }[];
+}
+
+export default function UnifiedDashboard() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [viewMode, setViewMode] = useState<'cards' | 'ledger'>('ledger');
 
-  const getApiUrl = () => {
-    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
-    return "https://dynamic-flow-production-a5d6.up.railway.app";
-  };
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://dynamic-flow-production-a5d6.up.railway.app";
 
-  // Logic to group individual pings into unique Corporate Entities
-  const groupedLeads = useMemo(() => {
-    const groups: Record<string, { main: Lead, paths: { url: string, duration: number, hits: number }[] }> = {};
+  // --- IDENTITY BRIDGE LOGIC ---
+  const groupedEntities = useMemo(() => {
+    const groups: Record<string, GroupedEntity> = {};
     
     leads.forEach(lead => {
       const key = lead.ip_address;
       if (!groups[key]) {
-        groups[key] = { main: lead, paths: [] };
+        groups[key] = { main: lead, totalHits: 0, totalDuration: 0, paths: [] };
       }
       
-      // Track unique paths visited by this IP
       const pathIndex = groups[key].paths.findIndex(p => p.url === lead.url);
+      const currentHits = lead.hit_count || 1;
+      const currentDuration = lead.duration || 0;
+
+      groups[key].totalHits += currentHits;
+      groups[key].totalDuration += currentDuration;
+
       if (pathIndex > -1) {
-        groups[key].paths[pathIndex].duration += (lead.duration || 0);
-        groups[key].paths[pathIndex].hits += (lead.hit_count || 1);
+        groups[key].paths[pathIndex].duration += currentDuration;
+        groups[key].paths[pathIndex].hits += currentHits;
       } else {
         groups[key].paths.push({ 
           url: lead.url || "/", 
-          duration: lead.duration || 0, 
-          hits: lead.hit_count || 1 
+          duration: currentDuration, 
+          hits: currentHits 
         });
       }
     });
@@ -6103,14 +6072,13 @@ export default function DashboardPage() {
 
   const fetchData = async () => {
     setIsRefreshing(true);
-    const BASE_URL = getApiUrl().replace(/\/$/, '');
     try {
-      const res = await fetch(`${BASE_URL}/api/v1/leads`);
+      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/leads`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setLeads(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("AuraWorks Identity Bridge Connection failed:", err);
+      console.error("AuraWorks Identity Bridge Failure:", err);
       setLeads([]);
     } finally {
       setLoading(false);
@@ -6132,125 +6100,179 @@ export default function DashboardPage() {
     } catch (e) { return urlStr; }
   };
 
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#09090b]">
+      <div className="h-8 w-8 border-2 border-zinc-800 border-t-emerald-500 rounded-full animate-spin mb-4" />
+      <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.3em]">Synchronizing Intelligence...</p>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 pb-20">
-      {/* Top Navigation */}
-      <div className="border-b bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md sticky top-0 z-10 border-zinc-200 dark:border-zinc-800">
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 pb-20 font-sans selection:bg-emerald-500/30">
+      {/* --- REFINED NAV BAR --- */}
+      <nav className="border-b border-zinc-900 bg-[#09090b]/80 backdrop-blur-md sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-zinc-900 dark:bg-white flex items-center justify-center text-white dark:text-zinc-900 shadow-lg">
+          <div className="flex items-center gap-4">
+            <div className="h-10 w-10 rounded-lg bg-zinc-100 flex items-center justify-center text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]">
               <Activity className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-sm font-bold tracking-tight uppercase">Intelligence Feed</h1>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-medium">Identity Aggregator</p>
+              <div className="flex items-center gap-2 text-[10px] tracking-[0.3em] text-emerald-500 font-bold uppercase">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Live Signal Ledger</span>
+              </div>
+              <h1 className="text-lg font-light tracking-tight">Intelligence Dashboard</h1>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-             <button onClick={fetchData} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-full transition-colors">
-                <RefreshCcw className={`h-4 w-4 text-zinc-400 ${isRefreshing ? 'animate-spin' : ''}`} />
-             </button>
-             <div className="rounded-full border border-zinc-200 dark:border-zinc-800 px-4 py-1.5 text-xs font-bold bg-zinc-50 dark:bg-zinc-900 shadow-sm">
-                {groupedLeads.length} Entities Resolved
-             </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex bg-zinc-900 rounded-lg p-1 mr-4 border border-zinc-800">
+              <button 
+                onClick={() => setViewMode('ledger')}
+                className={`p-1.5 rounded-md transition-all ${viewMode === 'ledger' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                <List className="h-4 w-4" />
+              </button>
+              <button 
+                onClick={() => setViewMode('cards')}
+                className={`p-1.5 rounded-md transition-all ${viewMode === 'cards' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+            </div>
+            <button onClick={fetchData} className="p-2 hover:bg-zinc-900 rounded-full border border-zinc-800 transition-colors">
+              <RefreshCcw className={`h-4 w-4 text-zinc-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </button>
           </div>
         </div>
-      </div>
+      </nav>
 
-      <div className="max-w-5xl mx-auto px-6 mt-12">
-        <div className="grid gap-8">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-32 space-y-4">
-              <div className="h-8 w-8 border-2 border-zinc-200 dark:border-zinc-800 border-t-zinc-900 dark:border-t-white rounded-full animate-spin" />
-              <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.2em]">Resolving Industrial Signatures...</p>
-            </div>
-          ) : groupedLeads.length > 0 ? (
-            groupedLeads.map(({ main: lead, paths }) => (
-              <div key={lead.ip_address} className="group relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 transition-all hover:border-zinc-400 dark:hover:border-zinc-600 shadow-sm">
-                
-                <div className="p-6 md:p-8">
-                    {/* Header: Identity & IP */}
-                    <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-8">
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                        <h2 className="text-xl md:text-2xl font-bold tracking-tight">
-                            {lead.company_name || "Unresolved Juristic Entity"}
-                        </h2>
-                        {lead.is_b2b && (
-                            <div className="flex items-center gap-1 rounded-md bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-tighter text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/50">
-                            <ShieldCheck className="h-3 w-3" /> Juristic
+      <div className="max-w-7xl mx-auto px-6 mt-12">
+        {groupedEntities.length > 0 ? (
+          viewMode === 'ledger' ? (
+            /* --- JURISTIC LEDGER VIEW --- */
+            <div className="border border-zinc-800 rounded-xl overflow-hidden bg-zinc-900/20 shadow-2xl">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-zinc-900/50 text-zinc-500 text-[10px] uppercase tracking-[0.2em] border-b border-zinc-800">
+                  <tr>
+                    <th className="px-6 py-5 font-bold">Entity Identity</th>
+                    <th className="px-6 py-5 font-bold">Jurisdiction / IP</th>
+                    <th className="px-6 py-5 font-bold text-center">Signals</th>
+                    <th className="px-6 py-5 font-bold text-right">Last Attribution</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/50">
+                  {groupedEntities.map(({ main: lead, totalHits }) => (
+                    <tr key={lead.ip_address} className="hover:bg-zinc-800/30 transition-colors group">
+                      <td className="px-6 py-6">
+                        <div className="flex items-center gap-4">
+                          <div className="h-10 w-10 rounded bg-zinc-800 flex items-center justify-center text-zinc-500 font-bold border border-zinc-700 group-hover:border-emerald-500/50 transition-colors">
+                            {lead.company_name?.charAt(0) || <Globe className="h-4 w-4" />}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-zinc-100 group-hover:text-emerald-400 transition-colors leading-none mb-1">
+                              {lead.company_name || "Unresolved Juristic Entity"}
                             </div>
-                        )}
+                            <div className="text-[11px] text-zinc-500 font-mono tracking-tighter">
+                              {lead.industry || 'Industrial'} • {lead.is_b2b ? 'B2B Locked' : 'General'}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-6">
+                        <div className="text-zinc-300 text-xs flex items-center gap-1.5">
+                          <MapPin className="h-3 w-3 text-zinc-600" />
+                          {lead.city || 'Hub'}, {lead.country || 'ZAF'}
+                        </div>
+                        <div className="text-[10px] text-zinc-500 font-mono mt-1 italic">{lead.ip_address}</div>
+                      </td>
+                      <td className="px-6 py-6 text-center">
+                        <span className="px-3 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-emerald-500 text-[10px] font-black uppercase tracking-widest group-hover:bg-emerald-500/10 transition-colors">
+                          {totalHits} Events
+                        </span>
+                      </td>
+                      <td className="px-6 py-6 text-right text-zinc-500 tabular-nums text-[11px]">
+                        {new Date(lead.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            /* --- FORENSIC CARD VIEW --- */
+            <div className="grid gap-8 max-w-5xl mx-auto">
+              {groupedEntities.map(({ main: lead, paths, totalHits }) => (
+                <div key={lead.ip_address} className="rounded-2xl border border-zinc-800 bg-zinc-900/30 transition-all hover:border-zinc-700 shadow-xl overflow-hidden group">
+                  <div className="p-8">
+                    <div className="flex justify-between items-start gap-4 mb-8">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <h2 className="text-2xl font-bold tracking-tight text-white group-hover:text-emerald-400 transition-colors">
+                            {lead.company_name || "Unresolved Juristic Entity"}
+                          </h2>
+                          {lead.is_b2b && (
+                            <div className="flex items-center gap-1 rounded bg-emerald-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-emerald-500 border border-emerald-500/20">
+                              <ShieldCheck className="h-3 w-3" /> Juristic
+                            </div>
+                          )}
                         </div>
                         <div className="flex items-center gap-4 text-zinc-500">
-                            <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest">
-                                <MapPin className="h-3.5 w-3.5" /> {lead.city || "Hub"}, {lead.country || "ZAF"}
-                            </div>
-                            <div className="font-mono text-[10px] bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded italic">
-                                {lead.ip_address}
-                            </div>
+                          <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest">
+                            <MapPin className="h-3.5 w-3.5" /> {lead.city || "Hub"}, {lead.country || "ZAF"}
+                          </div>
+                          <div className="font-mono text-[10px] bg-zinc-800 px-2 py-0.5 rounded border border-zinc-700 text-zinc-400">
+                            {lead.ip_address}
+                          </div>
                         </div>
-                    </div>
-                    <div className="text-left md:text-right">
-                        <span className="text-[9px] font-mono uppercase text-zinc-400 tracking-widest block">Last Active</span>
-                        <p className="text-[11px] font-bold">{new Date(lead.created_at).toLocaleString()}</p>
-                    </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.2em] block mb-1">Capture Epoch</span>
+                        <p className="text-[11px] font-bold text-zinc-400 tabular-nums">{new Date(lead.created_at).toLocaleString()}</p>
+                      </div>
                     </div>
 
-                    {/* Page Interaction Feed */}
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-2 mb-4">
-                            <MousePointer2 className="h-3 w-3 text-zinc-400" />
-                            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Interaction Intelligence</span>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 mb-4">
+                        <MousePointer2 className="h-3 w-3 text-emerald-500" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">Interaction Intelligence</span>
+                      </div>
+                      {paths.map((p, idx) => (
+                        <div key={idx} className="flex items-center justify-between bg-zinc-800/40 rounded-xl p-4 border border-zinc-800/60 hover:bg-zinc-800/60 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <Zap className="h-3.5 w-3.5 text-emerald-500" />
+                            <span className="text-xs font-mono font-bold text-zinc-300">{getPathname(p.url)}</span>
+                          </div>
+                          <div className="flex items-center gap-8 text-right">
+                            <div>
+                              <div className="text-[8px] uppercase text-zinc-600 font-black tracking-widest">Dwell</div>
+                              <div className="text-[11px] font-mono font-bold text-zinc-100">{p.duration}s</div>
+                            </div>
+                            <div>
+                              <div className="text-[8px] uppercase text-zinc-600 font-black tracking-widest">Signal</div>
+                              <div className="text-[11px] font-mono font-bold text-emerald-500">{p.hits}x</div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="grid gap-2">
-                            {paths.map((p, idx) => (
-                                <div key={idx} className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-800/40 rounded-xl p-3 border border-zinc-100 dark:border-zinc-800/60">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-6 w-6 rounded-lg bg-white dark:bg-zinc-800 flex items-center justify-center border border-zinc-200 dark:border-zinc-700 shadow-sm">
-                                            <Zap className="h-3 w-3 text-emerald-500" />
-                                        </div>
-                                        <span className="text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300">
-                                            {getPathname(p.url)}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-6">
-                                        <div className="flex flex-col items-end">
-                                            <span className="text-[8px] uppercase text-zinc-400 font-bold">Dwell Time</span>
-                                            <span className="text-[10px] font-mono font-black">{p.duration}s</span>
-                                        </div>
-                                        <div className="flex flex-col items-end">
-                                            <span className="text-[8px] uppercase text-zinc-400 font-bold">Signal</span>
-                                            <span className="text-[10px] font-mono font-black text-emerald-500">{p.hits}x</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                      ))}
                     </div>
-                </div>
-
-                {/* Footer Attribution */}
-                <div className="px-8 py-4 bg-zinc-50/50 dark:bg-zinc-900/80 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                        <Globe className="h-3 w-3 text-zinc-400" />
-                        <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-tighter truncate max-w-[200px]">
-                            Via: {lead.referrer || "Direct Link"}
-                        </span>
-                    </div>
-                    <button className="text-[9px] font-black uppercase text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors flex items-center gap-1">
-                        Trace Source <ChevronRight className="h-3 w-3" />
+                  </div>
+                  <div className="px-8 py-4 bg-zinc-900/60 border-t border-zinc-800 flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                    <span className="flex items-center gap-2 italic">Ref: {lead.referrer || "Direct Ingress"}</span>
+                    <button className="flex items-center gap-1 hover:text-emerald-500 transition-colors group/btn">
+                      Trace Source <ChevronRight className="h-3 w-3 group-hover/btn:translate-x-0.5 transition-transform" />
                     </button>
+                  </div>
                 </div>
-              </div>
-            ))
-          ) : (
-            <div className="text-center py-32 rounded-3xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/20">
-              <Activity className="h-8 w-8 text-zinc-300 dark:text-zinc-700 mb-4 mx-auto" />
-              <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500">No Resolved Traffic</h3>
+              ))}
             </div>
-          )}
-        </div>
+          )
+        ) : (
+          <div className="text-center py-40 rounded-3xl border border-dashed border-zinc-800 bg-zinc-900/10">
+            <Activity className="h-10 w-10 text-zinc-800 mb-4 mx-auto" />
+            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">No Signal Attributed</h3>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -6281,15 +6303,16 @@ export default function Home() {
 <file path="tracker/src/public/aura.js">
 /**
  * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
- * Version: 3.2.0 (POPIA Compliant & Beacon Locked)
+ * Version: 3.2.1 (POPIA Compliant & Validation Fixed)
  * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
  */
 (async function() {
     const script = document.currentScript;
-    const clientId = window.AURA_ID || script?.getAttribute('data-id');
+    // clientSecret is the ID of the agency/site owner from the script tag
+    const clientSecret = window.AURA_ID || script?.getAttribute('data-id');
     window.AURA_START_TIME = performance.now();
     
-    if (!clientId) return console.error("❌ AuraWorks: Missing Client Identity.");
+    if (!clientSecret) return console.error("❌ AuraWorks: Missing Client Identity.");
 
     const getBaseUrl = () => {
         if (window.AURA_CONFIG?.apiUrl) return window.AURA_CONFIG.apiUrl;
@@ -6396,7 +6419,7 @@ export default function Home() {
     };
 
     const AuraTracker = {
-        isArmed: false, // POPIA Guard
+        isArmed: false, 
 
         init(auraId) {
             this.auraId = auraId;
@@ -6404,7 +6427,6 @@ export default function Home() {
             this.setupSensors();
             this.patchSPA();
 
-            // Listen for the "Authorize Sync" event from the consent banner
             window.addEventListener('aura_consent_granted', () => {
                 this.isArmed = true;
                 this.dispatch('event', { event_type: 'consent_granted' });
@@ -6412,9 +6434,16 @@ export default function Home() {
         },
         async dispatch(endpoint, payload, useBeacon = false) {
             const utms = AuraPersistence.getStoredUTMs();
+            
+            // Backend Mapping: 
+            // - client_id: Used by track_exit and track_event to find the Visit record (must be the visitor UID)
+            // - aura_id: Forensic unique ID (this.auraId)
+            // - agency_id: The ID from the script data-id (clientSecret)
+            
             const data = {
-                client_id: clientId,
+                client_id: this.auraId, // Set visitor ID here to satisfy backend validation
                 aura_id: this.auraId,
+                agency_id: clientSecret,
                 timestamp: new Date().toISOString(),
                 ...utms,
                 ...payload
@@ -6423,19 +6452,22 @@ export default function Home() {
             const url = `${API_URL}/${endpoint}`;
 
             if (useBeacon && navigator.sendBeacon) {
-                return navigator.sendBeacon(url, JSON.stringify(data));
+                const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+                return navigator.sendBeacon(url, blob);
             }
             try {
                 await fetch(url, {
-                    method: 'POST', mode: 'cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data), keepalive: true
+                    method: 'POST', 
+                    mode: 'cors', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(data), 
+                    keepalive: true
                 });
             } catch (e) { console.error("Aura dispatch error", e); }
         },
         setupSensors() {
-            // Email Capture: Guarded by isArmed
             document.addEventListener('blur', (e) => {
                 if (!this.isArmed) return; 
-
                 const target = e.target;
                 if (target.type === 'email' || target.name?.includes('email')) {
                     if (target.value.includes('@')) {
@@ -6444,7 +6476,6 @@ export default function Home() {
                 }
             }, true);
 
-            // Intent Clicks
             document.addEventListener('click', (e) => {
                 const btn = e.target.closest('a, button');
                 if (!btn) return;
@@ -6455,11 +6486,8 @@ export default function Home() {
                 }
             });
 
-            // Visibility API for Mobile Exit
             document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'hidden') {
-                    this.trackExit();
-                }
+                if (document.visibilityState === 'hidden') this.trackExit();
             });
 
             window.addEventListener('pagehide', () => this.trackExit());
@@ -7110,6 +7138,203 @@ export default function Pricing() {
 }
 </file>
 
+<file path="backend/app/core/config.py">
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional
+
+class Settings(BaseSettings):
+    # --- APP SETTINGS ---
+    PROJECT_NAME: str = "AuraWorks Industrial Intelligence OS"
+    VERSION: str = "3.2.0"
+    API_V1_STR: str = "/api/v1"
+
+    # --- SECURITY & AUTH ---
+    # Used to secure /api/v1/leads and /api/v1/debug/entities
+    ADMIN_API_KEY: str = "change-me-in-production" 
+    SECRET_KEY: str  # Required in .env
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 11520  # 8 days
+    
+    # --- DATABASE ---
+    DATABASE_URL: str # Required in .env
+    
+    # --- INDUSTRIAL TRIAD (ENRICHMENT) ---
+    IPINFO_TOKEN: str # Required in .env
+    APOLLO_API_KEY: Optional[str] = None # Added for contact discovery
+    
+    # --- INTELLIGENCE BRAIN ---
+    DEEPSEEK_API_KEY: Optional[str] = None # Added for juristic research
+    
+    # --- VAULT & ENGINE (SINK) ---
+    AIRTABLE_BASE_ID: Optional[str] = None # Moved from os.getenv
+    AIRTABLE_API_KEY: Optional[str] = None
+    NOTION_DATABASE_ID: Optional[str] = None # Moved from os.getenv
+    NOTION_TOKEN: Optional[str] = None
+
+    # --- NOTIFICATIONS & DISPATCH ---
+    SLACK_WEBHOOK_URL: Optional[str] = None        # #leads channel
+    SLACK_VISIT_WEBHOOK_URL: Optional[str] = None  # #visit channel
+    MAILGUN_API_KEY: Optional[str] = None
+    MAILGUN_DOMAIN: str = "mg.auraworks.co.za"
+    
+    # --- LEGACY / OTHER ---
+    NEXT_PUBLIC_WAITLIST_API_KEY: Optional[str] = None
+    NEXT_PUBLIC_WAITLIST_ID: Optional[str] = None
+    RESEND_API_KEY: Optional[str] = None
+
+    # Modern Pydantic V2 Configuration
+    model_config = SettingsConfigDict(
+        env_file=".env", 
+        case_sensitive=True,
+        extra="ignore" 
+    )
+
+settings = Settings()
+</file>
+
+<file path="backend/app/services/enrichment.py">
+import httpx
+import logging
+import socket
+from app.core.config import settings
+from typing import Optional, List, Dict, Any
+
+logger = logging.getLogger("uvicorn")
+
+# --- AuraWorks Identity Bridge: Consumer ISP & Infrastructure Blacklist ---
+CONSUMER_ISP_KEYWORDS = [
+    "vodacom", "mtn", "telkom", "liquid", "cool ideas", "vumatel", "rain", 
+    "isp", "residential", "pool", "dynamic", "dsl", "fiber", "mobile"
+]
+
+def is_consumer_traffic(target_name: str) -> bool:
+    """Detects if a visit originates from a known consumer ISP."""
+    if not target_name:
+        return False
+    normalized = target_name.lower()
+    return any(keyword in normalized for keyword in CONSUMER_ISP_KEYWORDS)
+
+def perform_local_reverse_dns(ip_address: str) -> Dict[str, Any]:
+    """
+    Layer 1: Zero-Cost Classification.
+    Identifies cloud providers and obvious ISPs without burning API credits.
+    """
+    try:
+        hostname, _, _ = socket.gethostbyaddr(ip_address)
+        hostname = hostname.lower()
+        
+        if any(cloud in hostname for cloud in ["amazonaws", "googleusercontent", "azure", "static.cloud"]):
+            return {"type": "cloud", "provider": "Infrastructure", "confidence": 0.5}
+        if is_consumer_traffic(hostname):
+            return {"type": "isp", "provider": "Consumer ISP", "confidence": 0.2}
+        
+        return {"type": "business_static", "provider": hostname, "confidence": 0.7}
+    except Exception:
+        return {"type": "unknown", "provider": "Unknown", "confidence": 0.0}
+
+async def enrich_visitor_data(ip_address: str) -> dict:
+    """
+    Phase 01: Forensic IP Resolution.
+    Calculates a 'B2B Confidence Score' instead of hard filtering.
+    """
+    if ip_address in ("127.0.0.1", "localhost", "::1"):
+        return {"company_name": "Local Test Environment", "is_b2b": False, "confidence_score": 1.0}
+
+    # 1. Layer 1 Check (Local)
+    local_intel = perform_local_reverse_dns(ip_address)
+
+    # 2. Layer 2 Check (IPinfo)
+    url = f"https://ipinfo.io/{ip_address}?token={settings.IPINFO_TOKEN}"
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url, timeout=5.0)
+            if response.status_code != 200:
+                return {"company_name": "Unknown", "is_b2b": False, "confidence_score": 0.0}
+
+            data = response.json()
+            company_data = data.get("company", {})
+            asn_data = data.get("asn", {})
+            
+            final_name = company_data.get("name")
+            final_domain = company_data.get("domain")
+
+            # Fallback to org parsing if company block is empty
+            if not final_name:
+                org_full = data.get("org", "Unknown")
+                final_name = " ".join(org_full.split(" ")[1:]) if org_full.startswith("AS") else org_full
+
+            asn_type = asn_data.get("type", "").lower()
+            
+            # --- CALCULATE CONFIDENCE SCORE ---
+            # 1.0 = Definite Corporate HQ | 0.0 = Definite Residential Noise
+            confidence = 0.5 # Baseline
+            
+            if asn_type == "business": confidence += 0.4
+            if asn_type == "hosting": confidence -= 0.2
+            if is_consumer_traffic(final_name) or is_consumer_traffic(data.get("org", "")):
+                confidence -= 0.4
+            
+            # Final determination for the 'Industrial' threshold
+            is_b2b = confidence >= 0.5
+
+            return {
+                "company_name": final_name,
+                "domain": final_domain or asn_data.get("domain"),
+                "is_b2b": is_b2b,
+                "confidence_score": round(max(0.0, min(1.0, confidence)), 2),
+                "industry": asn_type or "unknown",
+                "city": data.get("city"),
+                "region": data.get("region"),
+                "provider_type": local_intel["type"]
+            }
+        except Exception as e:
+            logger.error(f"IPinfo Failure: {e}")
+            return {"company_name": "Error", "is_b2b": False, "confidence_score": 0.0}
+
+async def get_departmental_intelligence(domain: str) -> List[Dict]:
+    """
+    Phase 02: Industrial Cluster Mapping (Apollo.io).
+    """
+    if not settings.APOLLO_API_KEY or not domain or domain in ["unknown.com", "n/a"]:
+        return []
+
+    url = "https://api.apollo.io/v1/people/search"
+    target_departments = ["Procurement", "Operations", "Engineering", "Maintenance", "Supply Chain"]
+
+    payload = {
+        "api_key": settings.APOLLO_API_KEY,
+        "q_organization_domains": domain,
+        "person_titles": target_departments,
+        "organization_locations": ["South Africa"],
+        "display_mode": "regular",
+        "per_page": 5 # Leaner query to save credits
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(url, json=payload, timeout=12.0)
+            if response.status_code != 200:
+                return []
+
+            data = response.json()
+            people = data.get("people", [])
+            
+            departments_found = []
+            for person in people:
+                departments_found.append({
+                    "name": person.get("title", "Lead"),
+                    "email": person.get("email"),
+                    "phone": person.get("phone_numbers", [{}])[0].get("raw_number"),
+                    "head_of_dept_linkedin": person.get("linkedin_url")
+                })
+            
+            return departments_found
+
+        except Exception as e:
+            return []
+            logger.error(f"Apollo Enrichment Failure for {domain}: {e}")
+</file>
+
 <file path="frontend/src/components/hero-sec/hero-section.tsx">
 import React from 'react'
 import Link from 'next/link'
@@ -7338,201 +7563,94 @@ export default function HeroSection() {
 }
 </file>
 
-<file path="backend/app/core/config.py">
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional
+<file path="backend/app/models/visit.py">
+from typing import Optional, List, Dict, Any
+from datetime import datetime
+from sqlmodel import SQLModel, Field, Column, DateTime, Relationship, JSON
+import sqlalchemy as sa
 
-class Settings(BaseSettings):
-    # --- APP SETTINGS ---
-    PROJECT_NAME: str = "AuraWorks Industrial Intelligence OS"
-    VERSION: str = "3.2.0"
-    API_V1_STR: str = "/api/v1"
+class VisitBase(SQLModel):
+    client_id: str = Field(index=True)
+    aura_id: str = Field(index=True)
+    url: str
+    referrer: Optional[str] = "direct"
+    timestamp: Optional[str] = None 
+    # Base attribution fields for all tracking schemas
+    utm_source: Optional[str] = None
+    utm_medium: Optional[str] = None
+    utm_campaign: Optional[str] = None
+    utm_content: Optional[str] = None
+    utm_term: Optional[str] = None
 
-    # --- SECURITY & AUTH ---
-    # Used to secure /api/v1/leads and /api/v1/debug/entities
-    ADMIN_API_KEY: str = "change-me-in-production" 
-    SECRET_KEY: str  # Required in .env
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 11520  # 8 days
+class Visit(SQLModel, table=True): 
+    """The granular ledger of every touchpoint. Multiple visits map to one Company."""
+    id: Optional[int] = Field(default=None, primary_key=True)
     
-    # --- DATABASE ---
-    DATABASE_URL: str # Required in .env
+    # --- RELATIONS ---
+    company_id: Optional[int] = Field(default=None, foreign_key="company.id", index=True)
     
-    # --- INDUSTRIAL TRIAD (ENRICHMENT) ---
-    IPINFO_TOKEN: str # Required in .env
-    APOLLO_API_KEY: Optional[str] = None # Added for contact discovery
+    # --- IDENTITY & CONSENT ---
+    client_id: str = Field(index=True)
+    aura_id: str = Field(index=True) # Browser fingerprint
+    ip_address: Optional[str] = Field(default="0.0.0.0", index=True)
+    is_consented: bool = Field(default=False, index=True) 
     
-    # --- INTELLIGENCE BRAIN ---
-    DEEPSEEK_API_KEY: Optional[str] = None # Added for juristic research
+    # --- QUARANTINE & AUDIT (Rigid Logic v3.0) ---
+    # verifying: Currently under 24hr review
+    # verified: Confirmed industrial/lead match
+    # unverified: Marked for Janitor deletion
+    verification_status: str = Field(default="verifying", index=True)
+    last_audit_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), nullable=False)
+    )
     
-    # --- VAULT & ENGINE (SINK) ---
-    AIRTABLE_BASE_ID: Optional[str] = None # Moved from os.getenv
-    AIRTABLE_API_KEY: Optional[str] = None
-    NOTION_DATABASE_ID: Optional[str] = None # Moved from os.getenv
-    NOTION_TOKEN: Optional[str] = None
+    # --- FORENSIC SIGNATURES (Tracker v2.4.0+) ---
+    canvas_hash: Optional[str] = None
+    webgl_renderer: Optional[str] = None
+    clock_drift: Optional[float] = None
+    
+    # --- NETWORK INTELLIGENCE (For Buying Committee Detection) ---
+    effective_connection_type: Optional[str] = Field(default=None, description="e.g., 4g, fiber")
+    downlink_speed: Optional[float] = Field(default=None, description="Mbps")
+    rtt: Optional[int] = Field(default=None, description="Round-trip time in ms")
+    
+    # --- BEHAVIORAL & INTENT CLUSTERING ---
+    url: str
+    referrer: Optional[str] = "direct"
+    screen_resolution: Optional[str] = None
+    duration: int = Field(default=0)
+    
+    # Captures specific high-intent clicks (Pricing, Audit, Features)
+    intent_cluster: Optional[str] = Field(default=None, index=True)
+    intent_metadata: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
+    
+    # --- ATTRIBUTION (Industrial Grade) ---
+    utm_source: Optional[str] = Field(default=None, index=True)
+    utm_medium: Optional[str] = Field(default=None, index=True)
+    utm_campaign: Optional[str] = Field(default=None, index=True)
+    utm_content: Optional[str] = None
+    utm_term: Optional[str] = None
 
-    # --- NOTIFICATIONS & DISPATCH ---
-    SLACK_WEBHOOK_URL: Optional[str] = None        # #leads channel
-    SLACK_VISIT_WEBHOOK_URL: Optional[str] = None  # #visit channel
-    MAILGUN_API_KEY: Optional[str] = None
-    MAILGUN_DOMAIN: str = "mg.auraworks.co.za"
-    
-    # --- LEGACY / OTHER ---
-    NEXT_PUBLIC_WAITLIST_API_KEY: Optional[str] = None
-    NEXT_PUBLIC_WAITLIST_ID: Optional[str] = None
-    RESEND_API_KEY: Optional[str] = None
-
-    # Modern Pydantic V2 Configuration
-    model_config = SettingsConfigDict(
-        env_file=".env", 
-        case_sensitive=True,
-        extra="ignore" 
+    # --- TIMESTAMPS ---
+    created_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), nullable=False)
     )
 
-settings = Settings()
-</file>
+    company: Optional["Company"] = Relationship(back_populates="visits")
 
-<file path="backend/app/services/enrichment.py">
-import httpx
-import logging
-import socket
-from app.core.config import settings
-from typing import Optional, List, Dict, Any
+class VisitCreate(VisitBase):
+    """Schema for initial ingestion via track_entry"""
+    screen_resolution: Optional[str] = None
+    effective_connection_type: Optional[str] = None
+    downlink_speed: Optional[float] = None
+    rtt: Optional[int] = None
 
-logger = logging.getLogger("uvicorn")
-
-# --- AuraWorks Identity Bridge: Consumer ISP & Infrastructure Blacklist ---
-CONSUMER_ISP_KEYWORDS = [
-    "vodacom", "mtn", "telkom", "liquid", "cool ideas", "vumatel", "rain", 
-    "isp", "residential", "pool", "dynamic", "dsl", "fiber", "mobile"
-]
-
-def is_consumer_traffic(target_name: str) -> bool:
-    """Detects if a visit originates from a known consumer ISP."""
-    if not target_name:
-        return False
-    normalized = target_name.lower()
-    return any(keyword in normalized for keyword in CONSUMER_ISP_KEYWORDS)
-
-def perform_local_reverse_dns(ip_address: str) -> Dict[str, Any]:
-    """
-    Layer 1: Zero-Cost Classification.
-    Identifies cloud providers and obvious ISPs without burning API credits.
-    """
-    try:
-        hostname, _, _ = socket.gethostbyaddr(ip_address)
-        hostname = hostname.lower()
-        
-        if any(cloud in hostname for cloud in ["amazonaws", "googleusercontent", "azure", "static.cloud"]):
-            return {"type": "cloud", "provider": "Infrastructure", "confidence": 0.5}
-        if is_consumer_traffic(hostname):
-            return {"type": "isp", "provider": "Consumer ISP", "confidence": 0.2}
-        
-        return {"type": "business_static", "provider": hostname, "confidence": 0.7}
-    except Exception:
-        return {"type": "unknown", "provider": "Unknown", "confidence": 0.0}
-
-async def enrich_visitor_data(ip_address: str) -> dict:
-    """
-    Phase 01: Forensic IP Resolution.
-    Calculates a 'B2B Confidence Score' instead of hard filtering.
-    """
-    if ip_address in ("127.0.0.1", "localhost", "::1"):
-        return {"company_name": "Local Test Environment", "is_b2b": False, "confidence_score": 1.0}
-
-    # 1. Layer 1 Check (Local)
-    local_intel = perform_local_reverse_dns(ip_address)
-
-    # 2. Layer 2 Check (IPinfo)
-    url = f"https://ipinfo.io/{ip_address}?token={settings.IPINFO_TOKEN}"
-
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(url, timeout=5.0)
-            if response.status_code != 200:
-                return {"company_name": "Unknown", "is_b2b": False, "confidence_score": 0.0}
-
-            data = response.json()
-            company_data = data.get("company", {})
-            asn_data = data.get("asn", {})
-            
-            final_name = company_data.get("name")
-            final_domain = company_data.get("domain")
-
-            # Fallback to org parsing if company block is empty
-            if not final_name:
-                org_full = data.get("org", "Unknown")
-                final_name = " ".join(org_full.split(" ")[1:]) if org_full.startswith("AS") else org_full
-
-            asn_type = asn_data.get("type", "").lower()
-            
-            # --- CALCULATE CONFIDENCE SCORE ---
-            # 1.0 = Definite Corporate HQ | 0.0 = Definite Residential Noise
-            confidence = 0.5 # Baseline
-            
-            if asn_type == "business": confidence += 0.4
-            if asn_type == "hosting": confidence -= 0.2
-            if is_consumer_traffic(final_name) or is_consumer_traffic(data.get("org", "")):
-                confidence -= 0.4
-            
-            # Final determination for the 'Industrial' threshold
-            is_b2b = confidence >= 0.5
-
-            return {
-                "company_name": final_name,
-                "domain": final_domain or asn_data.get("domain"),
-                "is_b2b": is_b2b,
-                "confidence_score": round(max(0.0, min(1.0, confidence)), 2),
-                "industry": asn_type or "unknown",
-                "city": data.get("city"),
-                "region": data.get("region"),
-                "provider_type": local_intel["type"]
-            }
-        except Exception as e:
-            logger.error(f"IPinfo Failure: {e}")
-            return {"company_name": "Error", "is_b2b": False, "confidence_score": 0.0}
-
-async def get_departmental_intelligence(domain: str) -> List[Dict]:
-    """
-    Phase 02: Industrial Cluster Mapping (Apollo.io).
-    """
-    if not settings.APOLLO_API_KEY or not domain or domain in ["unknown.com", "n/a"]:
-        return []
-
-    url = "https://api.apollo.io/v1/people/search"
-    target_departments = ["Procurement", "Operations", "Engineering", "Maintenance", "Supply Chain"]
-
-    payload = {
-        "api_key": settings.APOLLO_API_KEY,
-        "q_organization_domains": domain,
-        "person_titles": target_departments,
-        "organization_locations": ["South Africa"],
-        "display_mode": "regular",
-        "per_page": 5 # Leaner query to save credits
-    }
-
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(url, json=payload, timeout=12.0)
-            if response.status_code != 200:
-                return []
-
-            data = response.json()
-            people = data.get("people", [])
-            
-            departments_found = []
-            for person in people:
-                departments_found.append({
-                    "name": person.get("title", "Lead"),
-                    "email": person.get("email"),
-                    "phone": person.get("phone_numbers", [{}])[0].get("raw_number"),
-                    "head_of_dept_linkedin": person.get("linkedin_url")
-                })
-            
-            return departments_found
-
-        except Exception as e:
-            return []
-            logger.error(f"Apollo Enrichment Failure for {domain}: {e}")
+class PageViewCreate(SQLModel):
+    client_id: str
+    url: str
+    duration: int
+    event_type: str = "exit"
+    intent_cluster: Optional[str] = None
 </file>
 
 <file path="backend/app/services/intelligence.py">
@@ -7715,116 +7833,18 @@ async def get_visitor_journey(aura_id: str) -> Dict:
         }
 </file>
 
-<file path="backend/app/models/visit.py">
-from typing import Optional, List, Dict, Any
-from datetime import datetime
-from sqlmodel import SQLModel, Field, Column, DateTime, Relationship, JSON
-import sqlalchemy as sa
-
-class VisitBase(SQLModel):
-    client_id: str = Field(index=True)
-    aura_id: str = Field(index=True)
-    url: str
-    referrer: Optional[str] = "direct"
-    timestamp: Optional[str] = None 
-    # Base attribution fields for all tracking schemas
-    utm_source: Optional[str] = None
-    utm_medium: Optional[str] = None
-    utm_campaign: Optional[str] = None
-    utm_content: Optional[str] = None
-    utm_term: Optional[str] = None
-
-class Visit(SQLModel, table=True): 
-    """The granular ledger of every touchpoint. Multiple visits map to one Company."""
-    id: Optional[int] = Field(default=None, primary_key=True)
-    
-    # --- RELATIONS ---
-    company_id: Optional[int] = Field(default=None, foreign_key="company.id", index=True)
-    
-    # --- IDENTITY & CONSENT ---
-    client_id: str = Field(index=True)
-    aura_id: str = Field(index=True) # Browser fingerprint
-    ip_address: Optional[str] = Field(default="0.0.0.0", index=True)
-    is_consented: bool = Field(default=False, index=True) 
-    
-    # --- QUARANTINE & AUDIT (Rigid Logic v3.0) ---
-    # verifying: Currently under 24hr review
-    # verified: Confirmed industrial/lead match
-    # unverified: Marked for Janitor deletion
-    verification_status: str = Field(default="verifying", index=True)
-    last_audit_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), nullable=False)
-    )
-    
-    # --- FORENSIC SIGNATURES (Tracker v2.4.0+) ---
-    canvas_hash: Optional[str] = None
-    webgl_renderer: Optional[str] = None
-    clock_drift: Optional[float] = None
-    
-    # --- NETWORK INTELLIGENCE (For Buying Committee Detection) ---
-    effective_connection_type: Optional[str] = Field(default=None, description="e.g., 4g, fiber")
-    downlink_speed: Optional[float] = Field(default=None, description="Mbps")
-    rtt: Optional[int] = Field(default=None, description="Round-trip time in ms")
-    
-    # --- BEHAVIORAL & INTENT CLUSTERING ---
-    url: str
-    referrer: Optional[str] = "direct"
-    screen_resolution: Optional[str] = None
-    duration: int = Field(default=0)
-    
-    # Captures specific high-intent clicks (Pricing, Audit, Features)
-    intent_cluster: Optional[str] = Field(default=None, index=True)
-    intent_metadata: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
-    
-    # --- ATTRIBUTION (Industrial Grade) ---
-    utm_source: Optional[str] = Field(default=None, index=True)
-    utm_medium: Optional[str] = Field(default=None, index=True)
-    utm_campaign: Optional[str] = Field(default=None, index=True)
-    utm_content: Optional[str] = None
-    utm_term: Optional[str] = None
-
-    # --- TIMESTAMPS ---
-    created_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), nullable=False)
-    )
-
-    company: Optional["Company"] = Relationship(back_populates="visits")
-
-class VisitCreate(VisitBase):
-    """Schema for initial ingestion via track_entry"""
-    screen_resolution: Optional[str] = None
-    effective_connection_type: Optional[str] = None
-    downlink_speed: Optional[float] = None
-    rtt: Optional[int] = None
-
-class PageViewCreate(SQLModel):
-    client_id: str
-    url: str
-    duration: int
-    event_type: str = "exit"
-    intent_cluster: Optional[str] = None
-</file>
-
 <file path="backend/app/models/waitlist.py">
 from datetime import datetime, timezone
-from sqlmodel import SQLModel, Field, Column, DateTime, String, Relationship
-from typing import Optional
-import sqlalchemy as sa
-
-# Industrial-grade UTC timestamp factory
-def get_utc_now():
-    return datetime.now(timezone.utc)
-
 from typing import Optional, TYPE_CHECKING
-from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Relationship, Column, DateTime, String
 import sqlalchemy as sa
 
-# Forward reference for Type Checking
+# Forward reference for Type Checking to avoid circular imports
 if TYPE_CHECKING:
     from app.models.company import Company
 
 def get_utc_now():
+    """Industrial-grade UTC timestamp factory for POPIA compliance."""
     return datetime.now(timezone.utc)
 
 class WaitlistLead(SQLModel, table=True):

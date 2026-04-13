@@ -1,15 +1,15 @@
 from typing import Optional
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Field
 
 class PageViewBase(SQLModel):
-    client_id: str
-    url: str
-    duration: int = 0
+    client_id: str = Field(description="The visitor's unique forensic ID (aura_id)")
+    url: str = Field(description="The URL the visitor is exiting from")
+    duration: int = Field(default=0, description="Dwell time in seconds")
 
 class PageViewCreate(PageViewBase):
-    """Used for the 'Exit' ping data validation"""
-    event_type: str = "exit"
-
-# We don't necessarily need a 'table=True' for this yet 
-# if you're just updating the Visit duration, but 
-# track.py needs the class definition to stop crashing.
+    """
+    Validation schema for 'Exit' and 'Event' pings.
+    Matches the payload structure in AuraWorks v3.2.1
+    """
+    event_type: Optional[str] = "exit"
+    intent_cluster: Optional[str] = None

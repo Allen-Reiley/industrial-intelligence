@@ -1,20 +1,22 @@
 "use client";
-import { useEffect, useState, useMemo } from 'react';
+
+import React, { useEffect, useState, useMemo } from 'react';
 import { 
   Building2, 
   MapPin, 
   Clock, 
   Globe, 
-  ExternalLink, 
   ShieldCheck, 
   Zap,
   Activity,
   RefreshCcw,
   MousePointer2,
-  ChevronRight
+  ChevronRight,
+  LayoutGrid,
+  List
 } from 'lucide-react';
 
-// --- Types ---
+// --- DATA CONTRACTS ---
 interface Lead {
   id: number;
   company_name: string | null;
@@ -28,39 +30,49 @@ interface Lead {
   url: string | null;
   referrer: string | null;
   created_at: string;
-  hit_count?: number; // Added for the new backend logic
+  hit_count?: number;
 }
 
-export default function DashboardPage() {
+interface GroupedEntity {
+  main: Lead;
+  totalHits: number;
+  totalDuration: number;
+  paths: { url: string; duration: number; hits: number }[];
+}
+
+export default function UnifiedDashboard() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [viewMode, setViewMode] = useState<'cards' | 'ledger'>('ledger');
 
-  const getApiUrl = () => {
-    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
-    return "https://dynamic-flow-production-a5d6.up.railway.app";
-  };
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://dynamic-flow-production-a5d6.up.railway.app";
 
-  // Logic to group individual pings into unique Corporate Entities
-  const groupedLeads = useMemo(() => {
-    const groups: Record<string, { main: Lead, paths: { url: string, duration: number, hits: number }[] }> = {};
+  // --- IDENTITY BRIDGE LOGIC ---
+  const groupedEntities = useMemo(() => {
+    const groups: Record<string, GroupedEntity> = {};
     
     leads.forEach(lead => {
       const key = lead.ip_address;
       if (!groups[key]) {
-        groups[key] = { main: lead, paths: [] };
+        groups[key] = { main: lead, totalHits: 0, totalDuration: 0, paths: [] };
       }
       
-      // Track unique paths visited by this IP
       const pathIndex = groups[key].paths.findIndex(p => p.url === lead.url);
+      const currentHits = lead.hit_count || 1;
+      const currentDuration = lead.duration || 0;
+
+      groups[key].totalHits += currentHits;
+      groups[key].totalDuration += currentDuration;
+
       if (pathIndex > -1) {
-        groups[key].paths[pathIndex].duration += (lead.duration || 0);
-        groups[key].paths[pathIndex].hits += (lead.hit_count || 1);
+        groups[key].paths[pathIndex].duration += currentDuration;
+        groups[key].paths[pathIndex].hits += currentHits;
       } else {
         groups[key].paths.push({ 
           url: lead.url || "/", 
-          duration: lead.duration || 0, 
-          hits: lead.hit_count || 1 
+          duration: currentDuration, 
+          hits: currentHits 
         });
       }
     });
@@ -72,14 +84,13 @@ export default function DashboardPage() {
 
   const fetchData = async () => {
     setIsRefreshing(true);
-    const BASE_URL = getApiUrl().replace(/\/$/, '');
     try {
-      const res = await fetch(`${BASE_URL}/api/v1/leads`);
+      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/leads`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setLeads(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("AuraWorks Identity Bridge Connection failed:", err);
+      console.error("AuraWorks Identity Bridge Failure:", err);
       setLeads([]);
     } finally {
       setLoading(false);
@@ -101,125 +112,179 @@ export default function DashboardPage() {
     } catch (e) { return urlStr; }
   };
 
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#09090b]">
+      <div className="h-8 w-8 border-2 border-zinc-800 border-t-emerald-500 rounded-full animate-spin mb-4" />
+      <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.3em]">Synchronizing Intelligence...</p>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 pb-20">
-      {/* Top Navigation */}
-      <div className="border-b bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md sticky top-0 z-10 border-zinc-200 dark:border-zinc-800">
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 pb-20 font-sans selection:bg-emerald-500/30">
+      {/* --- REFINED NAV BAR --- */}
+      <nav className="border-b border-zinc-900 bg-[#09090b]/80 backdrop-blur-md sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-zinc-900 dark:bg-white flex items-center justify-center text-white dark:text-zinc-900 shadow-lg">
+          <div className="flex items-center gap-4">
+            <div className="h-10 w-10 rounded-lg bg-zinc-100 flex items-center justify-center text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]">
               <Activity className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-sm font-bold tracking-tight uppercase">Intelligence Feed</h1>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-medium">Identity Aggregator</p>
+              <div className="flex items-center gap-2 text-[10px] tracking-[0.3em] text-emerald-500 font-bold uppercase">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Live Signal Ledger</span>
+              </div>
+              <h1 className="text-lg font-light tracking-tight">Intelligence Dashboard</h1>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-             <button onClick={fetchData} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-full transition-colors">
-                <RefreshCcw className={`h-4 w-4 text-zinc-400 ${isRefreshing ? 'animate-spin' : ''}`} />
-             </button>
-             <div className="rounded-full border border-zinc-200 dark:border-zinc-800 px-4 py-1.5 text-xs font-bold bg-zinc-50 dark:bg-zinc-900 shadow-sm">
-                {groupedLeads.length} Entities Resolved
-             </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex bg-zinc-900 rounded-lg p-1 mr-4 border border-zinc-800">
+              <button 
+                onClick={() => setViewMode('ledger')}
+                className={`p-1.5 rounded-md transition-all ${viewMode === 'ledger' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                <List className="h-4 w-4" />
+              </button>
+              <button 
+                onClick={() => setViewMode('cards')}
+                className={`p-1.5 rounded-md transition-all ${viewMode === 'cards' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+            </div>
+            <button onClick={fetchData} className="p-2 hover:bg-zinc-900 rounded-full border border-zinc-800 transition-colors">
+              <RefreshCcw className={`h-4 w-4 text-zinc-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </button>
           </div>
         </div>
-      </div>
+      </nav>
 
-      <div className="max-w-5xl mx-auto px-6 mt-12">
-        <div className="grid gap-8">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-32 space-y-4">
-              <div className="h-8 w-8 border-2 border-zinc-200 dark:border-zinc-800 border-t-zinc-900 dark:border-t-white rounded-full animate-spin" />
-              <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.2em]">Resolving Industrial Signatures...</p>
-            </div>
-          ) : groupedLeads.length > 0 ? (
-            groupedLeads.map(({ main: lead, paths }) => (
-              <div key={lead.ip_address} className="group relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 transition-all hover:border-zinc-400 dark:hover:border-zinc-600 shadow-sm">
-                
-                <div className="p-6 md:p-8">
-                    {/* Header: Identity & IP */}
-                    <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-8">
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                        <h2 className="text-xl md:text-2xl font-bold tracking-tight">
-                            {lead.company_name || "Unresolved Juristic Entity"}
-                        </h2>
-                        {lead.is_b2b && (
-                            <div className="flex items-center gap-1 rounded-md bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-tighter text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/50">
-                            <ShieldCheck className="h-3 w-3" /> Juristic
+      <div className="max-w-7xl mx-auto px-6 mt-12">
+        {groupedEntities.length > 0 ? (
+          viewMode === 'ledger' ? (
+            /* --- JURISTIC LEDGER VIEW --- */
+            <div className="border border-zinc-800 rounded-xl overflow-hidden bg-zinc-900/20 shadow-2xl">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-zinc-900/50 text-zinc-500 text-[10px] uppercase tracking-[0.2em] border-b border-zinc-800">
+                  <tr>
+                    <th className="px-6 py-5 font-bold">Entity Identity</th>
+                    <th className="px-6 py-5 font-bold">Jurisdiction / IP</th>
+                    <th className="px-6 py-5 font-bold text-center">Signals</th>
+                    <th className="px-6 py-5 font-bold text-right">Last Attribution</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/50">
+                  {groupedEntities.map(({ main: lead, totalHits }) => (
+                    <tr key={lead.ip_address} className="hover:bg-zinc-800/30 transition-colors group">
+                      <td className="px-6 py-6">
+                        <div className="flex items-center gap-4">
+                          <div className="h-10 w-10 rounded bg-zinc-800 flex items-center justify-center text-zinc-500 font-bold border border-zinc-700 group-hover:border-emerald-500/50 transition-colors">
+                            {lead.company_name?.charAt(0) || <Globe className="h-4 w-4" />}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-zinc-100 group-hover:text-emerald-400 transition-colors leading-none mb-1">
+                              {lead.company_name || "Unresolved Juristic Entity"}
                             </div>
-                        )}
+                            <div className="text-[11px] text-zinc-500 font-mono tracking-tighter">
+                              {lead.industry || 'Industrial'} • {lead.is_b2b ? 'B2B Locked' : 'General'}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-6">
+                        <div className="text-zinc-300 text-xs flex items-center gap-1.5">
+                          <MapPin className="h-3 w-3 text-zinc-600" />
+                          {lead.city || 'Hub'}, {lead.country || 'ZAF'}
+                        </div>
+                        <div className="text-[10px] text-zinc-500 font-mono mt-1 italic">{lead.ip_address}</div>
+                      </td>
+                      <td className="px-6 py-6 text-center">
+                        <span className="px-3 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-emerald-500 text-[10px] font-black uppercase tracking-widest group-hover:bg-emerald-500/10 transition-colors">
+                          {totalHits} Events
+                        </span>
+                      </td>
+                      <td className="px-6 py-6 text-right text-zinc-500 tabular-nums text-[11px]">
+                        {new Date(lead.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            /* --- FORENSIC CARD VIEW --- */
+            <div className="grid gap-8 max-w-5xl mx-auto">
+              {groupedEntities.map(({ main: lead, paths, totalHits }) => (
+                <div key={lead.ip_address} className="rounded-2xl border border-zinc-800 bg-zinc-900/30 transition-all hover:border-zinc-700 shadow-xl overflow-hidden group">
+                  <div className="p-8">
+                    <div className="flex justify-between items-start gap-4 mb-8">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <h2 className="text-2xl font-bold tracking-tight text-white group-hover:text-emerald-400 transition-colors">
+                            {lead.company_name || "Unresolved Juristic Entity"}
+                          </h2>
+                          {lead.is_b2b && (
+                            <div className="flex items-center gap-1 rounded bg-emerald-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-emerald-500 border border-emerald-500/20">
+                              <ShieldCheck className="h-3 w-3" /> Juristic
+                            </div>
+                          )}
                         </div>
                         <div className="flex items-center gap-4 text-zinc-500">
-                            <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest">
-                                <MapPin className="h-3.5 w-3.5" /> {lead.city || "Hub"}, {lead.country || "ZAF"}
-                            </div>
-                            <div className="font-mono text-[10px] bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded italic">
-                                {lead.ip_address}
-                            </div>
+                          <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest">
+                            <MapPin className="h-3.5 w-3.5" /> {lead.city || "Hub"}, {lead.country || "ZAF"}
+                          </div>
+                          <div className="font-mono text-[10px] bg-zinc-800 px-2 py-0.5 rounded border border-zinc-700 text-zinc-400">
+                            {lead.ip_address}
+                          </div>
                         </div>
-                    </div>
-                    <div className="text-left md:text-right">
-                        <span className="text-[9px] font-mono uppercase text-zinc-400 tracking-widest block">Last Active</span>
-                        <p className="text-[11px] font-bold">{new Date(lead.created_at).toLocaleString()}</p>
-                    </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.2em] block mb-1">Capture Epoch</span>
+                        <p className="text-[11px] font-bold text-zinc-400 tabular-nums">{new Date(lead.created_at).toLocaleString()}</p>
+                      </div>
                     </div>
 
-                    {/* Page Interaction Feed */}
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-2 mb-4">
-                            <MousePointer2 className="h-3 w-3 text-zinc-400" />
-                            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Interaction Intelligence</span>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 mb-4">
+                        <MousePointer2 className="h-3 w-3 text-emerald-500" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">Interaction Intelligence</span>
+                      </div>
+                      {paths.map((p, idx) => (
+                        <div key={idx} className="flex items-center justify-between bg-zinc-800/40 rounded-xl p-4 border border-zinc-800/60 hover:bg-zinc-800/60 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <Zap className="h-3.5 w-3.5 text-emerald-500" />
+                            <span className="text-xs font-mono font-bold text-zinc-300">{getPathname(p.url)}</span>
+                          </div>
+                          <div className="flex items-center gap-8 text-right">
+                            <div>
+                              <div className="text-[8px] uppercase text-zinc-600 font-black tracking-widest">Dwell</div>
+                              <div className="text-[11px] font-mono font-bold text-zinc-100">{p.duration}s</div>
+                            </div>
+                            <div>
+                              <div className="text-[8px] uppercase text-zinc-600 font-black tracking-widest">Signal</div>
+                              <div className="text-[11px] font-mono font-bold text-emerald-500">{p.hits}x</div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="grid gap-2">
-                            {paths.map((p, idx) => (
-                                <div key={idx} className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-800/40 rounded-xl p-3 border border-zinc-100 dark:border-zinc-800/60">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-6 w-6 rounded-lg bg-white dark:bg-zinc-800 flex items-center justify-center border border-zinc-200 dark:border-zinc-700 shadow-sm">
-                                            <Zap className="h-3 w-3 text-emerald-500" />
-                                        </div>
-                                        <span className="text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300">
-                                            {getPathname(p.url)}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-6">
-                                        <div className="flex flex-col items-end">
-                                            <span className="text-[8px] uppercase text-zinc-400 font-bold">Dwell Time</span>
-                                            <span className="text-[10px] font-mono font-black">{p.duration}s</span>
-                                        </div>
-                                        <div className="flex flex-col items-end">
-                                            <span className="text-[8px] uppercase text-zinc-400 font-bold">Signal</span>
-                                            <span className="text-[10px] font-mono font-black text-emerald-500">{p.hits}x</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                      ))}
                     </div>
-                </div>
-
-                {/* Footer Attribution */}
-                <div className="px-8 py-4 bg-zinc-50/50 dark:bg-zinc-900/80 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                        <Globe className="h-3 w-3 text-zinc-400" />
-                        <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-tighter truncate max-w-[200px]">
-                            Via: {lead.referrer || "Direct Link"}
-                        </span>
-                    </div>
-                    <button className="text-[9px] font-black uppercase text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors flex items-center gap-1">
-                        Trace Source <ChevronRight className="h-3 w-3" />
+                  </div>
+                  <div className="px-8 py-4 bg-zinc-900/60 border-t border-zinc-800 flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                    <span className="flex items-center gap-2 italic">Ref: {lead.referrer || "Direct Ingress"}</span>
+                    <button className="flex items-center gap-1 hover:text-emerald-500 transition-colors group/btn">
+                      Trace Source <ChevronRight className="h-3 w-3 group-hover/btn:translate-x-0.5 transition-transform" />
                     </button>
+                  </div>
                 </div>
-              </div>
-            ))
-          ) : (
-            <div className="text-center py-32 rounded-3xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/20">
-              <Activity className="h-8 w-8 text-zinc-300 dark:text-zinc-700 mb-4 mx-auto" />
-              <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500">No Resolved Traffic</h3>
+              ))}
             </div>
-          )}
-        </div>
+          )
+        ) : (
+          <div className="text-center py-40 rounded-3xl border border-dashed border-zinc-800 bg-zinc-900/10">
+            <Activity className="h-10 w-10 text-zinc-800 mb-4 mx-auto" />
+            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">No Signal Attributed</h3>
+          </div>
+        )}
       </div>
     </div>
   );

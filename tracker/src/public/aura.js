@@ -1,14 +1,15 @@
 /**
  * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
- * Version: 3.2.0 (POPIA Compliant & Beacon Locked)
+ * Version: 3.2.1 (POPIA Compliant & Validation Fixed)
  * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
  */
 (async function() {
     const script = document.currentScript;
-    const clientId = window.AURA_ID || script?.getAttribute('data-id');
+    // clientSecret is the ID of the agency/site owner from the script tag
+    const clientSecret = window.AURA_ID || script?.getAttribute('data-id');
     window.AURA_START_TIME = performance.now();
     
-    if (!clientId) return console.error("❌ AuraWorks: Missing Client Identity.");
+    if (!clientSecret) return console.error("❌ AuraWorks: Missing Client Identity.");
 
     const getBaseUrl = () => {
         if (window.AURA_CONFIG?.apiUrl) return window.AURA_CONFIG.apiUrl;
@@ -115,7 +116,7 @@
     };
 
     const AuraTracker = {
-        isArmed: false, // POPIA Guard
+        isArmed: false, 
 
         init(auraId) {
             this.auraId = auraId;
@@ -123,7 +124,6 @@
             this.setupSensors();
             this.patchSPA();
 
-            // Listen for the "Authorize Sync" event from the consent banner
             window.addEventListener('aura_consent_granted', () => {
                 this.isArmed = true;
                 this.dispatch('event', { event_type: 'consent_granted' });
@@ -131,9 +131,16 @@
         },
         async dispatch(endpoint, payload, useBeacon = false) {
             const utms = AuraPersistence.getStoredUTMs();
+            
+            // Backend Mapping: 
+            // - client_id: Used by track_exit and track_event to find the Visit record (must be the visitor UID)
+            // - aura_id: Forensic unique ID (this.auraId)
+            // - agency_id: The ID from the script data-id (clientSecret)
+            
             const data = {
-                client_id: clientId,
+                client_id: this.auraId, // Set visitor ID here to satisfy backend validation
                 aura_id: this.auraId,
+                agency_id: clientSecret,
                 timestamp: new Date().toISOString(),
                 ...utms,
                 ...payload
@@ -142,19 +149,22 @@
             const url = `${API_URL}/${endpoint}`;
 
             if (useBeacon && navigator.sendBeacon) {
-                return navigator.sendBeacon(url, JSON.stringify(data));
+                const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+                return navigator.sendBeacon(url, blob);
             }
             try {
                 await fetch(url, {
-                    method: 'POST', mode: 'cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data), keepalive: true
+                    method: 'POST', 
+                    mode: 'cors', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(data), 
+                    keepalive: true
                 });
             } catch (e) { console.error("Aura dispatch error", e); }
         },
         setupSensors() {
-            // Email Capture: Guarded by isArmed
             document.addEventListener('blur', (e) => {
                 if (!this.isArmed) return; 
-
                 const target = e.target;
                 if (target.type === 'email' || target.name?.includes('email')) {
                     if (target.value.includes('@')) {
@@ -163,7 +173,6 @@
                 }
             }, true);
 
-            // Intent Clicks
             document.addEventListener('click', (e) => {
                 const btn = e.target.closest('a, button');
                 if (!btn) return;
@@ -174,11 +183,8 @@
                 }
             });
 
-            // Visibility API for Mobile Exit
             document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'hidden') {
-                    this.trackExit();
-                }
+                if (document.visibilityState === 'hidden') this.trackExit();
             });
 
             window.addEventListener('pagehide', () => this.trackExit());
