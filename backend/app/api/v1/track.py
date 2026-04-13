@@ -178,17 +178,41 @@ async def track_consent(payload: ConsentPayload):
 
 @router.post("/exit")
 async def track_exit(payload: PageViewCreate):
-    with Session(engine) as session:
-        # Use client_id as payload for PageViewCreate typically aligns with aura_id logic
-        statement = select(Visit).where(
-            Visit.aura_id == payload.client_id,
-            Visit.url == payload.url
-        ).order_by(Visit.created_at.desc())
-        
-        visit = session.exec(statement).first()
-        if visit:
-            visit.duration = payload.duration
-            session.add(visit)
-            session.commit()
-            return {"status": "recorded"}
-        return {"status": "pending"}
+    """
+    Finalizes dwell time for a forensic session.
+    Matches incoming client_id to the aura_id in the Visit ledger.
+    """
+    try:
+        # Sanitize duration: Convert from string/float to int
+        # Handle cases where frontend might send "NaN" or null
+        try:
+            processed_duration = int(float(payload.duration))
+        except (ValueError, TypeError):
+            processed_duration = 0
+
+        with Session(engine) as session:
+            # Locate the most recent visit matching this ID and URL
+            statement = select(Visit).where(
+                Visit.aura_id == payload.client_id,
+                Visit.url == payload.url
+            ).order_by(Visit.created_at.desc())
+            
+            visit = session.exec(statement).first()
+            
+            if visit:
+                # Logic check: Only update if the new duration is greater 
+                # (Prevents race conditions from late heartbeat packets)
+                if processed_duration > (visit.duration or 0):
+                    visit.duration = processed_duration
+                    session.add(visit)
+                    session.commit()
+                    return {"status": "recorded", "duration": processed_duration}
+                
+                return {"status": "no_change", "reason": "existing_duration_higher"}
+            
+            return {"status": "pending_entry", "msg": "Visit record not yet initialized"}
+            
+    except Exception as e:
+        logger.error(f"❌ Exit Tracking Error: {e}")
+        # Return 200 even on error to prevent browser retry loops during page close
+        return {"status": "error", "message": str(e)}

@@ -277,24 +277,6 @@ class ClientPublic(SQLModel):
     is_active: bool
 </file>
 
-<file path="backend/app/models/pageview.py">
-from typing import Optional
-from sqlmodel import SQLModel, Field
-
-class PageViewBase(SQLModel):
-    client_id: str = Field(description="The visitor's unique forensic ID (aura_id)")
-    url: str = Field(description="The URL the visitor is exiting from")
-    duration: int = Field(default=0, description="Dwell time in seconds")
-
-class PageViewCreate(PageViewBase):
-    """
-    Validation schema for 'Exit' and 'Event' pings.
-    Matches the payload structure in AuraWorks v3.2.1
-    """
-    event_type: Optional[str] = "exit"
-    intent_cluster: Optional[str] = None
-</file>
-
 <file path="backend/app/services/notion.py">
 import os
 import logging
@@ -587,138 +569,6 @@ export default function GlobalError500() {
             </div>
         </main>
     )
-}
-</file>
-
-<file path="frontend/src/app/admin/page.tsx">
-"use client";
-import { useEffect, useState } from 'react';
-
-// Optimized Lead interface to match the WaitlistLead + Visit forensics
-interface Lead {
-  id: number;
-  name?: string;           // Consented Name
-  email?: string;          // Consented Email
-  company_name_raw?: string; 
-  website?: string;
-  industry?: string;
-  avg_price?: string;
-  aura_id: string;         // Forensic Anchor
-  created_at: string;
-  // Fields merged from the Intelligence Engine
-  domain?: string;
-  ip_address?: string;
-  city?: string;
-  region?: string;
-  duration?: number;
-  url?: string;
-}
-
-export default function AdminDashboard() {
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Dynamically target the backend based on environment
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    
-    fetch(`${API_BASE}/api/v1/leads/`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Network response was not ok');
-        return res.json();
-      })
-      .then((data) => {
-        setLeads(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("🚨 Dashboard Fetch Error:", err);
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="text-sm font-medium text-gray-400 animate-pulse tracking-widest uppercase">
-        Initializing Intelligence Feed...
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="p-8 bg-gray-50 min-h-screen font-sans">
-      <div className="max-w-7xl mx-auto">
-        <header className="mb-12 flex justify-between items-end">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Internal Lead Ledger</h1>
-            <p className="text-sm text-gray-500 mt-1">Forensic B2B traffic and high-intent identity capture.</p>
-          </div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 border-b border-gray-200 pb-1">
-            System Status: Operational
-          </div>
-        </header>
-
-        <div className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-100">
-            <thead className="bg-gray-50/50">
-              <tr>
-                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Entity / Identity</th>
-                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Firmographics</th>
-                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Forensics</th>
-                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Engagement</th>
-                <th className="px-6 py-4 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">Captured At</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {leads.map((lead) => (
-                <tr key={lead.id} className="hover:bg-gray-50/80 transition-all duration-200">
-                  <td className="px-6 py-5">
-                    <div className="font-medium text-gray-900 text-sm">{lead.name || "Anonymous Prospect"}</div>
-                    <div className="text-xs text-gray-400 lowercase">{lead.email || "Identity Hidden"}</div>
-                  </td>
-                  <td className="px-6 py-5">
-                    <div className="text-sm text-gray-800">{lead.company_name_raw || "Unverified Entity"}</div>
-                    <div className="text-[11px] text-blue-600 font-medium">{lead.website || lead.domain || "no-domain.io"}</div>
-                  </td>
-                  <td className="px-6 py-5">
-                    <div className="text-xs font-mono text-gray-500">{lead.ip_address || "0.0.0.0"}</div>
-                    <div className="text-[10px] text-gray-400 uppercase tracking-tighter">{lead.city}, {lead.region}</div>
-                  </td>
-                  <td className="px-6 py-5">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-1.5 h-1.5 rounded-full ${Number(lead.duration) > 60 ? 'bg-emerald-500' : 'bg-amber-400'}`}></div>
-                      <span className="text-xs font-semibold text-gray-700">
-                        {lead.duration || 0}s <span className="text-gray-400 font-normal">dwell</span>
-                      </span>
-                    </div>
-                    <div className="text-[10px] text-gray-400 mt-1 font-mono truncate max-w-[120px]">
-                      {lead.industry || "General Industry"}
-                    </div>
-                  </td>
-                  <td className="px-6 py-5 text-right">
-                    <div className="text-xs text-gray-600 tabular-nums">
-                      {new Date(lead.created_at).toLocaleDateString()}
-                    </div>
-                    <div className="text-[10px] text-gray-400">
-                      {new Date(lead.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          
-          {leads.length === 0 && (
-            <div className="py-24 text-center">
-              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-300">
-                Awaiting Data Ingress
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
 }
 </file>
 
@@ -3863,6 +3713,116 @@ volumes:
   postgres_data:
 </file>
 
+<file path="README.md">
+# 🏭 Industrial Intelligence Engine (Master)
+
+⚠️ Proprietary Software Notice: This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited.
+
+The **Industrial Intelligence Engine** is a specialized B2B intent-tracking SaaS. It deanonymizes website traffic for industrial firms in the East Rand (and beyond), turning anonymous IP addresses into actionable sales leads.
+
+
+## 📂 Project Structure
+
+```text
+industrial-intelligence/
+├── backend/       # FastAPI + SQLModel + PostgreSQL (The Core)
+├── frontend/      # Next.js 16 + Tailwind (The Interface & Lead Funnel)
+├── tracker/       # Vanilla JS (The Edge Script)
+└── infra/         # Docker, Nginx, or CI/CD configs
+
+```
+
+---
+
+## ⚡ Quick Start (Development Mode)
+
+### 1. Clone & Environment
+
+Ensure you are using **WSL 2** and have **Docker Desktop** running.
+
+```bash
+git clone https://github.com/Allen-Reiley/industrial-intelligence.git
+cd industrial-intelligence
+
+```
+
+### 2. Infrastructure (Postgres)
+
+Spin up the local database using Docker:
+
+```bash
+docker compose up -d
+
+```
+
+### 3. Backend Setup (FastAPI)
+
+Using `uv` for high-speed dependency management:
+
+```bash
+cd backend
+uv venv
+source .venv/bin/activate
+uvicorn main:app --reload
+
+```
+
+### 4. Frontend Setup (Next.js)
+
+```bash
+cd frontend
+npm install
+npm run dev
+
+```
+
+---
+
+## 🛰️ How it Works (The Data Loop)
+
+1. **Capture:** The `tracker.min.js` fires on a client's site.
+2. **Identify:** The Backend receives the IP, queries **IPinfo**, and filters out residential ISPs.
+3. **Store:** Valid B2B visits are saved to **PostgreSQL**.
+4. **Report:** The Client Dashboard visualizes the traffic, and a weekly PDF is generated for the client's sales team.
+
+---
+
+## 🛠️ Tech Stack Summary
+
+* **Backend:** FastAPI, Python 3.11, SQLModel, Uvicorn.
+* **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS, Shadcn/UI.
+* **Database:** PostgreSQL (Neon.tech for Production).
+* **Deployment:** Vercel (Frontend) + Render (Backend) + Cloudflare (CDN).
+
+---
+
+## 🛡️ Business Logic & Compliance
+
+* **Targeting:** Specifically engineered for the Industrial/Manufacturing sector.
+* **Pricing:** R10,000/month managed service.
+* **Privacy:** Designed for POPIA compliance—identifying Juristic Persons (Companies), not natural individuals.
+
+---
+
+## 📅 Roadmap (Phase 1)
+
+* [x] Technical Specification & Architecture.
+* [x] WSL 2 & Docker Environment Setup.
+* [ ] Database Schema Design (SQLModel).
+* [ ] API Ingestion Endpoints (`/entry`, `/exit`).
+* [ ] Lead Qualification Funnel build.
+
+---
+
+## ⚖️ License & Proprietary Notice
+
+**Copyright (c) 2026 AuraWorks Pty (ltd). All Rights Reserved.**
+
+This tracker script is proprietary software. Unauthorized copying, modification, or redistribution is strictly prohibited. Use is granted only to active subscribers of the Industrial Intelligence Engine managed service.
+
+---
+</file>
+
 <file path="VOID_CONTEXT.md">
 1. Project Mission: AuraWorks Industrial Engine
 Domain: B2B Sales Intelligence & Identity Resolution.
@@ -4091,6 +4051,34 @@ class Department(SQLModel, table=True):
     company: "Company" = Relationship(back_populates="departments")
 </file>
 
+<file path="backend/app/models/pageview.py">
+from typing import Optional
+from sqlmodel import SQLModel, Field
+
+class PageViewBase(SQLModel):
+    client_id: str = Field(description="The visitor's unique forensic ID (aura_id)")
+    url: str = Field(description="The URL the visitor is exiting from")
+    
+    # Change: Use Union or Optional to handle incoming data variations
+    # FastAPI/Pydantic will automatically try to coerce "10" (string) to 10 (int)
+    duration: Union[int, float, str] = Field(
+        default=0, 
+        description="Dwell time in seconds. Coerced from string if necessary."
+    )
+
+    class Config:
+        # This ensures that even if a float like 10.5 comes in, it doesn't crash
+        smart_union = True
+        
+class PageViewCreate(PageViewBase):
+    """
+    Validation schema for 'Exit' and 'Event' pings.
+    Matches the payload structure in AuraWorks v3.2.1
+    """
+    event_type: Optional[str] = "exit"
+    intent_cluster: Optional[str] = None
+</file>
+
 <file path="backend/app/services/airtable.py">
 import logging
 from datetime import datetime, timezone
@@ -4280,6 +4268,138 @@ import GetStartedPage from "@/components/sections/form/get-started";
 
 export default function GetStarted() {
   return <GetStartedPage />;
+}
+</file>
+
+<file path="frontend/src/app/admin/page.tsx">
+"use client";
+import { useEffect, useState } from 'react';
+
+// Optimized Lead interface to match the WaitlistLead + Visit forensics
+interface Lead {
+  id: number;
+  name?: string;           // Consented Name
+  email?: string;          // Consented Email
+  company_name_raw?: string; 
+  website?: string;
+  industry?: string;
+  avg_price?: string;
+  aura_id: string;         // Forensic Anchor
+  created_at: string;
+  // Fields merged from the Intelligence Engine
+  domain?: string;
+  ip_address?: string;
+  city?: string;
+  region?: string;
+  duration?: number;
+  url?: string;
+}
+
+export default function AdminDashboard() {
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Dynamically target the backend based on environment
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    
+    fetch(`${API_BASE}/api/v1/leads/`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })
+      .then((data) => {
+        setLeads(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("🚨 Dashboard Fetch Error:", err);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="text-sm font-medium text-gray-400 animate-pulse tracking-widest uppercase">
+        Initializing Intelligence Feed...
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="p-8 bg-gray-50 min-h-screen font-sans">
+      <div className="max-w-7xl mx-auto">
+        <header className="mb-12 flex justify-between items-end">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Internal Lead Ledger</h1>
+            <p className="text-sm text-gray-500 mt-1">Forensic B2B traffic and high-intent identity capture.</p>
+          </div>
+          <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 border-b border-gray-200 pb-1">
+            System Status: Operational
+          </div>
+        </header>
+
+        <div className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-100">
+            <thead className="bg-gray-50/50">
+              <tr>
+                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Entity / Identity</th>
+                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Firmographics</th>
+                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Forensics</th>
+                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Engagement</th>
+                <th className="px-6 py-4 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">Captured At</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {leads.map((lead) => (
+                <tr key={lead.id} className="hover:bg-gray-50/80 transition-all duration-200">
+                  <td className="px-6 py-5">
+                    <div className="font-medium text-gray-900 text-sm">{lead.name || "Anonymous Prospect"}</div>
+                    <div className="text-xs text-gray-400 lowercase">{lead.email || "Identity Hidden"}</div>
+                  </td>
+                  <td className="px-6 py-5">
+                    <div className="text-sm text-gray-800">{lead.company_name_raw || "Unverified Entity"}</div>
+                    <div className="text-[11px] text-blue-600 font-medium">{lead.website || lead.domain || "no-domain.io"}</div>
+                  </td>
+                  <td className="px-6 py-5">
+                    <div className="text-xs font-mono text-gray-500">{lead.ip_address || "0.0.0.0"}</div>
+                    <div className="text-[10px] text-gray-400 uppercase tracking-tighter">{lead.city}, {lead.region}</div>
+                  </td>
+                  <td className="px-6 py-5">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-1.5 h-1.5 rounded-full ${Number(lead.duration) > 60 ? 'bg-emerald-500' : 'bg-amber-400'}`}></div>
+                      <span className="text-xs font-semibold text-gray-700">
+                        {lead.duration || 0}s <span className="text-gray-400 font-normal">dwell</span>
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-gray-400 mt-1 font-mono truncate max-w-[120px]">
+                      {lead.industry || "General Industry"}
+                    </div>
+                  </td>
+                  <td className="px-6 py-5 text-right">
+                    <div className="text-xs text-gray-600 tabular-nums">
+                      {new Date(lead.created_at).toLocaleDateString()}
+                    </div>
+                    <div className="text-[10px] text-gray-400">
+                      {new Date(lead.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          
+          {leads.length === 0 && (
+            <div className="py-24 text-center">
+              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-300">
+                Awaiting Data Ingress
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 </file>
 
@@ -4538,116 +4658,6 @@ import { twMerge } from "tailwind-merge"
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
-</file>
-
-<file path="README.md">
-# 🏭 Industrial Intelligence Engine (Master)
-
-⚠️ Proprietary Software Notice: This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited.
-
-The **Industrial Intelligence Engine** is a specialized B2B intent-tracking SaaS. It deanonymizes website traffic for industrial firms in the East Rand (and beyond), turning anonymous IP addresses into actionable sales leads.
-
-
-## 📂 Project Structure
-
-```text
-industrial-intelligence/
-├── backend/       # FastAPI + SQLModel + PostgreSQL (The Core)
-├── frontend/      # Next.js 16 + Tailwind (The Interface & Lead Funnel)
-├── tracker/       # Vanilla JS (The Edge Script)
-└── infra/         # Docker, Nginx, or CI/CD configs
-
-```
-
----
-
-## ⚡ Quick Start (Development Mode)
-
-### 1. Clone & Environment
-
-Ensure you are using **WSL 2** and have **Docker Desktop** running.
-
-```bash
-git clone https://github.com/Allen-Reiley/industrial-intelligence.git
-cd industrial-intelligence
-
-```
-
-### 2. Infrastructure (Postgres)
-
-Spin up the local database using Docker:
-
-```bash
-docker compose up -d
-
-```
-
-### 3. Backend Setup (FastAPI)
-
-Using `uv` for high-speed dependency management:
-
-```bash
-cd backend
-uv venv
-source .venv/bin/activate
-uvicorn main:app --reload
-
-```
-
-### 4. Frontend Setup (Next.js)
-
-```bash
-cd frontend
-npm install
-npm run dev
-
-```
-
----
-
-## 🛰️ How it Works (The Data Loop)
-
-1. **Capture:** The `tracker.min.js` fires on a client's site.
-2. **Identify:** The Backend receives the IP, queries **IPinfo**, and filters out residential ISPs.
-3. **Store:** Valid B2B visits are saved to **PostgreSQL**.
-4. **Report:** The Client Dashboard visualizes the traffic, and a weekly PDF is generated for the client's sales team.
-
----
-
-## 🛠️ Tech Stack Summary
-
-* **Backend:** FastAPI, Python 3.11, SQLModel, Uvicorn.
-* **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS, Shadcn/UI.
-* **Database:** PostgreSQL (Neon.tech for Production).
-* **Deployment:** Vercel (Frontend) + Render (Backend) + Cloudflare (CDN).
-
----
-
-## 🛡️ Business Logic & Compliance
-
-* **Targeting:** Specifically engineered for the Industrial/Manufacturing sector.
-* **Pricing:** R10,000/month managed service.
-* **Privacy:** Designed for POPIA compliance—identifying Juristic Persons (Companies), not natural individuals.
-
----
-
-## 📅 Roadmap (Phase 1)
-
-* [x] Technical Specification & Architecture.
-* [x] WSL 2 & Docker Environment Setup.
-* [ ] Database Schema Design (SQLModel).
-* [ ] API Ingestion Endpoints (`/entry`, `/exit`).
-* [ ] Lead Qualification Funnel build.
-
----
-
-## ⚖️ License & Proprietary Notice
-
-**Copyright (c) 2026 AuraWorks Pty (ltd). All Rights Reserved.**
-
-This tracker script is proprietary software. Unauthorized copying, modification, or redistribution is strictly prohibited. Use is granted only to active subscribers of the Industrial Intelligence Engine managed service.
-
----
 </file>
 
 <file path="backend/app/tasks/janitor.py">
@@ -5985,6 +5995,191 @@ export default function SolutionPage() {
 }
 </file>
 
+<file path="frontend/src/app/page.tsx">
+import Image from "next/image";
+import HeroSection from "@/components/hero-sec/hero-section";
+import ContentSection1 from "@/components/content/content-1";
+import ContentSection2 from "@/components/content/content-2";
+import CallToAction from "@/components/cta/call-to-action";
+import Footer from "@/components/footer/footer";
+
+export default function Home() {
+  return (
+    <main>
+      <HeroSection />
+      <ContentSection1 />
+      <ContentSection2 />
+      <CallToAction />
+      <Footer />
+    </main>
+  );
+}
+</file>
+
+<file path="backend/app/services/notifications.py">
+import os
+import httpx
+import logging
+from app.core.config import settings
+
+logger = logging.getLogger("uvicorn")
+
+# --- PHASE 01: The #visit Channel (Industrial Pager) ---
+
+async def post_to_visit_channel(visit_data: dict, journey: dict):
+    """
+    High-speed Signal for the #visit channel.
+    Only triggers for High-Confidence (>= 0.5) or Verified traffic.
+    """
+    if not settings.SLACK_VISIT_WEBHOOK_URL:
+        return
+
+    # SPRINT B FILTER: Stop notification fatigue from residential noise
+    confidence = visit_data.get("confidence_score", 0.0)
+    if confidence < 0.5 and not visit_data.get("is_verified", False):
+        logger.info(f"🤫 Noise Suppression: Skip Slack for {visit_data.get('aura_id')[:8]} (Score: {confidence})")
+        return
+
+    cluster_count = journey.get("cluster_count", 1)
+    is_corporate_cluster = cluster_count >= 3
+    
+    # Industrial Visual Indicators: Clean & Clinical
+    emoji = "🏢" if is_corporate_cluster else "🏭"
+    header = f"{emoji} Corporate Cluster" if is_corporate_cluster else f"{emoji} Industrial Facility"
+
+    # Deep Links for the Industrial Triad
+    airtable_url = f"https://airtable.com/{os.getenv('AIRTABLE_BASE_ID', '')}"
+    notion_url = f"https://www.notion.so/{os.getenv('NOTION_DATABASE_ID', '')}"
+
+    payload = {
+        "blocks": [
+            {
+                "type": "header",
+                "text": {"type": "plain_text", "text": header}
+            },
+            {
+                "type": "section",
+                "fields": [
+                    {"type": "mrkdwn", "text": f"*Entity:*\n{visit_data.get('company_name', 'Anonymous Entity')}"},
+                    {"type": "mrkdwn", "text": f"*Confidence:*\n`{confidence * 100}%`"},
+                    {"type": "mrkdwn", "text": f"*Attribution:*\n{visit_data.get('utm_source', 'Direct')} / {visit_data.get('utm_medium', 'None')}"},
+                    {"type": "mrkdwn", "text": f"*Intent Score:*\n{journey.get('intent_score', 'Audit Pending')}"}
+                ]
+            },
+            {
+                "type": "context",
+                "elements": [
+                    {"type": "mrkdwn", "text": f"📍 Forensic Lock: `{visit_data.get('aura_id')[:8]}` | Location: {visit_data.get('city', 'Unknown')}, {visit_data.get('region', 'ZA')}"}
+                ]
+            },
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "Airtable CRM"},
+                        "url": airtable_url,
+                        "style": "primary"
+                    },
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "Notion Vault"},
+                        "url": notion_url
+                    }
+                ]
+            }
+        ]
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(settings.SLACK_VISIT_WEBHOOK_URL, json=payload, timeout=10.0)
+            response.raise_for_status()
+        except Exception as e:
+            logger.error(f"Visit Channel Pager Failure: {e}")
+
+# --- PHASE 02: Lead Notifications (Identity Promotion) ---
+
+async def post_to_slack(lead_data: dict, journey: dict = None):
+    """
+    Standard lead notification for identified conversions (Promotion).
+    """
+    if not settings.SLACK_WEBHOOK_URL:
+        return
+
+    journey = journey or {}
+    status_emoji = "💎" # Premium Lead Icon
+    notion_url = f"https://www.notion.so/{os.getenv('NOTION_DATABASE_ID', '')}"
+
+    payload = {
+        "blocks": [
+            {
+                "type": "header",
+                "text": {"type": "plain_text", "text": f"{status_emoji} Identity Promoted"}
+            },
+            {
+                "type": "section",
+                "fields": [
+                    {"type": "mrkdwn", "text": f"*Entity:*\n{lead_data.get('company_name_final', 'Anonymous Entity')}"},
+                    {"type": "mrkdwn", "text": f"*Lead:*\n{lead_data.get('name')} ({lead_data.get('email')})"},
+                    {"type": "mrkdwn", "text": f"*Capture Source:*\n`{lead_data.get('capture_source', 'Verification')}`"},
+                    {"type": "mrkdwn", "text": f"*Pathway:*\n{journey.get('pathway', 'Direct Entry')}"}
+                ]
+            },
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "Read Full Audit"},
+                        "url": notion_url,
+                        "style": "primary"
+                    }
+                ]
+            }
+        ]
+    }
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            await client.post(settings.SLACK_WEBHOOK_URL, json=payload, timeout=10.0)
+        except Exception as e:
+            logger.error(f"Lead Channel Dispatch Failure: {e}")
+
+# --- PHASE 03: Industrial Mailer (Mailgun) ---
+
+async def send_mailgun_notification(email: str, name: str, subject: str = "Phase 01: Audit Initiated"):
+    """
+    Industrial Email Dispatch via Mailgun API for Client Onboarding.
+    """
+    if not settings.MAILGUN_API_KEY or not settings.MAILGUN_DOMAIN:
+        logger.warning("Mailgun credentials missing. Email skipped.")
+        return
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                f"https://api.mailgun.net/v3/{settings.MAILGUN_DOMAIN}/messages",
+                auth=("api", settings.MAILGUN_API_KEY),
+                data={
+                    "from": f"AuraWorks <audit@{settings.MAILGUN_DOMAIN}>",
+                    "to": email,
+                    "subject": subject,
+                    "html": f"""
+                    <div style="font-family: sans-serif; color: #18181b;">
+                        <h3>System Audit: {name}</h3>
+                        <p>Your industrial intelligence audit has been queued for processing.</p>
+                        <p style="color: #71717a; font-size: 12px;">Ref: Industrial Forensic Bridge v3.0</p>
+                    </div>
+                    """
+                }
+            )
+            return response.status_code == 200
+        except Exception as e:
+            logger.error(f"Mailgun Dispatch Failure: {e}")
+            return False
+</file>
+
 <file path="frontend/src/app/dashboard/page.tsx">
 "use client";
 
@@ -6277,434 +6472,6 @@ export default function UnifiedDashboard() {
     </div>
   );
 }
-</file>
-
-<file path="frontend/src/app/page.tsx">
-import Image from "next/image";
-import HeroSection from "@/components/hero-sec/hero-section";
-import ContentSection1 from "@/components/content/content-1";
-import ContentSection2 from "@/components/content/content-2";
-import CallToAction from "@/components/cta/call-to-action";
-import Footer from "@/components/footer/footer";
-
-export default function Home() {
-  return (
-    <main>
-      <HeroSection />
-      <ContentSection1 />
-      <ContentSection2 />
-      <CallToAction />
-      <Footer />
-    </main>
-  );
-}
-</file>
-
-<file path="tracker/src/public/aura.js">
-/**
- * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
- * Version: 3.2.1 (POPIA Compliant & Validation Fixed)
- * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
- */
-(async function() {
-    const script = document.currentScript;
-    // clientSecret is the ID of the agency/site owner from the script tag
-    const clientSecret = window.AURA_ID || script?.getAttribute('data-id');
-    window.AURA_START_TIME = performance.now();
-    
-    if (!clientSecret) return console.error("❌ AuraWorks: Missing Client Identity.");
-
-    const getBaseUrl = () => {
-        if (window.AURA_CONFIG?.apiUrl) return window.AURA_CONFIG.apiUrl;
-        if (script?.src.includes('http')) {
-            try { return new URL(script.src).origin; } catch (e) {}
-        }
-        return "https://industrial-intelligence-xi.vercel.app";
-    };
-    
-    const API_URL = `${getBaseUrl().replace(/\/$/, '')}/api/v1/track`;
-
-    const AuraPersistence = {
-        key: 'aura_uid',
-        utmKey: 'aura_utm',
-        async init() {
-            let id = await this.getStoredID();
-            this.captureUTMs(); 
-            if (!id) id = this.generateUUID();
-            await this.syncStorage(id);
-            return id;
-        },
-        captureUTMs() {
-            const params = new URLSearchParams(window.location.search);
-            const utms = {};
-            ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(key => {
-                const val = params.get(key);
-                if (val) utms[key] = val;
-            });
-            if (Object.keys(utms).length > 0) {
-                localStorage.setItem(this.utmKey, JSON.stringify({...utms, captured_at: new Date().toISOString()}));
-            }
-        },
-        getStoredUTMs() {
-            try { return JSON.parse(localStorage.getItem(this.utmKey)) || {}; } catch(e) { return {}; }
-        },
-        async getStoredID() {
-            const c = document.cookie.split('; ').find(r => r.startsWith(`${this.key}=`))?.split('=')[1];
-            const l = localStorage.getItem(this.key);
-            return c || l || null;
-        },
-        async syncStorage(id) {
-            const exp = new Date(); exp.setFullYear(exp.getFullYear() + 2);
-            document.cookie = `${this.key}=${id}; expires=${exp.toUTCString()}; path=/; SameSite=Lax; Secure`;
-            localStorage.setItem(this.key, id);
-            window.AURA_UID = id;
-        },
-        generateUUID() {
-            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-            );
-        }
-    };
-
-    const AuraFingerprint = {
-        async getFullSignature() {
-            return {
-                canvas: this.getCanvas(),
-                webgl: this.getWebGL(),
-                network: this.getNetworkInfo(),
-                drift: await this.measureDrift(),
-                screen: `${screen.width}x${screen.height}`,
-                is_incognito: await this.isIncognito()
-            };
-        },
-        getNetworkInfo() {
-            const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-            return {
-                type: conn?.effectiveType || "unknown",
-                rtt: conn?.rtt,
-                downlink: conn?.downlink,
-                is_residential_prob: (conn?.saveData || (conn?.downlink && conn.downlink < 10))
-            };
-        },
-        getCanvas() {
-            try {
-                const cvs = document.createElement('canvas');
-                const ctx = cvs.getContext('2d');
-                ctx.textBaseline = "top"; ctx.font = "14px 'Arial'";
-                ctx.fillText("AuraWorks_v3.2", 2, 2);
-                return cvs.toDataURL().substring(0, 100);
-            } catch (e) { return "blocked"; }
-        },
-        getWebGL() {
-            try {
-                const canvas = document.createElement('canvas');
-                const gl = canvas.getContext('webgl');
-                const debug = gl.getExtension('WEBGL_debug_renderer_info');
-                return debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : "standard";
-            } catch (e) { return "standard"; }
-        },
-        async measureDrift() {
-            return new Promise(r => {
-                const t0 = performance.now(), d0 = Date.now();
-                setTimeout(() => r(Math.round((performance.now() - t0) - (Date.now() - d0))), 500);
-            });
-        },
-        async isIncognito() {
-            if ('storage' in navigator && 'estimate' in navigator.storage) {
-                const {quota} = await navigator.storage.estimate();
-                return quota < 120000000;
-            }
-            return false;
-        }
-    };
-
-    const AuraTracker = {
-        isArmed: false, 
-
-        init(auraId) {
-            this.auraId = auraId;
-            this.trackEntry();
-            this.setupSensors();
-            this.patchSPA();
-
-            window.addEventListener('aura_consent_granted', () => {
-                this.isArmed = true;
-                this.dispatch('event', { event_type: 'consent_granted' });
-            });
-        },
-        async dispatch(endpoint, payload, useBeacon = false) {
-            const utms = AuraPersistence.getStoredUTMs();
-            
-            // Backend Mapping: 
-            // - client_id: Used by track_exit and track_event to find the Visit record (must be the visitor UID)
-            // - aura_id: Forensic unique ID (this.auraId)
-            // - agency_id: The ID from the script data-id (clientSecret)
-            
-            const data = {
-                client_id: this.auraId, // Set visitor ID here to satisfy backend validation
-                aura_id: this.auraId,
-                agency_id: clientSecret,
-                timestamp: new Date().toISOString(),
-                ...utms,
-                ...payload
-            };
-
-            const url = `${API_URL}/${endpoint}`;
-
-            if (useBeacon && navigator.sendBeacon) {
-                const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-                return navigator.sendBeacon(url, blob);
-            }
-            try {
-                await fetch(url, {
-                    method: 'POST', 
-                    mode: 'cors', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify(data), 
-                    keepalive: true
-                });
-            } catch (e) { console.error("Aura dispatch error", e); }
-        },
-        setupSensors() {
-            document.addEventListener('blur', (e) => {
-                if (!this.isArmed) return; 
-                const target = e.target;
-                if (target.type === 'email' || target.name?.includes('email')) {
-                    if (target.value.includes('@')) {
-                        this.dispatch('identity', { email: target.value, capture_source: 'authorized_blur' });
-                    }
-                }
-            }, true);
-
-            document.addEventListener('click', (e) => {
-                const btn = e.target.closest('a, button');
-                if (!btn) return;
-                const text = btn.innerText?.toLowerCase();
-                const intentKeywords = ['pricing', 'audit', 'feature', 'solution', 'waitlist', 'get started'];
-                if (intentKeywords.some(kw => text.includes(kw))) {
-                    this.dispatch('event', { event_type: 'intent_click', intent_cluster: text.substring(0, 20), url: window.location.pathname });
-                }
-            });
-
-            document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'hidden') this.trackExit();
-            });
-
-            window.addEventListener('pagehide', () => this.trackExit());
-        },
-        trackEntry() {
-            const sig = AuraFingerprint.getNetworkInfo();
-            this.dispatch('entry', { 
-                url: window.location.href, 
-                referrer: document.referrer || "direct",
-                screen_resolution: `${window.innerWidth}x${window.innerHeight}`,
-                effective_connection_type: sig.type,
-                downlink_speed: sig.downlink,
-                rtt: sig.rtt
-            });
-        },
-        trackExit() {
-            const duration = Math.round((performance.now() - window.AURA_START_TIME) / 1000);
-            if (duration < 1) return;
-            
-            this.dispatch('exit', {
-                event_type: 'exit',
-                duration: duration,
-                url: window.location.href
-            }, true); 
-        },
-        patchSPA() {
-            const self = this;
-            ['pushState', 'replaceState'].forEach(m => {
-                const orig = history[m];
-                history[m] = function() {
-                    const r = orig.apply(this, arguments);
-                    setTimeout(() => self.trackEntry(), 0);
-                    return r;
-                };
-            });
-        }
-    };
-
-    const startAura = async () => {
-        if (window.AURA_INITIALIZED) return;
-        window.AURA_INITIALIZED = true;
-        const auraId = await AuraPersistence.init();
-        AuraTracker.init(auraId);
-        
-        setTimeout(async () => {
-            const sig = await AuraFingerprint.getFullSignature();
-            await AuraTracker.dispatch('identity', { signature: sig });
-        }, 2000);
-    };
-
-    if (document.readyState === 'complete') startAura();
-    else window.addEventListener('load', startAura);
-})();
-</file>
-
-<file path="backend/app/services/notifications.py">
-import os
-import httpx
-import logging
-from app.core.config import settings
-
-logger = logging.getLogger("uvicorn")
-
-# --- PHASE 01: The #visit Channel (Industrial Pager) ---
-
-async def post_to_visit_channel(visit_data: dict, journey: dict):
-    """
-    High-speed Signal for the #visit channel.
-    Only triggers for High-Confidence (>= 0.5) or Verified traffic.
-    """
-    if not settings.SLACK_VISIT_WEBHOOK_URL:
-        return
-
-    # SPRINT B FILTER: Stop notification fatigue from residential noise
-    confidence = visit_data.get("confidence_score", 0.0)
-    if confidence < 0.5 and not visit_data.get("is_verified", False):
-        logger.info(f"🤫 Noise Suppression: Skip Slack for {visit_data.get('aura_id')[:8]} (Score: {confidence})")
-        return
-
-    cluster_count = journey.get("cluster_count", 1)
-    is_corporate_cluster = cluster_count >= 3
-    
-    # Industrial Visual Indicators: Clean & Clinical
-    emoji = "🏢" if is_corporate_cluster else "🏭"
-    header = f"{emoji} Corporate Cluster" if is_corporate_cluster else f"{emoji} Industrial Facility"
-
-    # Deep Links for the Industrial Triad
-    airtable_url = f"https://airtable.com/{os.getenv('AIRTABLE_BASE_ID', '')}"
-    notion_url = f"https://www.notion.so/{os.getenv('NOTION_DATABASE_ID', '')}"
-
-    payload = {
-        "blocks": [
-            {
-                "type": "header",
-                "text": {"type": "plain_text", "text": header}
-            },
-            {
-                "type": "section",
-                "fields": [
-                    {"type": "mrkdwn", "text": f"*Entity:*\n{visit_data.get('company_name', 'Anonymous Entity')}"},
-                    {"type": "mrkdwn", "text": f"*Confidence:*\n`{confidence * 100}%`"},
-                    {"type": "mrkdwn", "text": f"*Attribution:*\n{visit_data.get('utm_source', 'Direct')} / {visit_data.get('utm_medium', 'None')}"},
-                    {"type": "mrkdwn", "text": f"*Intent Score:*\n{journey.get('intent_score', 'Audit Pending')}"}
-                ]
-            },
-            {
-                "type": "context",
-                "elements": [
-                    {"type": "mrkdwn", "text": f"📍 Forensic Lock: `{visit_data.get('aura_id')[:8]}` | Location: {visit_data.get('city', 'Unknown')}, {visit_data.get('region', 'ZA')}"}
-                ]
-            },
-            {
-                "type": "actions",
-                "elements": [
-                    {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": "Airtable CRM"},
-                        "url": airtable_url,
-                        "style": "primary"
-                    },
-                    {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": "Notion Vault"},
-                        "url": notion_url
-                    }
-                ]
-            }
-        ]
-    }
-
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(settings.SLACK_VISIT_WEBHOOK_URL, json=payload, timeout=10.0)
-            response.raise_for_status()
-        except Exception as e:
-            logger.error(f"Visit Channel Pager Failure: {e}")
-
-# --- PHASE 02: Lead Notifications (Identity Promotion) ---
-
-async def post_to_slack(lead_data: dict, journey: dict = None):
-    """
-    Standard lead notification for identified conversions (Promotion).
-    """
-    if not settings.SLACK_WEBHOOK_URL:
-        return
-
-    journey = journey or {}
-    status_emoji = "💎" # Premium Lead Icon
-    notion_url = f"https://www.notion.so/{os.getenv('NOTION_DATABASE_ID', '')}"
-
-    payload = {
-        "blocks": [
-            {
-                "type": "header",
-                "text": {"type": "plain_text", "text": f"{status_emoji} Identity Promoted"}
-            },
-            {
-                "type": "section",
-                "fields": [
-                    {"type": "mrkdwn", "text": f"*Entity:*\n{lead_data.get('company_name_final', 'Anonymous Entity')}"},
-                    {"type": "mrkdwn", "text": f"*Lead:*\n{lead_data.get('name')} ({lead_data.get('email')})"},
-                    {"type": "mrkdwn", "text": f"*Capture Source:*\n`{lead_data.get('capture_source', 'Verification')}`"},
-                    {"type": "mrkdwn", "text": f"*Pathway:*\n{journey.get('pathway', 'Direct Entry')}"}
-                ]
-            },
-            {
-                "type": "actions",
-                "elements": [
-                    {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": "Read Full Audit"},
-                        "url": notion_url,
-                        "style": "primary"
-                    }
-                ]
-            }
-        ]
-    }
-    
-    async with httpx.AsyncClient() as client:
-        try:
-            await client.post(settings.SLACK_WEBHOOK_URL, json=payload, timeout=10.0)
-        except Exception as e:
-            logger.error(f"Lead Channel Dispatch Failure: {e}")
-
-# --- PHASE 03: Industrial Mailer (Mailgun) ---
-
-async def send_mailgun_notification(email: str, name: str, subject: str = "Phase 01: Audit Initiated"):
-    """
-    Industrial Email Dispatch via Mailgun API for Client Onboarding.
-    """
-    if not settings.MAILGUN_API_KEY or not settings.MAILGUN_DOMAIN:
-        logger.warning("Mailgun credentials missing. Email skipped.")
-        return
-
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(
-                f"https://api.mailgun.net/v3/{settings.MAILGUN_DOMAIN}/messages",
-                auth=("api", settings.MAILGUN_API_KEY),
-                data={
-                    "from": f"AuraWorks <audit@{settings.MAILGUN_DOMAIN}>",
-                    "to": email,
-                    "subject": subject,
-                    "html": f"""
-                    <div style="font-family: sans-serif; color: #18181b;">
-                        <h3>System Audit: {name}</h3>
-                        <p>Your industrial intelligence audit has been queued for processing.</p>
-                        <p style="color: #71717a; font-size: 12px;">Ref: Industrial Forensic Bridge v3.0</p>
-                    </div>
-                    """
-                }
-            )
-            return response.status_code == 200
-        except Exception as e:
-            logger.error(f"Mailgun Dispatch Failure: {e}")
-            return False
 </file>
 
 <file path="frontend/src/components/footer/footer.tsx">
@@ -7004,6 +6771,249 @@ export default function Footer() {
         </footer>
     )
 }
+</file>
+
+<file path="tracker/src/public/aura.js">
+/**
+ * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
+ * Version: 3.2.1 (POPIA Compliant & Validation Fixed)
+ * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
+ */
+(async function() {
+    const script = document.currentScript;
+    // clientSecret is the ID of the agency/site owner from the script tag
+    const clientSecret = window.AURA_ID || script?.getAttribute('data-id');
+    window.AURA_START_TIME = performance.now();
+    
+    if (!clientSecret) return console.error("❌ AuraWorks: Missing Client Identity.");
+
+    const getBaseUrl = () => {
+        if (window.AURA_CONFIG?.apiUrl) return window.AURA_CONFIG.apiUrl;
+        if (script?.src.includes('http')) {
+            try { return new URL(script.src).origin; } catch (e) {}
+        }
+        return "https://industrial-intelligence-xi.vercel.app";
+    };
+    
+    const API_URL = `${getBaseUrl().replace(/\/$/, '')}/api/v1/track`;
+
+    const AuraPersistence = {
+        key: 'aura_uid',
+        utmKey: 'aura_utm',
+        async init() {
+            let id = await this.getStoredID();
+            this.captureUTMs(); 
+            if (!id) id = this.generateUUID();
+            await this.syncStorage(id);
+            return id;
+        },
+        captureUTMs() {
+            const params = new URLSearchParams(window.location.search);
+            const utms = {};
+            ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(key => {
+                const val = params.get(key);
+                if (val) utms[key] = val;
+            });
+            if (Object.keys(utms).length > 0) {
+                localStorage.setItem(this.utmKey, JSON.stringify({...utms, captured_at: new Date().toISOString()}));
+            }
+        },
+        getStoredUTMs() {
+            try { return JSON.parse(localStorage.getItem(this.utmKey)) || {}; } catch(e) { return {}; }
+        },
+        async getStoredID() {
+            const c = document.cookie.split('; ').find(r => r.startsWith(`${this.key}=`))?.split('=')[1];
+            const l = localStorage.getItem(this.key);
+            return c || l || null;
+        },
+        async syncStorage(id) {
+            const exp = new Date(); exp.setFullYear(exp.getFullYear() + 2);
+            document.cookie = `${this.key}=${id}; expires=${exp.toUTCString()}; path=/; SameSite=Lax; Secure`;
+            localStorage.setItem(this.key, id);
+            window.AURA_UID = id;
+        },
+        generateUUID() {
+            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+        }
+    };
+
+    const AuraFingerprint = {
+        async getFullSignature() {
+            return {
+                canvas: this.getCanvas(),
+                webgl: this.getWebGL(),
+                network: this.getNetworkInfo(),
+                drift: await this.measureDrift(),
+                screen: `${screen.width}x${screen.height}`,
+                is_incognito: await this.isIncognito()
+            };
+        },
+        getNetworkInfo() {
+            const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            return {
+                type: conn?.effectiveType || "unknown",
+                rtt: conn?.rtt,
+                downlink: conn?.downlink,
+                is_residential_prob: (conn?.saveData || (conn?.downlink && conn.downlink < 10))
+            };
+        },
+        getCanvas() {
+            try {
+                const cvs = document.createElement('canvas');
+                const ctx = cvs.getContext('2d');
+                ctx.textBaseline = "top"; ctx.font = "14px 'Arial'";
+                ctx.fillText("AuraWorks_v3.2", 2, 2);
+                return cvs.toDataURL().substring(0, 100);
+            } catch (e) { return "blocked"; }
+        },
+        getWebGL() {
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl');
+                const debug = gl.getExtension('WEBGL_debug_renderer_info');
+                return debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : "standard";
+            } catch (e) { return "standard"; }
+        },
+        async measureDrift() {
+            return new Promise(r => {
+                const t0 = performance.now(), d0 = Date.now();
+                setTimeout(() => r(Math.round((performance.now() - t0) - (Date.now() - d0))), 500);
+            });
+        },
+        async isIncognito() {
+            if ('storage' in navigator && 'estimate' in navigator.storage) {
+                const {quota} = await navigator.storage.estimate();
+                return quota < 120000000;
+            }
+            return false;
+        }
+    };
+
+    const AuraTracker = {
+        isArmed: false, 
+
+        init(auraId) {
+            this.auraId = auraId;
+            this.trackEntry();
+            this.setupSensors();
+            this.patchSPA();
+
+            window.addEventListener('aura_consent_granted', () => {
+                this.isArmed = true;
+                this.dispatch('event', { event_type: 'consent_granted' });
+            });
+        },
+        async dispatch(endpoint, payload, useBeacon = false) {
+            const utms = AuraPersistence.getStoredUTMs();
+            
+            // Backend Mapping: 
+            // - client_id: Used by track_exit and track_event to find the Visit record (must be the visitor UID)
+            // - aura_id: Forensic unique ID (this.auraId)
+            // - agency_id: The ID from the script data-id (clientSecret)
+            
+            const data = {
+                client_id: this.auraId, // Set visitor ID here to satisfy backend validation
+                aura_id: this.auraId,
+                agency_id: clientSecret,
+                timestamp: new Date().toISOString(),
+                ...utms,
+                ...payload
+            };
+
+            const url = `${API_URL}/${endpoint}`;
+
+            if (useBeacon && navigator.sendBeacon) {
+                const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+                return navigator.sendBeacon(url, blob);
+            }
+            try {
+                await fetch(url, {
+                    method: 'POST', 
+                    mode: 'cors', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(data), 
+                    keepalive: true
+                });
+            } catch (e) { console.error("Aura dispatch error", e); }
+        },
+        setupSensors() {
+            document.addEventListener('blur', (e) => {
+                if (!this.isArmed) return; 
+                const target = e.target;
+                if (target.type === 'email' || target.name?.includes('email')) {
+                    if (target.value.includes('@')) {
+                        this.dispatch('identity', { email: target.value, capture_source: 'authorized_blur' });
+                    }
+                }
+            }, true);
+
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('a, button');
+                if (!btn) return;
+                const text = btn.innerText?.toLowerCase();
+                const intentKeywords = ['pricing', 'audit', 'feature', 'solution', 'waitlist', 'get started'];
+                if (intentKeywords.some(kw => text.includes(kw))) {
+                    this.dispatch('event', { event_type: 'intent_click', intent_cluster: text.substring(0, 20), url: window.location.pathname });
+                }
+            });
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') this.trackExit();
+            });
+
+            window.addEventListener('pagehide', () => this.trackExit());
+        },
+        trackEntry() {
+            const sig = AuraFingerprint.getNetworkInfo();
+            this.dispatch('entry', { 
+                url: window.location.href, 
+                referrer: document.referrer || "direct",
+                screen_resolution: `${window.innerWidth}x${window.innerHeight}`,
+                effective_connection_type: sig.type,
+                downlink_speed: sig.downlink,
+                rtt: sig.rtt
+            });
+        },
+        trackExit() {
+            const duration = Math.round((performance.now() - window.AURA_START_TIME) / 1000);
+            if (duration < 1) return;
+            
+            this.dispatch('exit', {
+                event_type: 'exit',
+                duration: duration,
+                url: window.location.href
+            }, true); 
+        },
+        patchSPA() {
+            const self = this;
+            ['pushState', 'replaceState'].forEach(m => {
+                const orig = history[m];
+                history[m] = function() {
+                    const r = orig.apply(this, arguments);
+                    setTimeout(() => self.trackEntry(), 0);
+                    return r;
+                };
+            });
+        }
+    };
+
+    const startAura = async () => {
+        if (window.AURA_INITIALIZED) return;
+        window.AURA_INITIALIZED = true;
+        const auraId = await AuraPersistence.init();
+        AuraTracker.init(auraId);
+        
+        setTimeout(async () => {
+            const sig = await AuraFingerprint.getFullSignature();
+            await AuraTracker.dispatch('identity', { signature: sig });
+        }, 2000);
+    };
+
+    if (document.readyState === 'complete') startAura();
+    else window.addEventListener('load', startAura);
+})();
 </file>
 
 <file path="frontend/src/components/pricing/pricing.tsx">
@@ -7833,79 +7843,6 @@ async def get_visitor_journey(aura_id: str) -> Dict:
         }
 </file>
 
-<file path="backend/app/models/waitlist.py">
-from datetime import datetime, timezone
-from typing import Optional, TYPE_CHECKING
-from sqlmodel import SQLModel, Field, Relationship, Column, DateTime, String
-import sqlalchemy as sa
-
-# Forward reference for Type Checking to avoid circular imports
-if TYPE_CHECKING:
-    from app.models.company import Company
-
-def get_utc_now():
-    """Industrial-grade UTC timestamp factory for POPIA compliance."""
-    return datetime.now(timezone.utc)
-
-class WaitlistLead(SQLModel, table=True):
-    """
-    Individuals who have provided explicit Personal Consent via form submission.
-    Linked to a parent Company entity as a Secondary Entity.
-    """
-    id: Optional[int] = Field(default=None, primary_key=True)
-    
-    # --- ENTITY LINKAGE ---
-    # The 'Juristic Anchor' connecting the person to the jurisdictional body
-    company_id: Optional[int] = Field(default=None, foreign_key="company.id", index=True)
-    
-    # --- IDENTITY (POPIA/PAIA Consented) ---
-    name: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
-    email: str = Field(index=True, unique=True)
-    
-    # FIX: Explicitly naming the column to match the field name to stop UndefinedColumn errors
-    company_name_raw: Optional[str] = Field(
-        default=None, 
-        sa_column=Column("company_name_raw", String, nullable=True)
-    )
-    
-    industry: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
-    
-    # --- B2B AUDIT & FIRMOGRAPHICS ---
-    website: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
-    traffic: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
-    
-    # UPDATED: String type to accommodate dropdown ranges (e.g., "150k-500k")
-    avg_price: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
-    
-    crm: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
-    
-    # --- PROMOTIONAL STITCHING ---
-    # The forensic link used to upgrade anonymous visits to 'Consented'
-    aura_id: Optional[str] = Field(default=None, index=True) 
-    
-    # --- AUTOMATION STATUS ---
-    welcome_email_sent: bool = Field(default=False)
-    
-    # --- METADATA & TIMEKEEPING ---
-    created_at: datetime = Field(
-        default_factory=get_utc_now,
-        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=sa.func.now())
-    )
-    updated_at: datetime = Field(
-        default_factory=get_utc_now,
-        sa_column=Column(
-            DateTime(timezone=True), 
-            onupdate=sa.func.now(), # Automatically updates on every database save
-            nullable=False,
-            server_default=sa.func.now()
-        )
-    )
-
-    # --- RELATIONSHIPS ---
-    # Standardized to 'leads' to match Company.leads
-    company: Optional["Company"] = Relationship(back_populates="leads")
-</file>
-
 <file path="frontend/src/components/sections/form/get-started.tsx">
 'use client'
 
@@ -8156,6 +8093,79 @@ export default function GetStartedPage() {
         </main>
     )
 }
+</file>
+
+<file path="backend/app/models/waitlist.py">
+from datetime import datetime, timezone
+from typing import Optional, TYPE_CHECKING
+from sqlmodel import SQLModel, Field, Relationship, Column, DateTime, String
+import sqlalchemy as sa
+
+# Forward reference for Type Checking to avoid circular imports
+if TYPE_CHECKING:
+    from app.models.company import Company
+
+def get_utc_now():
+    """Industrial-grade UTC timestamp factory for POPIA compliance."""
+    return datetime.now(timezone.utc)
+
+class WaitlistLead(SQLModel, table=True):
+    """
+    Individuals who have provided explicit Personal Consent via form submission.
+    Linked to a parent Company entity as a Secondary Entity.
+    """
+    id: Optional[int] = Field(default=None, primary_key=True)
+    
+    # --- ENTITY LINKAGE ---
+    # The 'Juristic Anchor' connecting the person to the jurisdictional body
+    company_id: Optional[int] = Field(default=None, foreign_key="company.id", index=True)
+    
+    # --- IDENTITY (POPIA/PAIA Consented) ---
+    name: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
+    email: str = Field(index=True, unique=True)
+    
+    # FIX: Explicitly naming the column to match the field name to stop UndefinedColumn errors
+    company_name_raw: Optional[str] = Field(
+        default=None, 
+        sa_column=Column("company_name_raw", String, nullable=True)
+    )
+    
+    industry: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
+    
+    # --- B2B AUDIT & FIRMOGRAPHICS ---
+    website: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
+    traffic: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
+    
+    # UPDATED: String type to accommodate dropdown ranges (e.g., "150k-500k")
+    avg_price: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
+    
+    crm: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
+    
+    # --- PROMOTIONAL STITCHING ---
+    # The forensic link used to upgrade anonymous visits to 'Consented'
+    aura_id: Optional[str] = Field(default=None, index=True) 
+    
+    # --- AUTOMATION STATUS ---
+    welcome_email_sent: bool = Field(default=False)
+    
+    # --- METADATA & TIMEKEEPING ---
+    created_at: datetime = Field(
+        default_factory=get_utc_now,
+        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=sa.func.now())
+    )
+    updated_at: datetime = Field(
+        default_factory=get_utc_now,
+        sa_column=Column(
+            DateTime(timezone=True), 
+            onupdate=sa.func.now(), # Automatically updates on every database save
+            nullable=False,
+            server_default=sa.func.now()
+        )
+    )
+
+    # --- RELATIONSHIPS ---
+    # Standardized to 'leads' to match Company.leads
+    company: Optional["Company"] = Relationship(back_populates="leads")
 </file>
 
 <file path="backend/app/api/v1/waitlist.py">
@@ -8578,20 +8588,44 @@ async def track_consent(payload: ConsentPayload):
 
 @router.post("/exit")
 async def track_exit(payload: PageViewCreate):
-    with Session(engine) as session:
-        # Use client_id as payload for PageViewCreate typically aligns with aura_id logic
-        statement = select(Visit).where(
-            Visit.aura_id == payload.client_id,
-            Visit.url == payload.url
-        ).order_by(Visit.created_at.desc())
-        
-        visit = session.exec(statement).first()
-        if visit:
-            visit.duration = payload.duration
-            session.add(visit)
-            session.commit()
-            return {"status": "recorded"}
-        return {"status": "pending"}
+    """
+    Finalizes dwell time for a forensic session.
+    Matches incoming client_id to the aura_id in the Visit ledger.
+    """
+    try:
+        # Sanitize duration: Convert from string/float to int
+        # Handle cases where frontend might send "NaN" or null
+        try:
+            processed_duration = int(float(payload.duration))
+        except (ValueError, TypeError):
+            processed_duration = 0
+
+        with Session(engine) as session:
+            # Locate the most recent visit matching this ID and URL
+            statement = select(Visit).where(
+                Visit.aura_id == payload.client_id,
+                Visit.url == payload.url
+            ).order_by(Visit.created_at.desc())
+            
+            visit = session.exec(statement).first()
+            
+            if visit:
+                # Logic check: Only update if the new duration is greater 
+                # (Prevents race conditions from late heartbeat packets)
+                if processed_duration > (visit.duration or 0):
+                    visit.duration = processed_duration
+                    session.add(visit)
+                    session.commit()
+                    return {"status": "recorded", "duration": processed_duration}
+                
+                return {"status": "no_change", "reason": "existing_duration_higher"}
+            
+            return {"status": "pending_entry", "msg": "Visit record not yet initialized"}
+            
+    except Exception as e:
+        logger.error(f"❌ Exit Tracking Error: {e}")
+        # Return 200 even on error to prevent browser retry loops during page close
+        return {"status": "error", "message": str(e)}
 </file>
 
 </files>
