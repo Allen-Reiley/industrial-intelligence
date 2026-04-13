@@ -222,53 +222,6 @@ This section contains the contents of the repository's files.
 
 </file>
 
-<file path="frontend/src/components/tracker/aura-tracker.tsx">
-"use client";
-
-import { useEffect } from "react";
-
-interface AuraTrackerProps {
-  clientId: string;
-  apiUrl?: string;
-  cdnUrl?: string;
-}
-
-/**
- * AuraTracker: A modular forensic intelligence loader.
- * Injects the tracking script with cache-busting and configuration.
- */
-export default function AuraTracker({
-  clientId,
-  apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://dynamic-flow-production-a5d6.up.railway.app",
-  cdnUrl = "https://cdn.auraworks.co.za/aura.js",
-}: AuraTrackerProps) {
-  useEffect(() => {
-    // 1. Initialize Global Configuration
-    (window as any).AURA_CONFIG = { apiUrl };
-    (window as any).AURA_ID = clientId;
-
-    // 2. Create and Inject Script
-    const script = document.createElement("script");
-    script.async = true;
-    
-    // Hourly cache-busting (v parameter)
-    const version = Math.floor(Date.now() / 3600000);
-    script.src = `${cdnUrl}?v=${version}`;
-
-    document.head.appendChild(script);
-
-    return () => {
-      // Clean up on unmount if necessary
-      if (document.head.contains(script)) {
-        document.head.removeChild(script);
-      }
-    };
-  }, [clientId, apiUrl, cdnUrl]);
-
-  return null; // This component doesn't render any UI
-}
-</file>
-
 <file path="backend/app/api/v1/__init__.py">
 from fastapi import APIRouter
 from app.api.v1 import leads, track
@@ -371,34 +324,52 @@ notion_vault = NotionVault()
 </file>
 
 <file path="backend/app/db.py">
+import logging
 from sqlmodel import create_engine, SQLModel, Session
 from app.core.config import settings
 
-# 1. Create the Engine
-# 'echo=True' will log every SQL query to your terminal (great for debugging)
-# We disable it for production to keep logs clean.
-engine = create_engine(
-    settings.DATABASE_URL, 
-    echo=False,
-    # pool_pre_ping ensures the connection is still alive before using it
-    pool_pre_ping=True 
-)
+logger = logging.getLogger("uvicorn")
+
+# --- ENGINE INITIALIZATION ---
+# We check for the DATABASE_URL to prevent SQLAlchemy from crashing on 'None'
+if settings.DATABASE_URL:
+    # Standard Industrial Engine for Production (PostgreSQL)
+    engine = create_engine(
+        settings.DATABASE_URL, 
+        echo=False,
+        # pool_pre_ping is critical for Railway/Postgres to recover from idle timeouts
+        pool_pre_ping=True 
+    )
+else:
+    # Fallback Placeholder: Prevents the ArgumentError during app import.
+    # This allows the app to boot so you can debug Railway variables.
+    logger.warning("🚨 DATABASE_URL not detected. Initializing NULL_MODE engine.")
+    engine = create_engine("sqlite:///:memory:")
 
 def init_db():
     """
-    Creates all tables defined in your SQLModel models.
-    Run this when the app starts.
+    Creates all tables defined in the Juristic Ledger.
+    Only executes if a valid production URL is present.
     """
-    # Note: Ensure all models are imported before calling this
-    from app.models.visit import Visit
-    from app.models.client import Client 
-    
-    SQLModel.metadata.create_all(engine)
+    if not settings.DATABASE_URL:
+        logger.error("❌ init_db: Operation aborted. No production database linked.")
+        return
+
+    try:
+        # Note: Ensure all models are imported before calling this
+        from app.models.visit import Visit
+        from app.models.company import Company
+        from app.models.client import Client 
+        
+        SQLModel.metadata.create_all(engine)
+        logger.info("✅ Database Ledger: Schema verified and synchronized.")
+    except Exception as e:
+        logger.error(f"❌ Database Ledger: Synchronization failure: {e}")
 
 def get_session():
     """
     Dependency generator for FastAPI routes.
-    Ensures the session is closed after the request is finished.
+    Yields a session for transactional integrity.
     """
     with Session(engine) as session:
         yield session
@@ -2352,6 +2323,53 @@ export default function GetStartedModal({ isOpen, setIsOpen }: GetStartedModalPr
 }
 </file>
 
+<file path="frontend/src/components/tracker/aura-tracker.tsx">
+"use client";
+
+import { useEffect } from "react";
+
+interface AuraTrackerProps {
+  clientId: string;
+  apiUrl?: string;
+  cdnUrl?: string;
+}
+
+/**
+ * AuraTracker: A modular forensic intelligence loader.
+ * Injects the tracking script with cache-busting and configuration.
+ */
+export default function AuraTracker({
+  clientId,
+  apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://dynamic-flow-production-a5d6.up.railway.app",
+  cdnUrl = "https://cdn.auraworks.co.za/aura.js",
+}: AuraTrackerProps) {
+  useEffect(() => {
+    // 1. Initialize Global Configuration
+    (window as any).AURA_CONFIG = { apiUrl };
+    (window as any).AURA_ID = clientId;
+
+    // 2. Create and Inject Script
+    const script = document.createElement("script");
+    script.async = true;
+    
+    // Hourly cache-busting (v parameter)
+    const version = Math.floor(Date.now() / 3600000);
+    script.src = `${cdnUrl}?v=${version}`;
+
+    document.head.appendChild(script);
+
+    return () => {
+      // Clean up on unmount if necessary
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
+    };
+  }, [clientId, apiUrl, cdnUrl]);
+
+  return null; // This component doesn't render any UI
+}
+</file>
+
 <file path="frontend/src/components/ui/animated-group.tsx">
 'use client';
 import { ReactNode } from 'react';
@@ -4100,87 +4118,6 @@ class Department(SQLModel, table=True):
     company: "Company" = Relationship(back_populates="departments")
 </file>
 
-<file path="backend/app/services/airtable.py">
-import logging
-import asyncio
-from datetime import datetime, timezone
-from app.core.config import settings
-from pyairtable import Api
-
-logger = logging.getLogger("uvicorn")
-
-class AirtableEngine:
-    def __init__(self):
-        """
-        Initializes the Airtable connection using ProductionSettings.
-        """
-        # Centralized configuration access from settings
-        self.token = settings.AIRTABLE_API_KEY
-        self.base_id = settings.AIRTABLE_BASE_ID
-        self.table_name = settings.AIRTABLE_TABLE_NAME 
-        
-        if not self.token or not self.base_id:
-            logger.warning("⚠️ Airtable Engine: Missing credentials in environment. Standing by...")
-            self.table = None
-        else:
-            try:
-                self.api = Api(self.token)
-                self.table = self.api.table(self.base_id, self.table_name)
-                logger.info(f"✅ Airtable Engine: Linked to Vault '{self.table_name}'")
-            except Exception as e:
-                logger.error(f"❌ Airtable Engine: Initialization failed: {e}")
-                self.table = None
-
-    async def push_visit(self, data: dict):
-        """
-        Pushes high-intent corporate signals to the Airtable Ledger.
-        Uses clinical validation and thread offloading for production performance.
-        """
-        # Final safety check: Pull fresh state from settings
-        # This prevents crashes if credentials are changed in Railway during runtime
-        current_token = settings.AIRTABLE_API_KEY
-        current_base = settings.AIRTABLE_BASE_ID
-
-        if not all([current_token, current_base]):
-            # Silently exit if credentials are removed in production variables
-            return {"status": "standby", "reason": "missing_credentials"}
-
-        if not self.table:
-            # Re-attempt initialization if keys were provided after startup
-            try:
-                self.api = Api(current_token)
-                self.table = self.api.table(current_base, self.table_name)
-            except:
-                return {"status": "error", "reason": "vault_not_initialized"}
-
-        try:
-            # Map Jura-level data to the Airtable Schema
-            record = {
-                "Entity Name": data.get("company_name", "Anonymous Facility"),
-                "Domain": data.get("domain", "unknown.com"),
-                "Status": "Forensic Capture",
-                "IP Address": data.get("ip_address"),
-                "Location": f"{data.get('city', 'Unknown')}, {data.get('country_name', 'South Africa')}",
-                "Intelligence Summary": data.get("summary", "Awaiting Intelligence Audit..."),
-                "Aura ID": data.get("aura_id"),
-                "Connection": data.get("effective_connection_type", "Standard"),
-                "Detected At": datetime.now(timezone.utc).isoformat()
-            }
-            
-            # Execute blocking pyairtable call in a separate thread
-            await asyncio.to_thread(self.table.create, record)
-            
-            logger.info(f"💼 Vault: Industrial Signal logged for {record['Entity Name']}")
-            return {"status": "success"}
-            
-        except Exception as e:
-            logger.error(f"❌ Vault Sync Failure: {e}")
-            return {"status": "error", "message": str(e)}
-
-# Global instantiation for use throughout AuraWorks OS
-airtable_engine = AirtableEngine()
-</file>
-
 <file path="backend/app/services/contacts.py">
 import httpx
 import logging
@@ -4705,6 +4642,87 @@ import { twMerge } from "tailwind-merge"
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+</file>
+
+<file path="backend/app/services/airtable.py">
+import logging
+import asyncio
+from datetime import datetime, timezone
+from app.core.config import settings
+from pyairtable import Api
+
+logger = logging.getLogger("uvicorn")
+
+class AirtableEngine:
+    def __init__(self):
+        """
+        Initializes the Airtable connection using ProductionSettings.
+        """
+        # Centralized configuration access from settings
+        self.token = settings.AIRTABLE_API_KEY
+        self.base_id = settings.AIRTABLE_BASE_ID
+        self.table_name = settings.AIRTABLE_TABLE_NAME 
+        
+        if not self.token or not self.base_id:
+            logger.warning("⚠️ Airtable Engine: Missing credentials in environment. Standing by...")
+            self.table = None
+        else:
+            try:
+                self.api = Api(self.token)
+                self.table = self.api.table(self.base_id, self.table_name)
+                logger.info(f"✅ Airtable Engine: Linked to Vault '{self.table_name}'")
+            except Exception as e:
+                logger.error(f"❌ Airtable Engine: Initialization failed: {e}")
+                self.table = None
+
+    async def push_visit(self, data: dict):
+        """
+        Pushes high-intent corporate signals to the Airtable Ledger.
+        Uses clinical validation and thread offloading for production performance.
+        """
+        # Final safety check: Pull fresh state from settings
+        # This prevents crashes if credentials are changed in Railway during runtime
+        current_token = settings.AIRTABLE_API_KEY
+        current_base = settings.AIRTABLE_BASE_ID
+
+        if not all([current_token, current_base]):
+            # Silently exit if credentials are removed in production variables
+            return {"status": "standby", "reason": "missing_credentials"}
+
+        if not self.table:
+            # Re-attempt initialization if keys were provided after startup
+            try:
+                self.api = Api(current_token)
+                self.table = self.api.table(current_base, self.table_name)
+            except:
+                return {"status": "error", "reason": "vault_not_initialized"}
+
+        try:
+            # Map Jura-level data to the Airtable Schema
+            record = {
+                "Entity Name": data.get("company_name", "Anonymous Facility"),
+                "Domain": data.get("domain", "unknown.com"),
+                "Status": "Forensic Capture",
+                "IP Address": data.get("ip_address"),
+                "Location": f"{data.get('city', 'Unknown')}, {data.get('country_name', 'South Africa')}",
+                "Intelligence Summary": data.get("summary", "Awaiting Intelligence Audit..."),
+                "Aura ID": data.get("aura_id"),
+                "Connection": data.get("effective_connection_type", "Standard"),
+                "Detected At": datetime.now(timezone.utc).isoformat()
+            }
+            
+            # Execute blocking pyairtable call in a separate thread
+            await asyncio.to_thread(self.table.create, record)
+            
+            logger.info(f"💼 Vault: Industrial Signal logged for {record['Entity Name']}")
+            return {"status": "success"}
+            
+        except Exception as e:
+            logger.error(f"❌ Vault Sync Failure: {e}")
+            return {"status": "error", "message": str(e)}
+
+# Global instantiation for use throughout AuraWorks OS
+airtable_engine = AirtableEngine()
 </file>
 
 <file path="backend/app/tasks/janitor.py">
@@ -5670,76 +5688,6 @@ function Label({
 export { Label }
 </file>
 
-<file path="frontend/src/lib/api.ts">
-// src/lib/api.ts
-
-/**
- * The BASE_URL resolves the backend address.
- * In Production: https://dynamic-flow-production-a5d6.up.railway.app
- * In Local: http://localhost:8000
- */
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
-/**
- * Normalizes the API URL. 
- * Removes trailing slashes to prevent 307 Temporary Redirects or 404s in FastAPI.
- */
-const getEndpoint = (path: string) => {
-    // Check if BASE_URL is valid to prevent silent failures
-    if (!BASE_URL) {
-        console.warn("⚠️ AuraWorks OS: NEXT_PUBLIC_API_URL is undefined.");
-    }
-    const cleanBase = BASE_URL.replace(/\/$/, '');
-    const cleanPath = path.replace(/^\//, '').replace(/\/$/, '');
-    return `${cleanBase}/${cleanPath}`;
-};
-
-export async function submitToWaitlist(formData: any) {
-    /**
-     * Targets the updated v1/waitlist/join endpoint.
-     * Matches the backend route defined in app/api/v1/waitlist.py
-     */
-    const endpoint = getEndpoint('api/v1/waitlist/join');
-
-    try {
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                ...formData,
-                /**
-                 * THE STITCH:
-                 * Automatically grab the aura_id (forensic signature) from storage.
-                 * This upgrades the anonymous session to a 'Consented' identity.
-                 */
-                aura_id: typeof window !== 'undefined' ? localStorage.getItem('aura_uid') : null,
-                source: "industrial_intelligence_v1",
-                timestamp: new Date().toISOString()
-            }),
-        });
-
-        if (!response.ok) {
-            // Attempt to parse the structured error from FastAPI
-            const errorData = await response.json().catch(() => ({}));
-            
-            if (response.status === 404) {
-                throw new Error(`Intelligence Gateway not found at ${endpoint}. Please verify backend deployment.`);
-            }
-
-            // Return the detailed error (e.g. 'Work email required')
-            throw new Error(errorData.detail || 'The intelligence engine is currently synchronizing. Please try again.');
-        }
-
-        return await response.json();
-    } catch (error: any) {
-        console.error("🚨 API Dispatch Error:", error);
-        throw error;
-    }
-}
-</file>
-
 <file path="frontend/src/next.config.ts">
 import type { NextConfig } from "next";
 
@@ -6069,6 +6017,76 @@ export default function Home() {
       <Footer />
     </main>
   );
+}
+</file>
+
+<file path="frontend/src/lib/api.ts">
+// src/lib/api.ts
+
+/**
+ * The BASE_URL resolves the backend address.
+ * In Production: https://dynamic-flow-production-a5d6.up.railway.app
+ * In Local: http://localhost:8000
+ */
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+/**
+ * Normalizes the API URL. 
+ * Removes trailing slashes to prevent 307 Temporary Redirects or 404s in FastAPI.
+ */
+const getEndpoint = (path: string) => {
+    // Check if BASE_URL is valid to prevent silent failures
+    if (!BASE_URL) {
+        console.warn("⚠️ AuraWorks OS: NEXT_PUBLIC_API_URL is undefined.");
+    }
+    const cleanBase = BASE_URL.replace(/\/$/, '');
+    const cleanPath = path.replace(/^\//, '').replace(/\/$/, '');
+    return `${cleanBase}/${cleanPath}`;
+};
+
+export async function submitToWaitlist(formData: any) {
+    /**
+     * Targets the updated v1/waitlist/join endpoint.
+     * Matches the backend route defined in app/api/v1/waitlist.py
+     */
+    const endpoint = getEndpoint('api/v1/waitlist/join');
+
+    try {
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                ...formData,
+                /**
+                 * THE STITCH:
+                 * Automatically grab the aura_id (forensic signature) from storage.
+                 * This upgrades the anonymous session to a 'Consented' identity.
+                 */
+                aura_id: typeof window !== 'undefined' ? localStorage.getItem('aura_uid') : null,
+                source: "industrial_intelligence_v1",
+                timestamp: new Date().toISOString()
+            }),
+        });
+
+        if (!response.ok) {
+            // Attempt to parse the structured error from FastAPI
+            const errorData = await response.json().catch(() => ({}));
+            
+            if (response.status === 404) {
+                throw new Error(`Intelligence Gateway not found at ${endpoint}. Please verify backend deployment.`);
+            }
+
+            // Return the detailed error (e.g. 'Work email required')
+            throw new Error(errorData.detail || 'The intelligence engine is currently synchronizing. Please try again.');
+        }
+
+        return await response.json();
+    } catch (error: any) {
+        console.error("🚨 API Dispatch Error:", error);
+        throw error;
+    }
 }
 </file>
 
@@ -6861,6 +6879,138 @@ export default function Footer() {
 }
 </file>
 
+<file path="frontend/src/components/pricing/pricing.tsx">
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Check } from 'lucide-react'
+import Link from 'next/link'
+import { HeroHeader } from '../header/header'
+import { TextEffect } from '../ui/text-effect'
+import { AnimatedGroup } from '../ui/animated-group'
+
+const transitionVariants = {
+    item: {
+        hidden: { opacity: 0, filter: 'blur(12px)', y: 12 },
+        visible: {
+            opacity: 1,
+            filter: 'blur(0px)',
+            y: 0,
+            transition: { type: 'spring', bounce: 0.3, duration: 1.5 },
+        },
+    },
+} as const;
+
+export default function Pricing() {
+    const [hasMounted, setHasMounted] = useState(false);
+
+    useEffect(() => {
+        setHasMounted(true);
+    }, []);
+
+    if (!hasMounted) {
+        return <div className="sr-only">AuraWorks Pricing - R120k/yr Annual Engine</div>;
+    }
+
+    return (
+        <>
+            <HeroHeader />
+            <div className="relative py-12 md:py-32">
+                <div className="mx-auto max-w-5xl px-4 md:px-6">
+                    <div className="mx-auto max-w-2xl text-center">
+                        <h2 className="text-balance text-3xl font-bold md:text-4xl lg:text-5xl leading-tight">
+                            <TextEffect preset="fade-in-blur" speedSegment={0.3}>
+                                Deploy Your Industrial Growth Engine
+                            </TextEffect>
+                        </h2>
+                        <div className="text-muted-foreground mt-6 text-base md:text-lg px-2">
+                            <AnimatedGroup variants={transitionVariants}>
+                                One year of unmasked revenue. Total visibility into the construction, mining, logistics, and manufacturing firms visiting your site.
+                            </AnimatedGroup>
+                        </div>
+                    </div>
+
+                    <div className="mt-12 md:mt-20">
+                        {/* Added overflow-hidden to prevent layout shift */}
+                        <div className="bg-card relative rounded-3xl border shadow-2xl shadow-zinc-950/5 overflow-hidden">
+                            <div className="grid items-center gap-0 md:gap-12 divide-y md:grid-cols-2 md:divide-x md:divide-y-0">
+                                
+                                {/* LEFT COLUMN: Pricing & CTA */}
+                                <div className="p-8 md:p-12 text-center">
+                                    <div className="text-xl md:text-2xl font-semibold italic">
+                                        <AnimatedGroup variants={transitionVariants}>
+                                            AuraWorks Annual Engine
+                                        </AnimatedGroup>
+                                    </div>
+
+                                    <AnimatedGroup variants={transitionVariants}>
+                                        {/* FIX: break-words and responsive text size */}
+                                        <div className="mt-3 text-[10px] md:text-sm text-muted-foreground uppercase tracking-[0.2em] break-words">
+                                            Enterprise Sales Intelligence
+                                        </div>
+                                    </AnimatedGroup>
+
+                                    <AnimatedGroup variants={transitionVariants}>
+                                        {/* FIX: Fluid pricing text to prevent overflow */}
+                                        <div className="mb-8 mt-10 inline-flex items-baseline font-bold">
+                                            <span className="text-2xl md:text-4xl font-medium text-foreground mr-1">R</span>
+                                            <span className="text-5xl md:text-7xl tracking-tighter">120k</span>
+                                            <span className="text-base md:text-lg font-normal text-muted-foreground ml-1">/yr</span>
+                                        </div>
+                                    </AnimatedGroup>
+
+                                    <div className="flex justify-center w-full">
+                                        <AnimatedGroup variants={transitionVariants} className="w-full md:w-auto">
+                                            <Button
+                                                asChild
+                                                size="lg"
+                                                className="w-full md:w-auto px-10 py-7 text-base md:text-lg font-medium tracking-tight shadow-xl">
+                                                <Link href="/get-started">Request Enterprise Access</Link>
+                                            </Button>
+                                        </AnimatedGroup>
+                                    </div>
+
+                                    <div className="text-muted-foreground mt-10 text-[11px] md:text-xs leading-relaxed max-w-[280px] md:max-w-xs mx-auto">
+                                        <TextEffect preset="fade-in-blur" speedSegment={0.3}>
+                                            Annual License includes: Dedicated Identity Bridge, Full Social Enrichment, and Priority Industrial Lead Routing.
+                                        </TextEffect>
+                                    </div>
+                                </div>
+
+                                {/* RIGHT COLUMN: Features */}
+                                <div className="p-8 md:p-12 bg-zinc-50/50 dark:bg-zinc-900/10">
+                                    <AnimatedGroup variants={transitionVariants} className="space-y-8">
+                                        <ul role="list" className="space-y-5">
+                                            {[
+                                                'Real-time identity resolution for SA and International traffic',
+                                                'Weekly "Hot Lead" reports delivered to your inbox',
+                                                'LinkedIn & Corporate Email enrichment',
+                                                'POPIA-compliant visitor consent management',
+                                                'Industrial-sector automated nurture sequence'
+                                            ].map((item, index) => (
+                                                <li key={index} className="flex items-start gap-3">
+                                                    <Check className="size-4 text-primary mt-1 shrink-0" />
+                                                    <span className="text-sm md:text-base font-medium leading-snug">{item}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        <div className="text-muted-foreground text-xs md:text-sm leading-relaxed border-t pt-8 italic">
+                                            "Designed for firms that measure success in multi-million Rand contracts, not clicks."
+                                        </div>
+                                    </AnimatedGroup>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </>
+    )
+}
+</file>
+
 <file path="tracker/src/public/aura.js">
 /**
  * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
@@ -7109,138 +7259,6 @@ export default function Footer() {
     if (document.readyState === 'complete') startAura();
     else window.addEventListener('load', startAura);
 })();
-</file>
-
-<file path="frontend/src/components/pricing/pricing.tsx">
-'use client'
-
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Check } from 'lucide-react'
-import Link from 'next/link'
-import { HeroHeader } from '../header/header'
-import { TextEffect } from '../ui/text-effect'
-import { AnimatedGroup } from '../ui/animated-group'
-
-const transitionVariants = {
-    item: {
-        hidden: { opacity: 0, filter: 'blur(12px)', y: 12 },
-        visible: {
-            opacity: 1,
-            filter: 'blur(0px)',
-            y: 0,
-            transition: { type: 'spring', bounce: 0.3, duration: 1.5 },
-        },
-    },
-} as const;
-
-export default function Pricing() {
-    const [hasMounted, setHasMounted] = useState(false);
-
-    useEffect(() => {
-        setHasMounted(true);
-    }, []);
-
-    if (!hasMounted) {
-        return <div className="sr-only">AuraWorks Pricing - R120k/yr Annual Engine</div>;
-    }
-
-    return (
-        <>
-            <HeroHeader />
-            <div className="relative py-12 md:py-32">
-                <div className="mx-auto max-w-5xl px-4 md:px-6">
-                    <div className="mx-auto max-w-2xl text-center">
-                        <h2 className="text-balance text-3xl font-bold md:text-4xl lg:text-5xl leading-tight">
-                            <TextEffect preset="fade-in-blur" speedSegment={0.3}>
-                                Deploy Your Industrial Growth Engine
-                            </TextEffect>
-                        </h2>
-                        <div className="text-muted-foreground mt-6 text-base md:text-lg px-2">
-                            <AnimatedGroup variants={transitionVariants}>
-                                One year of unmasked revenue. Total visibility into the construction, mining, logistics, and manufacturing firms visiting your site.
-                            </AnimatedGroup>
-                        </div>
-                    </div>
-
-                    <div className="mt-12 md:mt-20">
-                        {/* Added overflow-hidden to prevent layout shift */}
-                        <div className="bg-card relative rounded-3xl border shadow-2xl shadow-zinc-950/5 overflow-hidden">
-                            <div className="grid items-center gap-0 md:gap-12 divide-y md:grid-cols-2 md:divide-x md:divide-y-0">
-                                
-                                {/* LEFT COLUMN: Pricing & CTA */}
-                                <div className="p-8 md:p-12 text-center">
-                                    <div className="text-xl md:text-2xl font-semibold italic">
-                                        <AnimatedGroup variants={transitionVariants}>
-                                            AuraWorks Annual Engine
-                                        </AnimatedGroup>
-                                    </div>
-
-                                    <AnimatedGroup variants={transitionVariants}>
-                                        {/* FIX: break-words and responsive text size */}
-                                        <div className="mt-3 text-[10px] md:text-sm text-muted-foreground uppercase tracking-[0.2em] break-words">
-                                            Enterprise Sales Intelligence
-                                        </div>
-                                    </AnimatedGroup>
-
-                                    <AnimatedGroup variants={transitionVariants}>
-                                        {/* FIX: Fluid pricing text to prevent overflow */}
-                                        <div className="mb-8 mt-10 inline-flex items-baseline font-bold">
-                                            <span className="text-2xl md:text-4xl font-medium text-foreground mr-1">R</span>
-                                            <span className="text-5xl md:text-7xl tracking-tighter">120k</span>
-                                            <span className="text-base md:text-lg font-normal text-muted-foreground ml-1">/yr</span>
-                                        </div>
-                                    </AnimatedGroup>
-
-                                    <div className="flex justify-center w-full">
-                                        <AnimatedGroup variants={transitionVariants} className="w-full md:w-auto">
-                                            <Button
-                                                asChild
-                                                size="lg"
-                                                className="w-full md:w-auto px-10 py-7 text-base md:text-lg font-medium tracking-tight shadow-xl">
-                                                <Link href="/get-started">Request Enterprise Access</Link>
-                                            </Button>
-                                        </AnimatedGroup>
-                                    </div>
-
-                                    <div className="text-muted-foreground mt-10 text-[11px] md:text-xs leading-relaxed max-w-[280px] md:max-w-xs mx-auto">
-                                        <TextEffect preset="fade-in-blur" speedSegment={0.3}>
-                                            Annual License includes: Dedicated Identity Bridge, Full Social Enrichment, and Priority Industrial Lead Routing.
-                                        </TextEffect>
-                                    </div>
-                                </div>
-
-                                {/* RIGHT COLUMN: Features */}
-                                <div className="p-8 md:p-12 bg-zinc-50/50 dark:bg-zinc-900/10">
-                                    <AnimatedGroup variants={transitionVariants} className="space-y-8">
-                                        <ul role="list" className="space-y-5">
-                                            {[
-                                                'Real-time identity resolution for SA and International traffic',
-                                                'Weekly "Hot Lead" reports delivered to your inbox',
-                                                'LinkedIn & Corporate Email enrichment',
-                                                'POPIA-compliant visitor consent management',
-                                                'Industrial-sector automated nurture sequence'
-                                            ].map((item, index) => (
-                                                <li key={index} className="flex items-start gap-3">
-                                                    <Check className="size-4 text-primary mt-1 shrink-0" />
-                                                    <span className="text-sm md:text-base font-medium leading-snug">{item}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                        <div className="text-muted-foreground text-xs md:text-sm leading-relaxed border-t pt-8 italic">
-                                            "Designed for firms that measure success in multi-million Rand contracts, not clicks."
-                                        </div>
-                                    </AnimatedGroup>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </>
-    )
-}
 </file>
 
 <file path="backend/app/services/enrichment.py">
@@ -8392,154 +8410,6 @@ async def join_waitlist(payload: dict, request: Request, background_tasks: Backg
             raise HTTPException(status_code=500, detail="Synchronization delay.")
 </file>
 
-<file path="backend/app/main.py">
-import asyncio
-import logging
-from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, HTTPException, Depends, Header
-from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import Session, select
-from datetime import datetime, timezone
-
-from app.core.config import settings
-from app.db import init_db, engine
-from app.api.v1 import track, clients, identity, waitlist
-from app.models.visit import Visit
-from app.models.company import Company 
-from app.tasks.janitor import cleanup_unverified_visits
-
-# Setup logging - Industrial Clinical Style
-logger = logging.getLogger("uvicorn")
-
-# --- SECURITY: Admin Access Guard ---
-def verify_admin_token(x_aura_token: str = Header(...)):
-    """
-    Hardens debug routes. Rejects any request missing the correct ADMIN_API_KEY.
-    """
-    if x_aura_token != settings.ADMIN_API_KEY:
-        logger.warning(f"🚨 UNAUTHORIZED ACCESS ATTEMPT: {datetime.now(timezone.utc)}")
-        raise HTTPException(status_code=403, detail="Unauthorized Forensic Access")
-
-async def run_janitor_loop():
-    """
-    Background worker that executes the 48-hour sweep every 6 hours.
-    """
-    while True:
-        try:
-            # Check if specialized cleanup is needed based on engine status
-            await cleanup_unverified_visits()
-            # Sleep for 6 hours between sweeps
-            await asyncio.sleep(21600) 
-        except asyncio.CancelledError:
-            break
-        except Exception as e:
-            logger.error(f"Janitor Loop Error: {e}")
-            await asyncio.sleep(60)
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """
-    The AuraWorks OS Lifecycle Manager.
-    """
-    logger.info(f"🚀 {settings.PROJECT_NAME} v{settings.VERSION}: Initializing...")
-    
-    # RESILIENT DATABASE INITIALIZATION
-    if settings.DATABASE_URL:
-        try:
-            init_db()
-            logger.info("✅ Database Ledger: Connection established and tables verified.")
-        except Exception as e:
-            logger.error(f"❌ Database Ledger: Failed to initialize. {e}")
-    else:
-        logger.warning("⚠️ Database Ledger: DATABASE_URL missing. Operating in restricted mode.")
-    
-    # Audit secondary engine status at startup
-    if settings.AIRTABLE_API_KEY and settings.AIRTABLE_BASE_ID:
-        logger.info("✅ Vault Engine: Airtable Sync Active.")
-    else:
-        logger.warning("⚠️ Vault Engine: Airtable on Standby.")
-
-    # Activate the Janitor as a background coroutine
-    janitor_task = asyncio.create_task(run_janitor_loop())
-    logger.info("🧹 Janitor: Forensic sweep scheduled (6-hour intervals).")
-    
-    yield
-    
-    logger.info("🛑 AuraWorks OS: Orderly shutdown initiated...")
-    janitor_task.cancel()
-    try:
-        await janitor_task
-    except asyncio.CancelledError:
-        pass
-
-app = FastAPI(
-    title=settings.PROJECT_NAME, 
-    version=settings.VERSION,
-    lifespan=lifespan
-)
-
-# --- CORS CONFIGURATION ---
-# Dynamically pull from settings to prevent production pre-flight blocks
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS or ["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# --- ROUTE REGISTRATION ---
-app.include_router(track.router, prefix=f"{settings.API_V1_STR}/track", tags=["tracking"])
-app.include_router(clients.router, prefix=f"{settings.API_V1_STR}/clients", tags=["clients"])
-app.include_router(identity.router, prefix=f"{settings.API_V1_STR}/identity", tags=["identity"])
-app.include_router(waitlist.router, prefix=f"{settings.API_V1_STR}/waitlist", tags=["waitlist"])
-
-@app.get("/health")
-def health_check():
-    return {
-        "status": "healthy", 
-        "engine": settings.PROJECT_NAME,
-        "database_connected": bool(settings.DATABASE_URL),
-        "timestamp": datetime.now(timezone.utc)
-    }
-
-# --- INDUSTRIAL DASHBOARD ENDPOINTS (Hardened) ---
-
-@app.get(
-    f"{settings.API_V1_STR}/leads", 
-    dependencies=[Depends(verify_admin_token)],
-    tags=["admin"]
-)
-async def get_leads():
-    """
-    Access point for verified leads. Requires ADMIN_API_KEY.
-    """
-    if not settings.DATABASE_URL:
-        raise HTTPException(status_code=503, detail="Database Unavailable")
-        
-    with Session(engine) as session:
-        statement = select(Visit).where(Visit.verification_status == "verified").order_by(Visit.created_at.desc())
-        results = session.exec(statement).all()
-        return results
-
-@app.get(
-    f"{settings.API_V1_STR}/debug/entities", 
-    dependencies=[Depends(verify_admin_token)],
-    tags=["admin"]
-)
-async def get_entities():
-    """
-    Direct access to the Juristic Entity ledger. Requires ADMIN_API_KEY.
-    """
-    if not settings.DATABASE_URL:
-        raise HTTPException(status_code=503, detail="Database Unavailable")
-
-    with Session(engine) as session:
-        statement = select(Company).order_by(Company.created_at.desc())
-        results = session.exec(statement).all()
-        return results
-</file>
-
 <file path="backend/app/api/v1/track.py">
 from fastapi import APIRouter, BackgroundTasks, Request, Header, HTTPException
 from typing import Optional, Dict, Any, List
@@ -8759,6 +8629,154 @@ async def track_exit(payload: PageViewCreate):
         logger.error(f"❌ Exit Tracking Error: {e}")
         # Return 200 even on error to prevent browser retry loops during page close
         return {"status": "error", "message": str(e)}
+</file>
+
+<file path="backend/app/main.py">
+import asyncio
+import logging
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Request, HTTPException, Depends, Header
+from fastapi.middleware.cors import CORSMiddleware
+from sqlmodel import Session, select
+from datetime import datetime, timezone
+
+from app.core.config import settings
+from app.db import init_db, engine
+from app.api.v1 import track, clients, identity, waitlist
+from app.models.visit import Visit
+from app.models.company import Company 
+from app.tasks.janitor import cleanup_unverified_visits
+
+# Setup logging - Industrial Clinical Style
+logger = logging.getLogger("uvicorn")
+
+# --- SECURITY: Admin Access Guard ---
+def verify_admin_token(x_aura_token: str = Header(...)):
+    """
+    Hardens debug routes. Rejects any request missing the correct ADMIN_API_KEY.
+    """
+    if x_aura_token != settings.ADMIN_API_KEY:
+        logger.warning(f"🚨 UNAUTHORIZED ACCESS ATTEMPT: {datetime.now(timezone.utc)}")
+        raise HTTPException(status_code=403, detail="Unauthorized Forensic Access")
+
+async def run_janitor_loop():
+    """
+    Background worker that executes the 48-hour sweep every 6 hours.
+    """
+    while True:
+        try:
+            # Check if specialized cleanup is needed based on engine status
+            await cleanup_unverified_visits()
+            # Sleep for 6 hours between sweeps
+            await asyncio.sleep(21600) 
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            logger.error(f"Janitor Loop Error: {e}")
+            await asyncio.sleep(60)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    The AuraWorks OS Lifecycle Manager.
+    """
+    logger.info(f"🚀 {settings.PROJECT_NAME} v{settings.VERSION}: Initializing...")
+    
+    # RESILIENT DATABASE INITIALIZATION
+    if settings.DATABASE_URL:
+        try:
+            init_db()
+            logger.info("✅ Database Ledger: Connection established and tables verified.")
+        except Exception as e:
+            logger.error(f"❌ Database Ledger: Failed to initialize. {e}")
+    else:
+        logger.warning("⚠️ Database Ledger: DATABASE_URL missing. Operating in restricted mode.")
+    
+    # Audit secondary engine status at startup
+    if settings.AIRTABLE_API_KEY and settings.AIRTABLE_BASE_ID:
+        logger.info("✅ Vault Engine: Airtable Sync Active.")
+    else:
+        logger.warning("⚠️ Vault Engine: Airtable on Standby.")
+
+    # Activate the Janitor as a background coroutine
+    janitor_task = asyncio.create_task(run_janitor_loop())
+    logger.info("🧹 Janitor: Forensic sweep scheduled (6-hour intervals).")
+    
+    yield
+    
+    logger.info("🛑 AuraWorks OS: Orderly shutdown initiated...")
+    janitor_task.cancel()
+    try:
+        await janitor_task
+    except asyncio.CancelledError:
+        pass
+
+app = FastAPI(
+    title=settings.PROJECT_NAME, 
+    version=settings.VERSION,
+    lifespan=lifespan
+)
+
+# --- CORS CONFIGURATION ---
+# Dynamically pull from settings to prevent production pre-flight blocks
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.ALLOWED_ORIGINS or ["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# --- ROUTE REGISTRATION ---
+app.include_router(track.router, prefix=f"{settings.API_V1_STR}/track", tags=["tracking"])
+app.include_router(clients.router, prefix=f"{settings.API_V1_STR}/clients", tags=["clients"])
+app.include_router(identity.router, prefix=f"{settings.API_V1_STR}/identity", tags=["identity"])
+app.include_router(waitlist.router, prefix=f"{settings.API_V1_STR}/waitlist", tags=["waitlist"])
+
+@app.get("/health")
+def health_check():
+    return {
+        "status": "healthy", 
+        "engine": settings.PROJECT_NAME,
+        "database_connected": bool(settings.DATABASE_URL),
+        "timestamp": datetime.now(timezone.utc)
+    }
+
+# --- INDUSTRIAL DASHBOARD ENDPOINTS (Hardened) ---
+
+@app.get(
+    f"{settings.API_V1_STR}/leads", 
+    dependencies=[Depends(verify_admin_token)],
+    tags=["admin"]
+)
+async def get_leads():
+    """
+    Access point for verified leads. Requires ADMIN_API_KEY.
+    """
+    if not settings.DATABASE_URL:
+        raise HTTPException(status_code=503, detail="Database Unavailable")
+        
+    with Session(engine) as session:
+        statement = select(Visit).where(Visit.verification_status == "verified").order_by(Visit.created_at.desc())
+        results = session.exec(statement).all()
+        return results
+
+@app.get(
+    f"{settings.API_V1_STR}/debug/entities", 
+    dependencies=[Depends(verify_admin_token)],
+    tags=["admin"]
+)
+async def get_entities():
+    """
+    Direct access to the Juristic Entity ledger. Requires ADMIN_API_KEY.
+    """
+    if not settings.DATABASE_URL:
+        raise HTTPException(status_code=503, detail="Database Unavailable")
+
+    with Session(engine) as session:
+        statement = select(Company).order_by(Company.created_at.desc())
+        results = session.exec(statement).all()
+        return results
 </file>
 
 </files>
