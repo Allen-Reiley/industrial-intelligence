@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional
+from typing import Optional, Union
 
 class Settings(BaseSettings):
     # --- APP SETTINGS ---
@@ -10,23 +10,26 @@ class Settings(BaseSettings):
     # --- SECURITY & AUTH ---
     # Used to secure /api/v1/leads and /api/v1/debug/entities
     ADMIN_API_KEY: str = "change-me-in-production" 
-    SECRET_KEY: str  # Required in .env
+    SECRET_KEY: str  # Injected via Railway Vars
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 11520  # 8 days
     
     # --- DATABASE ---
-    DATABASE_URL: str # Required in .env
+    # Railway provides this automatically when linked
+    DATABASE_URL: str 
     
     # --- INDUSTRIAL TRIAD (ENRICHMENT) ---
-    IPINFO_TOKEN: str # Required in .env
-    APOLLO_API_KEY: Optional[str] = None # Added for contact discovery
+    IPINFO_TOKEN: str 
+    APOLLO_API_KEY: Optional[str] = None 
     
     # --- INTELLIGENCE BRAIN ---
-    DEEPSEEK_API_KEY: Optional[str] = None # Added for juristic research
+    DEEPSEEK_API_KEY: Optional[str] = None 
     
     # --- VAULT & ENGINE (SINK) ---
-    AIRTABLE_BASE_ID: Optional[str] = None # Moved from os.getenv
+    # These now match the tokens you added to Railway
+    AIRTABLE_BASE_ID: Optional[str] = None 
     AIRTABLE_API_KEY: Optional[str] = None
-    NOTION_DATABASE_ID: Optional[str] = None # Moved from os.getenv
+    AIRTABLE_TABLE_NAME: str = "Forensic_Leads" # Added for consistency
+    NOTION_DATABASE_ID: Optional[str] = None 
     NOTION_TOKEN: Optional[str] = None
 
     # --- NOTIFICATIONS & DISPATCH ---
@@ -40,9 +43,18 @@ class Settings(BaseSettings):
     NEXT_PUBLIC_WAITLIST_ID: Optional[str] = None
     RESEND_API_KEY: Optional[str] = None
 
+    # --- CORS SETTINGS ---
+    # Authorizing your production domains explicitly
+    ALLOWED_ORIGINS: list[str] = [
+        "https://www.auraworks.co.za",
+        "https://auraworks.co.za",
+        "https://dynamic-flow-production-a5d6.up.railway.app"
+    ]
+
     # Modern Pydantic V2 Configuration
     model_config = SettingsConfigDict(
-        env_file=".env", 
+        # In production, env_file is ignored if variables are in the environment
+        env_file=None, 
         case_sensitive=True,
         extra="ignore" 
     )

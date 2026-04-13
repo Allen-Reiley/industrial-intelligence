@@ -31,6 +31,7 @@ async def run_janitor_loop():
     """
     while True:
         try:
+            # Check if specialized cleanup is needed based on engine status
             await cleanup_unverified_visits()
             # Sleep for 6 hours between sweeps
             await asyncio.sleep(21600) 
@@ -45,11 +46,18 @@ async def lifespan(app: FastAPI):
     """
     The AuraWorks OS Lifecycle Manager.
     """
-    logger.info("🚀 AuraWorks OS: Initializing Database Ledger...")
+    logger.info(f"🚀 {settings.PROJECT_NAME} v{settings.VERSION}: Initializing...")
     init_db()
     
+    # Audit secondary engine status at startup
+    if settings.AIRTABLE_API_KEY and settings.AIRTABLE_BASE_ID:
+        logger.info("✅ Vault Engine: Airtable Sync Active.")
+    else:
+        logger.warning("⚠️ Vault Engine: Airtable on Standby (Missing Credentials).")
+
     # Activate the Janitor as a background coroutine
     janitor_task = asyncio.create_task(run_janitor_loop())
+    logger.info("🧹 Janitor: Forensic sweep scheduled (6-hour intervals).")
     
     yield
     
@@ -60,21 +68,17 @@ async def lifespan(app: FastAPI):
     except asyncio.CancelledError:
         pass
 
-app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
+app = FastAPI(
+    title=settings.PROJECT_NAME, 
+    version=settings.VERSION,
+    lifespan=lifespan
+)
 
 # --- CORS CONFIGURATION ---
-origins = [ 
-    "https://industrial-intelligence-xi.vercel.app", 
-    "http://localhost:3000",
-    "https://auraworks.co.za",
-    "https://www.auraworks.co.za",
-    "https://cdn.auraworks.co.za",
-    "https://dynamic-flow-production-a5d6.up.railway.app"
-]
-
+# Now pulling directly from the centralized ProductionSettings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -88,7 +92,11 @@ app.include_router(waitlist.router, prefix=f"{settings.API_V1_STR}/waitlist", ta
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "timestamp": datetime.now(timezone.utc)}
+    return {
+        "status": "healthy", 
+        "engine": settings.PROJECT_NAME,
+        "timestamp": datetime.now(timezone.utc)
+    }
 
 # --- INDUSTRIAL DASHBOARD ENDPOINTS (Hardened) ---
 

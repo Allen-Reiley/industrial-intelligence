@@ -4632,35 +4632,6 @@ export function cn(...inputs: ClassValue[]) {
 }
 </file>
 
-<file path="backend/app/models/pageview.py">
-from typing import Optional
-from typing import Union, Optional  
-from sqlmodel import SQLModel, Field
-
-class PageViewBase(SQLModel):
-    client_id: str = Field(description="The visitor's unique forensic ID (aura_id)")
-    url: str = Field(description="The URL the visitor is exiting from")
-    
-    # Change: Use Union or Optional to handle incoming data variations
-    # FastAPI/Pydantic will automatically try to coerce "10" (string) to 10 (int)
-    duration: Union[int, float, str] = Field(
-        default=0, 
-        description="Dwell time in seconds. Coerced from string if necessary."
-    )
-
-    class Config:
-        # This ensures that even if a float like 10.5 comes in, it doesn't crash
-        smart_union = True
-
-class PageViewCreate(PageViewBase):
-    """
-    Validation schema for 'Exit' and 'Event' pings.
-    Matches the payload structure in AuraWorks v3.2.1
-    """
-    event_type: Optional[str] = "exit"
-    intent_cluster: Optional[str] = None
-</file>
-
 <file path="backend/app/tasks/janitor.py">
 import logging
 from datetime import datetime, timedelta, timezone
@@ -5930,6 +5901,38 @@ class Company(SQLModel, table=True):
     )
 </file>
 
+<file path="backend/app/models/pageview.py">
+from typing import Optional
+from typing import Union, Optional  
+from pydantic import ConfigDict
+from sqlmodel import SQLModel, Field
+
+class PageViewBase(SQLModel):
+    client_id: str = Field(description="The visitor's unique forensic ID (aura_id)")
+    url: str = Field(description="The URL the visitor is exiting from")
+    
+    # Union handles the incoming data variations from the browser
+    duration: Union[int, float, str] = Field(
+        default=0, 
+        description="Dwell time in seconds. Coerced from string if necessary."
+    )
+
+    # Pydantic V2 replacement for 'class Config'
+    model_config = ConfigDict(
+        # 'smart_union' is the default behavior in V2, but we can set 
+        # extra='ignore' or other flags here if needed for industrial resilience.
+        populate_by_name=True
+    )
+
+class PageViewCreate(PageViewBase):
+    """
+    Validation schema for 'Exit' and 'Event' pings.
+    Matches the payload structure in AuraWorks v3.2.1
+    """
+    event_type: Optional[str] = "exit"
+    intent_cluster: Optional[str] = None
+</file>
+
 <file path="frontend/src/app/(pages)/about/page.tsx">
 import { AboutHero } from "@/components/sections/about/about-hero";
 import { FounderProfile } from "@/components/sections/about/founder-profile";
@@ -7151,7 +7154,7 @@ export default function Pricing() {
 
 <file path="backend/app/core/config.py">
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional
+from typing import Optional, Union
 
 class Settings(BaseSettings):
     # --- APP SETTINGS ---
@@ -7162,23 +7165,26 @@ class Settings(BaseSettings):
     # --- SECURITY & AUTH ---
     # Used to secure /api/v1/leads and /api/v1/debug/entities
     ADMIN_API_KEY: str = "change-me-in-production" 
-    SECRET_KEY: str  # Required in .env
+    SECRET_KEY: str  # Injected via Railway Vars
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 11520  # 8 days
     
     # --- DATABASE ---
-    DATABASE_URL: str # Required in .env
+    # Railway provides this automatically when linked
+    DATABASE_URL: str 
     
     # --- INDUSTRIAL TRIAD (ENRICHMENT) ---
-    IPINFO_TOKEN: str # Required in .env
-    APOLLO_API_KEY: Optional[str] = None # Added for contact discovery
+    IPINFO_TOKEN: str 
+    APOLLO_API_KEY: Optional[str] = None 
     
     # --- INTELLIGENCE BRAIN ---
-    DEEPSEEK_API_KEY: Optional[str] = None # Added for juristic research
+    DEEPSEEK_API_KEY: Optional[str] = None 
     
     # --- VAULT & ENGINE (SINK) ---
-    AIRTABLE_BASE_ID: Optional[str] = None # Moved from os.getenv
+    # These now match the tokens you added to Railway
+    AIRTABLE_BASE_ID: Optional[str] = None 
     AIRTABLE_API_KEY: Optional[str] = None
-    NOTION_DATABASE_ID: Optional[str] = None # Moved from os.getenv
+    AIRTABLE_TABLE_NAME: str = "Forensic_Leads" # Added for consistency
+    NOTION_DATABASE_ID: Optional[str] = None 
     NOTION_TOKEN: Optional[str] = None
 
     # --- NOTIFICATIONS & DISPATCH ---
@@ -7192,9 +7198,18 @@ class Settings(BaseSettings):
     NEXT_PUBLIC_WAITLIST_ID: Optional[str] = None
     RESEND_API_KEY: Optional[str] = None
 
+    # --- CORS SETTINGS ---
+    # Authorizing your production domains explicitly
+    ALLOWED_ORIGINS: list[str] = [
+        "https://www.auraworks.co.za",
+        "https://auraworks.co.za",
+        "https://dynamic-flow-production-a5d6.up.railway.app"
+    ]
+
     # Modern Pydantic V2 Configuration
     model_config = SettingsConfigDict(
-        env_file=".env", 
+        # In production, env_file is ignored if variables are in the environment
+        env_file=None, 
         case_sensitive=True,
         extra="ignore" 
     )
@@ -8318,6 +8333,7 @@ async def run_janitor_loop():
     """
     while True:
         try:
+            # Check if specialized cleanup is needed based on engine status
             await cleanup_unverified_visits()
             # Sleep for 6 hours between sweeps
             await asyncio.sleep(21600) 
@@ -8332,11 +8348,18 @@ async def lifespan(app: FastAPI):
     """
     The AuraWorks OS Lifecycle Manager.
     """
-    logger.info("🚀 AuraWorks OS: Initializing Database Ledger...")
+    logger.info(f"🚀 {settings.PROJECT_NAME} v{settings.VERSION}: Initializing...")
     init_db()
     
+    # Audit secondary engine status at startup
+    if settings.AIRTABLE_API_KEY and settings.AIRTABLE_BASE_ID:
+        logger.info("✅ Vault Engine: Airtable Sync Active.")
+    else:
+        logger.warning("⚠️ Vault Engine: Airtable on Standby (Missing Credentials).")
+
     # Activate the Janitor as a background coroutine
     janitor_task = asyncio.create_task(run_janitor_loop())
+    logger.info("🧹 Janitor: Forensic sweep scheduled (6-hour intervals).")
     
     yield
     
@@ -8347,21 +8370,17 @@ async def lifespan(app: FastAPI):
     except asyncio.CancelledError:
         pass
 
-app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
+app = FastAPI(
+    title=settings.PROJECT_NAME, 
+    version=settings.VERSION,
+    lifespan=lifespan
+)
 
 # --- CORS CONFIGURATION ---
-origins = [ 
-    "https://industrial-intelligence-xi.vercel.app", 
-    "http://localhost:3000",
-    "https://auraworks.co.za",
-    "https://www.auraworks.co.za",
-    "https://cdn.auraworks.co.za",
-    "https://dynamic-flow-production-a5d6.up.railway.app"
-]
-
+# Now pulling directly from the centralized ProductionSettings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -8375,7 +8394,11 @@ app.include_router(waitlist.router, prefix=f"{settings.API_V1_STR}/waitlist", ta
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "timestamp": datetime.now(timezone.utc)}
+    return {
+        "status": "healthy", 
+        "engine": settings.PROJECT_NAME,
+        "timestamp": datetime.now(timezone.utc)
+    }
 
 # --- INDUSTRIAL DASHBOARD ENDPOINTS (Hardened) ---
 
