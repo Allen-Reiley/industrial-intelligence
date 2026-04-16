@@ -3,6 +3,7 @@ from fastapi import APIRouter, BackgroundTasks, Request, Header, HTTPException
 from typing import Optional, Dict, Any, List
 from app.models.visit import VisitCreate, Visit
 from app.models.company import Company
+from app.models.lead import Lead  # Integrated Lead Model
 from app.models.pageview import PageViewCreate
 from app.services.enrichment import enrich_visitor_data
 from app.services.notifications import post_to_visit_channel
@@ -32,7 +33,7 @@ class IdentityPayload(BaseModel):
 async def process_entry_logic(payload: VisitCreate, client_ip: str, background_tasks: BackgroundTasks):
     """
     Refined Ingestion: Quarantines hits for audit while auto-verifying whitelisted entities.
-    Enforces multi-tenant isolation via client_id.
+    Propagates verified visits into the Lead ledger for multi-tenant intelligence.
     """
     with Session(engine) as session:
         # 1. Resolve Firmographics
@@ -41,7 +42,7 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str, background_t
         company_name = enriched_info.get("company_name", "Unknown")
         confidence = enriched_info.get("confidence_score", 0.0)
 
-        # 2. Check for Existing Company (Scoped to Client)
+        # 2. Check for Existing Company (Scoped to Client/Agency)
         company = None
         if domain and domain not in ["unknown.com", "n/a"]:
             company_statement = select(Company).where(
@@ -53,7 +54,7 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str, background_t
         # 3. Handle Company Record
         if not company and domain and domain not in ["unknown.com", "n/a"]:
             company = Company(
-                client_id=payload.client_id, # Link company to agency
+                client_id=payload.client_id,
                 name=company_name,
                 domain=domain,
                 industry=enriched_info.get("industry"),
@@ -88,10 +89,37 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str, background_t
         )
         
         session.add(db_visit)
+
+        # 5. LEAD PROPAGATION LOGIC
+        # If the company is verified, automatically sync or update the Lead table
+        if company and company.is_verified:
+            existing_lead = session.exec(
+                select(Lead).where(
+                    Lead.aura_id == payload.aura_id,
+                    Lead.client_id == payload.client_id
+                )
+            ).first()
+
+            if not existing_lead:
+                new_lead = Lead(
+                    client_id=payload.client_id,
+                    company_id=company.id,
+                    aura_id=payload.aura_id,
+                    company_name=company.name,
+                    domain=company.domain,
+                    industry=company.industry,
+                    lead_source="high_intent_visit",
+                    confidence_score=confidence
+                )
+                session.add(new_lead)
+            else:
+                existing_lead.last_active_at = datetime.now(timezone.utc)
+                session.add(existing_lead)
+
         session.commit()
         session.refresh(db_visit)
 
-        # 5. Dispatch to Channels (Airtable/Discord)
+        # 6. Dispatch to Channels (Airtable/Discord)
         if confidence >= 0.5 or (company and company.is_verified):
             airtable_data = {
                 "client_id": payload.client_id,
@@ -147,8 +175,17 @@ async def track_identity(payload: IdentityPayload):
                     visit.rtt = net.get("rtt")
             
             if payload.email:
-                # Matches the Visit model's capture_source field
                 visit.capture_source = payload.capture_source or "authorized_blur"
+                # Update Lead table if an email is captured
+                lead = session.exec(
+                    select(Lead).where(
+                        Lead.aura_id == payload.aura_id,
+                        Lead.client_id == payload.client_id
+                    )
+                ).first()
+                if lead:
+                    lead.email = payload.email
+                    session.add(lead)
             
             session.add(visit)
             session.commit()
@@ -158,12 +195,11 @@ async def track_identity(payload: IdentityPayload):
 @router.post("/event")
 async def track_event(payload: PageViewCreate):
     with Session(engine) as session:
+        # Note: aura.js sends visitor aura_id in the client_id field for events
         statement = select(Visit).where(
-            Visit.aura_id == payload.client_id, # Incoming 'client_id' from aura.js is the visitor's aura_id
-            Visit.client_id == payload.client_id # Multi-tenant isolation
+            Visit.aura_id == payload.client_id,
+            Visit.client_id == payload.client_id 
         ).order_by(Visit.created_at.desc())
-        # Note: In track_event, we need the actual agency client_id passed to verify isolation.
-        # I've updated the logic here to ensure cross-table integrity.
         
         visit = session.exec(statement).first()
         if visit:

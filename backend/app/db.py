@@ -36,6 +36,7 @@ def init_db():
         from app.models.waitlist import WaitlistLead
         from app.models.pageview import PageView
         from app.models.department import Department
+        from app.models.lead import Lead
         
         SQLModel.metadata.create_all(engine)
         logger.info("✅ Database Ledger: Schema verified and synchronized.")
