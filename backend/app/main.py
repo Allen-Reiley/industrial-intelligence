@@ -1,13 +1,15 @@
+# backend/app/main.py
 import asyncio
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import Session, select
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timezone
 
 from app.core.config import settings
-from app.db import init_db, engine
+from app.db import init_db, get_async_session
 from app.api.v1 import track, clients, identity, waitlist
 from app.models.visit import Visit
 from app.models.company import Company 
@@ -33,7 +35,7 @@ async def run_janitor_loop():
         try:
             # Check if specialized cleanup is needed based on engine status
             await cleanup_unverified_visits()
-            # Sleep for 6 hours between sweeps
+            # Sleep for 6 hours (21600 seconds)
             await asyncio.sleep(21600) 
         except asyncio.CancelledError:
             break
@@ -51,22 +53,17 @@ async def lifespan(app: FastAPI):
     # RESILIENT DATABASE INITIALIZATION
     if settings.DATABASE_URL:
         try:
+            # Sync init for schema verification (uses standard engine)
             init_db()
             logger.info("✅ Database Ledger: Connection established and tables verified.")
         except Exception as e:
             logger.error(f"❌ Database Ledger: Failed to initialize. {e}")
     else:
         logger.warning("⚠️ Database Ledger: DATABASE_URL missing. Operating in restricted mode.")
-    
-    # Audit secondary engine status at startup
-    if settings.AIRTABLE_API_KEY and settings.AIRTABLE_BASE_ID:
-        logger.info("✅ Vault Engine: Airtable Sync Active.")
-    else:
-        logger.warning("⚠️ Vault Engine: Airtable on Standby.")
 
     # Activate the Janitor as a background coroutine
     janitor_task = asyncio.create_task(run_janitor_loop())
-    logger.info("🧹 Janitor: Forensic sweep scheduled (6-hour intervals).")
+    logger.info("扫 Janitor: Forensic sweep scheduled (6-hour intervals).")
     
     yield
     
@@ -84,7 +81,6 @@ app = FastAPI(
 )
 
 # --- CORS CONFIGURATION ---
-# Dynamically pull from settings to prevent production pre-flight blocks
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS or ["*"],
@@ -108,38 +104,36 @@ def health_check():
         "timestamp": datetime.now(timezone.utc)
     }
 
-# --- INDUSTRIAL DASHBOARD ENDPOINTS (Hardened) ---
+# --- INDUSTRIAL DASHBOARD ENDPOINTS (Hardened & Async) ---
 
 @app.get(
     f"{settings.API_V1_STR}/leads", 
     dependencies=[Depends(verify_admin_token)],
     tags=["admin"]
 )
-async def get_leads():
+async def get_leads(session: AsyncSession = Depends(get_async_session)):
     """
-    Access point for verified leads. Requires ADMIN_API_KEY.
+    Access point for verified leads. Uses AsyncSession to prevent loop blocking.
     """
     if not settings.DATABASE_URL:
         raise HTTPException(status_code=503, detail="Database Unavailable")
         
-    with Session(engine) as session:
-        statement = select(Visit).where(Visit.verification_status == "verified").order_by(Visit.created_at.desc())
-        results = session.exec(statement).all()
-        return results
+    statement = select(Visit).where(Visit.verification_status == "verified").order_by(Visit.created_at.desc())
+    result = await session.execute(statement)
+    return result.scalars().all()
 
 @app.get(
     f"{settings.API_V1_STR}/debug/entities", 
     dependencies=[Depends(verify_admin_token)],
     tags=["admin"]
 )
-async def get_entities():
+async def get_entities(session: AsyncSession = Depends(get_async_session)):
     """
-    Direct access to the Juristic Entity ledger. Requires ADMIN_API_KEY.
+    Direct access to the Juristic Entity ledger.
     """
     if not settings.DATABASE_URL:
         raise HTTPException(status_code=503, detail="Database Unavailable")
 
-    with Session(engine) as session:
-        statement = select(Company).order_by(Company.created_at.desc())
-        results = session.exec(statement).all()
-        return results
+    statement = select(Company).order_by(Company.created_at.desc())
+    result = await session.execute(statement)
+    return result.scalars().all()

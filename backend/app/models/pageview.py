@@ -8,15 +8,15 @@ import sqlalchemy as sa
 class PageViewBase(SQLModel):
     """
     Base properties for Pydantic validation. 
-    Handles messy browser data types.
+    Handles messy browser data types like duration strings or floats.
     """
     client_id: str = Field(description="The visitor's unique forensic ID (aura_id)")
     url: str = Field(description="The URL recorded")
     
-    # Union is only for the Pydantic side
+    # Union is strictly for Pydantic/API ingestion
     duration: Union[int, float, str] = Field(
         default=0, 
-        description="Dwell time in seconds. Coerced from string if necessary."
+        description="Dwell time in seconds. Coerced during validation."
     )
 
     model_config = ConfigDict(
@@ -34,6 +34,10 @@ class PageViewCreate(PageViewBase):
     @field_validator("duration", mode="before")
     @classmethod
     def coerce_duration(cls, v):
+        """
+        Industrial Data Cleaning: Converts messy browser inputs 
+        (e.g., "12.5" or 12.5) into a clean integer for the ledger.
+        """
         try:
             return int(float(v))
         except (ValueError, TypeError):
@@ -42,15 +46,20 @@ class PageViewCreate(PageViewBase):
 class PageView(SQLModel, table=True):
     """
     The Database Ledger for page-level interactions.
-    Explicitly defined to avoid Union-to-SQL mapping errors.
+    Explicitly defined with strict types to avoid SQLAlchemy mapping errors.
     """
+    __tablename__ = "page_view"
+
     id: Optional[int] = Field(default=None, primary_key=True)
-    aura_id: str = Field(index=True)
-    client_id: str # Agency-side identifier
-    url: str
-    duration: int = Field(default=0)
     
-    # Forensic metadata
+    # Forensic Identification
+    aura_id: str = Field(index=True, description="The unified forensic identifier")
+    client_id: str = Field(description="The agency-side identifier")
+    
+    url: str = Field(description="Target URL")
+    duration: int = Field(default=0, description="Cleaned dwell time in seconds")
+    
+    # Metadata
     created_at: datetime = Field(
         sa_column=Column(
             DateTime(timezone=True), 
@@ -58,6 +67,3 @@ class PageView(SQLModel, table=True):
             nullable=False
         )
     )
-
-    # Index for high-speed industrial reporting
-    __tablename__ = "page_view"

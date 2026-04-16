@@ -1,52 +1,88 @@
 # backend/app/db.py
 import logging
-from sqlmodel import create_engine, SQLModel, Session
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+from sqlmodel import SQLModel, create_engine, Session
 from app.core.config import settings
 
 logger = logging.getLogger("uvicorn")
 
 # --- ENGINE INITIALIZATION ---
-if settings.DATABASE_URL:
-    # Standard Industrial Engine for Production (PostgreSQL)
+
+# 1. Synchronous Engine (For Migrations and Admin Dashboards)
+# Converts asyncpg URL to standard postgresql if necessary
+sync_url = settings.DATABASE_URL.replace("postgresql+asyncpg://", "postgresql://") if settings.DATABASE_URL else None
+
+if sync_url:
     engine = create_engine(
-        settings.DATABASE_URL, 
+        sync_url,
         echo=False,
-        # pool_pre_ping is critical for Railway/Postgres to recover from idle timeouts
-        pool_pre_ping=True 
+        pool_pre_ping=True, # Critical for Railway idle connection recovery
+        pool_size=10,
+        max_overflow=20
     )
 else:
-    # Fallback Placeholder: Prevents the ArgumentError during app import.
-    logger.warning("🚨 DATABASE_URL not detected. Initializing NULL_MODE engine.")
-    engine = create_engine("sqlite:///:memory:")
+    logger.critical("🚨 DATABASE_URL missing. System entering Fail-Fast mode.")
+    engine = None
+
+# 2. Asynchronous Engine (For Forensic Tracking & Identity API)
+# Ensures the URL uses the required +asyncpg driver
+async_url = settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://") if settings.DATABASE_URL else None
+
+if async_url:
+    async_engine = create_async_engine(
+        async_url,
+        echo=False,
+        pool_pre_ping=True
+    )
+    async_session_maker = sessionmaker(
+        async_engine, class_=AsyncSession, expire_on_commit=False
+    )
+else:
+    async_engine = None
+    async_session_maker = None
+
+
+# --- INITIALIZATION & DEPENDENCIES ---
 
 def init_db():
     """
-    Creates all tables defined in the Juristic Ledger.
-    Explicit imports here ensure SQLModel registers all tables before metadata creation.
+    Schema Synchronization.
+    Note: Standardizes the ledger. Production uses Alembic for migrations.
     """
-    if not settings.DATABASE_URL:
-        logger.error("❌ init_db: Operation aborted. No production database linked.")
+    if not engine:
+        logger.error("❌ init_db: Operation aborted. No database linked.")
         return
 
     try:
-        # Import all modular models here to register them with SQLModel.metadata
+        # Explicit imports to register models with SQLModel.metadata
         from app.models.client import Client
         from app.models.company import Company
         from app.models.visit import Visit
         from app.models.waitlist import WaitlistLead
         from app.models.pageview import PageView
-        from app.models.department import Department
-        from app.models.lead import Lead
         
         SQLModel.metadata.create_all(engine)
-        logger.info("✅ Database Ledger: Schema verified and synchronized.")
+        logger.info("✅ Database Ledger: Schema verified.")
     except Exception as e:
-        logger.error(f"❌ Database Ledger: Synchronization failure: {e}")
+        logger.error(f"❌ Database Ledger: Sync failure: {e}")
+
+async def get_async_session() -> AsyncSession:
+    """
+    Dependency generator for Async FastAPI routes (Tracking/Identity).
+    """
+    if not async_session_maker:
+        raise ConnectionError("Async Database Engine not initialized. Check asyncpg installation.")
+    
+    async with async_session_maker() as session:
+        yield session
 
 def get_session():
     """
-    Dependency generator for FastAPI routes.
-    Yields a session for transactional integrity.
+    Dependency generator for Synchronous routes (Admin/Dashboard).
     """
+    if not engine:
+        raise ConnectionError("Synchronous Database Engine not initialized.")
+        
     with Session(engine) as session:
         yield session

@@ -61,6 +61,7 @@ backend/
       client.py
       company.py
       department.py
+      lead.py
       pageview.py
       visit.py
       waitlist.py
@@ -214,25 +215,6 @@ VOID_CONTEXT.md
 <files>
 This section contains the contents of the repository's files.
 
-<file path="backend/app/core/security.py">
-
-</file>
-
-<file path="backend/app/services/reports.py">
-
-</file>
-
-<file path="backend/app/api/v1/__init__.py">
-from fastapi import APIRouter
-from app.api.v1 import leads, track
-
-api_router = APIRouter()
-
-# Register the logic here
-api_router.include_router(track.router, prefix="/track", tags=["tracking"])
-api_router.include_router(leads.router, prefix="/leads", tags=["leads"])
-</file>
-
 <file path="backend/app/api/v1/clients.py">
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
@@ -250,6 +232,156 @@ def create_client(client_in: ClientCreate, session: Session = Depends(get_sessio
     return db_client
 </file>
 
+<file path="backend/app/core/security.py">
+
+</file>
+
+<file path="backend/app/services/reports.py">
+
+</file>
+
+<file path="docker-compose.yml">
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: industrial_db_container
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=industrial_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+</file>
+
+<file path="README.md">
+# 🏭 Industrial Intelligence Engine (Master)
+
+⚠️ Proprietary Software Notice: This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited.
+
+The **Industrial Intelligence Engine** is a specialized B2B intent-tracking SaaS. It deanonymizes website traffic for industrial firms in the East Rand (and beyond), turning anonymous IP addresses into actionable sales leads.
+
+
+## 📂 Project Structure
+
+```text
+industrial-intelligence/
+├── backend/       # FastAPI + SQLModel + PostgreSQL (The Core)
+├── frontend/      # Next.js 16 + Tailwind (The Interface & Lead Funnel)
+├── tracker/       # Vanilla JS (The Edge Script)
+└── infra/         # Docker, Nginx, or CI/CD configs
+
+```
+
+---
+
+## ⚡ Quick Start (Development Mode)
+
+### 1. Clone & Environment
+
+Ensure you are using **WSL 2** and have **Docker Desktop** running.
+
+```bash
+git clone https://github.com/Allen-Reiley/industrial-intelligence.git
+cd industrial-intelligence
+
+```
+
+### 2. Infrastructure (Postgres)
+
+Spin up the local database using Docker:
+
+```bash
+docker compose up -d
+
+```
+
+### 3. Backend Setup (FastAPI)
+
+Using `uv` for high-speed dependency management:
+
+```bash
+cd backend
+uv venv
+source .venv/bin/activate
+uvicorn main:app --reload
+
+```
+
+### 4. Frontend Setup (Next.js)
+
+```bash
+cd frontend
+npm install
+npm run dev
+
+```
+
+---
+
+## 🛰️ How it Works (The Data Loop)
+
+1. **Capture:** The `tracker.min.js` fires on a client's site.
+2. **Identify:** The Backend receives the IP, queries **IPinfo**, and filters out residential ISPs.
+3. **Store:** Valid B2B visits are saved to **PostgreSQL**.
+4. **Report:** The Client Dashboard visualizes the traffic, and a weekly PDF is generated for the client's sales team.
+
+---
+
+## 🛠️ Tech Stack Summary
+
+* **Backend:** FastAPI, Python 3.11, SQLModel, Uvicorn.
+* **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS, Shadcn/UI.
+* **Database:** PostgreSQL (Neon.tech for Production).
+* **Deployment:** Vercel (Frontend) + Render (Backend) + Cloudflare (CDN).
+
+---
+
+## 🛡️ Business Logic & Compliance
+
+* **Targeting:** Specifically engineered for the Industrial/Manufacturing sector.
+* **Pricing:** R10,000/month managed service.
+* **Privacy:** Designed for POPIA compliance—identifying Juristic Persons (Companies), not natural individuals.
+
+---
+
+## 📅 Roadmap (Phase 1)
+
+* [x] Technical Specification & Architecture.
+* [x] WSL 2 & Docker Environment Setup.
+* [ ] Database Schema Design (SQLModel).
+* [ ] API Ingestion Endpoints (`/entry`, `/exit`).
+* [ ] Lead Qualification Funnel build.
+
+---
+
+## ⚖️ License & Proprietary Notice
+
+**Copyright (c) 2026 AuraWorks Pty (ltd). All Rights Reserved.**
+
+This tracker script is proprietary software. Unauthorized copying, modification, or redistribution is strictly prohibited. Use is granted only to active subscribers of the Industrial Intelligence Engine managed service.
+
+---
+</file>
+
+<file path="backend/app/api/v1/__init__.py">
+from fastapi import APIRouter
+from app.api.v1 import leads, track
+
+api_router = APIRouter()
+
+# Register the logic here
+api_router.include_router(track.router, prefix="/track", tags=["tracking"])
+api_router.include_router(leads.router, prefix="/leads", tags=["leads"])
+</file>
+
 <file path="backend/app/models/client.py">
 # backend/app/models/client.py
 from typing import Optional
@@ -257,7 +389,11 @@ from datetime import datetime
 import uuid
 from sqlmodel import SQLModel, Field
 
-class Client(SQLModel, table=True):  # <--- This must be named 'Client'
+class Client(SQLModel, table=True):
+    """
+    The Agency/Client entity. 
+    This is the parent 'Owner' of all visits, leads, and companies in the OS.
+    """
     id: str = Field(
         default_factory=lambda: str(uuid.uuid4()), 
         primary_key=True,
@@ -268,7 +404,6 @@ class Client(SQLModel, table=True):  # <--- This must be named 'Client'
     is_active: bool = Field(default=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
-# These helper classes are useful for the API later
 class ClientCreate(SQLModel):
     name: str
     website_url: Optional[str] = None
@@ -277,6 +412,49 @@ class ClientPublic(SQLModel):
     id: str
     name: str
     is_active: bool
+</file>
+
+<file path="backend/app/models/lead.py">
+# backend/app/models/lead.py
+from typing import Optional
+from datetime import datetime
+from sqlmodel import SQLModel, Field, Column, DateTime
+import sqlalchemy as sa
+
+class Lead(SQLModel, table=True):
+    """
+    The High-Intent Ledger. 
+    A Lead is a verified connection between a Visitor (Aura) and a Juristic Entity (Company).
+    """
+    id: Optional[int] = Field(default=None, primary_key=True)
+    
+    # --- MULTI-TENANCY ---
+    client_id: str = Field(index=True) # The Agency Owner
+
+    # --- RELATIONS ---
+    company_id: Optional[int] = Field(default=None, foreign_key="company.id", index=True)
+    aura_id: str = Field(index=True) # Matches the visitor's forensic ID
+
+    # --- AGGREGATED INTELLIGENCE ---
+    email: Optional[str] = Field(default=None, index=True)
+    company_name: str = Field(index=True)
+    domain: Optional[str] = None
+    industry: Optional[str] = None
+    
+    # Source categorization (e.g., "Waitlist", "High-Intent Visit", "Form Blur")
+    lead_source: str = Field(default="visit_match", index=True)
+    
+    # --- STATUS & SCORING ---
+    confidence_score: float = Field(default=0.0)
+    is_exported_to_airtable: bool = Field(default=False)
+    
+    # --- TIMEKEEPING ---
+    created_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), nullable=False)
+    )
+    last_active_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), onupdate=sa.func.now())
+    )
 </file>
 
 <file path="backend/app/services/notion.py">
@@ -321,58 +499,6 @@ class NotionVault:
             return None
 
 notion_vault = NotionVault()
-</file>
-
-<file path="backend/app/db.py">
-import logging
-from sqlmodel import create_engine, SQLModel, Session
-from app.core.config import settings
-
-logger = logging.getLogger("uvicorn")
-
-# --- ENGINE INITIALIZATION ---
-# We check for the DATABASE_URL to prevent SQLAlchemy from crashing on 'None'
-if settings.DATABASE_URL:
-    # Standard Industrial Engine for Production (PostgreSQL)
-    engine = create_engine(
-        settings.DATABASE_URL, 
-        echo=False,
-        # pool_pre_ping is critical for Railway/Postgres to recover from idle timeouts
-        pool_pre_ping=True 
-    )
-else:
-    # Fallback Placeholder: Prevents the ArgumentError during app import.
-    # This allows the app to boot so you can debug Railway variables.
-    logger.warning("🚨 DATABASE_URL not detected. Initializing NULL_MODE engine.")
-    engine = create_engine("sqlite:///:memory:")
-
-def init_db():
-    """
-    Creates all tables defined in the Juristic Ledger.
-    Only executes if a valid production URL is present.
-    """
-    if not settings.DATABASE_URL:
-        logger.error("❌ init_db: Operation aborted. No production database linked.")
-        return
-
-    try:
-        # Note: Ensure all models are imported before calling this
-        from app.models.visit import Visit
-        from app.models.company import Company
-        from app.models.client import Client 
-        
-        SQLModel.metadata.create_all(engine)
-        logger.info("✅ Database Ledger: Schema verified and synchronized.")
-    except Exception as e:
-        logger.error(f"❌ Database Ledger: Synchronization failure: {e}")
-
-def get_session():
-    """
-    Dependency generator for FastAPI routes.
-    Yields a session for transactional integrity.
-    """
-    with Session(engine) as session:
-        yield session
 </file>
 
 <file path="frontend/src/app/(pages)/cookies-policy/page.tsx">
@@ -2323,53 +2449,6 @@ export default function GetStartedModal({ isOpen, setIsOpen }: GetStartedModalPr
 }
 </file>
 
-<file path="frontend/src/components/tracker/aura-tracker.tsx">
-"use client";
-
-import { useEffect } from "react";
-
-interface AuraTrackerProps {
-  clientId: string;
-  apiUrl?: string;
-  cdnUrl?: string;
-}
-
-/**
- * AuraTracker: A modular forensic intelligence loader.
- * Injects the tracking script with cache-busting and configuration.
- */
-export default function AuraTracker({
-  clientId,
-  apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://dynamic-flow-production-a5d6.up.railway.app",
-  cdnUrl = "https://cdn.auraworks.co.za/aura.js",
-}: AuraTrackerProps) {
-  useEffect(() => {
-    // 1. Initialize Global Configuration
-    (window as any).AURA_CONFIG = { apiUrl };
-    (window as any).AURA_ID = clientId;
-
-    // 2. Create and Inject Script
-    const script = document.createElement("script");
-    script.async = true;
-    
-    // Hourly cache-busting (v parameter)
-    const version = Math.floor(Date.now() / 3600000);
-    script.src = `${cdnUrl}?v=${version}`;
-
-    document.head.appendChild(script);
-
-    return () => {
-      // Clean up on unmount if necessary
-      if (document.head.contains(script)) {
-        document.head.removeChild(script);
-      }
-    };
-  }, [clientId, apiUrl, cdnUrl]);
-
-  return null; // This component doesn't render any UI
-}
-</file>
-
 <file path="frontend/src/components/ui/animated-group.tsx">
 'use client';
 import { ReactNode } from 'react';
@@ -3759,137 +3838,6 @@ setTimeout(async () => {
 })();
 </file>
 
-<file path="docker-compose.yml">
-version: '3.8'
-
-services:
-  db:
-    image: postgres:15-alpine
-    container_name: industrial_db_container
-    restart: always
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=industrial_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-volumes:
-  postgres_data:
-</file>
-
-<file path="README.md">
-# 🏭 Industrial Intelligence Engine (Master)
-
-⚠️ Proprietary Software Notice: This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited.
-
-The **Industrial Intelligence Engine** is a specialized B2B intent-tracking SaaS. It deanonymizes website traffic for industrial firms in the East Rand (and beyond), turning anonymous IP addresses into actionable sales leads.
-
-
-## 📂 Project Structure
-
-```text
-industrial-intelligence/
-├── backend/       # FastAPI + SQLModel + PostgreSQL (The Core)
-├── frontend/      # Next.js 16 + Tailwind (The Interface & Lead Funnel)
-├── tracker/       # Vanilla JS (The Edge Script)
-└── infra/         # Docker, Nginx, or CI/CD configs
-
-```
-
----
-
-## ⚡ Quick Start (Development Mode)
-
-### 1. Clone & Environment
-
-Ensure you are using **WSL 2** and have **Docker Desktop** running.
-
-```bash
-git clone https://github.com/Allen-Reiley/industrial-intelligence.git
-cd industrial-intelligence
-
-```
-
-### 2. Infrastructure (Postgres)
-
-Spin up the local database using Docker:
-
-```bash
-docker compose up -d
-
-```
-
-### 3. Backend Setup (FastAPI)
-
-Using `uv` for high-speed dependency management:
-
-```bash
-cd backend
-uv venv
-source .venv/bin/activate
-uvicorn main:app --reload
-
-```
-
-### 4. Frontend Setup (Next.js)
-
-```bash
-cd frontend
-npm install
-npm run dev
-
-```
-
----
-
-## 🛰️ How it Works (The Data Loop)
-
-1. **Capture:** The `tracker.min.js` fires on a client's site.
-2. **Identify:** The Backend receives the IP, queries **IPinfo**, and filters out residential ISPs.
-3. **Store:** Valid B2B visits are saved to **PostgreSQL**.
-4. **Report:** The Client Dashboard visualizes the traffic, and a weekly PDF is generated for the client's sales team.
-
----
-
-## 🛠️ Tech Stack Summary
-
-* **Backend:** FastAPI, Python 3.11, SQLModel, Uvicorn.
-* **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS, Shadcn/UI.
-* **Database:** PostgreSQL (Neon.tech for Production).
-* **Deployment:** Vercel (Frontend) + Render (Backend) + Cloudflare (CDN).
-
----
-
-## 🛡️ Business Logic & Compliance
-
-* **Targeting:** Specifically engineered for the Industrial/Manufacturing sector.
-* **Pricing:** R10,000/month managed service.
-* **Privacy:** Designed for POPIA compliance—identifying Juristic Persons (Companies), not natural individuals.
-
----
-
-## 📅 Roadmap (Phase 1)
-
-* [x] Technical Specification & Architecture.
-* [x] WSL 2 & Docker Environment Setup.
-* [ ] Database Schema Design (SQLModel).
-* [ ] API Ingestion Endpoints (`/entry`, `/exit`).
-* [ ] Lead Qualification Funnel build.
-
----
-
-## ⚖️ License & Proprietary Notice
-
-**Copyright (c) 2026 AuraWorks Pty (ltd). All Rights Reserved.**
-
-This tracker script is proprietary software. Unauthorized copying, modification, or redistribution is strictly prohibited. Use is granted only to active subscribers of the Industrial Intelligence Engine managed service.
-
----
-</file>
-
 <file path="VOID_CONTEXT.md">
 1. Project Mission: AuraWorks Industrial Engine
 Domain: B2B Sales Intelligence & Identity Resolution.
@@ -4116,105 +4064,6 @@ class Department(SQLModel, table=True):
     # Using the string "Company" is critical here to avoid the 
     # 'failed to locate a name' error during mapper initialization.
     company: "Company" = Relationship(back_populates="departments")
-</file>
-
-<file path="backend/app/services/contacts.py">
-import httpx
-import logging
-import os
-from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta
-from app.core.config import settings
-from sqlmodel import Session, select
-from app.db import engine
-from app.models.company import Company
-
-logger = logging.getLogger("uvicorn")
-
-# Keywords to strictly avoid for "Call Center" filtering
-EXCLUDED_KEYWORDS = ["support", "help", "customer", "service", "complaints", "info", "reception", "noreply"]
-
-async def get_corporate_contacts(domain: str) -> Dict[str, Any]:
-    """
-    Fetches HQ phone and professional contacts via Apollo People API.
-    Includes a local cache check to prevent redundant credit consumption.
-    """
-    if not domain or domain in ["Unknown", "unknown.com", "n/a"]:
-        return {"hq_phone": None, "corp_emails": [], "linkedin_url": None}
-
-    # 1. Local Cache Check (Audit Layer)
-    # If we have enriched this domain in the last 30 days, reuse the data.
-    with Session(engine) as session:
-        statement = select(Company).where(Company.domain == domain)
-        cached_company = session.exec(statement).first()
-        
-        if cached_company and cached_company.hq_phone and cached_company.updated_at > (datetime.now() - timedelta(days=30)):
-            logger.info(f"♻️  Using cached industrial data for {domain}")
-            return {
-                "hq_phone": cached_company.hq_phone,
-                "corp_emails": [], # Specific emails are usually stored in the Department model
-                "linkedin_url": f"https://www.linkedin.com/company/{domain.split('.')[0]}"
-            }
-
-    # 2. External Enrichment (Apollo V2 Implementation)
-    apollo_key = os.getenv("APOLLO_API_KEY")
-    if not apollo_key:
-        logger.warning("⚠️  APOLLO_API_KEY missing. Skipping deep enrichment.")
-        return {"hq_phone": "Manual Audit Required", "corp_emails": []}
-
-    async with httpx.AsyncClient() as client:
-        try:
-            # We use the People Match/Search endpoint to find decision makers
-            # and the organization details simultaneously.
-            url = "https://api.apollo.io/v1/people/match"
-            payload = {
-                "api_key": apollo_key,
-                "domain": domain,
-                "reveal_personal_emails": False # Keep it professional/B2B
-            }
-            
-            response = await client.post(url, json=payload, timeout=10.0)
-            
-            if response.status_code == 200:
-                data = response.json()
-                person = data.get("person", {})
-                org = person.get("organization", {})
-                
-                # Extracting Industrial Markers
-                hq_phone = org.get("primary_phone") or org.get("phone")
-                linkedin_url = org.get("linkedin_url") or f"https://www.linkedin.com/company/{domain.split('.')[0]}"
-                
-                logger.info(f"🧬 Apollo Match Success: Resolved {domain} to {org.get('name')}")
-                
-                return {
-                    "hq_phone": hq_phone,
-                    "linkedin_url": linkedin_url,
-                    "industry": org.get("industry"),
-                    "employee_count": org.get("estimated_num_employees")
-                }
-                
-            elif response.status_code == 429:
-                logger.error("🚫 Apollo Rate Limit Exceeded. Check Credit Balance.")
-            else:
-                logger.warning(f"⚠️  Apollo returned {response.status_code} for {domain}")
-                
-        except Exception as e:
-            logger.error(f"❌ Apollo V2 Enrichment Failure: {str(e)}")
-
-    return {
-        "hq_phone": None, 
-        "corp_emails": [], 
-        "linkedin_url": f"https://www.linkedin.com/company/{domain.split('.')[0]}"
-    }
-
-def filter_business_contacts(contacts: List[Dict]) -> List[Dict]:
-    """
-    Strips out generic support/info emails to maintain 'Quiet Premium' lead quality.
-    """
-    return [
-        c for c in contacts 
-        if not any(word in c.get("email", "").lower() for word in EXCLUDED_KEYWORDS)
-    ]
 </file>
 
 <file path="backend/app/services/email.py">
@@ -4587,6 +4436,56 @@ export default function ThankYouPage() {
 }
 </file>
 
+<file path="frontend/src/components/tracker/aura-tracker.tsx">
+"use client";
+
+import { useEffect } from "react";
+
+interface AuraTrackerProps {
+  clientId: string;
+  apiUrl?: string;
+  cdnUrl?: string;
+}
+
+/**
+ * AuraTracker: A modular forensic intelligence loader.
+ * Injects the tracking script with multi-tenant identity mapping.
+ */
+export default function AuraTracker({
+  clientId,
+  apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://dynamic-flow-production-a5d6.up.railway.app",
+  cdnUrl = "https://cdn.auraworks.co.za/aura.js",
+}: AuraTrackerProps) {
+  useEffect(() => {
+    // 1. Global Config for forensic logic fallback
+    (window as any).AURA_CONFIG = { apiUrl };
+    (window as any).AURA_AGENCY_ID = clientId;
+
+    // 2. Create and Inject Script
+    const script = document.createElement("script");
+    script.async = true;
+    
+    // Multi-tenant identification:
+    // This matches the 'agencyId' lookup in aura.js
+    script.setAttribute("data-id", clientId);
+    
+    // Hourly cache-busting (v parameter)
+    const version = Math.floor(Date.now() / 3600000);
+    script.src = `${cdnUrl}?v=${version}`;
+
+    document.head.appendChild(script);
+
+    return () => {
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
+    };
+  }, [clientId, apiUrl, cdnUrl]);
+
+  return null;
+}
+</file>
+
 <file path="frontend/src/components/ui/logo.tsx">
 import Image from 'next/image'
 import { cn } from '../../lib/utils'
@@ -4642,6 +4541,34 @@ import { twMerge } from "tailwind-merge"
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+</file>
+
+<file path="frontend/src/next.config.ts">
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'ik.imagekit.io',
+        //port: '',
+        pathname: '/**',
+      },
+    ],
+  },
+  
+  typescript: {
+    // !! WARN !!
+    // Dangerously allow production builds to successfully complete 
+    // even if your project has type errors.
+    // !! WARN !!
+    ignoreBuildErrors: true,
+  },
+};
+
+export default nextConfig;
 </file>
 
 <file path="backend/app/services/airtable.py">
@@ -4725,6 +4652,115 @@ class AirtableEngine:
 airtable_engine = AirtableEngine()
 </file>
 
+<file path="backend/app/services/contacts.py">
+# backend/app/services/contacts.py
+import httpx
+import logging
+from typing import Optional, List, Dict, Any
+from datetime import datetime, timedelta, timezone
+from app.core.config import settings  # Use centralized settings
+from sqlmodel import Session, select
+from app.db import engine
+from app.models.company import Company
+
+logger = logging.getLogger("uvicorn")
+
+# Keywords to strictly avoid for "Call Center" filtering
+EXCLUDED_KEYWORDS = ["support", "help", "customer", "service", "complaints", "info", "reception", "noreply"]
+
+async def get_corporate_contacts(domain: str, client_id: str) -> Dict[str, Any]:
+    """
+    Fetches HQ phone and professional contacts via Apollo People API.
+    Includes a local cache check to prevent redundant credit consumption.
+    Now uses multi-tenant client_id to scope cache lookups.
+    """
+    if not domain or domain in ["Unknown", "unknown.com", "n/a"]:
+        return {"hq_phone": None, "corp_emails": [], "linkedin_url": None}
+
+    # 1. Local Cache Check (Audit Layer)
+    # Scoped to domain AND client_id to ensure agency-specific data integrity
+    with Session(engine) as session:
+        statement = select(Company).where(
+            Company.domain == domain,
+            Company.client_id == client_id
+        )
+        cached_company = session.exec(statement).first()
+        
+        # Check if cache is fresh (30 days)
+        if cached_company and cached_company.hq_phone:
+            # Handle timezone-aware comparison
+            now = datetime.now(timezone.utc)
+            updated_at = cached_company.updated_at
+            if updated_at.tzinfo is None:
+                updated_at = updated_at.replace(tzinfo=timezone.utc)
+                
+            if updated_at > (now - timedelta(days=30)):
+                logger.info(f"♻️  Using cached industrial data for {domain}")
+                return {
+                    "hq_phone": cached_company.hq_phone,
+                    "corp_emails": [], 
+                    "linkedin_url": f"https://www.linkedin.com/company/{domain.split('.')[0]}"
+                }
+
+    # 2. External Enrichment (Apollo V2 Implementation)
+    # Technical Debt Fixed: Using settings.APOLLO_API_KEY instead of os.getenv
+    apollo_key = settings.APOLLO_API_KEY
+    if not apollo_key:
+        logger.warning("⚠️  APOLLO_API_KEY missing in settings. Skipping deep enrichment.")
+        return {"hq_phone": "Manual Audit Required", "corp_emails": []}
+
+    async with httpx.AsyncClient() as client:
+        try:
+            url = "https://api.apollo.io/v1/people/match"
+            payload = {
+                "api_key": apollo_key,
+                "domain": domain,
+                "reveal_personal_emails": False 
+            }
+            
+            response = await client.post(url, json=payload, timeout=10.0)
+            
+            if response.status_code == 200:
+                data = response.json()
+                person = data.get("person", {})
+                org = person.get("organization", {})
+                
+                hq_phone = org.get("primary_phone") or org.get("phone")
+                linkedin_url = org.get("linkedin_url") or f"https://www.linkedin.com/company/{domain.split('.')[0]}"
+                
+                logger.info(f"🧬 Apollo Match Success: Resolved {domain} to {org.get('name')}")
+                
+                return {
+                    "hq_phone": hq_phone,
+                    "linkedin_url": linkedin_url,
+                    "industry": org.get("industry"),
+                    "employee_count": org.get("estimated_num_employees")
+                }
+                
+            elif response.status_code == 429:
+                logger.error("🚫 Apollo Rate Limit Exceeded. Check Credit Balance.")
+            else:
+                logger.warning(f"⚠️  Apollo returned {response.status_code} for {domain}")
+                
+        except Exception as e:
+            logger.error(f"❌ Apollo V2 Enrichment Failure: {str(e)}")
+
+    return {
+        "hq_phone": None, 
+        "corp_emails": [], 
+        "linkedin_url": f"https://www.linkedin.com/company/{domain.split('.')[0]}"
+    }
+
+def filter_business_contacts(contacts: List[Dict]) -> List[Dict]:
+    """
+    Strips out generic support/info emails to maintain 'Quiet Premium' lead quality.
+    """
+    return [
+        c for c in contacts 
+        if not any(word in c.get("email", "").lower() for word in EXCLUDED_KEYWORDS)
+    ]
+</file>
+
 <file path="backend/app/tasks/janitor.py">
 import logging
 from datetime import datetime, timedelta, timezone
@@ -4786,11 +4822,87 @@ async def cleanup_unverified_visits():
             logger.error(f"🚨 Janitor Failure: {e}")
 </file>
 
+<file path="backend/app/db.py">
+# backend/app/db.py
+import logging
+from sqlmodel import create_engine, SQLModel, Session
+from app.core.config import settings
+
+logger = logging.getLogger("uvicorn")
+
+# --- ENGINE INITIALIZATION ---
+if settings.DATABASE_URL:
+    # Standard Industrial Engine for Production (PostgreSQL)
+    engine = create_engine(
+        settings.DATABASE_URL, 
+        echo=False,
+        # pool_pre_ping is critical for Railway/Postgres to recover from idle timeouts
+        pool_pre_ping=True 
+    )
+else:
+    # Fallback Placeholder: Prevents the ArgumentError during app import.
+    logger.warning("🚨 DATABASE_URL not detected. Initializing NULL_MODE engine.")
+    engine = create_engine("sqlite:///:memory:")
+
+def init_db():
+    """
+    Creates all tables defined in the Juristic Ledger.
+    Explicit imports here ensure SQLModel registers all tables before metadata creation.
+    """
+    if not settings.DATABASE_URL:
+        logger.error("❌ init_db: Operation aborted. No production database linked.")
+        return
+
+    try:
+        # Import all modular models here to register them with SQLModel.metadata
+        from app.models.client import Client
+        from app.models.company import Company
+        from app.models.visit import Visit
+        from app.models.waitlist import WaitlistLead
+        from app.models.pageview import PageView
+        from app.models.department import Department
+        from app.models.lead import Lead
+        
+        SQLModel.metadata.create_all(engine)
+        logger.info("✅ Database Ledger: Schema verified and synchronized.")
+    except Exception as e:
+        logger.error(f"❌ Database Ledger: Synchronization failure: {e}")
+
+def get_session():
+    """
+    Dependency generator for FastAPI routes.
+    Yields a session for transactional integrity.
+    """
+    with Session(engine) as session:
+        yield session
+</file>
+
 <file path="frontend/src/app/(pages)/pricing/page.tsx">
 import Pricing from '@/components/pricing/pricing';
 
 export default function PricingPage() {
   return <Pricing />;
+}
+</file>
+
+<file path="frontend/src/app/page.tsx">
+import Image from "next/image";
+import HeroSection from "@/components/hero-sec/hero-section";
+import ContentSection1 from "@/components/content/content-1";
+import ContentSection2 from "@/components/content/content-2";
+import CallToAction from "@/components/cta/call-to-action";
+import Footer from "@/components/footer/footer";
+
+export default function Home() {
+  return (
+    <main>
+      <HeroSection />
+      <ContentSection1 />
+      <ContentSection2 />
+      <CallToAction />
+      <Footer />
+    </main>
+  );
 }
 </file>
 
@@ -5688,34 +5800,6 @@ function Label({
 export { Label }
 </file>
 
-<file path="frontend/src/next.config.ts">
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  /* config options here */
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'ik.imagekit.io',
-        //port: '',
-        pathname: '/**',
-      },
-    ],
-  },
-  
-  typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete 
-    // even if your project has type errors.
-    // !! WARN !!
-    ignoreBuildErrors: true,
-  },
-};
-
-export default nextConfig;
-</file>
-
 <file path="REMEMBER.md">
 # MEMORY.md | AuraWorks 2.2.0: Industrial Intelligence Engine
 
@@ -5761,45 +5845,50 @@ export default nextConfig;
 </file>
 
 <file path="backend/app/api/v1/identity.py">
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
-from sqlmodel import Session, select
-from app.db import engine
-from app.models.visit import Visit
+# backend/app/api/v1/identity.py
 import logging
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from cachetools import TTLCache
+
+from app.db import get_async_session  # Assuming standard async session generator
+from app.models.visit import Visit
 
 router = APIRouter()
 logger = logging.getLogger("uvicorn")
 
+# Optimization: Cache resolved signatures for 1 hour to prevent O(N) database scans
+# Key: Stringified Canvas/WebGL fingerprint | Value: aura_id
+identity_cache = TTLCache(maxsize=1000, ttl=3600)
+
 def calculate_identity_match(new_sig: dict, existing_visit: Visit) -> float:
     """
     Calculates a probability score (0.0 to 1.0) based on hardware and network entropy.
-    Updated for Industrial Clusters: Weights adjusted to prioritize network consistency.
+    Weights prioritized for Industrial Clusters (Network consistency).
     """
     score = 0.0
     
-    # 1. Canvas Match (30% Weight) - Hardware rendering fingerprint
+    # 1. Canvas Match (30%)
     if new_sig.get('canvas') == existing_visit.canvas_hash:
         score += 0.30
         
-    # 2. Clock Drift Match (20% Weight) - Precision timing delta
+    # 2. Clock Drift Match (20%) - Precision timing
     drift_diff = abs(new_sig.get('drift', 0) - (existing_visit.clock_drift or 0))
     if drift_diff <= 1:
         score += 0.20
         
-    # 3. WebGL/Renderer Match (10% Weight) - GPU identification
+    # 3. WebGL/Renderer Match (10%) - GPU hardware
     if new_sig.get('webgl') == existing_visit.webgl_renderer:
         score += 0.10
         
-    # 4. Network Intelligence Match (40% Weight) - The Corporate Signal
-    # We compare the effective type, RTT, and downlink speed
+    # 4. Network Intelligence Match (40%) - The Corporate Signal
     net = new_sig.get('network', {})
     if isinstance(net, dict):
-        # Match Connection Type (4g/fiber)
         if net.get('type') == existing_visit.effective_connection_type:
             score += 0.15
             
-        # Match Network Performance (RTT and Downlink)
-        # Allows for small variance in traffic load
         rtt_match = abs(net.get('rtt', 0) - (existing_visit.rtt or 0)) <= 20
         downlink_match = abs(net.get('downlink', 0) - (existing_visit.downlink_speed or 0)) < 0.5
         
@@ -5808,129 +5897,235 @@ def calculate_identity_match(new_sig: dict, existing_visit: Visit) -> float:
             
     return score
 
-def merge_sessions_sync(new_id: str, original_id: str):
+async def merge_sessions_async(new_id: str, original_id: str, session: AsyncSession):
     """
-    Sync wrapper to unify fragmented session data across the forensic ledger.
+    Async unification of fragmented session data.
     """
-    with Session(engine) as session:
-        try:
-            statement = select(Visit).where(Visit.aura_id == new_id)
-            visits_to_update = session.exec(statement).all()
-            
-            for visit in visits_to_update:
-                visit.aura_id = original_id
-                session.add(visit)
-            
-            session.commit()
-            logger.info(f"🔗 Forensic Stitch Success: {new_id} unified into {original_id}")
-        except Exception as e:
-            logger.error(f"❌ Session Merge Failure: {e}")
+    try:
+        statement = select(Visit).where(Visit.aura_id == new_id)
+        result = await session.execute(statement)
+        visits_to_update = result.scalars().all()
+        
+        for visit in visits_to_update:
+            visit.aura_id = original_id
+            session.add(visit)
+        
+        await session.commit()
+        logger.info(f"🔗 Forensic Stitch Success: {new_id} unified into {original_id}")
+    except Exception as e:
+        logger.error(f"❌ Session Merge Failure: {e}")
 
 @router.post("/resolve")
-async def resolve_identity(payload: dict, background_tasks: BackgroundTasks):
+async def resolve_identity(
+    payload: dict, 
+    background_tasks: BackgroundTasks,
+    session: AsyncSession = Depends(get_async_session)
+):
     aura_id = payload.get("aura_id")
     signature = payload.get("signature", {})
     
     if not aura_id:
         raise HTTPException(status_code=400, detail="Missing aura_id")
 
-    with Session(engine) as session:
-        # Step 1: Check for direct ID match (Existing browser session)
-        statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at.desc())
-        existing_visit = session.exec(statement).first()
-        
-        if existing_visit:
-            logger.info(f"🎯 Direct Match: {aura_id}. Updating Forensic/Network Lock.")
-            # Update markers to the latest state
-            existing_visit.canvas_hash = signature.get('canvas')
-            existing_visit.clock_drift = signature.get('drift')
-            existing_visit.webgl_renderer = signature.get('webgl')
-            
-            net = signature.get('network', {})
-            if isinstance(net, dict):
-                existing_visit.effective_connection_type = net.get('type')
-                existing_visit.downlink_speed = net.get('downlink')
-                existing_visit.rtt = net.get('rtt')
-                
-            session.add(existing_visit)
-            session.commit()
-            return {"status": "recognized", "method": "direct_id"}
+    # Step 0: Cache Lookup (Fast Path)
+    sig_key = f"{signature.get('canvas')}:{signature.get('webgl')}"
+    cached_id = identity_cache.get(sig_key)
+    if cached_id and cached_id != aura_id:
+        logger.info(f"⚡ Cache Hit: Stitching {aura_id} to {cached_id}")
+        background_tasks.add_task(merge_sessions_async, aura_id, cached_id, session)
+        return {"status": "stitched", "stitched_id": cached_id, "confidence": 1.0}
 
-        # Step 2: Weighted Forensic Search
-        # Scan recent footprints (within the last 72 hours for accuracy)
-        all_recent = session.exec(select(Visit).order_by(Visit.created_at.desc()).limit(200)).all()
-        unique_profiles = {v.aura_id: v for v in all_recent}.values()
+    # Step 1: Check for direct ID match
+    statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at.desc())
+    result = await session.execute(statement)
+    existing_visit = result.scalars().first()
+    
+    if existing_visit:
+        # Update latest markers
+        existing_visit.canvas_hash = signature.get('canvas')
+        existing_visit.clock_drift = signature.get('drift')
+        existing_visit.webgl_renderer = signature.get('webgl')
         
-        for profile in unique_profiles:
-            match_probability = calculate_identity_match(signature, profile)
+        net = signature.get('network', {})
+        if isinstance(net, dict):
+            existing_visit.effective_connection_type = net.get('type')
+            existing_visit.downlink_speed = net.get('downlink')
+            existing_visit.rtt = net.get('rtt')
             
-            # High Confidence Threshold for stitching (80% given the new network weight)
-            if match_probability >= 0.80:
-                logger.info(f"🧵 Forensic Stitch Identified! Conf: {match_probability*100}%")
-                
-                background_tasks.add_task(merge_sessions_sync, aura_id, profile.aura_id)
-                
-                return {
-                    "status": "stitched", 
-                    "stitched_id": profile.aura_id, 
-                    "confidence": match_probability
-                }
+        session.add(existing_visit)
+        await session.commit()
+        return {"status": "recognized", "method": "direct_id"}
+
+    # Step 2: Weighted Forensic Search (Limit to recent pool)
+    search_statement = select(Visit).order_by(Visit.created_at.desc()).limit(200)
+    search_result = await session.execute(search_statement)
+    all_recent = search_result.scalars().all()
+    
+    # Python-side filtering for unique profiles
+    unique_profiles = {v.aura_id: v for v in all_recent}.values()
+    
+    for profile in unique_profiles:
+        match_probability = calculate_identity_match(signature, profile)
+        
+        if match_probability >= 0.80:
+            logger.info(f"🧵 Forensic Stitch Identified! Conf: {match_probability*100}%")
+            
+            # Update cache for future pings
+            identity_cache[sig_key] = profile.aura_id
+            
+            background_tasks.add_task(merge_sessions_async, aura_id, profile.aura_id, session)
+            
+            return {
+                "status": "stitched", 
+                "stitched_id": profile.aura_id, 
+                "confidence": match_probability
+            }
 
     return {"status": "new_identity", "message": "Forensic profile initialized."}
 </file>
 
-<file path="backend/app/models/company.py">
-from typing import Optional, List, TYPE_CHECKING
-from datetime import datetime
-from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
-import sqlalchemy as sa
+<file path="backend/app/services/enrichment.py">
+import httpx
+import logging
+import socket
+from app.core.config import settings
+from typing import Optional, List, Dict, Any
 
-# Use TYPE_CHECKING to avoid circular imports between models
-# These are only used by type checkers (IDE/Mypy) and ignored at runtime
-if TYPE_CHECKING:
-    from app.models.visit import Visit
-    from app.models.department import Department
-    from app.models.waitlist import WaitlistLead
+logger = logging.getLogger("uvicorn")
 
-class Company(SQLModel, table=True):
-    """The Jurisdictive Entity record. The anchor for all B2B intelligence."""
-    id: Optional[int] = Field(default=None, primary_key=True)
-    
-    # --- FIRMOGRAPHICS (Public Entity Data) ---
-    name: str = Field(index=True, unique=True)
-    domain: str = Field(index=True, unique=True)
-    industry: Optional[str] = None
-    hq_phone: Optional[str] = None
-    city: Optional[str] = None
-    region: Optional[str] = None # e.g., "Gauteng"
-    is_b2b: bool = Field(default=True, index=True)
-    
-    # --- QUARANTINE & AUDIT (Rigid Logic v3.0) ---
-    is_verified: bool = Field(default=False, index=True)
-    
-    # --- AGGREGATED INTELLIGENCE ---
-    total_visits: int = Field(default=1)
-    unique_visitors_count: int = Field(default=1)
-    
-    # DeepSeek Generated "Corporate Intent" Summary
-    intent_summary: Optional[str] = None 
-    
-    # --- RELATIONS ---
-    # CRITICAL: Using string literals ("Visit", "Department", "WaitlistLead") 
-    # allows SQLAlchemy to resolve these names AFTER all models are loaded.
-    visits: List["Visit"] = Relationship(back_populates="company")
-    departments: List["Department"] = Relationship(back_populates="company")
-    
-    # Renamed to 'leads' to match the back_populates in WaitlistLead
-    leads: List["WaitlistLead"] = Relationship(back_populates="company")
+# --- AuraWorks Identity Bridge: Consumer ISP & Infrastructure Blacklist ---
+CONSUMER_ISP_KEYWORDS = [
+    "vodacom", "mtn", "telkom", "liquid", "cool ideas", "vumatel", "rain", 
+    "isp", "residential", "pool", "dynamic", "dsl", "fiber", "mobile"
+]
 
-    # --- TIMEKEEPING ---
-    created_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now())
-    )
-    updated_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), onupdate=sa.func.now())
-    )
+def is_consumer_traffic(target_name: str) -> bool:
+    """Detects if a visit originates from a known consumer ISP."""
+    if not target_name:
+        return False
+    normalized = target_name.lower()
+    return any(keyword in normalized for keyword in CONSUMER_ISP_KEYWORDS)
+
+def perform_local_reverse_dns(ip_address: str) -> Dict[str, Any]:
+    """
+    Layer 1: Zero-Cost Classification.
+    Identifies cloud providers and obvious ISPs without burning API credits.
+    """
+    try:
+        hostname, _, _ = socket.gethostbyaddr(ip_address)
+        hostname = hostname.lower()
+        
+        if any(cloud in hostname for cloud in ["amazonaws", "googleusercontent", "azure", "static.cloud"]):
+            return {"type": "cloud", "provider": "Infrastructure", "confidence": 0.5}
+        if is_consumer_traffic(hostname):
+            return {"type": "isp", "provider": "Consumer ISP", "confidence": 0.2}
+        
+        return {"type": "business_static", "provider": hostname, "confidence": 0.7}
+    except Exception:
+        return {"type": "unknown", "provider": "Unknown", "confidence": 0.0}
+
+async def enrich_visitor_data(ip_address: str) -> dict:
+    """
+    Phase 01: Forensic IP Resolution.
+    Calculates a 'B2B Confidence Score' instead of hard filtering.
+    """
+    if ip_address in ("127.0.0.1", "localhost", "::1"):
+        return {"company_name": "Local Test Environment", "is_b2b": False, "confidence_score": 1.0}
+
+    # 1. Layer 1 Check (Local)
+    local_intel = perform_local_reverse_dns(ip_address)
+
+    # 2. Layer 2 Check (IPinfo)
+    url = f"https://ipinfo.io/{ip_address}?token={settings.IPINFO_TOKEN}"
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url, timeout=5.0)
+            if response.status_code != 200:
+                return {"company_name": "Unknown", "is_b2b": False, "confidence_score": 0.0}
+
+            data = response.json()
+            company_data = data.get("company", {})
+            asn_data = data.get("asn", {})
+            
+            final_name = company_data.get("name")
+            final_domain = company_data.get("domain")
+
+            # Fallback to org parsing if company block is empty
+            if not final_name:
+                org_full = data.get("org", "Unknown")
+                final_name = " ".join(org_full.split(" ")[1:]) if org_full.startswith("AS") else org_full
+
+            asn_type = asn_data.get("type", "").lower()
+            
+            # --- CALCULATE CONFIDENCE SCORE ---
+            # 1.0 = Definite Corporate HQ | 0.0 = Definite Residential Noise
+            confidence = 0.5 # Baseline
+            
+            if asn_type == "business": confidence += 0.4
+            if asn_type == "hosting": confidence -= 0.2
+            if is_consumer_traffic(final_name) or is_consumer_traffic(data.get("org", "")):
+                confidence -= 0.4
+            
+            # Final determination for the 'Industrial' threshold
+            is_b2b = confidence >= 0.5
+
+            return {
+                "company_name": final_name,
+                "domain": final_domain or asn_data.get("domain"),
+                "is_b2b": is_b2b,
+                "confidence_score": round(max(0.0, min(1.0, confidence)), 2),
+                "industry": asn_type or "unknown",
+                "city": data.get("city"),
+                "region": data.get("region"),
+                "provider_type": local_intel["type"]
+            }
+        except Exception as e:
+            logger.error(f"IPinfo Failure: {e}")
+            return {"company_name": "Error", "is_b2b": False, "confidence_score": 0.0}
+
+async def get_departmental_intelligence(domain: str) -> List[Dict]:
+    """
+    Phase 02: Industrial Cluster Mapping (Apollo.io).
+    """
+    if not settings.APOLLO_API_KEY or not domain or domain in ["unknown.com", "n/a"]:
+        return []
+
+    url = "https://api.apollo.io/v1/people/search"
+    target_departments = ["Procurement", "Operations", "Engineering", "Maintenance", "Supply Chain"]
+
+    payload = {
+        "api_key": settings.APOLLO_API_KEY,
+        "q_organization_domains": domain,
+        "person_titles": target_departments,
+        "organization_locations": ["South Africa"],
+        "display_mode": "regular",
+        "per_page": 5 # Leaner query to save credits
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(url, json=payload, timeout=12.0)
+            if response.status_code != 200:
+                return []
+
+            data = response.json()
+            people = data.get("people", [])
+            
+            departments_found = []
+            for person in people:
+                departments_found.append({
+                    "name": person.get("title", "Lead"),
+                    "email": person.get("email"),
+                    "phone": person.get("phone_numbers", [{}])[0].get("raw_number"),
+                    "head_of_dept_linkedin": person.get("linkedin_url")
+                })
+            
+            return departments_found
+
+        except Exception as e:
+            return []
+            logger.error(f"Apollo Enrichment Failure for {domain}: {e}")
 </file>
 
 <file path="frontend/src/app/(pages)/about/page.tsx">
@@ -5995,27 +6190,6 @@ export default function SolutionPage() {
       <SolutionsCTA />
       <Footer />
     </div>
-  );
-}
-</file>
-
-<file path="frontend/src/app/page.tsx">
-import Image from "next/image";
-import HeroSection from "@/components/hero-sec/hero-section";
-import ContentSection1 from "@/components/content/content-1";
-import ContentSection2 from "@/components/content/content-2";
-import CallToAction from "@/components/cta/call-to-action";
-import Footer from "@/components/footer/footer";
-
-export default function Home() {
-  return (
-    <main>
-      <HeroSection />
-      <ContentSection1 />
-      <ContentSection2 />
-      <CallToAction />
-      <Footer />
-    </main>
   );
 }
 </file>
@@ -6090,36 +6264,58 @@ export async function submitToWaitlist(formData: any) {
 }
 </file>
 
-<file path="backend/app/models/pageview.py">
-from typing import Optional
-from typing import Union, Optional  
-from pydantic import ConfigDict
-from sqlmodel import SQLModel, Field
+<file path="backend/app/models/company.py">
+# backend/app/models/company.py
+from typing import Optional, List, TYPE_CHECKING
+from datetime import datetime
+from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
+import sqlalchemy as sa
 
-class PageViewBase(SQLModel):
-    client_id: str = Field(description="The visitor's unique forensic ID (aura_id)")
-    url: str = Field(description="The URL the visitor is exiting from")
+# Use TYPE_CHECKING to avoid circular imports between models
+if TYPE_CHECKING:
+    from app.models.visit import Visit
+    from app.models.department import Department
+    from app.models.waitlist import WaitlistLead
+
+class Company(SQLModel, table=True):
+    """The Jurisdictive Entity record. The anchor for all B2B intelligence."""
+    id: Optional[int] = Field(default=None, primary_key=True)
     
-    # Union handles the incoming data variations from the browser
-    duration: Union[int, float, str] = Field(
-        default=0, 
-        description="Dwell time in seconds. Coerced from string if necessary."
-    )
+    # --- MULTI-TENANCY ---
+    client_id: str = Field(index=True) # Silos companies to specific agency owners
+    
+    # --- FIRMOGRAPHICS (Public Entity Data) ---
+    name: str = Field(index=True) # Removed unique=True; different clients might track same company
+    domain: str = Field(index=True)
+    industry: Optional[str] = None
+    hq_phone: Optional[str] = None
+    city: Optional[str] = None
+    region: Optional[str] = None # e.g., "Gauteng"
+    is_b2b: bool = Field(default=True, index=True)
+    
+    # --- QUARANTINE & AUDIT (Rigid Logic v3.0) ---
+    is_verified: bool = Field(default=False, index=True)
+    
+    # --- AGGREGATED INTELLIGENCE ---
+    total_visits: int = Field(default=1)
+    unique_visitors_count: int = Field(default=1)
+    
+    # DeepSeek Generated "Corporate Intent" Summary
+    intent_summary: Optional[str] = None 
+    
+    # --- RELATIONS ---
+    # String literals allow SQLAlchemy to resolve names after all models load
+    visits: List["Visit"] = Relationship(back_populates="company")
+    departments: List["Department"] = Relationship(back_populates="company")
+    leads: List["WaitlistLead"] = Relationship(back_populates="company")
 
-    # Pydantic V2 replacement for 'class Config'
-    model_config = ConfigDict(
-        # 'smart_union' is the default behavior in V2, but we can set 
-        # extra='ignore' or other flags here if needed for industrial resilience.
-        populate_by_name=True
+    # --- TIMEKEEPING ---
+    created_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now())
     )
-
-class PageViewCreate(PageViewBase):
-    """
-    Validation schema for 'Exit' and 'Event' pings.
-    Matches the payload structure in AuraWorks v3.2.1
-    """
-    event_type: Optional[str] = "exit"
-    intent_cluster: Optional[str] = None
+    updated_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), onupdate=sa.func.now())
+    )
 </file>
 
 <file path="backend/app/services/notifications.py">
@@ -6879,6 +7075,72 @@ export default function Footer() {
 }
 </file>
 
+<file path="backend/app/models/pageview.py">
+# backend/app/models/pageview.py
+from typing import Optional, Union
+from datetime import datetime
+from pydantic import ConfigDict, field_validator
+from sqlmodel import SQLModel, Field, Column, DateTime
+import sqlalchemy as sa
+
+class PageViewBase(SQLModel):
+    """
+    Base properties for Pydantic validation. 
+    Handles messy browser data types.
+    """
+    client_id: str = Field(description="The visitor's unique forensic ID (aura_id)")
+    url: str = Field(description="The URL recorded")
+    
+    # Union is only for the Pydantic side
+    duration: Union[int, float, str] = Field(
+        default=0, 
+        description="Dwell time in seconds. Coerced from string if necessary."
+    )
+
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
+
+class PageViewCreate(PageViewBase):
+    """
+    Validation schema for 'Exit' and 'Event' pings.
+    Matches the payload structure in AuraWorks v3.2.1
+    """
+    event_type: Optional[str] = "exit"
+    intent_cluster: Optional[str] = None
+
+    @field_validator("duration", mode="before")
+    @classmethod
+    def coerce_duration(cls, v):
+        try:
+            return int(float(v))
+        except (ValueError, TypeError):
+            return 0
+
+class PageView(SQLModel, table=True):
+    """
+    The Database Ledger for page-level interactions.
+    Explicitly defined to avoid Union-to-SQL mapping errors.
+    """
+    id: Optional[int] = Field(default=None, primary_key=True)
+    aura_id: str = Field(index=True)
+    client_id: str # Agency-side identifier
+    url: str
+    duration: int = Field(default=0)
+    
+    # Forensic metadata
+    created_at: datetime = Field(
+        sa_column=Column(
+            DateTime(timezone=True), 
+            server_default=sa.func.now(), 
+            nullable=False
+        )
+    )
+
+    # Index for high-speed industrial reporting
+    __tablename__ = "page_view"
+</file>
+
 <file path="frontend/src/components/pricing/pricing.tsx">
 'use client'
 
@@ -7009,400 +7271,6 @@ export default function Pricing() {
         </>
     )
 }
-</file>
-
-<file path="tracker/src/public/aura.js">
-/**
- * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
- * Version: 3.2.1 (POPIA Compliant & Validation Fixed)
- * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
- */
-(async function() {
-    const script = document.currentScript;
-    // clientSecret is the ID of the agency/site owner from the script tag
-    const clientSecret = window.AURA_ID || script?.getAttribute('data-id');
-    window.AURA_START_TIME = performance.now();
-    
-    if (!clientSecret) return console.error("❌ AuraWorks: Missing Client Identity.");
-
-    const getBaseUrl = () => {
-        // 1. Highest Priority: Explicit config (Manual override)
-        if (window.AURA_CONFIG?.apiUrl) return window.AURA_CONFIG.apiUrl;
-        
-        // 2. Intelligence: Auto-detect where the script is being served from
-        if (script?.src.includes('http')) {
-            try { return new URL(script.src).origin; } catch (e) {}
-        }
-        
-        // 3. The Safeguard: Direct path to the Railway Engine
-        // Using the Railway URL ensures that even if the main site is down, 
-        // the forensic tracking still hits the backend.
-        return "https://dynamic-flow-production-a5d6.up.railway.app";
-    };
-    
-    const API_URL = `${getBaseUrl().replace(/\/$/, '')}/api/v1/track`;
-
-    const AuraPersistence = {
-        key: 'aura_uid',
-        utmKey: 'aura_utm',
-        async init() {
-            let id = await this.getStoredID();
-            this.captureUTMs(); 
-            if (!id) id = this.generateUUID();
-            await this.syncStorage(id);
-            return id;
-        },
-        captureUTMs() {
-            const params = new URLSearchParams(window.location.search);
-            const utms = {};
-            ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(key => {
-                const val = params.get(key);
-                if (val) utms[key] = val;
-            });
-            if (Object.keys(utms).length > 0) {
-                localStorage.setItem(this.utmKey, JSON.stringify({...utms, captured_at: new Date().toISOString()}));
-            }
-        },
-        getStoredUTMs() {
-            try { return JSON.parse(localStorage.getItem(this.utmKey)) || {}; } catch(e) { return {}; }
-        },
-        async getStoredID() {
-            const c = document.cookie.split('; ').find(r => r.startsWith(`${this.key}=`))?.split('=')[1];
-            const l = localStorage.getItem(this.key);
-            return c || l || null;
-        },
-        async syncStorage(id) {
-            const exp = new Date(); exp.setFullYear(exp.getFullYear() + 2);
-            document.cookie = `${this.key}=${id}; expires=${exp.toUTCString()}; path=/; SameSite=Lax; Secure`;
-            localStorage.setItem(this.key, id);
-            window.AURA_UID = id;
-        },
-        generateUUID() {
-            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-            );
-        }
-    };
-
-    const AuraFingerprint = {
-        async getFullSignature() {
-            return {
-                canvas: this.getCanvas(),
-                webgl: this.getWebGL(),
-                network: this.getNetworkInfo(),
-                drift: await this.measureDrift(),
-                screen: `${screen.width}x${screen.height}`,
-                is_incognito: await this.isIncognito()
-            };
-        },
-        getNetworkInfo() {
-            const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-            return {
-                type: conn?.effectiveType || "unknown",
-                rtt: conn?.rtt,
-                downlink: conn?.downlink,
-                is_residential_prob: (conn?.saveData || (conn?.downlink && conn.downlink < 10))
-            };
-        },
-        getCanvas() {
-            try {
-                const cvs = document.createElement('canvas');
-                const ctx = cvs.getContext('2d');
-                ctx.textBaseline = "top"; ctx.font = "14px 'Arial'";
-                ctx.fillText("AuraWorks_v3.2", 2, 2);
-                return cvs.toDataURL().substring(0, 100);
-            } catch (e) { return "blocked"; }
-        },
-        getWebGL() {
-            try {
-                const canvas = document.createElement('canvas');
-                const gl = canvas.getContext('webgl');
-                const debug = gl.getExtension('WEBGL_debug_renderer_info');
-                return debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : "standard";
-            } catch (e) { return "standard"; }
-        },
-        async measureDrift() {
-            return new Promise(r => {
-                const t0 = performance.now(), d0 = Date.now();
-                setTimeout(() => r(Math.round((performance.now() - t0) - (Date.now() - d0))), 500);
-            });
-        },
-        async isIncognito() {
-            if ('storage' in navigator && 'estimate' in navigator.storage) {
-                const {quota} = await navigator.storage.estimate();
-                return quota < 120000000;
-            }
-            return false;
-        }
-    };
-
-    const AuraTracker = {
-        isArmed: false, 
-
-        init(auraId) {
-            this.auraId = auraId;
-            this.trackEntry();
-            this.setupSensors();
-            this.patchSPA();
-
-            window.addEventListener('aura_consent_granted', () => {
-                this.isArmed = true;
-                this.dispatch('event', { event_type: 'consent_granted' });
-            });
-        },
-        async dispatch(endpoint, payload, useBeacon = false) {
-            const utms = AuraPersistence.getStoredUTMs();
-            
-            // Backend Mapping: 
-            // - client_id: Used by track_exit and track_event to find the Visit record (must be the visitor UID)
-            // - aura_id: Forensic unique ID (this.auraId)
-            // - agency_id: The ID from the script data-id (clientSecret)
-            
-            const data = {
-                client_id: this.auraId, // Set visitor ID here to satisfy backend validation
-                aura_id: this.auraId,
-                agency_id: clientSecret,
-                timestamp: new Date().toISOString(),
-                ...utms,
-                ...payload
-            };
-
-            const url = `${API_URL}/${endpoint}`;
-
-            if (useBeacon && navigator.sendBeacon) {
-                const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-                return navigator.sendBeacon(url, blob);
-            }
-            try {
-                await fetch(url, {
-                    method: 'POST', 
-                    mode: 'cors', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify(data), 
-                    keepalive: true
-                });
-            } catch (e) { console.error("Aura dispatch error", e); }
-        },
-        setupSensors() {
-            document.addEventListener('blur', (e) => {
-                if (!this.isArmed) return; 
-                const target = e.target;
-                if (target.type === 'email' || target.name?.includes('email')) {
-                    if (target.value.includes('@')) {
-                        this.dispatch('identity', { email: target.value, capture_source: 'authorized_blur' });
-                    }
-                }
-            }, true);
-
-            document.addEventListener('click', (e) => {
-                const btn = e.target.closest('a, button');
-                if (!btn) return;
-                const text = btn.innerText?.toLowerCase();
-                const intentKeywords = ['pricing', 'audit', 'feature', 'solution', 'waitlist', 'get started'];
-                if (intentKeywords.some(kw => text.includes(kw))) {
-                    this.dispatch('event', { event_type: 'intent_click', intent_cluster: text.substring(0, 20), url: window.location.pathname });
-                }
-            });
-
-            document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'hidden') this.trackExit();
-            });
-
-            window.addEventListener('pagehide', () => this.trackExit());
-        },
-        trackEntry() {
-            const sig = AuraFingerprint.getNetworkInfo();
-            this.dispatch('entry', { 
-                url: window.location.href, 
-                referrer: document.referrer || "direct",
-                screen_resolution: `${window.innerWidth}x${window.innerHeight}`,
-                effective_connection_type: sig.type,
-                downlink_speed: sig.downlink,
-                rtt: sig.rtt
-            });
-        },
-        trackExit() {
-            const duration = Math.round((performance.now() - window.AURA_START_TIME) / 1000);
-            if (duration < 1) return;
-            
-            this.dispatch('exit', {
-                event_type: 'exit',
-                duration: duration,
-                url: window.location.href
-            }, true); 
-        },
-        patchSPA() {
-            const self = this;
-            ['pushState', 'replaceState'].forEach(m => {
-                const orig = history[m];
-                history[m] = function() {
-                    const r = orig.apply(this, arguments);
-                    setTimeout(() => self.trackEntry(), 0);
-                    return r;
-                };
-            });
-        }
-    };
-
-    const startAura = async () => {
-        if (window.AURA_INITIALIZED) return;
-        window.AURA_INITIALIZED = true;
-        const auraId = await AuraPersistence.init();
-        AuraTracker.init(auraId);
-        
-        setTimeout(async () => {
-            const sig = await AuraFingerprint.getFullSignature();
-            await AuraTracker.dispatch('identity', { signature: sig });
-        }, 2000);
-    };
-
-    if (document.readyState === 'complete') startAura();
-    else window.addEventListener('load', startAura);
-})();
-</file>
-
-<file path="backend/app/services/enrichment.py">
-import httpx
-import logging
-import socket
-from app.core.config import settings
-from typing import Optional, List, Dict, Any
-
-logger = logging.getLogger("uvicorn")
-
-# --- AuraWorks Identity Bridge: Consumer ISP & Infrastructure Blacklist ---
-CONSUMER_ISP_KEYWORDS = [
-    "vodacom", "mtn", "telkom", "liquid", "cool ideas", "vumatel", "rain", 
-    "isp", "residential", "pool", "dynamic", "dsl", "fiber", "mobile"
-]
-
-def is_consumer_traffic(target_name: str) -> bool:
-    """Detects if a visit originates from a known consumer ISP."""
-    if not target_name:
-        return False
-    normalized = target_name.lower()
-    return any(keyword in normalized for keyword in CONSUMER_ISP_KEYWORDS)
-
-def perform_local_reverse_dns(ip_address: str) -> Dict[str, Any]:
-    """
-    Layer 1: Zero-Cost Classification.
-    Identifies cloud providers and obvious ISPs without burning API credits.
-    """
-    try:
-        hostname, _, _ = socket.gethostbyaddr(ip_address)
-        hostname = hostname.lower()
-        
-        if any(cloud in hostname for cloud in ["amazonaws", "googleusercontent", "azure", "static.cloud"]):
-            return {"type": "cloud", "provider": "Infrastructure", "confidence": 0.5}
-        if is_consumer_traffic(hostname):
-            return {"type": "isp", "provider": "Consumer ISP", "confidence": 0.2}
-        
-        return {"type": "business_static", "provider": hostname, "confidence": 0.7}
-    except Exception:
-        return {"type": "unknown", "provider": "Unknown", "confidence": 0.0}
-
-async def enrich_visitor_data(ip_address: str) -> dict:
-    """
-    Phase 01: Forensic IP Resolution.
-    Calculates a 'B2B Confidence Score' instead of hard filtering.
-    """
-    if ip_address in ("127.0.0.1", "localhost", "::1"):
-        return {"company_name": "Local Test Environment", "is_b2b": False, "confidence_score": 1.0}
-
-    # 1. Layer 1 Check (Local)
-    local_intel = perform_local_reverse_dns(ip_address)
-
-    # 2. Layer 2 Check (IPinfo)
-    url = f"https://ipinfo.io/{ip_address}?token={settings.IPINFO_TOKEN}"
-
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(url, timeout=5.0)
-            if response.status_code != 200:
-                return {"company_name": "Unknown", "is_b2b": False, "confidence_score": 0.0}
-
-            data = response.json()
-            company_data = data.get("company", {})
-            asn_data = data.get("asn", {})
-            
-            final_name = company_data.get("name")
-            final_domain = company_data.get("domain")
-
-            # Fallback to org parsing if company block is empty
-            if not final_name:
-                org_full = data.get("org", "Unknown")
-                final_name = " ".join(org_full.split(" ")[1:]) if org_full.startswith("AS") else org_full
-
-            asn_type = asn_data.get("type", "").lower()
-            
-            # --- CALCULATE CONFIDENCE SCORE ---
-            # 1.0 = Definite Corporate HQ | 0.0 = Definite Residential Noise
-            confidence = 0.5 # Baseline
-            
-            if asn_type == "business": confidence += 0.4
-            if asn_type == "hosting": confidence -= 0.2
-            if is_consumer_traffic(final_name) or is_consumer_traffic(data.get("org", "")):
-                confidence -= 0.4
-            
-            # Final determination for the 'Industrial' threshold
-            is_b2b = confidence >= 0.5
-
-            return {
-                "company_name": final_name,
-                "domain": final_domain or asn_data.get("domain"),
-                "is_b2b": is_b2b,
-                "confidence_score": round(max(0.0, min(1.0, confidence)), 2),
-                "industry": asn_type or "unknown",
-                "city": data.get("city"),
-                "region": data.get("region"),
-                "provider_type": local_intel["type"]
-            }
-        except Exception as e:
-            logger.error(f"IPinfo Failure: {e}")
-            return {"company_name": "Error", "is_b2b": False, "confidence_score": 0.0}
-
-async def get_departmental_intelligence(domain: str) -> List[Dict]:
-    """
-    Phase 02: Industrial Cluster Mapping (Apollo.io).
-    """
-    if not settings.APOLLO_API_KEY or not domain or domain in ["unknown.com", "n/a"]:
-        return []
-
-    url = "https://api.apollo.io/v1/people/search"
-    target_departments = ["Procurement", "Operations", "Engineering", "Maintenance", "Supply Chain"]
-
-    payload = {
-        "api_key": settings.APOLLO_API_KEY,
-        "q_organization_domains": domain,
-        "person_titles": target_departments,
-        "organization_locations": ["South Africa"],
-        "display_mode": "regular",
-        "per_page": 5 # Leaner query to save credits
-    }
-
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(url, json=payload, timeout=12.0)
-            if response.status_code != 200:
-                return []
-
-            data = response.json()
-            people = data.get("people", [])
-            
-            departments_found = []
-            for person in people:
-                departments_found.append({
-                    "name": person.get("title", "Lead"),
-                    "email": person.get("email"),
-                    "phone": person.get("phone_numbers", [{}])[0].get("raw_number"),
-                    "head_of_dept_linkedin": person.get("linkedin_url")
-                })
-            
-            return departments_found
-
-        except Exception as e:
-            return []
-            logger.error(f"Apollo Enrichment Failure for {domain}: {e}")
 </file>
 
 <file path="frontend/src/components/hero-sec/hero-section.tsx">
@@ -7633,6 +7501,342 @@ export default function HeroSection() {
 }
 </file>
 
+<file path="tracker/src/public/aura.js">
+/**
+ * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
+ * Version: 3.3.0 (Multi-Tenant & Identity Standardized)
+ * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
+ */
+(async function() {
+    const script = document.currentScript;
+    // The "Agency ID" (from data-id) defines which account owns the data.
+    const agencyId = window.AURA_AGENCY_ID || script?.getAttribute('data-id');
+    window.AURA_START_TIME = performance.now();
+    
+    if (!agencyId) return console.error("❌ AuraWorks: Missing Client Identity.");
+
+    const getBaseUrl = () => {
+        if (window.AURA_CONFIG?.apiUrl) return window.AURA_CONFIG.apiUrl;
+        if (script?.src.includes('http')) {
+            try { return new URL(script.src).origin; } catch (e) {}
+        }
+        return "https://dynamic-flow-production-a5d6.up.railway.app";
+    };
+    
+    const API_URL = `${getBaseUrl().replace(/\/$/, '')}/api/v1/track`;
+
+    const AuraPersistence = {
+        key: 'aura_uid',
+        utmKey: 'aura_utm',
+        async init() {
+            let id = await this.getStoredID();
+            this.captureUTMs(); 
+            if (!id) id = this.generateUUID();
+            await this.syncStorage(id);
+            return id;
+        },
+        captureUTMs() {
+            const params = new URLSearchParams(window.location.search);
+            const utms = {};
+            ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(key => {
+                const val = params.get(key);
+                if (val) utms[key] = val;
+            });
+            if (Object.keys(utms).length > 0) {
+                localStorage.setItem(this.utmKey, JSON.stringify({...utms, captured_at: new Date().toISOString()}));
+            }
+        },
+        getStoredUTMs() {
+            try { return JSON.parse(localStorage.getItem(this.utmKey)) || {}; } catch(e) { return {}; }
+        },
+        async getStoredID() {
+            const c = document.cookie.split('; ').find(r => r.startsWith(`${this.key}=`))?.split('=')[1];
+            const l = localStorage.getItem(this.key);
+            return c || l || null;
+        },
+        async syncStorage(id) {
+            const exp = new Date(); exp.setFullYear(exp.getFullYear() + 2);
+            document.cookie = `${this.key}=${id}; expires=${exp.toUTCString()}; path=/; SameSite=Lax; Secure`;
+            localStorage.setItem(this.key, id);
+            window.AURA_UID = id;
+        },
+        generateUUID() {
+            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+        }
+    };
+
+    const AuraFingerprint = {
+        async getFullSignature() {
+            return {
+                canvas: this.getCanvas(),
+                webgl: this.getWebGL(),
+                network: this.getNetworkInfo(),
+                drift: await this.measureDrift(),
+                screen: `${screen.width}x${screen.height}`,
+                is_incognito: await this.isIncognito()
+            };
+        },
+        getNetworkInfo() {
+            const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            return {
+                type: conn?.effectiveType || "unknown",
+                rtt: conn?.rtt,
+                downlink: conn?.downlink,
+                is_residential_prob: (conn?.saveData || (conn?.downlink && conn.downlink < 10))
+            };
+        },
+        getCanvas() {
+            try {
+                const cvs = document.createElement('canvas');
+                const ctx = cvs.getContext('2d');
+                ctx.textBaseline = "top"; ctx.font = "14px 'Arial'";
+                ctx.fillText("AuraWorks_v3.2", 2, 2);
+                return cvs.toDataURL().substring(0, 100);
+            } catch (e) { return "blocked"; }
+        },
+        getWebGL() {
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl');
+                const debug = gl.getExtension('WEBGL_debug_renderer_info');
+                return debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : "standard";
+            } catch (e) { return "standard"; }
+        },
+        async measureDrift() {
+            return new Promise(r => {
+                const t0 = performance.now(), d0 = Date.now();
+                setTimeout(() => r(Math.round((performance.now() - t0) - (Date.now() - d0))), 500);
+            });
+        },
+        async isIncognito() {
+            if ('storage' in navigator && 'estimate' in navigator.storage) {
+                const {quota} = await navigator.storage.estimate();
+                return quota < 120000000;
+            }
+            return false;
+        }
+    };
+
+    const AuraTracker = {
+        isArmed: false, 
+
+        init(auraId) {
+            this.auraId = auraId;
+            this.trackEntry();
+            this.setupSensors();
+            this.patchSPA();
+
+            window.addEventListener('aura_consent_granted', () => {
+                this.isArmed = true;
+                this.dispatch('event', { event_type: 'consent_granted' });
+            });
+        },
+        async dispatch(endpoint, payload, useBeacon = false) {
+            const utms = AuraPersistence.getStoredUTMs();
+            
+            // Standardized Industrial Payload:
+            // - client_id: ALWAYS the Agency/Owner ID (for multi-tenant isolation)
+            // - aura_id: ALWAYS the Visitor's forensic UID (for session stitching)
+            const data = {
+                client_id: agencyId, 
+                aura_id: this.auraId,
+                timestamp: new Date().toISOString(),
+                ...utms,
+                ...payload
+            };
+
+            const url = `${API_URL}/${endpoint}`;
+
+            if (useBeacon && navigator.sendBeacon) {
+                const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+                return navigator.sendBeacon(url, blob);
+            }
+            try {
+                await fetch(url, {
+                    method: 'POST', 
+                    mode: 'cors', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(data), 
+                    keepalive: true
+                });
+            } catch (e) { }
+        },
+        setupSensors() {
+            document.addEventListener('blur', (e) => {
+                // We always capture the identity blur if it's an email, 
+                // but only if it meets industrial intent.
+                const target = e.target;
+                if (target.type === 'email' || target.name?.includes('email')) {
+                    if (target.value.includes('@')) {
+                        this.dispatch('identity', { 
+                            email: target.value, 
+                            capture_source: 'authorized_blur' 
+                        });
+                    }
+                }
+            }, true);
+
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('a, button');
+                if (!btn) return;
+                const text = btn.innerText?.toLowerCase();
+                const intentKeywords = ['pricing', 'audit', 'feature', 'solution', 'waitlist', 'get started'];
+                if (intentKeywords.some(kw => text.includes(kw))) {
+                    this.dispatch('event', { 
+                        event_type: 'intent_click', 
+                        intent_cluster: text.substring(0, 20), 
+                        url: window.location.pathname 
+                    });
+                }
+            });
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') this.trackExit();
+            });
+
+            window.addEventListener('pagehide', () => this.trackExit());
+        },
+        trackEntry() {
+            const sig = AuraFingerprint.getNetworkInfo();
+            this.dispatch('entry', { 
+                url: window.location.href, 
+                referrer: document.referrer || "direct",
+                screen_resolution: `${window.innerWidth}x${window.innerHeight}`,
+                effective_connection_type: sig.type,
+                downlink_speed: sig.downlink,
+                rtt: sig.rtt
+            });
+        },
+        trackExit() {
+            const duration = Math.round((performance.now() - window.AURA_START_TIME) / 1000);
+            if (duration < 1) return;
+            
+            this.dispatch('exit', {
+                event_type: 'exit',
+                duration: duration,
+                url: window.location.href
+            }, true); 
+        },
+        patchSPA() {
+            const self = this;
+            ['pushState', 'replaceState'].forEach(m => {
+                const orig = history[m];
+                history[m] = function() {
+                    const r = orig.apply(this, arguments);
+                    setTimeout(() => self.trackEntry(), 0);
+                    return r;
+                };
+            });
+        }
+    };
+
+    const startAura = async () => {
+        if (window.AURA_INITIALIZED) return;
+        window.AURA_INITIALIZED = true;
+        const auraId = await AuraPersistence.init();
+        AuraTracker.init(auraId);
+        
+        // Forensic identity delay to allow network to stabilize
+        setTimeout(async () => {
+            const sig = await AuraFingerprint.getFullSignature();
+            await AuraTracker.dispatch('identity', { signature: sig });
+        }, 2000);
+    };
+
+    if (document.readyState === 'complete') startAura();
+    else window.addEventListener('load', startAura);
+})();
+</file>
+
+<file path="backend/app/models/visit.py">
+# backend/app/models/visit.py
+from typing import Optional, List, Dict, Any
+from datetime import datetime
+from sqlmodel import SQLModel, Field, Column, DateTime, Relationship, JSON
+import sqlalchemy as sa
+
+class VisitBase(SQLModel):
+    client_id: str = Field(index=True)
+    aura_id: str = Field(index=True)
+    url: str
+    referrer: Optional[str] = "direct"
+    timestamp: Optional[str] = None 
+    # Base attribution fields for all tracking schemas
+    utm_source: Optional[str] = None
+    utm_medium: Optional[str] = None
+    utm_campaign: Optional[str] = None
+    utm_content: Optional[str] = None
+    utm_term: Optional[str] = None
+
+class Visit(SQLModel, table=True): 
+    """The granular ledger of every touchpoint. Multiple visits map to one Company."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    
+    # --- RELATIONS ---
+    company_id: Optional[int] = Field(default=None, foreign_key="company.id", index=True)
+    
+    # --- IDENTITY & CONSENT ---
+    client_id: str = Field(index=True)
+    aura_id: str = Field(index=True) # Browser fingerprint
+    ip_address: Optional[str] = Field(default="0.0.0.0", index=True)
+    is_consented: bool = Field(default=False, index=True) 
+    
+    # --- QUARANTINE & AUDIT (Rigid Logic v3.0) ---
+    verification_status: str = Field(default="verifying", index=True)
+    last_audit_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), nullable=False)
+    )
+    
+    # --- FORENSIC SIGNATURES (Tracker v2.4.0+) ---
+    canvas_hash: Optional[str] = None
+    webgl_renderer: Optional[str] = None
+    clock_drift: Optional[float] = None
+    
+    # --- NETWORK INTELLIGENCE ---
+    effective_connection_type: Optional[str] = Field(default=None, description="e.g., 4g, fiber")
+    downlink_speed: Optional[float] = Field(default=None, description="Mbps")
+    rtt: Optional[int] = Field(default=None, description="Round-trip time in ms")
+    
+    # --- BEHAVIORAL & INTENT CLUSTERING ---
+    url: str
+    referrer: Optional[str] = "direct"
+    screen_resolution: Optional[str] = None
+    duration: int = Field(default=0)
+    capture_source: Optional[str] = Field(default=None, description="Waitlist, Tracker, or Manual")
+    
+    intent_cluster: Optional[str] = Field(default=None, index=True)
+    intent_metadata: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
+    
+    # --- ATTRIBUTION ---
+    utm_source: Optional[str] = Field(default=None, index=True)
+    utm_medium: Optional[str] = Field(default=None, index=True)
+    utm_campaign: Optional[str] = Field(default=None, index=True)
+    utm_content: Optional[str] = None
+    utm_term: Optional[str] = None
+
+    created_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), nullable=False)
+    )
+
+    company: Optional["Company"] = Relationship(back_populates="visits")
+
+class VisitCreate(VisitBase):
+    """Schema for initial ingestion via track_entry"""
+    screen_resolution: Optional[str] = None
+    effective_connection_type: Optional[str] = None
+    downlink_speed: Optional[float] = None
+    rtt: Optional[int] = None
+
+class PageViewCreate(SQLModel):
+    client_id: str
+    url: str
+    duration: int
+    event_type: str = "exit"
+    intent_cluster: Optional[str] = None
+</file>
+
 <file path="backend/app/core/config.py">
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional, Union
@@ -7687,7 +7891,10 @@ class Settings(BaseSettings):
         "https://auraworks.co.za",
         "https://www.auraworks.co.za",
         "https://cdn.auraworks.co.za",
-        "https://dynamic-flow-production-a5d6.up.railway.app"
+        "https://dynamic-flow-production-a5d6.up.railway.app",
+        "https://industrial-intelligence-xi.vercel.app",
+        "industrial-intelligence-git-main-allen-reileys-projects.vercel.app",
+        "industrial-intelligence-lttxeot8z-allen-reileys-projects.vercel.app"
     ]
 
     # Modern Pydantic V2 Configuration
@@ -7700,110 +7907,28 @@ class Settings(BaseSettings):
 settings = Settings()
 </file>
 
-<file path="backend/app/models/visit.py">
-from typing import Optional, List, Dict, Any
-from datetime import datetime
-from sqlmodel import SQLModel, Field, Column, DateTime, Relationship, JSON
-import sqlalchemy as sa
-
-class VisitBase(SQLModel):
-    client_id: str = Field(index=True)
-    aura_id: str = Field(index=True)
-    url: str
-    referrer: Optional[str] = "direct"
-    timestamp: Optional[str] = None 
-    # Base attribution fields for all tracking schemas
-    utm_source: Optional[str] = None
-    utm_medium: Optional[str] = None
-    utm_campaign: Optional[str] = None
-    utm_content: Optional[str] = None
-    utm_term: Optional[str] = None
-
-class Visit(SQLModel, table=True): 
-    """The granular ledger of every touchpoint. Multiple visits map to one Company."""
-    id: Optional[int] = Field(default=None, primary_key=True)
-    
-    # --- RELATIONS ---
-    company_id: Optional[int] = Field(default=None, foreign_key="company.id", index=True)
-    
-    # --- IDENTITY & CONSENT ---
-    client_id: str = Field(index=True)
-    aura_id: str = Field(index=True) # Browser fingerprint
-    ip_address: Optional[str] = Field(default="0.0.0.0", index=True)
-    is_consented: bool = Field(default=False, index=True) 
-    
-    # --- QUARANTINE & AUDIT (Rigid Logic v3.0) ---
-    # verifying: Currently under 24hr review
-    # verified: Confirmed industrial/lead match
-    # unverified: Marked for Janitor deletion
-    verification_status: str = Field(default="verifying", index=True)
-    last_audit_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), nullable=False)
-    )
-    
-    # --- FORENSIC SIGNATURES (Tracker v2.4.0+) ---
-    canvas_hash: Optional[str] = None
-    webgl_renderer: Optional[str] = None
-    clock_drift: Optional[float] = None
-    
-    # --- NETWORK INTELLIGENCE (For Buying Committee Detection) ---
-    effective_connection_type: Optional[str] = Field(default=None, description="e.g., 4g, fiber")
-    downlink_speed: Optional[float] = Field(default=None, description="Mbps")
-    rtt: Optional[int] = Field(default=None, description="Round-trip time in ms")
-    
-    # --- BEHAVIORAL & INTENT CLUSTERING ---
-    url: str
-    referrer: Optional[str] = "direct"
-    screen_resolution: Optional[str] = None
-    duration: int = Field(default=0)
-    
-    # Captures specific high-intent clicks (Pricing, Audit, Features)
-    intent_cluster: Optional[str] = Field(default=None, index=True)
-    intent_metadata: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
-    
-    # --- ATTRIBUTION (Industrial Grade) ---
-    utm_source: Optional[str] = Field(default=None, index=True)
-    utm_medium: Optional[str] = Field(default=None, index=True)
-    utm_campaign: Optional[str] = Field(default=None, index=True)
-    utm_content: Optional[str] = None
-    utm_term: Optional[str] = None
-
-    # --- TIMESTAMPS ---
-    created_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), nullable=False)
-    )
-
-    company: Optional["Company"] = Relationship(back_populates="visits")
-
-class VisitCreate(VisitBase):
-    """Schema for initial ingestion via track_entry"""
-    screen_resolution: Optional[str] = None
-    effective_connection_type: Optional[str] = None
-    downlink_speed: Optional[float] = None
-    rtt: Optional[int] = None
-
-class PageViewCreate(SQLModel):
-    client_id: str
-    url: str
-    duration: int
-    event_type: str = "exit"
-    intent_cluster: Optional[str] = None
-</file>
-
 <file path="backend/app/services/intelligence.py">
+# backend/app/services/intelligence.py
 import httpx
 import logging
 import asyncio
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional, Dict
-from sqlmodel import Session, select
+from typing import List, Optional, Dict, Any
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from cachetools import TTLCache
+
 from app.models.visit import Visit
 from app.models.company import Company
 from app.models.waitlist import WaitlistLead
-from app.db import engine
+from app.db import get_async_session
 from app.core.config import settings
 
 logger = logging.getLogger("uvicorn")
+
+# Optimization: Cache IP Intelligence for 24 hours to preserve API credits
+# Key: IP Address | Value: Dict of geo/org data
+ip_cache = TTLCache(maxsize=2000, ttl=86400)
 
 # --- UTILS: Industrial Formatting ---
 def format_zar(value: str) -> str:
@@ -7818,28 +7943,35 @@ def format_zar(value: str) -> str:
     clean_value = "".join(filter(str.isdigit, value))
     return f"R{int(clean_value):,}" if clean_value else value
 
-# --- PHASE 01: The Orchestrator ---
+# --- PHASE 01: The Enrichment Engine ---
 
-async def orchestrate_lead_audit(lead_id: int, aura_id: str, payload: dict):
+async def enrich_ip_intel(ip_address: str) -> Dict[str, Any]:
     """
-    The Central Brain: Ensures DeepSeek analysis is ready before notifying Slack.
+    Fetches firmographic data with a local cache-first strategy.
     """
-    logger.info(f"--- 🧠 ORCHESTRATING AUDIT: Lead {lead_id} ---")
-    
-    # 1. Wait for Behavioral Journey & DeepSeek Intent Analysis
-    journey = await get_visitor_journey(aura_id)
-    
-    # 2. Sequential Delay: Calibration Retry
-    if "calibrating" in journey.get("intent_summary", "").lower():
-        await asyncio.sleep(4)
-        journey = await get_visitor_journey(aura_id)
+    if not ip_address or ip_address in ["127.0.0.1", "0.0.0.0"]:
+        return {}
 
-    # 3. Dispatch Clinical Notifications (Using your refactored notifications.py)
-    # We pass the results to the specialized notification service
-    from app.services.notifications import post_to_slack, send_mailgun_notification
-    
-    await post_to_slack(payload, journey)
-    await send_mailgun_notification(payload.get("email"), payload.get("name"))
+    if ip_address in ip_cache:
+        return ip_cache[ip_address]
+
+    token = settings.IPINFO_TOKEN
+    if not token:
+        return {}
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(
+                f"https://ipinfo.io/{ip_address}?token={token}", 
+                timeout=5.0
+            )
+            if response.status_code == 200:
+                data = response.json()
+                ip_cache[ip_address] = data
+                return data
+        except Exception as e:
+            logger.error(f"🌐 IPinfo enrichment failure: {e}")
+    return {}
 
 # --- PHASE 02: DeepSeek-V3 Intent Analysis ---
 
@@ -7882,92 +8014,89 @@ async def analyze_corporate_intent(
                     "messages": [{"role": "user", "content": prompt}],
                     "temperature": 0.2 
                 },
-                timeout=20.0 
+                timeout=15.0 
             )
             if response.status_code == 200:
                 return response.json()['choices'][0]['message']['content'].strip()
-            return "Intelligence engine calibrating. Analysis deferred."
         except Exception as e:
-            logger.error(f"DeepSeek Failure: {e}")
-            return "Intelligence engine temporarily offline."
+            logger.error(f"🤖 DeepSeek Failure: {e}")
+    return "Intelligence engine temporarily offline."
 
 # --- PHASE 03: Unified Journey & Ghost Enrichment ---
 
-async def get_visitor_journey(aura_id: str) -> Dict:
+async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
     """
-    FIXED: Single source of truth for behavioral ledgers.
-    Implements 'Ghost Enrichment' and Corporate Cluster detection.
+    Async Behavioral Ledger: Implements Ghost Enrichment and Corporate Cluster detection.
     """
     if not aura_id:
         return {"total_touches": 0, "pathway": "Direct", "intent_summary": "No forensic signature.", "cluster_count": 0}
 
-    with Session(engine) as session:
-        # 1. Forensic History Retrieval
-        statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at)
-        history = session.exec(statement).all()
+    # 1. Forensic History Retrieval
+    statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at)
+    result = await session.execute(statement)
+    history = result.scalars().all()
+    
+    if not history:
+        return {"total_touches": 0, "pathway": "First Contact", "intent_summary": "Initial touchpoint.", "cluster_count": 0}
+
+    last_visit = history[-1]
+
+    # 2. Corporate Cluster Detection (The 3+ Unique ID Rule)
+    time_threshold = datetime.now(timezone.utc) - timedelta(hours=72)
+    cluster_stmt = select(Visit).where(
+        Visit.ip_address == last_visit.ip_address,
+        Visit.created_at >= time_threshold
+    )
+    cluster_res = await session.execute(cluster_stmt)
+    cluster_records = cluster_res.scalars().all()
+    unique_id_count = len({v.aura_id for v in cluster_records})
+    is_buying_committee = unique_id_count >= 3
+
+    # 3. Pathway Mapping
+    pages = [v.url.split('auraworks.co.za')[-1] if v.url else "/" for v in history]
+    unique_pathway = []
+    for p in pages:
+        if not unique_pathway or p != unique_pathway[-1]:
+            unique_pathway.append(p if p != "" else "/")
+    pathway_str = " → ".join(unique_pathway)
+
+    # 4. Context Harvest: Resolve Company Anchor
+    company = None
+    linked_visit = next((v for v in history if v.company_id), None)
+    if linked_visit:
+        company = await session.get(Company, linked_visit.company_id)
+
+    # 5. Ghost-linking via IP correlation
+    cluster_info = f"📍 Facility Activity: {unique_id_count} IDs"
+    if not company and last_visit.ip_address:
+        past_lead_stmt = select(WaitlistLead).join(
+            Visit, WaitlistLead.aura_id == Visit.aura_id
+        ).where(Visit.ip_address == last_visit.ip_address)
         
-        if not history:
-            return {"total_touches": 0, "pathway": "First Contact", "intent_summary": "Initial touchpoint recorded.", "cluster_count": 0}
+        past_lead_res = await session.execute(past_lead_stmt)
+        past_lead = past_lead_res.scalars().first()
+        
+        if past_lead:
+            company = await session.get(Company, past_lead.company_id)
+            if company:
+                cluster_info += f" | 🔗 Ghost-linked: {company.name}"
 
-        last_visit = history[-1]
+    # 6. AI Synthesis
+    intent = await analyze_corporate_intent(
+        company_name=company.name if company else "Anonymous Entity",
+        industry=company.industry if company else "Industrial",
+        pathway=pathway_str,
+        is_cluster=is_buying_committee
+    )
 
-        # 2. Corporate Cluster Detection (The 3+ Unique ID Rule)
-        time_threshold = datetime.now(timezone.utc) - timedelta(hours=72)
-        cluster_statement = select(Visit).where(
-            Visit.ip_address == last_visit.ip_address,
-            Visit.created_at >= time_threshold
-        )
-        cluster_records = session.exec(cluster_statement).all()
-        unique_id_count = len({v.aura_id for v in cluster_records})
-        is_buying_committee = unique_id_count >= 3
-
-        # 3. Pathway Mapping (Deduplicated URL sequence)
-        pages = [v.url.split('auraworks.co.za')[-1] if v.url else "/" for v in history]
-        unique_pathway = []
-        for p in pages:
-            if not unique_pathway or p != unique_pathway[-1]:
-                unique_pathway.append(p if p != "" else "/")
-        pathway_str = " → ".join(unique_pathway)
-
-        # 4. Context Harvest: Resolve Company Anchor
-        company = None
-        linked_visit = next((v for v in history if v.company_id), None)
-        if linked_visit:
-            company = session.get(Company, linked_visit.company_id)
-
-        # 5. Self-Healing: Ghost-linking via IP correlation
-        cluster_info = f"📍 Facility Activity: {unique_id_count} IDs"
-        if not company and last_visit.ip_address:
-            # Check if this IP is associated with any previous Lead
-            past_lead = session.exec(
-                select(WaitlistLead)
-                .join(Visit, WaitlistLead.aura_id == Visit.aura_id)
-                .where(Visit.ip_address == last_visit.ip_address)
-            ).first()
-            
-            if past_lead:
-                company = session.get(Company, past_lead.company_id)
-                if company:
-                    cluster_info += f" | 🔗 Ghost-linked to {company.name}"
-
-        # 6. DeepSeek Synthesis
-        intent = await analyze_corporate_intent(
-            company_name=company.name if company else "Anonymous Entity",
-            industry=company.industry if company else "Industrial",
-            pathway=pathway_str,
-            is_cluster=is_buying_committee
-        )
-
-        network_context = f"[{last_visit.effective_connection_type or 'Standard'}]"
-
-        return {
-            "total_touches": len(history),
-            "pathway": pathway_str,
-            "intent_summary": f"{intent} \n\n{cluster_info} {network_context}",
-            "cluster_count": unique_id_count,
-            "is_cluster": is_buying_committee,
-            "is_high_intent": is_buying_committee or any(kw in pathway_str.lower() for kw in ["pricing", "audit", "waitlist"]) or (last_visit.intent_cluster is not None)
-        }
+    return {
+        "total_touches": len(history),
+        "pathway": pathway_str,
+        "intent_summary": f"{intent} \n\n{cluster_info}",
+        "cluster_count": unique_id_count,
+        "is_cluster": is_buying_committee,
+        "is_high_intent": is_buying_committee or any(kw in pathway_str.lower() for kw in ["pricing", "audit", "waitlist"])
+    }
 </file>
 
 <file path="frontend/src/components/sections/form/get-started.tsx">
@@ -8223,6 +8352,7 @@ export default function GetStartedPage() {
 </file>
 
 <file path="backend/app/models/waitlist.py">
+# backend/app/models/waitlist.py
 from datetime import datetime, timezone
 from typing import Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship, Column, DateTime, String
@@ -8243,15 +8373,17 @@ class WaitlistLead(SQLModel, table=True):
     """
     id: Optional[int] = Field(default=None, primary_key=True)
     
+    # --- MULTI-TENANCY ---
+    client_id: str = Field(index=True) # Silos waitlist to the agency owner
+
     # --- ENTITY LINKAGE ---
-    # The 'Juristic Anchor' connecting the person to the jurisdictional body
     company_id: Optional[int] = Field(default=None, foreign_key="company.id", index=True)
     
     # --- IDENTITY (POPIA/PAIA Consented) ---
     name: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
-    email: str = Field(index=True, unique=True)
+    email: str = Field(index=True) # Unique per client_id managed via logic
     
-    # FIX: Explicitly naming the column to match the field name to stop UndefinedColumn errors
+    # Raw input before forensic normalization
     company_name_raw: Optional[str] = Field(
         default=None, 
         sa_column=Column("company_name_raw", String, nullable=True)
@@ -8262,10 +8394,7 @@ class WaitlistLead(SQLModel, table=True):
     # --- B2B AUDIT & FIRMOGRAPHICS ---
     website: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
     traffic: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
-    
-    # UPDATED: String type to accommodate dropdown ranges (e.g., "150k-500k")
     avg_price: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
-    
     crm: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
     
     # --- PROMOTIONAL STITCHING ---
@@ -8284,14 +8413,13 @@ class WaitlistLead(SQLModel, table=True):
         default_factory=get_utc_now,
         sa_column=Column(
             DateTime(timezone=True), 
-            onupdate=sa.func.now(), # Automatically updates on every database save
+            onupdate=sa.func.now(),
             nullable=False,
             server_default=sa.func.now()
         )
     )
 
     # --- RELATIONSHIPS ---
-    # Standardized to 'leads' to match Company.leads
     company: Optional["Company"] = Relationship(back_populates="leads")
 </file>
 
@@ -8408,227 +8536,6 @@ async def join_waitlist(payload: dict, request: Request, background_tasks: Backg
             session.rollback()
             logger.error(f"🚨 Promotion Failure: {e}")
             raise HTTPException(status_code=500, detail="Synchronization delay.")
-</file>
-
-<file path="backend/app/api/v1/track.py">
-from fastapi import APIRouter, BackgroundTasks, Request, Header, HTTPException
-from typing import Optional, Dict, Any, List
-from app.models.visit import VisitCreate, Visit
-from app.models.company import Company
-from app.models.pageview import PageViewCreate
-from app.services.enrichment import enrich_visitor_data
-from app.services.notifications import post_to_visit_channel
-from app.services.intelligence import get_visitor_journey
-from app.services.airtable import airtable_engine
-from sqlmodel import Session, select
-from app.db import engine
-from pydantic import BaseModel
-import logging
-from datetime import datetime, timezone
-
-router = APIRouter()
-logger = logging.getLogger("uvicorn")
-
-class ConsentPayload(BaseModel):
-    client_id: str
-    aura_id: str
-    status: str 
-
-class IdentityPayload(BaseModel):
-    client_id: str
-    aura_id: str
-    signature: Optional[Dict[str, Any]] = None
-    email: Optional[str] = None
-    capture_source: Optional[str] = None
-
-async def process_entry_logic(payload: VisitCreate, client_ip: str, background_tasks: BackgroundTasks):
-    """
-    Refined Ingestion: Quarantines hits for audit while auto-verifying whitelisted entities.
-    """
-    with Session(engine) as session:
-        # 1. Resolve Firmographics
-        enriched_info = await enrich_visitor_data(client_ip)
-        domain = enriched_info.get("domain")
-        company_name = enriched_info.get("company_name", "Unknown")
-        confidence = enriched_info.get("confidence_score", 0.0)
-
-        # 2. Check for Existing Company
-        company = None
-        if domain and domain not in ["unknown.com", "n/a"]:
-            company_statement = select(Company).where(Company.domain == domain)
-            company = session.exec(company_statement).first()
-
-        # 3. Handle Company Record
-        if not company and domain and domain not in ["unknown.com", "n/a"]:
-            company = Company(
-                name=company_name,
-                domain=domain,
-                industry=enriched_info.get("industry"),
-                city=enriched_info.get("city"),
-                region=enriched_info.get("region"),
-                is_b2b=enriched_info.get("is_b2b", True),
-                is_verified=False
-            )
-            session.add(company)
-            session.commit()
-            session.refresh(company)
-        elif company:
-            company.total_visits += 1
-            session.add(company)
-
-        # 4. Visit Status Logic (Matches Janitor Expectations)
-        initial_status = "verified" if (company and company.is_verified) else "verifying"
-        
-        db_visit = Visit(
-            company_id=company.id if company else None,
-            client_id=payload.client_id,
-            aura_id=payload.aura_id,
-            ip_address=client_ip,
-            url=payload.url,
-            referrer=payload.referrer,
-            # Schema Fix: Matches the manual ALTER TABLE column
-            verification_status=initial_status,
-            last_audit_at=datetime.now(timezone.utc),
-            utm_source=payload.utm_source,
-            utm_medium=payload.utm_medium,
-            utm_campaign=payload.utm_campaign,
-            is_consented=False 
-        )
-        
-        session.add(db_visit)
-        session.commit()
-        session.refresh(db_visit)
-
-        # 5. Dispatch to Channels
-        if confidence >= 0.5 or (company and company.is_verified):
-            airtable_data = {
-                "company_name": company.name if company else "Anonymous Facility",
-                "domain": domain or "unknown.com",
-                "ip_address": client_ip,
-                "city": enriched_info.get("city", "Unknown"),
-                "region": enriched_info.get("region", "ZA"),
-                "aura_id": payload.aura_id,
-                "effective_connection_type": payload.effective_connection_type or "Unknown"
-            }
-            background_tasks.add_task(airtable_engine.push_visit, airtable_data)
-
-            journey = await get_visitor_journey(payload.aura_id)
-            visit_report = {
-                "company_name": airtable_data["company_name"],
-                "network_type": payload.effective_connection_type or "Standard",
-                "utm_source": payload.utm_source or "Direct",
-                "utm_medium": payload.utm_medium or "None",
-                "aura_id": payload.aura_id,
-                "city": airtable_data["city"],
-                "region": airtable_data["region"]
-            }
-            background_tasks.add_task(post_to_visit_channel, visit_report, journey)
-
-@router.post("/entry")
-async def track_entry(
-    payload: VisitCreate, 
-    request: Request, 
-    background_tasks: BackgroundTasks,
-    x_forwarded_for: Optional[str] = Header(None)
-):
-    client_ip = x_forwarded_for.split(',')[0].strip() if x_forwarded_for else (request.client.host if request.client else "127.0.0.1")
-    background_tasks.add_task(process_entry_logic, payload, client_ip, background_tasks)
-    return {"status": "accepted"}
-
-@router.post("/identity")
-async def track_identity(payload: IdentityPayload):
-    with Session(engine) as session:
-        statement = select(Visit).where(Visit.aura_id == payload.aura_id).order_by(Visit.created_at.desc())
-        visit = session.exec(statement).first()
-        
-        if visit:
-            if payload.signature:
-                sig = payload.signature
-                visit.canvas_hash = sig.get("canvas")
-                visit.webgl_renderer = sig.get("webgl")
-                visit.clock_drift = sig.get("drift")
-                net = sig.get("network")
-                if isinstance(net, dict):
-                    visit.effective_connection_type = net.get("type")
-                    visit.downlink_speed = net.get("downlink")
-                    visit.rtt = net.get("rtt")
-            
-            if payload.email:
-                visit.capture_source = payload.capture_source or "authorized_blur"
-            
-            session.add(visit)
-            session.commit()
-            return {"status": "identity_locked"}
-        return {"status": "visit_not_found"}
-
-@router.post("/event")
-async def track_event(payload: PageViewCreate):
-    with Session(engine) as session:
-        statement = select(Visit).where(Visit.aura_id == payload.client_id).order_by(Visit.created_at.desc())
-        visit = session.exec(statement).first()
-        if visit:
-            if payload.event_type == "intent_click":
-                visit.intent_cluster = payload.intent_cluster
-                visit.intent_metadata = {"target": payload.url, "path": payload.url}
-            session.commit()
-            return {"status": "event_logged"}
-        return {"status": "pending_entry"}
-
-@router.post("/consent")
-async def track_consent(payload: ConsentPayload):
-    try:
-        with Session(engine) as session:
-            statement = select(Visit).where(Visit.aura_id == payload.aura_id)
-            visits = session.exec(statement).all()
-            for v in visits:
-                v.is_consented = True
-                session.add(v)
-            session.commit()
-            return {"status": "consent_recorded"}
-    except Exception as e:
-        logger.error(f"❌ Consent Sync Error: {e}")
-        return {"status": "error"}
-
-@router.post("/exit")
-async def track_exit(payload: PageViewCreate):
-    """
-    Finalizes dwell time for a forensic session.
-    Matches incoming client_id to the aura_id in the Visit ledger.
-    """
-    try:
-        # Sanitize duration: Convert from string/float to int
-        # Handle cases where frontend might send "NaN" or null
-        try:
-            processed_duration = int(float(payload.duration))
-        except (ValueError, TypeError):
-            processed_duration = 0
-
-        with Session(engine) as session:
-            # Locate the most recent visit matching this ID and URL
-            statement = select(Visit).where(
-                Visit.aura_id == payload.client_id,
-                Visit.url == payload.url
-            ).order_by(Visit.created_at.desc())
-            
-            visit = session.exec(statement).first()
-            
-            if visit:
-                # Logic check: Only update if the new duration is greater 
-                # (Prevents race conditions from late heartbeat packets)
-                if processed_duration > (visit.duration or 0):
-                    visit.duration = processed_duration
-                    session.add(visit)
-                    session.commit()
-                    return {"status": "recorded", "duration": processed_duration}
-                
-                return {"status": "no_change", "reason": "existing_duration_higher"}
-            
-            return {"status": "pending_entry", "msg": "Visit record not yet initialized"}
-            
-    except Exception as e:
-        logger.error(f"❌ Exit Tracking Error: {e}")
-        # Return 200 even on error to prevent browser retry loops during page close
-        return {"status": "error", "message": str(e)}
 </file>
 
 <file path="backend/app/main.py">
@@ -8777,6 +8684,266 @@ async def get_entities():
         statement = select(Company).order_by(Company.created_at.desc())
         results = session.exec(statement).all()
         return results
+</file>
+
+<file path="backend/app/api/v1/track.py">
+# backend/app/api/v1/endpoints/track.py
+from fastapi import APIRouter, BackgroundTasks, Request, Header, HTTPException
+from typing import Optional, Dict, Any, List
+from app.models.visit import VisitCreate, Visit
+from app.models.company import Company
+from app.models.lead import Lead  # Integrated Lead Model
+from app.models.pageview import PageViewCreate
+from app.services.enrichment import enrich_visitor_data
+from app.services.notifications import post_to_visit_channel
+from app.services.intelligence import get_visitor_journey
+from app.services.airtable import airtable_engine
+from sqlmodel import Session, select
+from app.db import engine
+from pydantic import BaseModel
+import logging
+from datetime import datetime, timezone
+
+router = APIRouter()
+logger = logging.getLogger("uvicorn")
+
+class ConsentPayload(BaseModel):
+    client_id: str
+    aura_id: str
+    status: str 
+
+class IdentityPayload(BaseModel):
+    client_id: str
+    aura_id: str
+    signature: Optional[Dict[str, Any]] = None
+    email: Optional[str] = None
+    capture_source: Optional[str] = None
+
+async def process_entry_logic(payload: VisitCreate, client_ip: str, background_tasks: BackgroundTasks):
+    """
+    Refined Ingestion: Quarantines hits for audit while auto-verifying whitelisted entities.
+    Propagates verified visits into the Lead ledger for multi-tenant intelligence.
+    """
+    with Session(engine) as session:
+        # 1. Resolve Firmographics
+        enriched_info = await enrich_visitor_data(client_ip)
+        domain = enriched_info.get("domain")
+        company_name = enriched_info.get("company_name", "Unknown")
+        confidence = enriched_info.get("confidence_score", 0.0)
+
+        # 2. Check for Existing Company (Scoped to Client/Agency)
+        company = None
+        if domain and domain not in ["unknown.com", "n/a"]:
+            company_statement = select(Company).where(
+                Company.domain == domain,
+                Company.client_id == payload.client_id
+            )
+            company = session.exec(company_statement).first()
+
+        # 3. Handle Company Record
+        if not company and domain and domain not in ["unknown.com", "n/a"]:
+            company = Company(
+                client_id=payload.client_id,
+                name=company_name,
+                domain=domain,
+                industry=enriched_info.get("industry"),
+                city=enriched_info.get("city"),
+                region=enriched_info.get("region"),
+                is_b2b=enriched_info.get("is_b2b", True),
+                is_verified=False
+            )
+            session.add(company)
+            session.commit()
+            session.refresh(company)
+        elif company:
+            company.total_visits += 1
+            session.add(company)
+
+        # 4. Visit Status Logic
+        initial_status = "verified" if (company and company.is_verified) else "verifying"
+        
+        db_visit = Visit(
+            company_id=company.id if company else None,
+            client_id=payload.client_id,
+            aura_id=payload.aura_id,
+            ip_address=client_ip,
+            url=payload.url,
+            referrer=payload.referrer,
+            verification_status=initial_status,
+            last_audit_at=datetime.now(timezone.utc),
+            utm_source=payload.utm_source,
+            utm_medium=payload.utm_medium,
+            utm_campaign=payload.utm_campaign,
+            is_consented=False 
+        )
+        
+        session.add(db_visit)
+
+        # 5. LEAD PROPAGATION LOGIC
+        # If the company is verified, automatically sync or update the Lead table
+        if company and company.is_verified:
+            existing_lead = session.exec(
+                select(Lead).where(
+                    Lead.aura_id == payload.aura_id,
+                    Lead.client_id == payload.client_id
+                )
+            ).first()
+
+            if not existing_lead:
+                new_lead = Lead(
+                    client_id=payload.client_id,
+                    company_id=company.id,
+                    aura_id=payload.aura_id,
+                    company_name=company.name,
+                    domain=company.domain,
+                    industry=company.industry,
+                    lead_source="high_intent_visit",
+                    confidence_score=confidence
+                )
+                session.add(new_lead)
+            else:
+                existing_lead.last_active_at = datetime.now(timezone.utc)
+                session.add(existing_lead)
+
+        session.commit()
+        session.refresh(db_visit)
+
+        # 6. Dispatch to Channels (Airtable/Discord)
+        if confidence >= 0.5 or (company and company.is_verified):
+            airtable_data = {
+                "client_id": payload.client_id,
+                "company_name": company.name if company else "Anonymous Facility",
+                "domain": domain or "unknown.com",
+                "ip_address": client_ip,
+                "city": enriched_info.get("city", "Unknown"),
+                "region": enriched_info.get("region", "ZA"),
+                "aura_id": payload.aura_id
+            }
+            background_tasks.add_task(airtable_engine.push_visit, airtable_data)
+
+            journey = await get_visitor_journey(payload.aura_id, payload.client_id)
+            visit_report = {
+                "company_name": airtable_data["company_name"],
+                "network_type": payload.effective_connection_type or "Standard",
+                "aura_id": payload.aura_id,
+                "city": airtable_data["city"],
+                "region": airtable_data["region"]
+            }
+            background_tasks.add_task(post_to_visit_channel, visit_report, journey)
+
+@router.post("/entry")
+async def track_entry(
+    payload: VisitCreate, 
+    request: Request, 
+    background_tasks: BackgroundTasks,
+    x_forwarded_for: Optional[str] = Header(None)
+):
+    client_ip = x_forwarded_for.split(',')[0].strip() if x_forwarded_for else (request.client.host if request.client else "127.0.0.1")
+    background_tasks.add_task(process_entry_logic, payload, client_ip, background_tasks)
+    return {"status": "accepted"}
+
+@router.post("/identity")
+async def track_identity(payload: IdentityPayload):
+    with Session(engine) as session:
+        statement = select(Visit).where(
+            Visit.aura_id == payload.aura_id,
+            Visit.client_id == payload.client_id
+        ).order_by(Visit.created_at.desc())
+        visit = session.exec(statement).first()
+        
+        if visit:
+            if payload.signature:
+                sig = payload.signature
+                visit.canvas_hash = sig.get("canvas")
+                visit.webgl_renderer = sig.get("webgl")
+                visit.clock_drift = sig.get("drift")
+                net = sig.get("network")
+                if isinstance(net, dict):
+                    visit.effective_connection_type = net.get("type")
+                    visit.downlink_speed = net.get("downlink")
+                    visit.rtt = net.get("rtt")
+            
+            if payload.email:
+                visit.capture_source = payload.capture_source or "authorized_blur"
+                # Update Lead table if an email is captured
+                lead = session.exec(
+                    select(Lead).where(
+                        Lead.aura_id == payload.aura_id,
+                        Lead.client_id == payload.client_id
+                    )
+                ).first()
+                if lead:
+                    lead.email = payload.email
+                    session.add(lead)
+            
+            session.add(visit)
+            session.commit()
+            return {"status": "identity_locked"}
+        return {"status": "visit_not_found"}
+
+@router.post("/event")
+async def track_event(payload: PageViewCreate):
+    with Session(engine) as session:
+        # Note: aura.js sends visitor aura_id in the client_id field for events
+        statement = select(Visit).where(
+            Visit.aura_id == payload.client_id,
+            Visit.client_id == payload.client_id 
+        ).order_by(Visit.created_at.desc())
+        
+        visit = session.exec(statement).first()
+        if visit:
+            if payload.event_type == "intent_click":
+                visit.intent_cluster = payload.intent_cluster
+                visit.intent_metadata = {"target": payload.url, "path": payload.url}
+            session.commit()
+            return {"status": "event_logged"}
+        return {"status": "pending_entry"}
+
+@router.post("/consent")
+async def track_consent(payload: ConsentPayload):
+    try:
+        with Session(engine) as session:
+            statement = select(Visit).where(
+                Visit.aura_id == payload.aura_id,
+                Visit.client_id == payload.client_id
+            )
+            visits = session.exec(statement).all()
+            for v in visits:
+                v.is_consented = True
+                session.add(v)
+            session.commit()
+            return {"status": "consent_recorded"}
+    except Exception as e:
+        logger.error(f"❌ Consent Sync Error: {e}")
+        return {"status": "error"}
+
+@router.post("/exit")
+async def track_exit(payload: PageViewCreate):
+    try:
+        try:
+            processed_duration = int(float(payload.duration))
+        except (ValueError, TypeError):
+            processed_duration = 0
+
+        with Session(engine) as session:
+            statement = select(Visit).where(
+                Visit.aura_id == payload.client_id,
+                Visit.url == payload.url
+            ).order_by(Visit.created_at.desc())
+            
+            visit = session.exec(statement).first()
+            
+            if visit:
+                if processed_duration > (visit.duration or 0):
+                    visit.duration = processed_duration
+                    session.add(visit)
+                    session.commit()
+                    return {"status": "recorded", "duration": processed_duration}
+                return {"status": "no_change"}
+            return {"status": "pending_entry"}
+    except Exception as e:
+        logger.error(f"❌ Exit Tracking Error: {e}")
+        return {"status": "error"}
 </file>
 
 </files>

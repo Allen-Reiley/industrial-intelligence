@@ -6,8 +6,10 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "apscheduler>=3.11.2",
+    "asyncpg>=0.31.0",
     "dotenv>=0.9.9",
     "fastapi[all,standard]>=0.128.7",
+    "greenlet>=3.3.1",
     "httpx>=0.28.1",
     "notion-client>=3.0.0",
     "passlib[bcrypt]>=1.7.4",
