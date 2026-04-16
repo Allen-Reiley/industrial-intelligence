@@ -4030,15 +4030,6 @@ def start_scheduler():
     logger.info("🚀 AuraWorks Scheduler: Online. Monitoring Juristic Entities.")
 </file>
 
-<file path="backend/app/models/__init__.py">
-from .company import Company
-from .department import Department
-from .visit import Visit
-from .waitlist import WaitlistLead
-
-# Do NOT include router logic here
-</file>
-
 <file path="backend/app/models/department.py">
 from typing import Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
@@ -4486,54 +4477,6 @@ export default function AuraTracker({
 }
 </file>
 
-<file path="frontend/src/components/ui/logo.tsx">
-import Image from 'next/image'
-import { cn } from '../../lib/utils'
-
-export const Logo = ({ className }: { className?: string }) => {
-    return (
-        /* Added min-w-[40px] to ensure the container doesn't collapse on mobile */
-        <div className={cn('relative h-8 w-auto min-w-[40px] lg:min-w-[150px]', className)}>
-            {/* DESKTOP LOGO */}
-            <Image
-                src="/logo.svg"
-                alt="AuraWorks Logo"
-                width={797}
-                height={220}
-                className="hidden lg:block h-full w-auto object-contain"
-                priority
-            />
-
-            {/* MOBILE LOGO */}
-            <Image
-                /* IMPORTANT: Check your /public folder. 
-                   Is it 'logo-mobile.svg', 'logo-mobile.png', or just 'logo.svg'? 
-                */
-                src="/logo-mobile.svg" 
-                alt="AuraWorks Logo Mobile"
-                width={797} 
-                height={220}
-                className="block lg:hidden h-full w-auto object-contain"
-                priority
-            />
-        </div>
-    )
-}
-
-export const LogoIcon = ({ className }: { className?: string }) => {
-    return (
-        <div className={cn('relative size-8', className)}>
-            <Image
-                src="/logo-mobile.svg" // Changed from .ico to .svg for better scaling
-                alt="AuraWorks Icon"
-                fill
-                className="object-contain"
-            />
-        </div>
-    )
-}
-</file>
-
 <file path="frontend/src/lib/utils.ts">
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
@@ -4569,6 +4512,30 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+</file>
+
+<file path="backend/app/models/__init__.py">
+# backend/app/models/__init__.py
+
+from .client import Client
+from .company import Company
+from .visit import Visit
+from .waitlist import WaitlistLead
+from .pageview import PageView
+from .department import Department
+from .lead import Lead
+
+# This ensures that when we import app.models, 
+# all SQLModel classes are registered with the metadata.
+__all__ = [
+    "Client",
+    "Company",
+    "Visit",
+    "WaitlistLead",
+    "PageView",
+    "Department",
+    "Lead"
+]
 </file>
 
 <file path="backend/app/services/airtable.py">
@@ -4820,61 +4787,6 @@ async def cleanup_unverified_visits():
         except Exception as e:
             session.rollback()
             logger.error(f"🚨 Janitor Failure: {e}")
-</file>
-
-<file path="backend/app/db.py">
-# backend/app/db.py
-import logging
-from sqlmodel import create_engine, SQLModel, Session
-from app.core.config import settings
-
-logger = logging.getLogger("uvicorn")
-
-# --- ENGINE INITIALIZATION ---
-if settings.DATABASE_URL:
-    # Standard Industrial Engine for Production (PostgreSQL)
-    engine = create_engine(
-        settings.DATABASE_URL, 
-        echo=False,
-        # pool_pre_ping is critical for Railway/Postgres to recover from idle timeouts
-        pool_pre_ping=True 
-    )
-else:
-    # Fallback Placeholder: Prevents the ArgumentError during app import.
-    logger.warning("🚨 DATABASE_URL not detected. Initializing NULL_MODE engine.")
-    engine = create_engine("sqlite:///:memory:")
-
-def init_db():
-    """
-    Creates all tables defined in the Juristic Ledger.
-    Explicit imports here ensure SQLModel registers all tables before metadata creation.
-    """
-    if not settings.DATABASE_URL:
-        logger.error("❌ init_db: Operation aborted. No production database linked.")
-        return
-
-    try:
-        # Import all modular models here to register them with SQLModel.metadata
-        from app.models.client import Client
-        from app.models.company import Company
-        from app.models.visit import Visit
-        from app.models.waitlist import WaitlistLead
-        from app.models.pageview import PageView
-        from app.models.department import Department
-        from app.models.lead import Lead
-        
-        SQLModel.metadata.create_all(engine)
-        logger.info("✅ Database Ledger: Schema verified and synchronized.")
-    except Exception as e:
-        logger.error(f"❌ Database Ledger: Synchronization failure: {e}")
-
-def get_session():
-    """
-    Dependency generator for FastAPI routes.
-    Yields a session for transactional integrity.
-    """
-    with Session(engine) as session:
-        yield session
 </file>
 
 <file path="frontend/src/app/(pages)/pricing/page.tsx">
@@ -5800,6 +5712,68 @@ function Label({
 export { Label }
 </file>
 
+<file path="frontend/src/components/ui/logo.tsx">
+// frontend/src/components/brand/Logo.tsx
+import Image from 'next/image'
+import { cn } from '@/lib/utils' // Using the @ alias for cleaner imports
+
+interface LogoProps {
+    className?: string;
+    priority?: boolean;
+}
+
+export const Logo = ({ className, priority = true }: LogoProps) => {
+    return (
+        /* Constraint: Added fixed aspect-ratio container to prevent Layout Shift.
+           The min-w values are calibrated for 'Quiet Premium' spacing.
+        */
+        <div className={cn('relative h-8 w-auto min-w-[40px] lg:min-w-[150px] aspect-[797/220]', className)}>
+            {/* DESKTOP LOGO 
+                Optimized for 85mm realism aesthetics: h-full w-auto ensures scaling 
+                maintains industrial sophistication without pixelation.
+            */}
+            <Image
+                src="/logo.svg"
+                alt="AuraWorks Logo"
+                width={797}
+                height={220}
+                className="hidden lg:block h-full w-auto object-contain"
+                priority={priority}
+            />
+
+            {/* MOBILE LOGO 
+                Uses the same aspect ratio to ensure consistent touch-targets.
+            */}
+            <Image
+                src="/logo-mobile.svg" 
+                alt="AuraWorks Logo Mobile"
+                width={220} // Adjusted to a smaller base width for mobile performance
+                height={220}
+                className="block lg:hidden h-full w-auto object-contain"
+                priority={priority}
+            />
+        </div>
+    )
+}
+
+export const LogoIcon = ({ className }: { className?: string }) => {
+    return (
+        /* Icon variant for navigation sidebars and favicon-style UI elements.
+           Replaced .ico with .svg for technical authority and crisp rendering.
+        */
+        <div className={cn('relative size-8', className)}>
+            <Image
+                src="/logo-mobile.svg" 
+                alt="AuraWorks Icon"
+                fill
+                className="object-contain"
+                priority
+            />
+        </div>
+    )
+}
+</file>
+
 <file path="REMEMBER.md">
 # MEMORY.md | AuraWorks 2.2.0: Industrial Intelligence Engine
 
@@ -5842,146 +5816,6 @@ export { Label }
 * **Legal Framework:** POPIA/PAIA compliant. All data handling is governed by the Dynamic Markdown files served at `/legal`, `/privacy-policy`, and `/security`.
 * **Information Officer:** Reitumetse Sethabela (Founder/Agency Owner).
 * **Target ICP:** Industrial, Engineering, Manufacturing, and Law firms specifically within the **South African** economic hub.
-</file>
-
-<file path="backend/app/api/v1/identity.py">
-# backend/app/api/v1/identity.py
-import logging
-from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
-from sqlmodel import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from cachetools import TTLCache
-
-from app.db import get_async_session  # Assuming standard async session generator
-from app.models.visit import Visit
-
-router = APIRouter()
-logger = logging.getLogger("uvicorn")
-
-# Optimization: Cache resolved signatures for 1 hour to prevent O(N) database scans
-# Key: Stringified Canvas/WebGL fingerprint | Value: aura_id
-identity_cache = TTLCache(maxsize=1000, ttl=3600)
-
-def calculate_identity_match(new_sig: dict, existing_visit: Visit) -> float:
-    """
-    Calculates a probability score (0.0 to 1.0) based on hardware and network entropy.
-    Weights prioritized for Industrial Clusters (Network consistency).
-    """
-    score = 0.0
-    
-    # 1. Canvas Match (30%)
-    if new_sig.get('canvas') == existing_visit.canvas_hash:
-        score += 0.30
-        
-    # 2. Clock Drift Match (20%) - Precision timing
-    drift_diff = abs(new_sig.get('drift', 0) - (existing_visit.clock_drift or 0))
-    if drift_diff <= 1:
-        score += 0.20
-        
-    # 3. WebGL/Renderer Match (10%) - GPU hardware
-    if new_sig.get('webgl') == existing_visit.webgl_renderer:
-        score += 0.10
-        
-    # 4. Network Intelligence Match (40%) - The Corporate Signal
-    net = new_sig.get('network', {})
-    if isinstance(net, dict):
-        if net.get('type') == existing_visit.effective_connection_type:
-            score += 0.15
-            
-        rtt_match = abs(net.get('rtt', 0) - (existing_visit.rtt or 0)) <= 20
-        downlink_match = abs(net.get('downlink', 0) - (existing_visit.downlink_speed or 0)) < 0.5
-        
-        if rtt_match and downlink_match:
-            score += 0.25
-            
-    return score
-
-async def merge_sessions_async(new_id: str, original_id: str, session: AsyncSession):
-    """
-    Async unification of fragmented session data.
-    """
-    try:
-        statement = select(Visit).where(Visit.aura_id == new_id)
-        result = await session.execute(statement)
-        visits_to_update = result.scalars().all()
-        
-        for visit in visits_to_update:
-            visit.aura_id = original_id
-            session.add(visit)
-        
-        await session.commit()
-        logger.info(f"🔗 Forensic Stitch Success: {new_id} unified into {original_id}")
-    except Exception as e:
-        logger.error(f"❌ Session Merge Failure: {e}")
-
-@router.post("/resolve")
-async def resolve_identity(
-    payload: dict, 
-    background_tasks: BackgroundTasks,
-    session: AsyncSession = Depends(get_async_session)
-):
-    aura_id = payload.get("aura_id")
-    signature = payload.get("signature", {})
-    
-    if not aura_id:
-        raise HTTPException(status_code=400, detail="Missing aura_id")
-
-    # Step 0: Cache Lookup (Fast Path)
-    sig_key = f"{signature.get('canvas')}:{signature.get('webgl')}"
-    cached_id = identity_cache.get(sig_key)
-    if cached_id and cached_id != aura_id:
-        logger.info(f"⚡ Cache Hit: Stitching {aura_id} to {cached_id}")
-        background_tasks.add_task(merge_sessions_async, aura_id, cached_id, session)
-        return {"status": "stitched", "stitched_id": cached_id, "confidence": 1.0}
-
-    # Step 1: Check for direct ID match
-    statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at.desc())
-    result = await session.execute(statement)
-    existing_visit = result.scalars().first()
-    
-    if existing_visit:
-        # Update latest markers
-        existing_visit.canvas_hash = signature.get('canvas')
-        existing_visit.clock_drift = signature.get('drift')
-        existing_visit.webgl_renderer = signature.get('webgl')
-        
-        net = signature.get('network', {})
-        if isinstance(net, dict):
-            existing_visit.effective_connection_type = net.get('type')
-            existing_visit.downlink_speed = net.get('downlink')
-            existing_visit.rtt = net.get('rtt')
-            
-        session.add(existing_visit)
-        await session.commit()
-        return {"status": "recognized", "method": "direct_id"}
-
-    # Step 2: Weighted Forensic Search (Limit to recent pool)
-    search_statement = select(Visit).order_by(Visit.created_at.desc()).limit(200)
-    search_result = await session.execute(search_statement)
-    all_recent = search_result.scalars().all()
-    
-    # Python-side filtering for unique profiles
-    unique_profiles = {v.aura_id: v for v in all_recent}.values()
-    
-    for profile in unique_profiles:
-        match_probability = calculate_identity_match(signature, profile)
-        
-        if match_probability >= 0.80:
-            logger.info(f"🧵 Forensic Stitch Identified! Conf: {match_probability*100}%")
-            
-            # Update cache for future pings
-            identity_cache[sig_key] = profile.aura_id
-            
-            background_tasks.add_task(merge_sessions_async, aura_id, profile.aura_id, session)
-            
-            return {
-                "status": "stitched", 
-                "stitched_id": profile.aura_id, 
-                "confidence": match_probability
-            }
-
-    return {"status": "new_identity", "message": "Forensic profile initialized."}
 </file>
 
 <file path="backend/app/services/enrichment.py">
@@ -6128,6 +5962,97 @@ async def get_departmental_intelligence(domain: str) -> List[Dict]:
             logger.error(f"Apollo Enrichment Failure for {domain}: {e}")
 </file>
 
+<file path="backend/app/db.py">
+# backend/app/db.py
+import logging
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+from sqlmodel import SQLModel, create_engine, Session
+from app.core.config import settings
+
+logger = logging.getLogger("uvicorn")
+
+# --- ENGINE INITIALIZATION ---
+
+# 1. Synchronous Engine (For Migrations and Admin Dashboards)
+# Converts asyncpg URL to standard postgresql if necessary
+sync_url = settings.DATABASE_URL.replace("postgresql+asyncpg://", "postgresql://") if settings.DATABASE_URL else None
+
+if sync_url:
+    engine = create_engine(
+        sync_url,
+        echo=False,
+        pool_pre_ping=True, # Critical for Railway idle connection recovery
+        pool_size=10,
+        max_overflow=20
+    )
+else:
+    logger.critical("🚨 DATABASE_URL missing. System entering Fail-Fast mode.")
+    engine = None
+
+# 2. Asynchronous Engine (For Forensic Tracking & Identity API)
+# Ensures the URL uses the required +asyncpg driver
+async_url = settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://") if settings.DATABASE_URL else None
+
+if async_url:
+    async_engine = create_async_engine(
+        async_url,
+        echo=False,
+        pool_pre_ping=True
+    )
+    async_session_maker = sessionmaker(
+        async_engine, class_=AsyncSession, expire_on_commit=False
+    )
+else:
+    async_engine = None
+    async_session_maker = None
+
+
+# --- INITIALIZATION & DEPENDENCIES ---
+
+def init_db():
+    """
+    Schema Synchronization.
+    Note: Standardizes the ledger. Production uses Alembic for migrations.
+    """
+    if not engine:
+        logger.error("❌ init_db: Operation aborted. No database linked.")
+        return
+
+    try:
+        # Explicit imports to register models with SQLModel.metadata
+        from app.models.client import Client
+        from app.models.company import Company
+        from app.models.visit import Visit
+        from app.models.waitlist import WaitlistLead
+        from app.models.pageview import PageView
+        
+        SQLModel.metadata.create_all(engine)
+        logger.info("✅ Database Ledger: Schema verified.")
+    except Exception as e:
+        logger.error(f"❌ Database Ledger: Sync failure: {e}")
+
+async def get_async_session() -> AsyncSession:
+    """
+    Dependency generator for Async FastAPI routes (Tracking/Identity).
+    """
+    if not async_session_maker:
+        raise ConnectionError("Async Database Engine not initialized. Check asyncpg installation.")
+    
+    async with async_session_maker() as session:
+        yield session
+
+def get_session():
+    """
+    Dependency generator for Synchronous routes (Admin/Dashboard).
+    """
+    if not engine:
+        raise ConnectionError("Synchronous Database Engine not initialized.")
+        
+    with Session(engine) as session:
+        yield session
+</file>
+
 <file path="frontend/src/app/(pages)/about/page.tsx">
 import { AboutHero } from "@/components/sections/about/about-hero";
 import { FounderProfile } from "@/components/sections/about/founder-profile";
@@ -6262,6 +6187,152 @@ export async function submitToWaitlist(formData: any) {
         throw error;
     }
 }
+</file>
+
+<file path="backend/app/api/v1/identity.py">
+# backend/app/api/v1/identity.py
+import logging
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from cachetools import TTLCache
+
+from app.db import get_async_session
+from app.models.visit import Visit
+
+router = APIRouter()
+logger = logging.getLogger("uvicorn")
+
+# --- INDUSTRIAL CACHE LAYER ---
+# Prevents O(N) database scans for returning high-frequency visitors
+# Key: Forensic Fingerprint | Value: aura_id
+identity_cache = TTLCache(maxsize=1000, ttl=3600)
+
+def calculate_identity_match(new_sig: dict, existing_visit: Visit) -> float:
+    """
+    Weighted probability algorithm for forensic identity resolution.
+    Calibrated for B2B clusters (Gauteng Industrial Hubs).
+    """
+    score = 0.0
+    
+    # 1. Hardware Rendering (30%)
+    if new_sig.get('canvas') == existing_visit.canvas_hash:
+        score += 0.30
+        
+    # 2. Precision Clock Drift (20%)
+    drift_diff = abs(new_sig.get('drift', 0) - (existing_visit.clock_drift or 0))
+    if drift_diff <= 1:
+        score += 0.20
+        
+    # 3. GPU Signature (10%)
+    if new_sig.get('webgl') == existing_visit.webgl_renderer:
+        score += 0.10
+        
+    # 4. Network Signal (40%) - Identifying Corporate Gateways
+    net = new_sig.get('network', {})
+    if isinstance(net, dict):
+        if net.get('type') == existing_visit.effective_connection_type:
+            score += 0.15
+            
+        rtt_match = abs(net.get('rtt', 0) - (existing_visit.rtt or 0)) <= 20
+        downlink_match = abs(net.get('downlink', 0) - (existing_visit.downlink_speed or 0)) < 0.5
+        
+        if rtt_match and downlink_match:
+            score += 0.25
+            
+    return score
+
+async def merge_sessions_async(new_id: str, original_id: str):
+    """
+    Background Task: Unifies fragmented forensic IDs across the ledger.
+    Using a dedicated session to prevent main request blocking.
+    """
+    from app.db import async_session_maker
+    async with async_session_maker() as session:
+        try:
+            statement = select(Visit).where(Visit.aura_id == new_id)
+            result = await session.execute(statement)
+            visits_to_update = result.scalars().all()
+            
+            for visit in visits_to_update:
+                visit.aura_id = original_id
+                session.add(visit)
+            
+            await session.commit()
+            logger.info(f"🔗 Forensic Stitch Success: {new_id} -> {original_id}")
+        except Exception as e:
+            logger.error(f"❌ Session Merge Failure: {e}")
+
+@router.post("/resolve")
+async def resolve_identity(
+    payload: dict, 
+    background_tasks: BackgroundTasks,
+    session: AsyncSession = Depends(get_async_session)
+):
+    aura_id = payload.get("aura_id")
+    signature = payload.get("signature", {})
+    
+    if not aura_id:
+        raise HTTPException(status_code=400, detail="Missing aura_id")
+
+    # --- STEP 0: THE FAST PATH (Cache) ---
+    sig_key = f"{signature.get('canvas')}:{signature.get('webgl')}:{signature.get('drift')}"
+    cached_id = identity_cache.get(sig_key)
+    
+    if cached_id and cached_id != aura_id:
+        logger.info(f"⚡ Cache Hit: Mapping {aura_id} to {cached_id}")
+        background_tasks.add_task(merge_sessions_async, aura_id, cached_id)
+        return {"status": "stitched", "stitched_id": cached_id, "confidence": 1.0}
+
+    # --- STEP 1: DIRECT ID LOCK ---
+    statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at.desc())
+    result = await session.execute(statement)
+    existing_visit = result.scalars().first()
+    
+    if existing_visit:
+        # Refresh forensic markers for the current visit
+        existing_visit.canvas_hash = signature.get('canvas')
+        existing_visit.clock_drift = signature.get('drift')
+        existing_visit.webgl_renderer = signature.get('webgl')
+        
+        net = signature.get('network', {})
+        if isinstance(net, dict):
+            existing_visit.effective_connection_type = net.get('type')
+            existing_visit.downlink_speed = net.get('downlink')
+            existing_visit.rtt = net.get('rtt')
+            
+        session.add(existing_visit)
+        await session.commit()
+        
+        # Populate cache for future pings
+        identity_cache[sig_key] = aura_id
+        return {"status": "recognized", "method": "direct_id"}
+
+    # --- STEP 2: FORENSIC SCAN (High Entropy) ---
+    search_stmt = select(Visit).order_by(Visit.created_at.desc()).limit(200)
+    search_res = await session.execute(search_stmt)
+    all_recent = search_res.scalars().all()
+    
+    # Isolate unique forensic profiles from the last 200 signals
+    unique_profiles = {v.aura_id: v for v in all_recent}.values()
+    
+    for profile in unique_profiles:
+        match_probability = calculate_identity_match(signature, profile)
+        
+        if match_probability >= 0.80:
+            logger.info(f"🧵 Forensic Stitch Found! Conf: {match_probability*100}%")
+            
+            identity_cache[sig_key] = profile.aura_id
+            background_tasks.add_task(merge_sessions_async, aura_id, profile.aura_id)
+            
+            return {
+                "status": "stitched", 
+                "stitched_id": profile.aura_id, 
+                "confidence": match_probability
+            }
+
+    return {"status": "new_identity", "message": "Forensic profile initialized."}
 </file>
 
 <file path="backend/app/models/company.py">
@@ -7075,72 +7146,6 @@ export default function Footer() {
 }
 </file>
 
-<file path="backend/app/models/pageview.py">
-# backend/app/models/pageview.py
-from typing import Optional, Union
-from datetime import datetime
-from pydantic import ConfigDict, field_validator
-from sqlmodel import SQLModel, Field, Column, DateTime
-import sqlalchemy as sa
-
-class PageViewBase(SQLModel):
-    """
-    Base properties for Pydantic validation. 
-    Handles messy browser data types.
-    """
-    client_id: str = Field(description="The visitor's unique forensic ID (aura_id)")
-    url: str = Field(description="The URL recorded")
-    
-    # Union is only for the Pydantic side
-    duration: Union[int, float, str] = Field(
-        default=0, 
-        description="Dwell time in seconds. Coerced from string if necessary."
-    )
-
-    model_config = ConfigDict(
-        populate_by_name=True
-    )
-
-class PageViewCreate(PageViewBase):
-    """
-    Validation schema for 'Exit' and 'Event' pings.
-    Matches the payload structure in AuraWorks v3.2.1
-    """
-    event_type: Optional[str] = "exit"
-    intent_cluster: Optional[str] = None
-
-    @field_validator("duration", mode="before")
-    @classmethod
-    def coerce_duration(cls, v):
-        try:
-            return int(float(v))
-        except (ValueError, TypeError):
-            return 0
-
-class PageView(SQLModel, table=True):
-    """
-    The Database Ledger for page-level interactions.
-    Explicitly defined to avoid Union-to-SQL mapping errors.
-    """
-    id: Optional[int] = Field(default=None, primary_key=True)
-    aura_id: str = Field(index=True)
-    client_id: str # Agency-side identifier
-    url: str
-    duration: int = Field(default=0)
-    
-    # Forensic metadata
-    created_at: datetime = Field(
-        sa_column=Column(
-            DateTime(timezone=True), 
-            server_default=sa.func.now(), 
-            nullable=False
-        )
-    )
-
-    # Index for high-speed industrial reporting
-    __tablename__ = "page_view"
-</file>
-
 <file path="frontend/src/components/pricing/pricing.tsx">
 'use client'
 
@@ -7271,6 +7276,78 @@ export default function Pricing() {
         </>
     )
 }
+</file>
+
+<file path="backend/app/models/pageview.py">
+# backend/app/models/pageview.py
+from typing import Optional, Union
+from datetime import datetime
+from pydantic import ConfigDict, field_validator
+from sqlmodel import SQLModel, Field, Column, DateTime
+import sqlalchemy as sa
+
+class PageViewBase(SQLModel):
+    """
+    Base properties for Pydantic validation. 
+    Handles messy browser data types like duration strings or floats.
+    """
+    client_id: str = Field(description="The visitor's unique forensic ID (aura_id)")
+    url: str = Field(description="The URL recorded")
+    
+    # Union is strictly for Pydantic/API ingestion
+    duration: Union[int, float, str] = Field(
+        default=0, 
+        description="Dwell time in seconds. Coerced during validation."
+    )
+
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
+
+class PageViewCreate(PageViewBase):
+    """
+    Validation schema for 'Exit' and 'Event' pings.
+    Matches the payload structure in AuraWorks v3.2.1
+    """
+    event_type: Optional[str] = "exit"
+    intent_cluster: Optional[str] = None
+
+    @field_validator("duration", mode="before")
+    @classmethod
+    def coerce_duration(cls, v):
+        """
+        Industrial Data Cleaning: Converts messy browser inputs 
+        (e.g., "12.5" or 12.5) into a clean integer for the ledger.
+        """
+        try:
+            return int(float(v))
+        except (ValueError, TypeError):
+            return 0
+
+class PageView(SQLModel, table=True):
+    """
+    The Database Ledger for page-level interactions.
+    Explicitly defined with strict types to avoid SQLAlchemy mapping errors.
+    """
+    __tablename__ = "page_view"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    
+    # Forensic Identification
+    aura_id: str = Field(index=True, description="The unified forensic identifier")
+    client_id: str = Field(description="The agency-side identifier")
+    
+    url: str = Field(description="Target URL")
+    duration: int = Field(default=0, description="Cleaned dwell time in seconds")
+    
+    # Metadata
+    created_at: datetime = Field(
+        sa_column=Column(
+            DateTime(timezone=True), 
+            server_default=sa.func.now(), 
+            nullable=False
+        )
+    )
 </file>
 
 <file path="frontend/src/components/hero-sec/hero-section.tsx">
@@ -7838,28 +7915,27 @@ class PageViewCreate(SQLModel):
 </file>
 
 <file path="backend/app/core/config.py">
+# backend/app/core/config.py
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional, Union
+from typing import Optional, List
 
 class Settings(BaseSettings):
     # --- APP SETTINGS ---
     PROJECT_NAME: str = "AuraWorks Industrial Intelligence OS"
-    VERSION: str = "3.2.0"
+    VERSION: str = "3.2.1"  # Incremented for Async Patch
     API_V1_STR: str = "/api/v1"
 
     # --- SECURITY & AUTH ---
     ADMIN_API_KEY: str = "change-me-in-production" 
-    # Change: Made Optional to prevent boot crash if Railway hasn't synced yet
     SECRET_KEY: Optional[str] = None  
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 11520  # 8 days
     
     # --- DATABASE ---
-    # Change: This was the direct cause of the ValidationError. 
-    # Making it Optional allows the app to start and show health/logs.
+    # Critical: Set to Optional to allow the app to boot and report 
+    # connection issues via /health instead of crashing the build.
     DATABASE_URL: Optional[str] = None 
     
-    # --- INDUSTRIAL TRIAD (ENRICHMENT) ---
-    # Change: Set to Optional
+    # --- ENRICHMENT TRIAD ---
     IPINFO_TOKEN: Optional[str] = None 
     APOLLO_API_KEY: Optional[str] = None 
     
@@ -7879,29 +7955,29 @@ class Settings(BaseSettings):
     MAILGUN_API_KEY: Optional[str] = None
     MAILGUN_DOMAIN: str = "mg.auraworks.co.za"
     
-    # --- LEGACY / OTHER ---
+    # --- EXTERNAL INTEGRATIONS ---
     NEXT_PUBLIC_WAITLIST_API_KEY: Optional[str] = None
     NEXT_PUBLIC_WAITLIST_ID: Optional[str] = None
     RESEND_API_KEY: Optional[str] = None
 
     # --- CORS SETTINGS ---
-    ALLOWED_ORIGINS: list[str] = [
+    # Expanded for Vercel deployment stability
+    ALLOWED_ORIGINS: List[str] = [
         "https://industrial-intelligence-xi.vercel.app", 
         "http://localhost:3000",
         "https://auraworks.co.za",
         "https://www.auraworks.co.za",
         "https://cdn.auraworks.co.za",
         "https://dynamic-flow-production-a5d6.up.railway.app",
-        "https://industrial-intelligence-xi.vercel.app",
-        "industrial-intelligence-git-main-allen-reileys-projects.vercel.app",
-        "industrial-intelligence-lttxeot8z-allen-reileys-projects.vercel.app"
+        "https://industrial-intelligence-git-main-allen-reileys-projects.vercel.app",
+        "https://industrial-intelligence-lttxeot8z-allen-reileys-projects.vercel.app"
     ]
 
     # Modern Pydantic V2 Configuration
     model_config = SettingsConfigDict(
         env_file=None, 
         case_sensitive=True,
-        extra="ignore" 
+        extra="ignore"  # Prevents crash if extra env vars are passed by Railway
     )
 
 settings = Settings()
@@ -7926,8 +8002,8 @@ from app.core.config import settings
 
 logger = logging.getLogger("uvicorn")
 
-# Optimization: Cache IP Intelligence for 24 hours to preserve API credits
-# Key: IP Address | Value: Dict of geo/org data
+# --- INDUSTRIAL CACHE LAYER ---
+# Cache firmographic data for 24h to avoid redundant API spend
 ip_cache = TTLCache(maxsize=2000, ttl=86400)
 
 # --- UTILS: Industrial Formatting ---
@@ -7947,7 +8023,7 @@ def format_zar(value: str) -> str:
 
 async def enrich_ip_intel(ip_address: str) -> Dict[str, Any]:
     """
-    Fetches firmographic data with a local cache-first strategy.
+    Retrieves IP intelligence with a cache-first approach.
     """
     if not ip_address or ip_address in ["127.0.0.1", "0.0.0.0"]:
         return {}
@@ -7955,14 +8031,13 @@ async def enrich_ip_intel(ip_address: str) -> Dict[str, Any]:
     if ip_address in ip_cache:
         return ip_cache[ip_address]
 
-    token = settings.IPINFO_TOKEN
-    if not token:
+    if not settings.IPINFO_TOKEN:
         return {}
 
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(
-                f"https://ipinfo.io/{ip_address}?token={token}", 
+                f"https://ipinfo.io/{ip_address}?token={settings.IPINFO_TOKEN}", 
                 timeout=5.0
             )
             if response.status_code == 200:
@@ -7982,12 +8057,12 @@ async def analyze_corporate_intent(
     is_cluster: bool = False
 ) -> str:
     """
-    Clinical Intent Analysis: Calibrated for B2B facility detection.
+    Executes clinical B2B intent analysis via DeepSeek.
     """
     if not settings.DEEPSEEK_API_KEY:
         return "Intelligence engine calibrating. Analysis deferred."
 
-    context_signal = "BUYING COMMITTEE ALERT: 3+ unique devices detected." if is_cluster else "Individual Facility Entry."
+    context_signal = "BUYING COMMITTEE ALERT: 3+ unique devices." if is_cluster else "Individual Facility Entry."
 
     prompt = f"""
     Analyze B2B industrial traffic for:
@@ -7997,8 +8072,8 @@ async def analyze_corporate_intent(
     Context: {context_signal}
 
     Task: Provide a 2-sentence 'Executive Intent Summary'.
-    Tone: Clinical, sophisticated, 'Quiet Premium'. Identify persona and intent 'Temperature'.
-    Labels: Categorize as 'Discovery', 'Technical Evaluation', or 'Procurement' phase.
+    Tone: Clinical, sophisticated. Identify persona and 'Temperature'.
+    Labels: 'Discovery', 'Technical Evaluation', or 'Procurement'.
     """
 
     async with httpx.AsyncClient() as client:
@@ -8026,26 +8101,26 @@ async def analyze_corporate_intent(
 
 async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
     """
-    Async Behavioral Ledger: Implements Ghost Enrichment and Corporate Cluster detection.
+    The Behavioral Ledger: Maps touchpoints and executes IP correlation.
     """
     if not aura_id:
-        return {"total_touches": 0, "pathway": "Direct", "intent_summary": "No forensic signature.", "cluster_count": 0}
+        return {"total_touches": 0, "pathway": "Direct", "intent_summary": "No signature."}
 
     # 1. Forensic History Retrieval
-    statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at)
-    result = await session.execute(statement)
-    history = result.scalars().all()
+    stmt = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at)
+    res = await session.execute(stmt)
+    history = res.scalars().all()
     
     if not history:
-        return {"total_touches": 0, "pathway": "First Contact", "intent_summary": "Initial touchpoint.", "cluster_count": 0}
+        return {"total_touches": 0, "pathway": "First Contact", "intent_summary": "Initial touchpoint."}
 
     last_visit = history[-1]
 
-    # 2. Corporate Cluster Detection (The 3+ Unique ID Rule)
-    time_threshold = datetime.now(timezone.utc) - timedelta(hours=72)
+    # 2. Cluster Detection (72h Threshold)
+    time_limit = datetime.now(timezone.utc) - timedelta(hours=72)
     cluster_stmt = select(Visit).where(
         Visit.ip_address == last_visit.ip_address,
-        Visit.created_at >= time_threshold
+        Visit.created_at >= time_limit
     )
     cluster_res = await session.execute(cluster_stmt)
     cluster_records = cluster_res.scalars().all()
@@ -8060,14 +8135,14 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
             unique_pathway.append(p if p != "" else "/")
     pathway_str = " → ".join(unique_pathway)
 
-    # 4. Context Harvest: Resolve Company Anchor
+    # 4. Resolve Company Context
     company = None
     linked_visit = next((v for v in history if v.company_id), None)
     if linked_visit:
         company = await session.get(Company, linked_visit.company_id)
 
-    # 5. Ghost-linking via IP correlation
-    cluster_info = f"📍 Facility Activity: {unique_id_count} IDs"
+    # 5. Ghost-Enrichment via IP correlation
+    cluster_info = f"📍 Facility activity: {unique_id_count} IDs"
     if not company and last_visit.ip_address:
         past_lead_stmt = select(WaitlistLead).join(
             Visit, WaitlistLead.aura_id == Visit.aura_id
@@ -8081,7 +8156,7 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
             if company:
                 cluster_info += f" | 🔗 Ghost-linked: {company.name}"
 
-    # 6. AI Synthesis
+    # 6. DeepSeek Synthesis
     intent = await analyze_corporate_intent(
         company_name=company.name if company else "Anonymous Entity",
         industry=company.industry if company else "Industrial",
@@ -8093,7 +8168,6 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
         "total_touches": len(history),
         "pathway": pathway_str,
         "intent_summary": f"{intent} \n\n{cluster_info}",
-        "cluster_count": unique_id_count,
         "is_cluster": is_buying_committee,
         "is_high_intent": is_buying_committee or any(kw in pathway_str.lower() for kw in ["pricing", "audit", "waitlist"])
     }
@@ -8538,154 +8612,6 @@ async def join_waitlist(payload: dict, request: Request, background_tasks: Backg
             raise HTTPException(status_code=500, detail="Synchronization delay.")
 </file>
 
-<file path="backend/app/main.py">
-import asyncio
-import logging
-from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, HTTPException, Depends, Header
-from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import Session, select
-from datetime import datetime, timezone
-
-from app.core.config import settings
-from app.db import init_db, engine
-from app.api.v1 import track, clients, identity, waitlist
-from app.models.visit import Visit
-from app.models.company import Company 
-from app.tasks.janitor import cleanup_unverified_visits
-
-# Setup logging - Industrial Clinical Style
-logger = logging.getLogger("uvicorn")
-
-# --- SECURITY: Admin Access Guard ---
-def verify_admin_token(x_aura_token: str = Header(...)):
-    """
-    Hardens debug routes. Rejects any request missing the correct ADMIN_API_KEY.
-    """
-    if x_aura_token != settings.ADMIN_API_KEY:
-        logger.warning(f"🚨 UNAUTHORIZED ACCESS ATTEMPT: {datetime.now(timezone.utc)}")
-        raise HTTPException(status_code=403, detail="Unauthorized Forensic Access")
-
-async def run_janitor_loop():
-    """
-    Background worker that executes the 48-hour sweep every 6 hours.
-    """
-    while True:
-        try:
-            # Check if specialized cleanup is needed based on engine status
-            await cleanup_unverified_visits()
-            # Sleep for 6 hours between sweeps
-            await asyncio.sleep(21600) 
-        except asyncio.CancelledError:
-            break
-        except Exception as e:
-            logger.error(f"Janitor Loop Error: {e}")
-            await asyncio.sleep(60)
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """
-    The AuraWorks OS Lifecycle Manager.
-    """
-    logger.info(f"🚀 {settings.PROJECT_NAME} v{settings.VERSION}: Initializing...")
-    
-    # RESILIENT DATABASE INITIALIZATION
-    if settings.DATABASE_URL:
-        try:
-            init_db()
-            logger.info("✅ Database Ledger: Connection established and tables verified.")
-        except Exception as e:
-            logger.error(f"❌ Database Ledger: Failed to initialize. {e}")
-    else:
-        logger.warning("⚠️ Database Ledger: DATABASE_URL missing. Operating in restricted mode.")
-    
-    # Audit secondary engine status at startup
-    if settings.AIRTABLE_API_KEY and settings.AIRTABLE_BASE_ID:
-        logger.info("✅ Vault Engine: Airtable Sync Active.")
-    else:
-        logger.warning("⚠️ Vault Engine: Airtable on Standby.")
-
-    # Activate the Janitor as a background coroutine
-    janitor_task = asyncio.create_task(run_janitor_loop())
-    logger.info("🧹 Janitor: Forensic sweep scheduled (6-hour intervals).")
-    
-    yield
-    
-    logger.info("🛑 AuraWorks OS: Orderly shutdown initiated...")
-    janitor_task.cancel()
-    try:
-        await janitor_task
-    except asyncio.CancelledError:
-        pass
-
-app = FastAPI(
-    title=settings.PROJECT_NAME, 
-    version=settings.VERSION,
-    lifespan=lifespan
-)
-
-# --- CORS CONFIGURATION ---
-# Dynamically pull from settings to prevent production pre-flight blocks
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS or ["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# --- ROUTE REGISTRATION ---
-app.include_router(track.router, prefix=f"{settings.API_V1_STR}/track", tags=["tracking"])
-app.include_router(clients.router, prefix=f"{settings.API_V1_STR}/clients", tags=["clients"])
-app.include_router(identity.router, prefix=f"{settings.API_V1_STR}/identity", tags=["identity"])
-app.include_router(waitlist.router, prefix=f"{settings.API_V1_STR}/waitlist", tags=["waitlist"])
-
-@app.get("/health")
-def health_check():
-    return {
-        "status": "healthy", 
-        "engine": settings.PROJECT_NAME,
-        "database_connected": bool(settings.DATABASE_URL),
-        "timestamp": datetime.now(timezone.utc)
-    }
-
-# --- INDUSTRIAL DASHBOARD ENDPOINTS (Hardened) ---
-
-@app.get(
-    f"{settings.API_V1_STR}/leads", 
-    dependencies=[Depends(verify_admin_token)],
-    tags=["admin"]
-)
-async def get_leads():
-    """
-    Access point for verified leads. Requires ADMIN_API_KEY.
-    """
-    if not settings.DATABASE_URL:
-        raise HTTPException(status_code=503, detail="Database Unavailable")
-        
-    with Session(engine) as session:
-        statement = select(Visit).where(Visit.verification_status == "verified").order_by(Visit.created_at.desc())
-        results = session.exec(statement).all()
-        return results
-
-@app.get(
-    f"{settings.API_V1_STR}/debug/entities", 
-    dependencies=[Depends(verify_admin_token)],
-    tags=["admin"]
-)
-async def get_entities():
-    """
-    Direct access to the Juristic Entity ledger. Requires ADMIN_API_KEY.
-    """
-    if not settings.DATABASE_URL:
-        raise HTTPException(status_code=503, detail="Database Unavailable")
-
-    with Session(engine) as session:
-        statement = select(Company).order_by(Company.created_at.desc())
-        results = session.exec(statement).all()
-        return results
-</file>
-
 <file path="backend/app/api/v1/track.py">
 # backend/app/api/v1/endpoints/track.py
 from fastapi import APIRouter, BackgroundTasks, Request, Header, HTTPException
@@ -8944,6 +8870,148 @@ async def track_exit(payload: PageViewCreate):
     except Exception as e:
         logger.error(f"❌ Exit Tracking Error: {e}")
         return {"status": "error"}
+</file>
+
+<file path="backend/app/main.py">
+# backend/app/main.py
+import asyncio
+import logging
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Request, HTTPException, Depends, Header
+from fastapi.middleware.cors import CORSMiddleware
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime, timezone
+
+from app.core.config import settings
+from app.db import init_db, get_async_session
+from app.api.v1 import track, clients, identity, waitlist
+from app.models.visit import Visit
+from app.models.company import Company 
+from app.tasks.janitor import cleanup_unverified_visits
+
+# Setup logging - Industrial Clinical Style
+logger = logging.getLogger("uvicorn")
+
+# --- SECURITY: Admin Access Guard ---
+def verify_admin_token(x_aura_token: str = Header(...)):
+    """
+    Hardens debug routes. Rejects any request missing the correct ADMIN_API_KEY.
+    """
+    if x_aura_token != settings.ADMIN_API_KEY:
+        logger.warning(f"🚨 UNAUTHORIZED ACCESS ATTEMPT: {datetime.now(timezone.utc)}")
+        raise HTTPException(status_code=403, detail="Unauthorized Forensic Access")
+
+async def run_janitor_loop():
+    """
+    Background worker that executes the 48-hour sweep every 6 hours.
+    """
+    while True:
+        try:
+            # Check if specialized cleanup is needed based on engine status
+            await cleanup_unverified_visits()
+            # Sleep for 6 hours (21600 seconds)
+            await asyncio.sleep(21600) 
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            logger.error(f"Janitor Loop Error: {e}")
+            await asyncio.sleep(60)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    The AuraWorks OS Lifecycle Manager.
+    """
+    logger.info(f"🚀 {settings.PROJECT_NAME} v{settings.VERSION}: Initializing...")
+    
+    # RESILIENT DATABASE INITIALIZATION
+    if settings.DATABASE_URL:
+        try:
+            # Sync init for schema verification (uses standard engine)
+            init_db()
+            logger.info("✅ Database Ledger: Connection established and tables verified.")
+        except Exception as e:
+            logger.error(f"❌ Database Ledger: Failed to initialize. {e}")
+    else:
+        logger.warning("⚠️ Database Ledger: DATABASE_URL missing. Operating in restricted mode.")
+
+    # Activate the Janitor as a background coroutine
+    janitor_task = asyncio.create_task(run_janitor_loop())
+    logger.info("扫 Janitor: Forensic sweep scheduled (6-hour intervals).")
+    
+    yield
+    
+    logger.info("🛑 AuraWorks OS: Orderly shutdown initiated...")
+    janitor_task.cancel()
+    try:
+        await janitor_task
+    except asyncio.CancelledError:
+        pass
+
+app = FastAPI(
+    title=settings.PROJECT_NAME, 
+    version=settings.VERSION,
+    lifespan=lifespan
+)
+
+# --- CORS CONFIGURATION ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.ALLOWED_ORIGINS or ["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# --- ROUTE REGISTRATION ---
+app.include_router(track.router, prefix=f"{settings.API_V1_STR}/track", tags=["tracking"])
+app.include_router(clients.router, prefix=f"{settings.API_V1_STR}/clients", tags=["clients"])
+app.include_router(identity.router, prefix=f"{settings.API_V1_STR}/identity", tags=["identity"])
+app.include_router(waitlist.router, prefix=f"{settings.API_V1_STR}/waitlist", tags=["waitlist"])
+
+@app.get("/health")
+def health_check():
+    return {
+        "status": "healthy", 
+        "engine": settings.PROJECT_NAME,
+        "database_connected": bool(settings.DATABASE_URL),
+        "timestamp": datetime.now(timezone.utc)
+    }
+
+# --- INDUSTRIAL DASHBOARD ENDPOINTS (Hardened & Async) ---
+
+@app.get(
+    f"{settings.API_V1_STR}/leads", 
+    dependencies=[Depends(verify_admin_token)],
+    tags=["admin"]
+)
+async def get_leads(session: AsyncSession = Depends(get_async_session)):
+    """
+    Access point for verified leads. Uses AsyncSession to prevent loop blocking.
+    """
+    if not settings.DATABASE_URL:
+        raise HTTPException(status_code=503, detail="Database Unavailable")
+        
+    statement = select(Visit).where(Visit.verification_status == "verified").order_by(Visit.created_at.desc())
+    result = await session.execute(statement)
+    return result.scalars().all()
+
+@app.get(
+    f"{settings.API_V1_STR}/debug/entities", 
+    dependencies=[Depends(verify_admin_token)],
+    tags=["admin"]
+)
+async def get_entities(session: AsyncSession = Depends(get_async_session)):
+    """
+    Direct access to the Juristic Entity ledger.
+    """
+    if not settings.DATABASE_URL:
+        raise HTTPException(status_code=503, detail="Database Unavailable")
+
+    statement = select(Company).order_by(Company.created_at.desc())
+    result = await session.execute(statement)
+    return result.scalars().all()
 </file>
 
 </files>
