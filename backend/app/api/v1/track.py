@@ -3,7 +3,7 @@ from fastapi import APIRouter, BackgroundTasks, Request, Header, HTTPException
 from typing import Optional, Dict, Any
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.visit import VisitCreate, Visit
+from app.models.visit import VisitCreate, Visit, PageViewCreate
 from app.models.company import Company
 from app.models.waitlist import WaitlistLead
 from app.services.enrichment import enrich_visitor_data
