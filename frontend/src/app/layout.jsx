@@ -105,12 +105,16 @@ export default function RootLayout({ children }) {
       <body className="antialiased">
         {children}
 
-        {/* Modular Forensic Intelligence Loader */}
+        {/* AuraWorks Industrial Intelligence 
+          Silo: AuraWorks (Pty) Ltd Primary Ledger
+        */}
         <AuraTracker 
           clientId="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0" 
         />
 
         <AuraConsentBanner />
+        
+        {/* Third-party Analytics */}
         <SpeedInsights />
         <GoogleAnalytics gaId="G-2LE9FLFM12" />
         <Analytics />

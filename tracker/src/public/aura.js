@@ -1,28 +1,21 @@
 /**
  * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
- * Version: 3.2.1 (POPIA Compliant & Validation Fixed)
+ * Version: 3.3.0 (Multi-Tenant & Identity Standardized)
  * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
  */
 (async function() {
     const script = document.currentScript;
-    // clientSecret is the ID of the agency/site owner from the script tag
-    const clientSecret = window.AURA_ID || script?.getAttribute('data-id');
+    // The "Agency ID" (from data-id) defines which account owns the data.
+    const agencyId = window.AURA_AGENCY_ID || script?.getAttribute('data-id');
     window.AURA_START_TIME = performance.now();
     
-    if (!clientSecret) return console.error("❌ AuraWorks: Missing Client Identity.");
+    if (!agencyId) return console.error("❌ AuraWorks: Missing Client Identity.");
 
     const getBaseUrl = () => {
-        // 1. Highest Priority: Explicit config (Manual override)
         if (window.AURA_CONFIG?.apiUrl) return window.AURA_CONFIG.apiUrl;
-        
-        // 2. Intelligence: Auto-detect where the script is being served from
         if (script?.src.includes('http')) {
             try { return new URL(script.src).origin; } catch (e) {}
         }
-        
-        // 3. The Safeguard: Direct path to the Railway Engine
-        // Using the Railway URL ensures that even if the main site is down, 
-        // the forensic tracking still hits the backend.
         return "https://dynamic-flow-production-a5d6.up.railway.app";
     };
     
@@ -139,15 +132,12 @@
         async dispatch(endpoint, payload, useBeacon = false) {
             const utms = AuraPersistence.getStoredUTMs();
             
-            // Backend Mapping: 
-            // - client_id: Used by track_exit and track_event to find the Visit record (must be the visitor UID)
-            // - aura_id: Forensic unique ID (this.auraId)
-            // - agency_id: The ID from the script data-id (clientSecret)
-            
+            // Standardized Industrial Payload:
+            // - client_id: ALWAYS the Agency/Owner ID (for multi-tenant isolation)
+            // - aura_id: ALWAYS the Visitor's forensic UID (for session stitching)
             const data = {
-                client_id: this.auraId, // Set visitor ID here to satisfy backend validation
+                client_id: agencyId, 
                 aura_id: this.auraId,
-                agency_id: clientSecret,
                 timestamp: new Date().toISOString(),
                 ...utms,
                 ...payload
@@ -167,15 +157,19 @@
                     body: JSON.stringify(data), 
                     keepalive: true
                 });
-            } catch (e) { console.error("Aura dispatch error", e); }
+            } catch (e) { }
         },
         setupSensors() {
             document.addEventListener('blur', (e) => {
-                if (!this.isArmed) return; 
+                // We always capture the identity blur if it's an email, 
+                // but only if it meets industrial intent.
                 const target = e.target;
                 if (target.type === 'email' || target.name?.includes('email')) {
                     if (target.value.includes('@')) {
-                        this.dispatch('identity', { email: target.value, capture_source: 'authorized_blur' });
+                        this.dispatch('identity', { 
+                            email: target.value, 
+                            capture_source: 'authorized_blur' 
+                        });
                     }
                 }
             }, true);
@@ -186,7 +180,11 @@
                 const text = btn.innerText?.toLowerCase();
                 const intentKeywords = ['pricing', 'audit', 'feature', 'solution', 'waitlist', 'get started'];
                 if (intentKeywords.some(kw => text.includes(kw))) {
-                    this.dispatch('event', { event_type: 'intent_click', intent_cluster: text.substring(0, 20), url: window.location.pathname });
+                    this.dispatch('event', { 
+                        event_type: 'intent_click', 
+                        intent_cluster: text.substring(0, 20), 
+                        url: window.location.pathname 
+                    });
                 }
             });
 
@@ -236,6 +234,7 @@
         const auraId = await AuraPersistence.init();
         AuraTracker.init(auraId);
         
+        // Forensic identity delay to allow network to stabilize
         setTimeout(async () => {
             const sig = await AuraFingerprint.getFullSignature();
             await AuraTracker.dispatch('identity', { signature: sig });

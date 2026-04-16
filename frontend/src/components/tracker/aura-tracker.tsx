@@ -10,7 +10,7 @@ interface AuraTrackerProps {
 
 /**
  * AuraTracker: A modular forensic intelligence loader.
- * Injects the tracking script with cache-busting and configuration.
+ * Injects the tracking script with multi-tenant identity mapping.
  */
 export default function AuraTracker({
   clientId,
@@ -18,13 +18,17 @@ export default function AuraTracker({
   cdnUrl = "https://cdn.auraworks.co.za/aura.js",
 }: AuraTrackerProps) {
   useEffect(() => {
-    // 1. Initialize Global Configuration
+    // 1. Global Config for forensic logic fallback
     (window as any).AURA_CONFIG = { apiUrl };
-    (window as any).AURA_ID = clientId;
+    (window as any).AURA_AGENCY_ID = clientId;
 
     // 2. Create and Inject Script
     const script = document.createElement("script");
     script.async = true;
+    
+    // Multi-tenant identification:
+    // This matches the 'agencyId' lookup in aura.js
+    script.setAttribute("data-id", clientId);
     
     // Hourly cache-busting (v parameter)
     const version = Math.floor(Date.now() / 3600000);
@@ -33,12 +37,11 @@ export default function AuraTracker({
     document.head.appendChild(script);
 
     return () => {
-      // Clean up on unmount if necessary
       if (document.head.contains(script)) {
         document.head.removeChild(script);
       }
     };
   }, [clientId, apiUrl, cdnUrl]);
 
-  return null; // This component doesn't render any UI
+  return null;
 }
