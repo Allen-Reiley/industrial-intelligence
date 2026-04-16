@@ -1,19 +1,19 @@
 # backend/app/models/pageview.py
 from typing import Optional, Union
 from datetime import datetime
-from pydantic import ConfigDict
+from pydantic import ConfigDict, field_validator
 from sqlmodel import SQLModel, Field, Column, DateTime
 import sqlalchemy as sa
 
 class PageViewBase(SQLModel):
     """
-    Base properties shared between the API payload and the Database.
+    Base properties for Pydantic validation. 
+    Handles messy browser data types.
     """
-    # Note: aura.js sends the visitor's aura_id in the 'client_id' field for events
     client_id: str = Field(description="The visitor's unique forensic ID (aura_id)")
     url: str = Field(description="The URL recorded")
     
-    # Union handles the incoming data variations from the browser
+    # Union is only for the Pydantic side
     duration: Union[int, float, str] = Field(
         default=0, 
         description="Dwell time in seconds. Coerced from string if necessary."
@@ -31,11 +31,24 @@ class PageViewCreate(PageViewBase):
     event_type: Optional[str] = "exit"
     intent_cluster: Optional[str] = None
 
-class PageView(PageViewBase, table=True):
+    @field_validator("duration", mode="before")
+    @classmethod
+    def coerce_duration(cls, v):
+        try:
+            return int(float(v))
+        except (ValueError, TypeError):
+            return 0
+
+class PageView(SQLModel, table=True):
     """
     The Database Ledger for page-level interactions.
+    Explicitly defined to avoid Union-to-SQL mapping errors.
     """
     id: Optional[int] = Field(default=None, primary_key=True)
+    aura_id: str = Field(index=True)
+    client_id: str # Agency-side identifier
+    url: str
+    duration: int = Field(default=0)
     
     # Forensic metadata
     created_at: datetime = Field(
@@ -46,6 +59,5 @@ class PageView(PageViewBase, table=True):
         )
     )
 
-    # Adding a separate column to explicitly store the aura_id 
-    # for cleaner SQL joins later
-    aura_id: Optional[str] = Field(default=None, index=True)
+    # Index for high-speed industrial reporting
+    __tablename__ = "page_view"
