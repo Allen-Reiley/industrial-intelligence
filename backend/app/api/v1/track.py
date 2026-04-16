@@ -3,16 +3,18 @@ from fastapi import APIRouter, BackgroundTasks, Request, Header, HTTPException
 from typing import Optional, Dict, Any
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.visit import VisitCreate, Visit, PageViewCreate
+from pydantic import BaseModel
+import logging
+from datetime import datetime, timezone
+
+# Internal AuraWorks Imports
+from app.models.visit import Visit, VisitCreate, PageViewCreate
 from app.models.company import Company
 from app.models.waitlist import WaitlistLead
 from app.services.enrichment import enrich_visitor_data
 from app.services.notifications import post_to_visit_channel
 from app.services.intelligence import get_visitor_journey
 from app.db import async_session_maker
-from pydantic import BaseModel
-import logging
-from datetime import datetime, timezone
 
 router = APIRouter()
 logger = logging.getLogger("uvicorn")

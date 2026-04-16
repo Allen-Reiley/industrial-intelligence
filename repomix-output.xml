@@ -78,6 +78,8 @@ backend/
       janitor.py
     db.py
     main.py
+  async_migrations/
+    env.py
 frontend/
   src/
     app/
@@ -238,6 +240,132 @@ def create_client(client_in: ClientCreate, session: Session = Depends(get_sessio
 
 <file path="backend/app/services/reports.py">
 
+</file>
+
+<file path="frontend/src/components/content/content-1.tsx">
+import Image from 'next/image'
+import { cn } from '@/lib/utils'
+
+export default function ContentSection1({ className }: { className?: string }) {
+    return (
+        <section className={cn("py-16 md:py-32", className)}>
+            <div className="mx-auto max-w-5xl space-y-8 px-6 md:space-y-16">
+                <h2 className="relative z-10 max-w-xl text-4xl font-medium lg:text-5xl">Business intelligence, not random traffic.</h2>
+                <div className="grid gap-6 sm:grid-cols-2 md:gap-12 lg:gap-24">
+                    <div className="relative mb-6 sm:mb-0">
+                        <div className="bg-linear-to-b aspect-76/59 relative rounded-2xl from-zinc-300 to-transparent p-px dark:from-zinc-700">
+                            <Image
+                                src="/payments.png"
+                                className="hidden rounded-[15px] dark:block"
+                                alt="payments illustration dark"
+                                width={1207}
+                                height={929}
+                            />
+                            <Image
+                                src="/payments-light.webp"
+                                className="rounded-[15px] shadow dark:hidden"
+                                alt="payments illustration light"
+                                width={1207}
+                                height={929}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="relative space-y-4">
+                        <p className="text-muted-foreground">
+                            We filter out the noise. Our engine ignores personal traffic to show you only <span className="text-accent-foreground font-bold">real business prospects.</span> — Know which industrial firms are studying your specs before they even issue a tender.
+                        </p>
+                        <p className="text-muted-foreground">Our engine supports many business ecosystems — it's a plug and play system that delivers automated results for your sales team to close more deals.</p>
+
+                        <div className="pt-6">
+                            <blockquote className="border-l-4 pl-4 border-primary/20">
+                                <p className="italic text-muted-foreground">"Every day, procurement officers and engineers from major industrial firms are browsing your technical specs, but they leave without a trace. Capitalize on them before your competitors do."</p>
+
+                                <div className="mt-6 space-y-4">
+                                    <cite className="block font-medium text-foreground">Reitumetse Sethabela, Founder</cite>
+                                    
+                                    {/* SVG Image Space */}
+                                    <div className="relative h-10 w-29">
+                                        <Image
+                                            src="/logo.svg" // Replace with your client's light SVG
+                                            alt="Client Logo"
+                                            fill
+                                            className="object-contain object-left dark:hidden"
+                                        />
+                                        <Image
+                                            src="/logo-dark.svg" // Replace with your client's dark SVG
+                                            alt="Client Logo"
+                                            fill
+                                            className="hidden object-contain object-left dark:block"
+                                        />
+                                    </div>
+                                </div>
+                            </blockquote>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    )
+}
+</file>
+
+<file path="frontend/src/components/content/content-2.tsx">
+import { Cpu, Zap } from 'lucide-react'
+import Image from 'next/image'
+
+export default function ContentSection2() {
+    return (
+        <section className="py-16 md:py-32">
+            <div className="mx-auto max-w-5xl space-y-8 px-6 md:space-y-16">
+                <h2 className="relative z-10 max-w-xl text-4xl font-medium lg:text-5xl">Everything your sales team needs to close.</h2>
+                <div className="relative">
+                    <div className="relative z-10 space-y-4 md:w-1/2">
+                        <p>
+                            Identifying the company is only half the battle. <span className="font-medium">We provide the "Action Layer" that turns a name into a conversation.</span> — from visit to sale.
+                        </p>
+                        <p>Our weekly reports give your sales team the direct path to the decision-makers.</p>
+
+                        <div className="grid grid-cols-2 gap-3 pt-6 sm:gap-4"> 
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2">
+                                    <Zap className="size-4" />
+                                    <h3 className="text-sm font-medium">Faaast</h3>
+                                </div>
+                                <p className="text-muted-foreground text-sm">Visitors are detected and monitored from the instant they land on your site.</p>
+                            </div>
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                    <Cpu className="size-4" />
+                                    <h3 className="text-sm font-medium">Powerful</h3>
+                                </div>
+                                <p className="text-muted-foreground text-sm">We provide HQ switchboard numbers and department emails.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="md:mask-l-from-35% md:mask-l-to-55% mt-12 h-fit md:absolute md:-inset-y-12 md:inset-x-0 md:mt-0">
+                        <div className="border-border/50 relative rounded-2xl border border-dotted p-2">
+                            <Image
+                                src="/charts.png"
+                                className="hidden rounded-[12px] dark:block"
+                                alt="payments illustration dark"
+                                width={1207}
+                                height={929}
+                            />
+                            <Image
+                                src="/charts-light.webp"
+                                className="rounded-[12px] shadow dark:hidden"
+                                alt="payments illustration light"
+                                width={1207}
+                                height={929}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    )
+}
 </file>
 
 <file path="frontend/src/components/ui/animated-group.tsx">
@@ -955,6 +1083,87 @@ class NotionVault:
 notion_vault = NotionVault()
 </file>
 
+<file path="backend/async_migrations/env.py">
+from logging.config import fileConfig
+
+from sqlalchemy import engine_from_config
+from sqlalchemy import pool
+
+from alembic import context
+
+# this is the Alembic Config object, which provides
+# access to the values within the .ini file in use.
+config = context.config
+
+# Interpret the config file for Python logging.
+# This line sets up loggers basically.
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
+
+# add your model's MetaData object here
+# for 'autogenerate' support
+# from myapp import mymodel
+# target_metadata = mymodel.Base.metadata
+target_metadata = None
+
+# other values from the config, defined by the needs of env.py,
+# can be acquired:
+# my_important_option = config.get_main_option("my_important_option")
+# ... etc.
+
+
+def run_migrations_offline() -> None:
+    """Run migrations in 'offline' mode.
+
+    This configures the context with just a URL
+    and not an Engine, though an Engine is acceptable
+    here as well.  By skipping the Engine creation
+    we don't even need a DBAPI to be available.
+
+    Calls to context.execute() here emit the given string to the
+    script output.
+
+    """
+    url = config.get_main_option("sqlalchemy.url")
+    context.configure(
+        url=url,
+        target_metadata=target_metadata,
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
+    )
+
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+def run_migrations_online() -> None:
+    """Run migrations in 'online' mode.
+
+    In this scenario we need to create an Engine
+    and associate a connection with the context.
+
+    """
+    connectable = engine_from_config(
+        config.get_section(config.config_ini_section, {}),
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+    )
+
+    with connectable.connect() as connection:
+        context.configure(
+            connection=connection, target_metadata=target_metadata
+        )
+
+        with context.begin_transaction():
+            context.run_migrations()
+
+
+if context.is_offline_mode():
+    run_migrations_offline()
+else:
+    run_migrations_online()
+</file>
+
 <file path="frontend/src/app/(pages)/cookies-policy/page.tsx">
 import CookieConsentPage from "@/components/sections/cookies/cookie-policy";
 
@@ -992,6 +1201,14 @@ import PAIAManualPage from "@/components/sections/popia-manual/popia-manula";
 
 export default function PAIAManual() {
     return <PAIAManualPage />
+}
+</file>
+
+<file path="frontend/src/app/(pages)/pricing/page.tsx">
+import Pricing from '@/components/pricing/pricing';
+
+export default function PricingPage() {
+  return <Pricing />;
 }
 </file>
 
@@ -1304,124 +1521,35 @@ export default function AdminDashboard() {
 }
 </file>
 
-<file path="frontend/src/components/content/content-1.tsx">
-import Image from 'next/image'
-import { cn } from '@/lib/utils'
+<file path="frontend/src/components/cta/call-to-action.tsx">
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
-export default function ContentSection1({ className }: { className?: string }) {
-    return (
-        <section className={cn("py-16 md:py-32", className)}>
-            <div className="mx-auto max-w-5xl space-y-8 px-6 md:space-y-16">
-                <h2 className="relative z-10 max-w-xl text-4xl font-medium lg:text-5xl">Business intelligence, not random traffic.</h2>
-                <div className="grid gap-6 sm:grid-cols-2 md:gap-12 lg:gap-24">
-                    <div className="relative mb-6 sm:mb-0">
-                        <div className="bg-linear-to-b aspect-76/59 relative rounded-2xl from-zinc-300 to-transparent p-px dark:from-zinc-700">
-                            <Image
-                                src="/payments.png"
-                                className="hidden rounded-[15px] dark:block"
-                                alt="payments illustration dark"
-                                width={1207}
-                                height={929}
-                            />
-                            <Image
-                                src="/payments-light.webp"
-                                className="rounded-[15px] shadow dark:hidden"
-                                alt="payments illustration light"
-                                width={1207}
-                                height={929}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="relative space-y-4">
-                        <p className="text-muted-foreground">
-                            We filter out the noise. Our engine ignores personal traffic to show you only <span className="text-accent-foreground font-bold">real business prospects.</span> — Know which industrial firms are studying your specs before they even issue a tender.
-                        </p>
-                        <p className="text-muted-foreground">Our engine supports many business ecosystems — it's a plug and play system that delivers automated results for your sales team to close more deals.</p>
-
-                        <div className="pt-6">
-                            <blockquote className="border-l-4 pl-4 border-primary/20">
-                                <p className="italic text-muted-foreground">"Every day, procurement officers and engineers from major industrial firms are browsing your technical specs, but they leave without a trace. Capitalize on them before your competitors do."</p>
-
-                                <div className="mt-6 space-y-4">
-                                    <cite className="block font-medium text-foreground">Reitumetse Sethabela, Founder</cite>
-                                    
-                                    {/* SVG Image Space */}
-                                    <div className="relative h-10 w-29">
-                                        <Image
-                                            src="/logo.svg" // Replace with your client's light SVG
-                                            alt="Client Logo"
-                                            fill
-                                            className="object-contain object-left dark:hidden"
-                                        />
-                                        <Image
-                                            src="/logo-dark.svg" // Replace with your client's dark SVG
-                                            alt="Client Logo"
-                                            fill
-                                            className="hidden object-contain object-left dark:block"
-                                        />
-                                    </div>
-                                </div>
-                            </blockquote>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    )
-}
-</file>
-
-<file path="frontend/src/components/content/content-2.tsx">
-import { Cpu, Zap } from 'lucide-react'
-import Image from 'next/image'
-
-export default function ContentSection2() {
+export default function CallToAction() {
     return (
         <section className="py-16 md:py-32">
-            <div className="mx-auto max-w-5xl space-y-8 px-6 md:space-y-16">
-                <h2 className="relative z-10 max-w-xl text-4xl font-medium lg:text-5xl">Everything your sales team needs to close.</h2>
-                <div className="relative">
-                    <div className="relative z-10 space-y-4 md:w-1/2">
-                        <p>
-                            Identifying the company is only half the battle. <span className="font-medium">We provide the "Action Layer" that turns a name into a conversation.</span> — from visit to sale.
-                        </p>
-                        <p>Our weekly reports give your sales team the direct path to the decision-makers.</p>
+            <div className="mx-auto max-w-5xl px-6">
+                <div className="text-center">
+                    <h2 className="text-balance text-4xl font-semibold lg:text-5xl">Turn your website into a sales machine.</h2>
+                    <p className="mt-4">Get a weekly list of high-intent B2B leads for a flat monthly/annual retainer. No complex software to learn — just results delivered to your inbox.</p>
 
-                        <div className="grid grid-cols-2 gap-3 pt-6 sm:gap-4"> 
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-2">
-                                    <Zap className="size-4" />
-                                    <h3 className="text-sm font-medium">Faaast</h3>
-                                </div>
-                                <p className="text-muted-foreground text-sm">Visitors are detected and monitored from the instant they land on your site.</p>
-                            </div>
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                    <Cpu className="size-4" />
-                                    <h3 className="text-sm font-medium">Powerful</h3>
-                                </div>
-                                <p className="text-muted-foreground text-sm">We provide HQ switchboard numbers and department emails.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="md:mask-l-from-35% md:mask-l-to-55% mt-12 h-fit md:absolute md:-inset-y-12 md:inset-x-0 md:mt-0">
-                        <div className="border-border/50 relative rounded-2xl border border-dotted p-2">
-                            <Image
-                                src="/charts.png"
-                                className="hidden rounded-[12px] dark:block"
-                                alt="payments illustration dark"
-                                width={1207}
-                                height={929}
-                            />
-                            <Image
-                                src="/charts-light.webp"
-                                className="rounded-[12px] shadow dark:hidden"
-                                alt="payments illustration light"
-                                width={1207}
-                                height={929}
-                            />
-                        </div>
+                    <div className="mt-12 flex flex-wrap justify-center gap-4">
+                        <Button
+                            asChild
+                            size="lg">
+                            <Link href="/get-started">
+                                <span>Get Started</span>
+                            </Link>
+                        </Button>
+
+                        <Button
+                            asChild
+                            size="lg"
+                            variant="outline">
+                            <Link href="/book-a-call">
+                                <span>Book a Call</span>
+                            </Link>
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -4392,124 +4520,6 @@ Routes are explicitly registered in app/main.py to prevent circular dependency c
 """
 </file>
 
-<file path="backend/app/api/v1/leads.py">
-# backend/app/api/v1/endpoints/leads.py
-from fastapi import APIRouter, Query, HTTPException, Depends
-from typing import List, Optional, Dict, Any
-from sqlmodel import select, desc, func
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
-from app.db import get_async_session
-from app.models.waitlist import WaitlistLead
-from app.models.company import Company
-from app.models.visit import Visit
-import logging
-
-router = APIRouter()
-logger = logging.getLogger("uvicorn")
-
-@router.get("/")
-async def get_leads(
-    client_id: str = Query(...),
-    limit: int = Query(default=50, le=100),
-    session: AsyncSession = Depends(get_async_session)
-):
-    """
-    Industrial Ledger: Retrieves leads and prioritizes 'Warm Leads' (those with volunteered data).
-    Joins with Company data to show total corporate engagement.
-    """
-    try:
-        # 1. Build the Query: Order by creation but prioritize records with emails/positions
-        # This surfaces 'Warm Leads' who interacted with the banner/waitlist first
-        statement = (
-            select(WaitlistLead, Company)
-            .where(WaitlistLead.client_id == client_id)
-            .outerjoin(Company, WaitlistLead.company_id == Company.id)
-            .order_by(desc(WaitlistLead.created_at))
-            .limit(limit)
-        )
-        
-        results = await session.execute(statement)
-        leads_data = []
-
-        for lead, company in results:
-            # Determine 'Warmth' based on data completeness
-            is_warm = all([lead.email, lead.company_name_raw])
-            
-            leads_data.append({
-                "id": lead.id,
-                "created_at": lead.created_at,
-                "name": lead.name or "Anonymous Lead",
-                "email": lead.email,
-                "position": lead.position,
-                "department": lead.department,
-                "aura_id": lead.aura_id,
-                "is_warm": is_warm,
-                "company": {
-                    "name": company.name if company else lead.company_name_raw or "Unknown Entity",
-                    "domain": company.domain if company else None,
-                    "industry": company.industry if company else lead.industry,
-                    "total_visits": company.total_visits if company else 1,
-                    "is_verified": company.is_verified if company else False
-                }
-            })
-            
-        return leads_data
-
-    except Exception as e:
-        logger.error(f"🚨 Lead Retrieval Failure: {e}")
-        raise HTTPException(status_code=500, detail="Internal Ledger Error")
-
-@router.get("/intelligence")
-async def get_lead_intelligence(
-    aura_id: str, 
-    session: AsyncSession = Depends(get_async_session)
-):
-    """
-    Provides the forensic audit for a specific lead, including their 
-    behavioral journey and facility activity clusters.
-    """
-    try:
-        # 1. Resolve Lead Identity
-        lead_stmt = select(WaitlistLead).where(WaitlistLead.aura_id == aura_id)
-        res_lead = await session.execute(lead_stmt)
-        lead = res_lead.scalars().first()
-        
-        if not lead:
-            raise HTTPException(status_code=404, detail="Lead signature not found.")
-
-        # 2. Resolve Company Forensic Data
-        company = None
-        if lead.company_id:
-            company = await session.get(Company, lead.company_id)
-
-        # 3. Pull Visit History for Activity Heatmap
-        visit_stmt = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at.desc())
-        res_visits = await session.execute(visit_stmt)
-        visits = res_visits.scalars().all()
-
-        return {
-            "lead_profile": {
-                "name": lead.name,
-                "position": lead.position,
-                "department": lead.department,
-                "email": lead.email
-            },
-            "company_intel": company,
-            "forensic_trail": [
-                {"timestamp": v.created_at, "url": v.url, "duration": v.duration} 
-                for v in visits
-            ],
-            "total_engagement_points": len(visits)
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"🚨 Intelligence Retrieval Failure: {e}")
-        raise HTTPException(status_code=500, detail="Intelligence Engine Offline")
-</file>
-
 <file path="backend/app/core/scheduler.py">
 from apscheduler.schedulers.background import BackgroundScheduler
 from sqlmodel import Session, select
@@ -4764,11 +4774,55 @@ def send_welcome_email(to_email: str, first_name: str):
         logger.error(f"❌ Resend Error: {str(e)}")
 </file>
 
+<file path="frontend/src/app/(pages)/about/page.tsx">
+import { AboutHero } from "@/components/sections/about/about-hero";
+import { FounderProfile } from "@/components/sections/about/founder-profile";
+import { ValuesSection } from "@/components/sections/about/values";
+import { AboutCTA } from "@/components/sections/about/about-cta";
+import { HeroHeader } from "@/components/header/header";
+import Footer from "@/components/footer/footer";
+
+export default function AboutPage() {
+  return (
+  <div>
+    <HeroHeader />
+    <AboutHero />
+    <FounderProfile />
+    <ValuesSection />
+    <AboutCTA />
+    <Footer />
+  </div>);
+}
+</file>
+
 <file path="frontend/src/app/(pages)/book-call/page.tsx">
 import BookCallPage from "@/components/book-call/call-page";
 
 export default function BookCall() {
   return <BookCallPage />;
+}
+</file>
+
+<file path="frontend/src/app/(pages)/features/page.tsx">
+import FeaturesHero from "@/components/sections/features/features-hero";
+import { IdentityBridge } from "@/components/sections/features/identity-bridge";
+import { FeatureGrid } from "@/components/sections/features/feature-grid";
+import { FeaturesCTA } from "@/components/sections/features/features-cta";
+import CallToAction from "@/components/cta/call-to-action";
+import Footer from "@/components/footer/footer";
+import { HeroHeader } from "@/components/header/header";
+
+export default function FeaturesPage() {
+  return (
+    <div>
+      <HeroHeader />
+      <FeaturesHero />
+      <IdentityBridge />
+      <FeatureGrid />
+      <FeaturesCTA /> 
+      <Footer />
+    </div>
+  );
 }
 </file>
 
@@ -4780,11 +4834,25 @@ export default function GetStarted() {
 }
 </file>
 
-<file path="frontend/src/app/(pages)/pricing/page.tsx">
-import Pricing from '@/components/pricing/pricing';
+<file path="frontend/src/app/(pages)/solution/page.tsx">
+import { SolutionsHero } from '@/components/sections/solutions/solutions-hero';
+import { VerticalStacks } from '@/components/sections/solutions/vertical-stacks';
+import { ComplianceBridge } from '@/components/sections/solutions/compliance-bridge';
+import { SolutionsCTA } from '@/components/sections/solutions/solutions-cta';
+import { HeroHeader } from '@/components/header/header';
+import Footer from '@/components/footer/footer';
 
-export default function PricingPage() {
-  return <Pricing />;
+export default function SolutionPage() {
+  return (
+    <div>
+      <HeroHeader />
+      <SolutionsHero />
+      <VerticalStacks />
+      <ComplianceBridge />
+      <SolutionsCTA />
+      <Footer />
+    </div>
+  );
 }
 </file>
 
@@ -4866,453 +4934,6 @@ export default function Home() {
       <CallToAction />
       <Footer />
     </main>
-  );
-}
-</file>
-
-<file path="frontend/src/components/cta/call-to-action.tsx">
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-
-export default function CallToAction() {
-    return (
-        <section className="py-16 md:py-32">
-            <div className="mx-auto max-w-5xl px-6">
-                <div className="text-center">
-                    <h2 className="text-balance text-4xl font-semibold lg:text-5xl">Turn your website into a sales machine.</h2>
-                    <p className="mt-4">Get a weekly list of high-intent B2B leads for a flat monthly/annual retainer. No complex software to learn — just results delivered to your inbox.</p>
-
-                    <div className="mt-12 flex flex-wrap justify-center gap-4">
-                        <Button
-                            asChild
-                            size="lg">
-                            <Link href="/get-started">
-                                <span>Get Started</span>
-                            </Link>
-                        </Button>
-
-                        <Button
-                            asChild
-                            size="lg"
-                            variant="outline">
-                            <Link href="/book-a-call">
-                                <span>Book a Call</span>
-                            </Link>
-                        </Button>
-                    </div>
-                </div>
-            </div>
-        </section>
-    )
-}
-</file>
-
-<file path="frontend/src/components/sections/features/features-hero.tsx">
-// 
-'use client'
-
-import { TextEffect } from '@/components/ui/text-effect'
-import { AnimatedGroup } from '@/components/ui/animated-group'
-import { ShieldCheck, Database, Zap } from 'lucide-react'
-
-export default function FeaturesHero() {
-    return (
-        <section className="relative pt-32 pb-20 overflow-hidden md:pt-48">
-            <div className="mx-auto max-w-5xl px-6">
-                <div className="max-w-3xl">
-                    <h1 className="text-5xl font-bold tracking-tight md:text-7xl">
-                        <TextEffect preset="fade-in-blur" speedSegment={0.3}>
-                            De-anonymize Your Industrial Traffic.
-                        </TextEffect>
-                    </h1>
-                    <p className="mt-8 text-lg text-muted-foreground md:text-xl">
-                        The AuraWorks Engine isn't just a tracker. It is a proprietary Identity Bridge that resolves anonymous IP strings into high-intent corporate entities within the South African industrial sector.
-                    </p>
-                </div>
-
-                <AnimatedGroup 
-                    className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-3"
-                    variants={{
-                        container: { visible: { transition: { staggerChildren: 0.1, delayChildren: 0.5 } } },
-                        item: { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }
-                    }}
-                >
-                    {[
-                        { icon: ShieldCheck, title: "POPIA Compliant", desc: "First-party consent protocols built directly into the tracking handshake." },
-                        { icon: Database, title: "Juristic Resolution", desc: "We map traffic to registered business entities, filtering out 98% of residential noise." },
-                        { icon: Zap, title: "Zero Latency", desc: "Our lightweight script adds <20ms to your page load while capturing deep intent data." }
-                    ].map((feature, i) => (
-                        <div key={i} className="group relative rounded-2xl border p-8 bg-card/50 backdrop-blur-sm transition-colors hover:bg-muted/50">
-                            <feature.icon className="size-6 text-primary mb-4" />
-                            <h3 className="font-semibold text-lg">{feature.title}</h3>
-                            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
-                        </div>
-                    ))}
-                </AnimatedGroup>
-            </div>
-        </section>
-    )
-}
-</file>
-
-<file path="frontend/src/components/sections/thanks/thank-you.tsx">
-// @/app/thank-you/page.tsx
-'use client'
-
-import React from 'react'
-import Link from 'next/link'
-// Lucide-react typically uses 'Linkedin' (lowercase 'd') in the latest stable builds
-import { CheckCircle2, Linkedin, ArrowRight } from 'lucide-react' 
-import { Button } from '@/components/ui/button'
-
-export default function ThankYouPage() {
-    const shareText = encodeURIComponent(
-        "I just joined the waitlist for AuraWorks. They're building an Identity Bridge for B2B industrial sales. Check it out: https://auraworks.co.za"
-    );
-
-    return (
-        <main className="relative min-h-screen flex items-center justify-center bg-background px-6 py-12 overflow-hidden">
-            <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-full opacity-20 [background:radial-gradient(50%_50%_at_50%_50%,var(--color-primary)_0%,transparent_100%)] blur-3xl" />
-            </div>
-
-            <div className="w-full max-w-2xl text-center">
-                <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 border border-primary/20">
-                    <CheckCircle2 className="h-10 w-10 text-primary" />
-                </div>
-
-                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl italic">
-                    Application Received.
-                </h1>
-                
-                <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-                    Thank you for applying to the AuraWorks Beta. We are currently vetting 
-                    applications to ensure every partner in our <strong>initial 100-client cohort</strong> 
-                    receives maximum ROI from the Identity Bridge.
-                </p>
-
-                <div className="mt-12 grid gap-6 sm:grid-cols-2">
-                    <div className="rounded-2xl border bg-muted/30 p-6 text-left border-primary/10">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Current Status</span>
-                        <h3 className="mt-2 text-xl font-semibold">Vetting in Progress</h3>
-                        <p className="mt-1 text-sm text-muted-foreground italic">
-                            Domain verification active.
-                        </p>
-                    </div>
-
-                    <div className="rounded-2xl border bg-muted/30 p-6 text-left">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Priority Access</span>
-                        <h3 className="mt-2 text-xl font-semibold">Jump the Queue</h3>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            Sharing interest accelerates sector prioritization.
-                        </p>
-                    </div>
-                </div>
-
-                <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                    <Button 
-                        asChild
-                        size="lg" 
-                        className="rounded-xl px-8 shadow-xl shadow-primary/20 w-full sm:w-auto font-bold"
-                    >
-                        <Link 
-                            href={`https://www.linkedin.com/sharing/share-offsite/?url=https://auraworks.co.za&text=${shareText}`}
-                            target="_blank"
-                        >
-                            <Linkedin className="mr-2 h-4 w-4" />
-                            Share on LinkedIn
-                        </Link>
-                    </Button>
-
-                    <Button 
-                        variant="ghost" 
-                        asChild 
-                        size="lg" 
-                        className="rounded-xl px-8 w-full sm:w-auto text-muted-foreground hover:text-foreground font-bold"
-                    >
-                        <Link href="/">
-                            Return to Site
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
-                    </Button>
-                </div>
-
-                <div className="mt-16 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.4em] font-bold text-muted-foreground/30">
-                    AuraWorks (Pty) Ltd <span className="opacity-20">/</span> Systems Architect
-                </div>
-            </div>
-        </main>
-    )
-}
-</file>
-
-<file path="frontend/src/components/tracker/aura-tracker.tsx">
-"use client";
-
-import { useEffect } from "react";
-
-interface AuraTrackerProps {
-  clientId: string;
-  apiUrl?: string;
-  cdnUrl?: string;
-}
-
-/**
- * AuraTracker: A modular forensic intelligence loader.
- * Injects the tracking script with multi-tenant identity mapping.
- */
-export default function AuraTracker({
-  clientId,
-  apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://dynamic-flow-production-a5d6.up.railway.app",
-  cdnUrl = "https://cdn.auraworks.co.za/aura.js",
-}: AuraTrackerProps) {
-  useEffect(() => {
-    // 1. Global Config for forensic logic fallback
-    (window as any).AURA_CONFIG = { apiUrl };
-    (window as any).AURA_AGENCY_ID = clientId;
-
-    // 2. Create and Inject Script
-    const script = document.createElement("script");
-    script.async = true;
-    
-    // Multi-tenant identification:
-    // This matches the 'agencyId' lookup in aura.js
-    script.setAttribute("data-id", clientId);
-    
-    // Hourly cache-busting (v parameter)
-    const version = Math.floor(Date.now() / 3600000);
-    script.src = `${cdnUrl}?v=${version}`;
-
-    document.head.appendChild(script);
-
-    return () => {
-      if (document.head.contains(script)) {
-        document.head.removeChild(script);
-      }
-    };
-  }, [clientId, apiUrl, cdnUrl]);
-
-  return null;
-}
-</file>
-
-<file path="backend/app/services/airtable.py">
-import logging
-import asyncio
-from datetime import datetime, timezone
-from app.core.config import settings
-from pyairtable import Api
-
-logger = logging.getLogger("uvicorn")
-
-class AirtableEngine:
-    def __init__(self):
-        """
-        Initializes the Airtable connection using ProductionSettings.
-        """
-        # Centralized configuration access from settings
-        self.token = settings.AIRTABLE_API_KEY
-        self.base_id = settings.AIRTABLE_BASE_ID
-        self.table_name = settings.AIRTABLE_TABLE_NAME 
-        
-        if not self.token or not self.base_id:
-            logger.warning("⚠️ Airtable Engine: Missing credentials in environment. Standing by...")
-            self.table = None
-        else:
-            try:
-                self.api = Api(self.token)
-                self.table = self.api.table(self.base_id, self.table_name)
-                logger.info(f"✅ Airtable Engine: Linked to Vault '{self.table_name}'")
-            except Exception as e:
-                logger.error(f"❌ Airtable Engine: Initialization failed: {e}")
-                self.table = None
-
-    async def push_visit(self, data: dict):
-        """
-        Pushes high-intent corporate signals to the Airtable Ledger.
-        Uses clinical validation and thread offloading for production performance.
-        """
-        # Final safety check: Pull fresh state from settings
-        # This prevents crashes if credentials are changed in Railway during runtime
-        current_token = settings.AIRTABLE_API_KEY
-        current_base = settings.AIRTABLE_BASE_ID
-
-        if not all([current_token, current_base]):
-            # Silently exit if credentials are removed in production variables
-            return {"status": "standby", "reason": "missing_credentials"}
-
-        if not self.table:
-            # Re-attempt initialization if keys were provided after startup
-            try:
-                self.api = Api(current_token)
-                self.table = self.api.table(current_base, self.table_name)
-            except:
-                return {"status": "error", "reason": "vault_not_initialized"}
-
-        try:
-            # Map Jura-level data to the Airtable Schema
-            record = {
-                "Entity Name": data.get("company_name", "Anonymous Facility"),
-                "Domain": data.get("domain", "unknown.com"),
-                "Status": "Forensic Capture",
-                "IP Address": data.get("ip_address"),
-                "Location": f"{data.get('city', 'Unknown')}, {data.get('country_name', 'South Africa')}",
-                "Intelligence Summary": data.get("summary", "Awaiting Intelligence Audit..."),
-                "Aura ID": data.get("aura_id"),
-                "Connection": data.get("effective_connection_type", "Standard"),
-                "Detected At": datetime.now(timezone.utc).isoformat()
-            }
-            
-            # Execute blocking pyairtable call in a separate thread
-            await asyncio.to_thread(self.table.create, record)
-            
-            logger.info(f"💼 Vault: Industrial Signal logged for {record['Entity Name']}")
-            return {"status": "success"}
-            
-        except Exception as e:
-            logger.error(f"❌ Vault Sync Failure: {e}")
-            return {"status": "error", "message": str(e)}
-
-# Global instantiation for use throughout AuraWorks OS
-airtable_engine = AirtableEngine()
-</file>
-
-<file path="backend/app/tasks/janitor.py">
-# backend/app/tasks/janitor.py
-import logging
-from datetime import datetime, timedelta, timezone
-from sqlmodel import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.db import engine, get_async_session
-from app.models.visit import Visit
-from app.models.waitlist import WaitlistLead
-
-logger = logging.getLogger("uvicorn")
-
-async def cleanup_unverified_visits():
-    """
-    The Industrial Janitor: Purges residential/bot noise while 
-    protecting high-intent leads and the 'Ghost Bridge'.
-    """
-    logger.info("🧹 AuraWorks OS: Activating 48-hour Janitor Sweep...")
-    
-    # 1. Define the 'Noise' Threshold (48 hours)
-    # Allows a window for 'Late Promotion' via the Banner/Waitlist.
-    threshold = datetime.now(timezone.utc) - timedelta(hours=48)
-    
-    # We use a manual session block here since this runs in a background task
-    async with AsyncSession(engine) as session:
-        try:
-            # 2. Identify 'Verifying' records older than the threshold
-            statement = select(Visit).where(
-                Visit.verification_status == "verifying",
-                Visit.created_at < threshold
-            )
-            result = await session.execute(statement)
-            candidates = result.scalars().all()
-            
-            if not candidates:
-                logger.info("✅ Janitor: Forensic vault is already optimized.")
-                return
-
-            purged_count = 0
-            promoted_count = 0
-
-            for visit in candidates:
-                # 3. SAFETY CHECK: The 'Waitlist Shield'
-                # If an aura_id has a matching WaitlistLead, we promote the visit.
-                # This ensures forensic data is saved for anyone who interacted with the banner.
-                lead_stmt = select(WaitlistLead).where(WaitlistLead.aura_id == visit.aura_id)
-                lead_res = await session.execute(lead_stmt)
-                has_lead = lead_res.scalars().first()
-                
-                if has_lead:
-                    # Upgrade the visit status: Shielded from future purges
-                    visit.verification_status = "verified"
-                    if has_lead.company_id:
-                        visit.company_id = has_lead.company_id
-                    
-                    session.add(visit)
-                    promoted_count += 1
-                    continue
-
-                # 4. Final Purge for actual noise (Residential/Bot traffic)
-                await session.delete(visit)
-                purged_count += 1
-
-            await session.commit()
-            logger.info(
-                f"🗑️ Janitor: Purged {purged_count} noise signatures. "
-                f"🛡️ Promoted {promoted_count} high-intent visits. Vault optimized."
-            )
-
-        except Exception as e:
-            await session.rollback()
-            logger.error(f"🚨 Janitor Failure: {e}")
-</file>
-
-<file path="frontend/src/app/(pages)/about/page.tsx">
-import { AboutHero } from "@/components/sections/about/about-hero";
-import { FounderProfile } from "@/components/sections/about/founder-profile";
-import { ValuesSection } from "@/components/sections/about/values";
-import { AboutCTA } from "@/components/sections/about/about-cta";
-import { HeroHeader } from "@/components/header/header";
-import Footer from "@/components/footer/footer";
-
-export default function AboutPage() {
-  return (
-  <div>
-    <HeroHeader />
-    <AboutHero />
-    <FounderProfile />
-    <ValuesSection />
-    <AboutCTA />
-    <Footer />
-  </div>);
-}
-</file>
-
-<file path="frontend/src/app/(pages)/features/page.tsx">
-import FeaturesHero from "@/components/sections/features/features-hero";
-import { IdentityBridge } from "@/components/sections/features/identity-bridge";
-import { FeatureGrid } from "@/components/sections/features/feature-grid";
-import { FeaturesCTA } from "@/components/sections/features/features-cta";
-import CallToAction from "@/components/cta/call-to-action";
-import Footer from "@/components/footer/footer";
-import { HeroHeader } from "@/components/header/header";
-
-export default function FeaturesPage() {
-  return (
-    <div>
-      <HeroHeader />
-      <FeaturesHero />
-      <IdentityBridge />
-      <FeatureGrid />
-      <FeaturesCTA /> 
-      <Footer />
-    </div>
-  );
-}
-</file>
-
-<file path="frontend/src/app/(pages)/solution/page.tsx">
-import { SolutionsHero } from '@/components/sections/solutions/solutions-hero';
-import { VerticalStacks } from '@/components/sections/solutions/vertical-stacks';
-import { ComplianceBridge } from '@/components/sections/solutions/compliance-bridge';
-import { SolutionsCTA } from '@/components/sections/solutions/solutions-cta';
-import { HeroHeader } from '@/components/header/header';
-import Footer from '@/components/footer/footer';
-
-export default function SolutionPage() {
-  return (
-    <div>
-      <HeroHeader />
-      <SolutionsHero />
-      <VerticalStacks />
-      <ComplianceBridge />
-      <SolutionsCTA />
-      <Footer />
-    </div>
   );
 }
 </file>
@@ -5399,460 +5020,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return staticRoutes;
 }
-</file>
-
-<file path="frontend/src/components/book-call/call-page.tsx">
-// @/app/book-call/page.tsx
-'use client'
-
-import React from 'react'
-import Link from 'next/link'
-import { ArrowLeft, CheckCircle2, Clock, ShieldCheck, Zap } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { HeroHeader } from '@/components/header/header'
-
-const benefits = [
-    {
-        title: "15-Minute Discovery",
-        desc: "A brief technical overview of how we identify your anonymous traffic.",
-        icon: <Clock className="h-5 w-5 text-primary" />
-    },
-    {
-        title: "Systems Review",
-        desc: "We analyze your current site traffic to see if you're a fit for the 100-client cohort.",
-        icon: <Zap className="h-5 w-5 text-primary" />
-    },
-    {
-        title: "Privacy First",
-        desc: "A look at our Identity Bridge and how we stay POPIA compliant.",
-        icon: <ShieldCheck className="h-5 w-5 text-primary" />
-    }
-]
-
-export default function BookCallPage() {
-    return <>
-        
-        <main className="min-h-screen bg-background">
-            {/* Minimal Header specifically for this page */}
-            <nav className="p-6">
-                <Button variant="ghost" asChild className="text-muted-foreground hover:text-foreground">
-                    <Link href="/">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Home
-                    </Link>
-                </Button>
-            </nav>
-
-            <div className="mx-auto max-w-7xl px-6 pb-24 pt-10 lg:flex lg:gap-x-12 lg:px-8">
-                {/* Left Column: Context & Authority */}
-                <div className="flex-1 lg:max-w-md">
-                    <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-                        Schedule a Strategy Session
-                    </h1>
-                    <p className="mt-6 text-lg text-muted-foreground">
-                        Let's discuss how AuraWorks can bridge the gap between your website visitors and your sales team's inbox.
-                    </p>
-
-                    <div className="mt-12 space-y-8">
-                        {benefits.map((item, idx) => (
-                            <div key={idx} className="flex gap-x-4">
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border bg-muted/50">
-                                    {item.icon}
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-foreground">{item.title}</h3>
-                                    <p className="text-sm text-muted-foreground">{item.desc}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="mt-12 rounded-2xl border bg-muted/30 p-6">
-                        <div className="flex items-center gap-x-2 text-sm font-medium text-primary">
-                            <CheckCircle2 className="h-4 w-4" />
-                            <span>Current Cohort Status: 12/100 Seats Filled</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Right Column: The Scheduler */}
-                <div className="mt-16 flex-1 lg:mt-0">
-                    <div className="relative h-[650px] w-full overflow-hidden rounded-2xl border bg-card shadow-2xl">
-                        {/* REPLACE THE SRC BELOW WITH YOUR CALENDLY OR CAL.COM LINK 
-                            Or use a placeholder div if you haven't set one up yet.
-                        */}
-                        <iframe
-                            src="https://calendly.com/auraworks221/30min"
-                            width="100%"
-                            height="100%"
-                            frameBorder="0"
-                            title="Schedule a Call"
-                            className="bg-white dark:bg-zinc-900"
-                        ></iframe>
-                        
-                        {/* Loader Overlay (Optional) */}
-                        <div className="absolute inset-0 -z-10 flex items-center justify-center bg-muted">
-                            <span className="text-sm text-muted-foreground">Loading Scheduler...</span>
-                        </div>
-                    </div>
-                    
-                    <p className="mt-4 text-center text-sm text-muted-foreground">
-                        Prefer email? <Link href="mailto:reitumetse@auraworks.co.za" className="text-primary hover:underline">reitumetse@auraworks.co.za</Link>
-                    </p>
-                </div>
-            </div>
-        </main>
-    </>
-}
-</file>
-
-<file path="frontend/src/components/consent-banner/consent-banner.tsx">
-'use client';
-
-import React, { useEffect, useState } from 'react';
-import LeadEnrichmentSlide from './lead-enrichment-slide';
-
-const AuraConsentBanner = () => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [showEnrichment, setShowEnrichment] = useState(false);
-  const [auraId, setAuraId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const hasConsent = typeof window !== 'undefined' && localStorage.getItem('aura_consent_given');
-    const hasEnriched = typeof window !== 'undefined' && localStorage.getItem('aura_lead_captured');
-
-    // Logic: Trigger enrichment only after consent is given and significant dwell time occurs
-    if (hasConsent && !hasEnriched) {
-      const enrichmentTimer = setTimeout(() => {
-        const id = localStorage.getItem('aura_uid') || (window as any).AURA_UID;
-        setAuraId(id);
-        setShowEnrichment(true);
-      }, 10000); // 10s = Significant interest
-      return () => clearTimeout(enrichmentTimer);
-    }
-
-    if (!hasConsent) {
-      const timer = setTimeout(() => {
-        setIsVisible(true);
-      }, 2500);
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
-  const handleAccept = async () => {
-    const id = typeof window !== 'undefined' ? (localStorage.getItem('aura_uid') || (window as any).AURA_UID) : null;
-    const clientId = typeof window !== 'undefined' ? (window as any).AURA_ID : null;
-    setAuraId(id);
-
-    // 1. Mark consent in LocalStorage for UI persistence
-    localStorage.setItem('aura_consent_given', 'true');
-    
-    // 2. GATE 1 HANDSHAKE: Notify Backend for Identity Promotion
-    if (id && clientId) {
-      try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/track/consent`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            client_id: clientId,
-            aura_id: id,
-            status: 'accepted'
-          })
-        });
-      } catch (err) {
-        console.error("⚠️ AuraWorks: Background consent sync failed.", err);
-      }
-    }
-
-    // 3. Dispatch CustomEvent for aura.js (Triggers immediate forensic reveal)
-    if (typeof window !== 'undefined' && window.dispatchEvent) {
-      window.dispatchEvent(new CustomEvent('aura_consent_updated', { 
-        detail: { status: 'accepted', source: 'executive_bridge' } 
-      }));
-    }
-
-    setIsVisible(false);
-    
-    // Smooth transition to Phase 02 (Enrichment Slide) after a short delay
-    setTimeout(() => {
-      setShowEnrichment(true);
-    }, 1500);
-  };
-
-  const handleDismiss = () => {
-    setIsVisible(false);
-    // Note: We don't set 'aura_consent_given' here, ensuring the lead is reminded on return.
-  };
-  
-  const handleEnrichmentComplete = () => {
-    localStorage.setItem('aura_lead_captured', 'true');
-    setShowEnrichment(false);
-  };
-
-  // Phase 02: Lead Enrichment Slide
-  if (showEnrichment) {
-    return (
-      <div className="fixed bottom-8 right-8 z-[9999]">
-        <LeadEnrichmentSlide 
-          auraId={auraId} 
-          onComplete={handleEnrichmentComplete}
-          onDismiss={() => setShowEnrichment(false)} 
-        />
-      </div>
-    );
-  }
-
-  // Phase 01: Initial Consent Banner
-  if (!isVisible) return null;
-
-  return (
-    <>
-      {/* 🛡️ THE HONEY POT: Bot Detection */}
-      <a 
-        href="#" 
-        id="aura-v-check" 
-        style={{ display: 'none', position: 'absolute', opacity: 0, pointerEvents: 'none' }}
-        aria-hidden="true"
-        tabIndex={-1}
-      >
-        Verify Browser Architecture
-      </a>
-
-      {/* 🎨 THE UI: Executive Identity Bridge Banner */}
-      <div 
-        className="fixed bottom-8 right-8 z-[9999] max-w-[400px] animate-in fade-in slide-in-from-bottom-8 duration-1000 ease-out"
-        role="alert"
-        aria-labelledby="aura-banner-title"
-      >
-        <div className="bg-[#0a0a0a]/95 backdrop-blur-3xl border border-slate-800/50 p-8 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
-          <div className="flex flex-col space-y-6">
-            
-            {/* Live Status Header */}
-            <div className="flex items-center space-x-3">
-              <div className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-500">
-                Identity Bridge v2.2.2
-              </span>
-            </div>
-            
-            <div className="space-y-3">
-              <h3 id="aura-banner-title" className="text-slate-100 text-lg font-semibold tracking-tight">
-                Business Identity Resolution
-              </h3>
-              <p className="text-slate-400 text-[13px] leading-relaxed font-light">
-                Utilize forensic hardware signals to synchronize your professional persona with our B2B intelligence suite. This authorized sync enables strategic outreach via <span className="text-slate-100 font-medium border-b border-slate-700">LinkedIn and Corporate Channels</span>.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-4 pt-2">
-              <button
-                onClick={handleAccept}
-                className="flex-1 py-3 bg-slate-50 hover:bg-white text-black text-xs font-black uppercase tracking-wider rounded transition-all active:scale-95 shadow-xl shadow-white/5"
-              >
-                Authorize Sync
-              </button>
-              <button
-                onClick={handleDismiss}
-                className="px-5 py-3 text-slate-500 hover:text-slate-300 text-[11px] font-semibold transition-colors"
-              >
-                Dismiss
-              </button>
-            </div>
-
-            <p className="text-[9px] text-slate-600 italic text-center">
-              AuraWorks (Pty) Ltd - Industrial-Grade Precision Analytics
-            </p>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-};
-
-export default AuraConsentBanner;
-</file>
-
-<file path="frontend/src/components/consent-banner/lead-enrichment-slide.tsx">
-'use client';
-
-import React, { useState } from 'react';
-import { ArrowRight, X } from 'lucide-react';
-
-// 1. Fixed Interface: Explicitly define onComplete to satisfy TS(2322)
-interface LeadEnrichmentProps {
-  auraId: string | null;
-  onComplete: () => void;
-  onDismiss: () => void;
-}
-
-const LeadEnrichmentSlide = ({ auraId, onComplete, onDismiss }: LeadEnrichmentProps) => {
-  const [step, setStep] = useState(1);
-  const [email, setEmail] = useState('');
-  const [position, setPosition] = useState({ company: '', department: '', role: '' });
-
-  // --- AURA WORKS IDENTITY BRIDGE ---
-  // This helper dispatches a custom event that aura.js is specifically listening for.
-  const signalAuraWarmLead = (data: any) => {
-    if (typeof window !== 'undefined') {
-      const event = new CustomEvent('aura_warm_lead', {
-        detail: {
-          email: data.email || email,
-          company: data.company || position.company,
-          department: data.department || position.department,
-          position: data.role || position.role,
-        }
-      });
-      window.dispatchEvent(event);
-    }
-  };
-
-  const handleEmailNext = async () => {
-    if (!email) return;
-    
-    // 1. Signal aura.js immediately to promote the lead forensic status
-    signalAuraWarmLead({ email });
-
-    // 2. Standard API Partial Capture
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/waitlist/join`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          aura_id: auraId,
-          partial_capture: true 
-        })
-      });
-      setStep(2);
-    } catch (err) {
-      console.error("Partial capture failed", err);
-      setStep(2); 
-    }
-  };
-
-  const handleFinalSubmit = async () => {
-    // 1. Signal aura.js with full professional context
-    signalAuraWarmLead({
-        email,
-        company: position.company,
-        department: position.department,
-        role: position.role
-    });
-
-    // 2. Standard API Full Capture
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/waitlist/join`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          aura_id: auraId,
-          company_name_raw: position.company,
-          industry: position.department,
-          avg_price: position.role, 
-          full_capture: true
-        })
-      });
-      onComplete(); 
-    } catch (err) {
-      onComplete();
-    }
-  };
-
-  return (
-    <div className="bg-[#0a0a0a]/95 backdrop-blur-3xl border border-slate-800/50 p-8 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] w-full max-w-[400px] animate-in slide-in-from-right-10 duration-500">
-      <div className="flex justify-between items-start mb-6">
-        <div className="flex items-center space-x-3">
-          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-          <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-500">Intelligence Phase 02</span>
-        </div>
-        <button onClick={onDismiss} className="text-slate-600 hover:text-slate-300 transition-colors">
-          <X size={16}/>
-        </button>
-      </div>
-
-      {step === 1 ? (
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <h3 className="text-slate-100 text-lg font-semibold italic tracking-tight">Refine Signal Quality</h3>
-            <p className="text-slate-400 text-[13px] leading-relaxed font-light">
-              Provide your work email to receive clinical B2B outreach and facility-specific ROI reports.
-            </p>
-          </div>
-          
-          <input 
-            type="email" 
-            placeholder="Work Email" 
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-transparent border-b border-slate-800 py-3 text-slate-100 text-sm focus:border-emerald-500 transition-colors outline-none"
-          />
-
-          <div className="flex items-center gap-4 pt-2">
-            <button 
-              onClick={handleEmailNext} 
-              className="flex-1 py-3 bg-slate-50 hover:bg-white text-black text-[10px] font-black uppercase tracking-wider rounded flex items-center justify-center gap-2 transition-all active:scale-95"
-            >
-              Next Step <ArrowRight size={14} />
-            </button>
-            <button onClick={onDismiss} className="text-slate-500 text-[10px] font-bold uppercase hover:text-slate-300">
-              No Thanks
-            </button>
-          </div>
-          
-          <div className="pt-4 border-t border-slate-900">
-             <p className="text-[9px] text-slate-600 leading-tight">
-              By proceeding, you authorize industrial synchronization. View our <a href="/legal/privacy" className="underline hover:text-slate-400">Privacy Policy</a>.
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-6 animate-in fade-in slide-in-from-right-5">
-          <div className="space-y-2">
-            <h3 className="text-slate-100 text-lg font-semibold tracking-tight">Organizational Role</h3>
-            <p className="text-slate-400 text-[13px] font-light leading-relaxed">Categorize your professional influence.</p>
-          </div>
-
-          <div className="space-y-4">
-            <input 
-              type="text" 
-              placeholder="Company" 
-              value={position.company}
-              onChange={(e) => setPosition({...position, company: e.target.value})}
-              className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none"
-            />
-            <input 
-              type="text" 
-              placeholder="Department" 
-              value={position.department}
-              onChange={(e) => setPosition({...position, department: e.target.value})}
-              className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none"
-            />
-            <input 
-              type="text" 
-              placeholder="Position" 
-              value={position.role}
-              onChange={(e) => setPosition({...position, role: e.target.value})}
-              className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none"
-            />
-          </div>
-
-          <button 
-            onClick={handleFinalSubmit} 
-            className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded transition-all shadow-lg"
-          >
-            Complete Industrial Sync
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default LeadEnrichmentSlide;
 </file>
 
 <file path="frontend/src/components/footer/footer.tsx">
@@ -6154,6 +5321,195 @@ export default function Footer() {
 }
 </file>
 
+<file path="frontend/src/components/sections/features/features-hero.tsx">
+// 
+'use client'
+
+import { TextEffect } from '@/components/ui/text-effect'
+import { AnimatedGroup } from '@/components/ui/animated-group'
+import { ShieldCheck, Database, Zap } from 'lucide-react'
+
+export default function FeaturesHero() {
+    return (
+        <section className="relative pt-32 pb-20 overflow-hidden md:pt-48">
+            <div className="mx-auto max-w-5xl px-6">
+                <div className="max-w-3xl">
+                    <h1 className="text-5xl font-bold tracking-tight md:text-7xl">
+                        <TextEffect preset="fade-in-blur" speedSegment={0.3}>
+                            De-anonymize Your Industrial Traffic.
+                        </TextEffect>
+                    </h1>
+                    <p className="mt-8 text-lg text-muted-foreground md:text-xl">
+                        The AuraWorks Engine isn't just a tracker. It is a proprietary Identity Bridge that resolves anonymous IP strings into high-intent corporate entities within the South African industrial sector.
+                    </p>
+                </div>
+
+                <AnimatedGroup 
+                    className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-3"
+                    variants={{
+                        container: { visible: { transition: { staggerChildren: 0.1, delayChildren: 0.5 } } },
+                        item: { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }
+                    }}
+                >
+                    {[
+                        { icon: ShieldCheck, title: "POPIA Compliant", desc: "First-party consent protocols built directly into the tracking handshake." },
+                        { icon: Database, title: "Juristic Resolution", desc: "We map traffic to registered business entities, filtering out 98% of residential noise." },
+                        { icon: Zap, title: "Zero Latency", desc: "Our lightweight script adds <20ms to your page load while capturing deep intent data." }
+                    ].map((feature, i) => (
+                        <div key={i} className="group relative rounded-2xl border p-8 bg-card/50 backdrop-blur-sm transition-colors hover:bg-muted/50">
+                            <feature.icon className="size-6 text-primary mb-4" />
+                            <h3 className="font-semibold text-lg">{feature.title}</h3>
+                            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
+                        </div>
+                    ))}
+                </AnimatedGroup>
+            </div>
+        </section>
+    )
+}
+</file>
+
+<file path="frontend/src/components/sections/thanks/thank-you.tsx">
+// @/app/thank-you/page.tsx
+'use client'
+
+import React from 'react'
+import Link from 'next/link'
+// Lucide-react typically uses 'Linkedin' (lowercase 'd') in the latest stable builds
+import { CheckCircle2, Linkedin, ArrowRight } from 'lucide-react' 
+import { Button } from '@/components/ui/button'
+
+export default function ThankYouPage() {
+    const shareText = encodeURIComponent(
+        "I just joined the waitlist for AuraWorks. They're building an Identity Bridge for B2B industrial sales. Check it out: https://auraworks.co.za"
+    );
+
+    return (
+        <main className="relative min-h-screen flex items-center justify-center bg-background px-6 py-12 overflow-hidden">
+            <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-full opacity-20 [background:radial-gradient(50%_50%_at_50%_50%,var(--color-primary)_0%,transparent_100%)] blur-3xl" />
+            </div>
+
+            <div className="w-full max-w-2xl text-center">
+                <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 border border-primary/20">
+                    <CheckCircle2 className="h-10 w-10 text-primary" />
+                </div>
+
+                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl italic">
+                    Application Received.
+                </h1>
+                
+                <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
+                    Thank you for applying to the AuraWorks Beta. We are currently vetting 
+                    applications to ensure every partner in our <strong>initial 100-client cohort</strong> 
+                    receives maximum ROI from the Identity Bridge.
+                </p>
+
+                <div className="mt-12 grid gap-6 sm:grid-cols-2">
+                    <div className="rounded-2xl border bg-muted/30 p-6 text-left border-primary/10">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Current Status</span>
+                        <h3 className="mt-2 text-xl font-semibold">Vetting in Progress</h3>
+                        <p className="mt-1 text-sm text-muted-foreground italic">
+                            Domain verification active.
+                        </p>
+                    </div>
+
+                    <div className="rounded-2xl border bg-muted/30 p-6 text-left">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Priority Access</span>
+                        <h3 className="mt-2 text-xl font-semibold">Jump the Queue</h3>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                            Sharing interest accelerates sector prioritization.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                    <Button 
+                        asChild
+                        size="lg" 
+                        className="rounded-xl px-8 shadow-xl shadow-primary/20 w-full sm:w-auto font-bold"
+                    >
+                        <Link 
+                            href={`https://www.linkedin.com/sharing/share-offsite/?url=https://auraworks.co.za&text=${shareText}`}
+                            target="_blank"
+                        >
+                            <Linkedin className="mr-2 h-4 w-4" />
+                            Share on LinkedIn
+                        </Link>
+                    </Button>
+
+                    <Button 
+                        variant="ghost" 
+                        asChild 
+                        size="lg" 
+                        className="rounded-xl px-8 w-full sm:w-auto text-muted-foreground hover:text-foreground font-bold"
+                    >
+                        <Link href="/">
+                            Return to Site
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
+                    </Button>
+                </div>
+
+                <div className="mt-16 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.4em] font-bold text-muted-foreground/30">
+                    AuraWorks (Pty) Ltd <span className="opacity-20">/</span> Systems Architect
+                </div>
+            </div>
+        </main>
+    )
+}
+</file>
+
+<file path="frontend/src/components/tracker/aura-tracker.tsx">
+"use client";
+
+import { useEffect } from "react";
+
+interface AuraTrackerProps {
+  clientId: string;
+  apiUrl?: string;
+  cdnUrl?: string;
+}
+
+/**
+ * AuraTracker: A modular forensic intelligence loader.
+ * Injects the tracking script with multi-tenant identity mapping.
+ */
+export default function AuraTracker({
+  clientId,
+  apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://dynamic-flow-production-a5d6.up.railway.app",
+  cdnUrl = "https://cdn.auraworks.co.za/aura.js",
+}: AuraTrackerProps) {
+  useEffect(() => {
+    // 1. Global Config for forensic logic fallback
+    (window as any).AURA_CONFIG = { apiUrl };
+    (window as any).AURA_AGENCY_ID = clientId;
+
+    // 2. Create and Inject Script
+    const script = document.createElement("script");
+    script.async = true;
+    
+    // Multi-tenant identification:
+    // This matches the 'agencyId' lookup in aura.js
+    script.setAttribute("data-id", clientId);
+    
+    // Hourly cache-busting (v parameter)
+    const version = Math.floor(Date.now() / 3600000);
+    script.src = `${cdnUrl}?v=${version}`;
+
+    document.head.appendChild(script);
+
+    return () => {
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
+    };
+  }, [clientId, apiUrl, cdnUrl]);
+
+  return null;
+}
+</file>
+
 <file path="frontend/src/components/ui/logo.tsx">
 // frontend/src/components/brand/Logo.tsx
 import Image from 'next/image'
@@ -6216,6 +5572,479 @@ export const LogoIcon = ({ className }: { className?: string }) => {
 }
 </file>
 
+<file path="backend/app/api/v1/leads.py">
+# backend/app/api/v1/endpoints/leads.py
+from fastapi import APIRouter, Query, HTTPException, Depends
+from typing import List, Optional, Dict, Any
+from sqlmodel import select, desc, func
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+from app.db import get_async_session
+from app.models.waitlist import WaitlistLead
+from app.models.company import Company
+from app.models.visit import Visit
+import logging
+
+router = APIRouter()
+logger = logging.getLogger("uvicorn")
+
+@router.get("/")
+async def get_leads(
+    client_id: str = Query(...),
+    limit: int = Query(default=50, le=100),
+    session: AsyncSession = Depends(get_async_session)
+):
+    """
+    Industrial Ledger: Retrieves leads and prioritizes 'Warm Leads' (those with volunteered data).
+    Joins with Company data to show total corporate engagement.
+    """
+    try:
+        # 1. Build the Query: Order by creation but prioritize records with emails/positions
+        # This surfaces 'Warm Leads' who interacted with the banner/waitlist first
+        statement = (
+            select(WaitlistLead, Company)
+            .where(WaitlistLead.client_id == client_id)
+            .outerjoin(Company, WaitlistLead.company_id == Company.id)
+            .order_by(desc(WaitlistLead.created_at))
+            .limit(limit)
+        )
+        
+        results = await session.execute(statement)
+        leads_data = []
+
+        for lead, company in results:
+            # Determine 'Warmth' based on data completeness
+            is_warm = all([lead.email, lead.company_name_raw])
+            
+            leads_data.append({
+                "id": lead.id,
+                "created_at": lead.created_at,
+                "name": lead.name or "Anonymous Lead",
+                "email": lead.email,
+                "position": lead.position,
+                "department": lead.department,
+                "aura_id": lead.aura_id,
+                "is_warm": is_warm,
+                "company": {
+                    "name": company.name if company else lead.company_name_raw or "Unknown Entity",
+                    "domain": company.domain if company else None,
+                    "industry": company.industry if company else lead.industry,
+                    "total_visits": company.total_visits if company else 1,
+                    "is_verified": company.is_verified if company else False
+                }
+            })
+            
+        return leads_data
+
+    except Exception as e:
+        logger.error(f"🚨 Lead Retrieval Failure: {e}")
+        raise HTTPException(status_code=500, detail="Internal Ledger Error")
+
+@router.get("/intelligence")
+async def get_lead_intelligence(
+    aura_id: str, 
+    session: AsyncSession = Depends(get_async_session)
+):
+    """
+    Provides the forensic audit for a specific lead, including their 
+    behavioral journey and facility activity clusters.
+    """
+    try:
+        # 1. Resolve Lead Identity
+        lead_stmt = select(WaitlistLead).where(WaitlistLead.aura_id == aura_id)
+        res_lead = await session.execute(lead_stmt)
+        lead = res_lead.scalars().first()
+        
+        if not lead:
+            raise HTTPException(status_code=404, detail="Lead signature not found.")
+
+        # 2. Resolve Company Forensic Data
+        company = None
+        if lead.company_id:
+            company = await session.get(Company, lead.company_id)
+
+        # 3. Pull Visit History for Activity Heatmap
+        visit_stmt = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at.desc())
+        res_visits = await session.execute(visit_stmt)
+        visits = res_visits.scalars().all()
+
+        return {
+            "lead_profile": {
+                "name": lead.name,
+                "position": lead.position,
+                "department": lead.department,
+                "email": lead.email
+            },
+            "company_intel": company,
+            "forensic_trail": [
+                {"timestamp": v.created_at, "url": v.url, "duration": v.duration} 
+                for v in visits
+            ],
+            "total_engagement_points": len(visits)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"🚨 Intelligence Retrieval Failure: {e}")
+        raise HTTPException(status_code=500, detail="Intelligence Engine Offline")
+</file>
+
+<file path="backend/app/services/airtable.py">
+import logging
+import asyncio
+from datetime import datetime, timezone
+from app.core.config import settings
+from pyairtable import Api
+
+logger = logging.getLogger("uvicorn")
+
+class AirtableEngine:
+    def __init__(self):
+        """
+        Initializes the Airtable connection using ProductionSettings.
+        """
+        # Centralized configuration access from settings
+        self.token = settings.AIRTABLE_API_KEY
+        self.base_id = settings.AIRTABLE_BASE_ID
+        self.table_name = settings.AIRTABLE_TABLE_NAME 
+        
+        if not self.token or not self.base_id:
+            logger.warning("⚠️ Airtable Engine: Missing credentials in environment. Standing by...")
+            self.table = None
+        else:
+            try:
+                self.api = Api(self.token)
+                self.table = self.api.table(self.base_id, self.table_name)
+                logger.info(f"✅ Airtable Engine: Linked to Vault '{self.table_name}'")
+            except Exception as e:
+                logger.error(f"❌ Airtable Engine: Initialization failed: {e}")
+                self.table = None
+
+    async def push_visit(self, data: dict):
+        """
+        Pushes high-intent corporate signals to the Airtable Ledger.
+        Uses clinical validation and thread offloading for production performance.
+        """
+        # Final safety check: Pull fresh state from settings
+        # This prevents crashes if credentials are changed in Railway during runtime
+        current_token = settings.AIRTABLE_API_KEY
+        current_base = settings.AIRTABLE_BASE_ID
+
+        if not all([current_token, current_base]):
+            # Silently exit if credentials are removed in production variables
+            return {"status": "standby", "reason": "missing_credentials"}
+
+        if not self.table:
+            # Re-attempt initialization if keys were provided after startup
+            try:
+                self.api = Api(current_token)
+                self.table = self.api.table(current_base, self.table_name)
+            except:
+                return {"status": "error", "reason": "vault_not_initialized"}
+
+        try:
+            # Map Jura-level data to the Airtable Schema
+            record = {
+                "Entity Name": data.get("company_name", "Anonymous Facility"),
+                "Domain": data.get("domain", "unknown.com"),
+                "Status": "Forensic Capture",
+                "IP Address": data.get("ip_address"),
+                "Location": f"{data.get('city', 'Unknown')}, {data.get('country_name', 'South Africa')}",
+                "Intelligence Summary": data.get("summary", "Awaiting Intelligence Audit..."),
+                "Aura ID": data.get("aura_id"),
+                "Connection": data.get("effective_connection_type", "Standard"),
+                "Detected At": datetime.now(timezone.utc).isoformat()
+            }
+            
+            # Execute blocking pyairtable call in a separate thread
+            await asyncio.to_thread(self.table.create, record)
+            
+            logger.info(f"💼 Vault: Industrial Signal logged for {record['Entity Name']}")
+            return {"status": "success"}
+            
+        except Exception as e:
+            logger.error(f"❌ Vault Sync Failure: {e}")
+            return {"status": "error", "message": str(e)}
+
+# Global instantiation for use throughout AuraWorks OS
+airtable_engine = AirtableEngine()
+</file>
+
+<file path="frontend/src/components/book-call/call-page.tsx">
+// @/app/book-call/page.tsx
+'use client'
+
+import React from 'react'
+import Link from 'next/link'
+import { ArrowLeft, CheckCircle2, Clock, ShieldCheck, Zap } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { HeroHeader } from '@/components/header/header'
+
+const benefits = [
+    {
+        title: "15-Minute Discovery",
+        desc: "A brief technical overview of how we identify your anonymous traffic.",
+        icon: <Clock className="h-5 w-5 text-primary" />
+    },
+    {
+        title: "Systems Review",
+        desc: "We analyze your current site traffic to see if you're a fit for the 100-client cohort.",
+        icon: <Zap className="h-5 w-5 text-primary" />
+    },
+    {
+        title: "Privacy First",
+        desc: "A look at our Identity Bridge and how we stay POPIA compliant.",
+        icon: <ShieldCheck className="h-5 w-5 text-primary" />
+    }
+]
+
+export default function BookCallPage() {
+    return <>
+        
+        <main className="min-h-screen bg-background">
+            {/* Minimal Header specifically for this page */}
+            <nav className="p-6">
+                <Button variant="ghost" asChild className="text-muted-foreground hover:text-foreground">
+                    <Link href="/">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back to Home
+                    </Link>
+                </Button>
+            </nav>
+
+            <div className="mx-auto max-w-7xl px-6 pb-24 pt-10 lg:flex lg:gap-x-12 lg:px-8">
+                {/* Left Column: Context & Authority */}
+                <div className="flex-1 lg:max-w-md">
+                    <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+                        Schedule a Strategy Session
+                    </h1>
+                    <p className="mt-6 text-lg text-muted-foreground">
+                        Let's discuss how AuraWorks can bridge the gap between your website visitors and your sales team's inbox.
+                    </p>
+
+                    <div className="mt-12 space-y-8">
+                        {benefits.map((item, idx) => (
+                            <div key={idx} className="flex gap-x-4">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border bg-muted/50">
+                                    {item.icon}
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-foreground">{item.title}</h3>
+                                    <p className="text-sm text-muted-foreground">{item.desc}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="mt-12 rounded-2xl border bg-muted/30 p-6">
+                        <div className="flex items-center gap-x-2 text-sm font-medium text-primary">
+                            <CheckCircle2 className="h-4 w-4" />
+                            <span>Current Cohort Status: 12/100 Seats Filled</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Column: The Scheduler */}
+                <div className="mt-16 flex-1 lg:mt-0">
+                    <div className="relative h-[650px] w-full overflow-hidden rounded-2xl border bg-card shadow-2xl">
+                        {/* REPLACE THE SRC BELOW WITH YOUR CALENDLY OR CAL.COM LINK 
+                            Or use a placeholder div if you haven't set one up yet.
+                        */}
+                        <iframe
+                            src="https://calendly.com/auraworks221/30min"
+                            width="100%"
+                            height="100%"
+                            frameBorder="0"
+                            title="Schedule a Call"
+                            className="bg-white dark:bg-zinc-900"
+                        ></iframe>
+                        
+                        {/* Loader Overlay (Optional) */}
+                        <div className="absolute inset-0 -z-10 flex items-center justify-center bg-muted">
+                            <span className="text-sm text-muted-foreground">Loading Scheduler...</span>
+                        </div>
+                    </div>
+                    
+                    <p className="mt-4 text-center text-sm text-muted-foreground">
+                        Prefer email? <Link href="mailto:reitumetse@auraworks.co.za" className="text-primary hover:underline">reitumetse@auraworks.co.za</Link>
+                    </p>
+                </div>
+            </div>
+        </main>
+    </>
+}
+</file>
+
+<file path="frontend/src/components/consent-banner/consent-banner.tsx">
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import LeadEnrichmentSlide from './lead-enrichment-slide';
+
+const AuraConsentBanner = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [showEnrichment, setShowEnrichment] = useState(false);
+  const [auraId, setAuraId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const hasConsent = typeof window !== 'undefined' && localStorage.getItem('aura_consent_given');
+    const hasEnriched = typeof window !== 'undefined' && localStorage.getItem('aura_lead_captured');
+
+    // Logic: Trigger enrichment only after consent is given and significant dwell time occurs
+    if (hasConsent && !hasEnriched) {
+      const enrichmentTimer = setTimeout(() => {
+        const id = localStorage.getItem('aura_uid') || (window as any).AURA_UID;
+        setAuraId(id);
+        setShowEnrichment(true);
+      }, 10000); // 10s = Significant interest
+      return () => clearTimeout(enrichmentTimer);
+    }
+
+    if (!hasConsent) {
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleAccept = async () => {
+    const id = typeof window !== 'undefined' ? (localStorage.getItem('aura_uid') || (window as any).AURA_UID) : null;
+    const clientId = typeof window !== 'undefined' ? (window as any).AURA_ID : null;
+    setAuraId(id);
+
+    // 1. Mark consent in LocalStorage for UI persistence
+    localStorage.setItem('aura_consent_given', 'true');
+    
+    // 2. GATE 1 HANDSHAKE: Notify Backend for Identity Promotion
+    if (id && clientId) {
+      try {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/track/consent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            client_id: clientId,
+            aura_id: id,
+            status: 'accepted'
+          })
+        });
+      } catch (err) {
+        console.error("⚠️ AuraWorks: Background consent sync failed.", err);
+      }
+    }
+
+    // 3. Dispatch CustomEvent for aura.js (Triggers immediate forensic reveal)
+    if (typeof window !== 'undefined' && window.dispatchEvent) {
+      window.dispatchEvent(new CustomEvent('aura_consent_updated', { 
+        detail: { status: 'accepted', source: 'executive_bridge' } 
+      }));
+    }
+
+    setIsVisible(false);
+    
+    // Smooth transition to Phase 02 (Enrichment Slide) after a short delay
+    setTimeout(() => {
+      setShowEnrichment(true);
+    }, 1500);
+  };
+
+  const handleDismiss = () => {
+    setIsVisible(false);
+    // Note: We don't set 'aura_consent_given' here, ensuring the lead is reminded on return.
+  };
+  
+  const handleEnrichmentComplete = () => {
+    localStorage.setItem('aura_lead_captured', 'true');
+    setShowEnrichment(false);
+  };
+
+  // Phase 02: Lead Enrichment Slide
+  if (showEnrichment) {
+    return (
+      <div className="fixed bottom-8 right-8 z-[9999]">
+        <LeadEnrichmentSlide 
+          auraId={auraId} 
+          onComplete={handleEnrichmentComplete}
+          onDismiss={() => setShowEnrichment(false)} 
+        />
+      </div>
+    );
+  }
+
+  // Phase 01: Initial Consent Banner
+  if (!isVisible) return null;
+
+  return (
+    <>
+      {/* 🛡️ THE HONEY POT: Bot Detection */}
+      <a 
+        href="#" 
+        id="aura-v-check" 
+        style={{ display: 'none', position: 'absolute', opacity: 0, pointerEvents: 'none' }}
+        aria-hidden="true"
+        tabIndex={-1}
+      >
+        Verify Browser Architecture
+      </a>
+
+      {/* 🎨 THE UI: Executive Identity Bridge Banner */}
+      <div 
+        className="fixed bottom-8 right-8 z-[9999] max-w-[400px] animate-in fade-in slide-in-from-bottom-8 duration-1000 ease-out"
+        role="alert"
+        aria-labelledby="aura-banner-title"
+      >
+        <div className="bg-[#0a0a0a]/95 backdrop-blur-3xl border border-slate-800/50 p-8 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+          <div className="flex flex-col space-y-6">
+            
+            {/* Live Status Header */}
+            <div className="flex items-center space-x-3">
+              <div className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-500">
+                Identity Bridge v2.2.2
+              </span>
+            </div>
+            
+            <div className="space-y-3">
+              <h3 id="aura-banner-title" className="text-slate-100 text-lg font-semibold tracking-tight">
+                Business Identity Resolution
+              </h3>
+              <p className="text-slate-400 text-[13px] leading-relaxed font-light">
+                Utilize forensic hardware signals to synchronize your professional persona with our B2B intelligence suite. This authorized sync enables strategic outreach via <span className="text-slate-100 font-medium border-b border-slate-700">LinkedIn and Corporate Channels</span>.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4 pt-2">
+              <button
+                onClick={handleAccept}
+                className="flex-1 py-3 bg-slate-50 hover:bg-white text-black text-xs font-black uppercase tracking-wider rounded transition-all active:scale-95 shadow-xl shadow-white/5"
+              >
+                Authorize Sync
+              </button>
+              <button
+                onClick={handleDismiss}
+                className="px-5 py-3 text-slate-500 hover:text-slate-300 text-[11px] font-semibold transition-colors"
+              >
+                Dismiss
+              </button>
+            </div>
+
+            <p className="text-[9px] text-slate-600 italic text-center">
+              AuraWorks (Pty) Ltd - Industrial-Grade Precision Analytics
+            </p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default AuraConsentBanner;
+</file>
+
 <file path="REMEMBER.md">
 # MEMORY.md | AuraWorks 2.2.0: Industrial Intelligence Engine
 
@@ -6269,151 +6098,78 @@ from .waitlist import WaitlistLead
 # Do NOT include router logic here
 </file>
 
-<file path="backend/app/services/enrichment.py">
-# backend/app/services/enrichment.py
-import httpx
+<file path="backend/app/tasks/janitor.py">
+# backend/app/tasks/janitor.py
 import logging
-import socket
-from app.core.config import settings
-from typing import Optional, List, Dict, Any
+from datetime import datetime, timedelta, timezone
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db import engine, get_async_session
+from app.models.visit import Visit
+from app.models.waitlist import WaitlistLead
 
 logger = logging.getLogger("uvicorn")
 
-# --- AuraWorks Identity Bridge: Consumer ISP & Infrastructure Blacklist ---
-CONSUMER_ISP_KEYWORDS = [
-    "vodacom", "mtn", "telkom", "liquid", "cool ideas", "vumatel", "rain", 
-    "isp", "residential", "pool", "dynamic", "dsl", "fiber", "mobile"
-]
-
-def is_consumer_traffic(target_name: str) -> bool:
-    """Detects if a visit originates from a known consumer ISP."""
-    if not target_name:
-        return False
-    normalized = target_name.lower()
-    return any(keyword in normalized for keyword in CONSUMER_ISP_KEYWORDS)
-
-def perform_local_reverse_dns(ip_address: str) -> Dict[str, Any]:
+async def cleanup_unverified_visits():
     """
-    Layer 1: Zero-Cost Classification.
-    Identifies cloud providers and obvious ISPs without burning API credits.
+    The Industrial Janitor: Purges residential/bot noise while 
+    protecting high-intent leads and the 'Ghost Bridge'.
     """
-    try:
-        hostname, _, _ = socket.gethostbyaddr(ip_address)
-        hostname = hostname.lower()
-        
-        if any(cloud in hostname for cloud in ["amazonaws", "googleusercontent", "azure", "static.cloud"]):
-            return {"type": "cloud", "provider": "Infrastructure", "confidence": 0.5}
-        if is_consumer_traffic(hostname):
-            return {"type": "isp", "provider": "Consumer ISP", "confidence": 0.2}
-        
-        return {"type": "business_static", "provider": hostname, "confidence": 0.7}
-    except Exception:
-        return {"type": "unknown", "provider": "Unknown", "confidence": 0.0}
-
-async def enrich_visitor_data(ip_address: str, volunteered_company: Optional[str] = None) -> dict:
-    """
-    Phase 01: Forensic IP Resolution with Warm Lead Overrides.
-    If 'volunteered_company' is provided, it forces a B2B high-confidence state.
-    """
-    if ip_address in ("127.0.0.1", "localhost", ::1"):
-        return {"company_name": "Local Test Environment", "is_b2b": False, "confidence_score": 1.0}
-
-    # 1. Warm Lead Override: If the user told us who they are, believe them.
-    if volunteered_company and not is_consumer_traffic(volunteered_company):
-        return {
-            "company_name": volunteered_company,
-            "domain": None,
-            "is_b2b": True,
-            "confidence_score": 1.0,
-            "industry": "Volunteered Data",
-            "provider_type": "Warm Lead"
-        }
-
-    # 2. Layer 1 Check (Local Reverse DNS)
-    local_intel = perform_local_reverse_dns(ip_address)
-
-    # 3. Layer 2 Check (IPinfo)
-    url = f"https://ipinfo.io/{ip_address}?token={settings.IPINFO_TOKEN}"
-
-    async with httpx.AsyncClient() as client:
+    logger.info("🧹 AuraWorks OS: Activating 48-hour Janitor Sweep...")
+    
+    # 1. Define the 'Noise' Threshold (48 hours)
+    # Allows a window for 'Late Promotion' via the Banner/Waitlist.
+    threshold = datetime.now(timezone.utc) - timedelta(hours=48)
+    
+    # We use a manual session block here since this runs in a background task
+    async with AsyncSession(engine) as session:
         try:
-            response = await client.get(url, timeout=5.0)
-            if response.status_code != 200:
-                return {"company_name": "Unknown", "is_b2b": False, "confidence_score": 0.0}
-
-            data = response.json()
-            company_data = data.get("company", {})
-            asn_data = data.get("asn", {})
+            # 2. Identify 'Verifying' records older than the threshold
+            statement = select(Visit).where(
+                Visit.verification_status == "verifying",
+                Visit.created_at < threshold
+            )
+            result = await session.execute(statement)
+            candidates = result.scalars().all()
             
-            final_name = company_data.get("name")
-            final_domain = company_data.get("domain")
+            if not candidates:
+                logger.info("✅ Janitor: Forensic vault is already optimized.")
+                return
 
-            if not final_name:
-                org_full = data.get("org", "Unknown")
-                final_name = " ".join(org_full.split(" ")[1:]) if org_full.startswith("AS") else org_full
+            purged_count = 0
+            promoted_count = 0
 
-            asn_type = asn_data.get("type", "").lower()
-            
-            # --- CALCULATE CONFIDENCE SCORE ---
-            confidence = 0.5 # Baseline
-            
-            if asn_type == "business": confidence += 0.4
-            if asn_type == "hosting": confidence -= 0.2
-            if is_consumer_traffic(final_name) or is_consumer_traffic(data.get("org", "")):
-                confidence -= 0.4
-            
-            # Final determination for the 'Industrial' threshold
-            is_b2b = confidence >= 0.5
-
-            return {
-                "company_name": final_name,
-                "domain": final_domain or asn_data.get("domain"),
-                "is_b2b": is_b2b,
-                "confidence_score": round(max(0.0, min(1.0, confidence)), 2),
-                "industry": asn_type or "unknown",
-                "city": data.get("city"),
-                "region": data.get("region"),
-                "provider_type": local_intel["type"]
-            }
-        except Exception as e:
-            logger.error(f"IPinfo Failure: {e}")
-            return {"company_name": "Error", "is_b2b": False, "confidence_score": 0.0}
-
-async def get_departmental_intelligence(domain: str) -> List[Dict]:
-    """
-    Phase 02: Industrial Cluster Mapping (Apollo.io).
-    """
-    if not settings.APOLLO_API_KEY or not domain or domain in ["unknown.com", "n/a"]:
-        return []
-
-    url = "https://api.apollo.io/v1/people/search"
-    target_departments = ["Procurement", "Operations", "Engineering", "Maintenance", "Supply Chain"]
-
-    payload = {
-        "api_key": settings.APOLLO_API_KEY,
-        "q_organization_domains": domain,
-        "person_titles": target_departments,
-        "organization_locations": ["South Africa"],
-        "display_mode": "regular",
-        "per_page": 5
-    }
-
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(url, json=payload, timeout=12.0)
-            if response.status_code == 200:
-                data = response.json()
-                people = data.get("people", [])
+            for visit in candidates:
+                # 3. SAFETY CHECK: The 'Waitlist Shield'
+                # If an aura_id has a matching WaitlistLead, we promote the visit.
+                # This ensures forensic data is saved for anyone who interacted with the banner.
+                lead_stmt = select(WaitlistLead).where(WaitlistLead.aura_id == visit.aura_id)
+                lead_res = await session.execute(lead_stmt)
+                has_lead = lead_res.scalars().first()
                 
-                return [{
-                    "name": person.get("title", "Lead"),
-                    "email": person.get("email"),
-                    "phone": person.get("phone_numbers", [{}])[0].get("raw_number"),
-                    "head_of_dept_linkedin": person.get("linkedin_url")
-                } for person in people]
-            return []
-        except Exception:
-            return []
+                if has_lead:
+                    # Upgrade the visit status: Shielded from future purges
+                    visit.verification_status = "verified"
+                    if has_lead.company_id:
+                        visit.company_id = has_lead.company_id
+                    
+                    session.add(visit)
+                    promoted_count += 1
+                    continue
+
+                # 4. Final Purge for actual noise (Residential/Bot traffic)
+                await session.delete(visit)
+                purged_count += 1
+
+            await session.commit()
+            logger.info(
+                f"🗑️ Janitor: Purged {purged_count} noise signatures. "
+                f"🛡️ Promoted {promoted_count} high-intent visits. Vault optimized."
+            )
+
+        except Exception as e:
+            await session.rollback()
+            logger.error(f"🚨 Janitor Failure: {e}")
 </file>
 
 <file path="backend/app/db.py">
@@ -6798,6 +6554,414 @@ export default function UnifiedDashboard() {
       </div>
     </div>
   );
+}
+</file>
+
+<file path="frontend/src/components/consent-banner/lead-enrichment-slide.tsx">
+'use client';
+
+import React, { useState } from 'react';
+import { ArrowRight, X } from 'lucide-react';
+
+// 1. Fixed Interface: Explicitly define onComplete to satisfy TS(2322)
+interface LeadEnrichmentProps {
+  auraId: string | null;
+  onComplete: () => void;
+  onDismiss: () => void;
+}
+
+const LeadEnrichmentSlide = ({ auraId, onComplete, onDismiss }: LeadEnrichmentProps) => {
+  const [step, setStep] = useState(1);
+  const [email, setEmail] = useState('');
+  const [position, setPosition] = useState({ company: '', department: '', role: '' });
+
+  // --- AURA WORKS IDENTITY BRIDGE ---
+  // This helper dispatches a custom event that aura.js is specifically listening for.
+  const signalAuraWarmLead = (data: any) => {
+    if (typeof window !== 'undefined') {
+      const event = new CustomEvent('aura_warm_lead', {
+        detail: {
+          email: data.email || email,
+          company: data.company || position.company,
+          department: data.department || position.department,
+          position: data.role || position.role,
+        }
+      });
+      window.dispatchEvent(event);
+    }
+  };
+
+  const handleEmailNext = async () => {
+    if (!email) return;
+    
+    // 1. Signal aura.js immediately to promote the lead forensic status
+    signalAuraWarmLead({ email });
+
+    // 2. Standard API Partial Capture
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/waitlist/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          aura_id: auraId,
+          partial_capture: true 
+        })
+      });
+      setStep(2);
+    } catch (err) {
+      console.error("Partial capture failed", err);
+      setStep(2); 
+    }
+  };
+
+  const handleFinalSubmit = async () => {
+    // 1. Signal aura.js with full professional context
+    signalAuraWarmLead({
+        email,
+        company: position.company,
+        department: position.department,
+        role: position.role
+    });
+
+    // 2. Standard API Full Capture
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/waitlist/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          aura_id: auraId,
+          company_name_raw: position.company,
+          industry: position.department,
+          avg_price: position.role, 
+          full_capture: true
+        })
+      });
+      onComplete(); 
+    } catch (err) {
+      onComplete();
+    }
+  };
+
+  return (
+    <div className="bg-[#0a0a0a]/95 backdrop-blur-3xl border border-slate-800/50 p-8 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] w-full max-w-[400px] animate-in slide-in-from-right-10 duration-500">
+      <div className="flex justify-between items-start mb-6">
+        <div className="flex items-center space-x-3">
+          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+          <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-500">Intelligence Phase 02</span>
+        </div>
+        <button onClick={onDismiss} className="text-slate-600 hover:text-slate-300 transition-colors">
+          <X size={16}/>
+        </button>
+      </div>
+
+      {step === 1 ? (
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <h3 className="text-slate-100 text-lg font-semibold italic tracking-tight">Refine Signal Quality</h3>
+            <p className="text-slate-400 text-[13px] leading-relaxed font-light">
+              Provide your work email to receive clinical B2B outreach and facility-specific ROI reports.
+            </p>
+          </div>
+          
+          <input 
+            type="email" 
+            placeholder="Work Email" 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full bg-transparent border-b border-slate-800 py-3 text-slate-100 text-sm focus:border-emerald-500 transition-colors outline-none"
+          />
+
+          <div className="flex items-center gap-4 pt-2">
+            <button 
+              onClick={handleEmailNext} 
+              className="flex-1 py-3 bg-slate-50 hover:bg-white text-black text-[10px] font-black uppercase tracking-wider rounded flex items-center justify-center gap-2 transition-all active:scale-95"
+            >
+              Next Step <ArrowRight size={14} />
+            </button>
+            <button onClick={onDismiss} className="text-slate-500 text-[10px] font-bold uppercase hover:text-slate-300">
+              No Thanks
+            </button>
+          </div>
+          
+          <div className="pt-4 border-t border-slate-900">
+             <p className="text-[9px] text-slate-600 leading-tight">
+              By proceeding, you authorize industrial synchronization. View our <a href="/legal/privacy" className="underline hover:text-slate-400">Privacy Policy</a>.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-6 animate-in fade-in slide-in-from-right-5">
+          <div className="space-y-2">
+            <h3 className="text-slate-100 text-lg font-semibold tracking-tight">Organizational Role</h3>
+            <p className="text-slate-400 text-[13px] font-light leading-relaxed">Categorize your professional influence.</p>
+          </div>
+
+          <div className="space-y-4">
+            <input 
+              type="text" 
+              placeholder="Company" 
+              value={position.company}
+              onChange={(e) => setPosition({...position, company: e.target.value})}
+              className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none"
+            />
+            <input 
+              type="text" 
+              placeholder="Department" 
+              value={position.department}
+              onChange={(e) => setPosition({...position, department: e.target.value})}
+              className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none"
+            />
+            <input 
+              type="text" 
+              placeholder="Position" 
+              value={position.role}
+              onChange={(e) => setPosition({...position, role: e.target.value})}
+              className="w-full bg-transparent border-b border-slate-800 py-2 text-slate-100 text-sm focus:border-emerald-500 outline-none"
+            />
+          </div>
+
+          <button 
+            onClick={handleFinalSubmit} 
+            className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded transition-all shadow-lg"
+          >
+            Complete Industrial Sync
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default LeadEnrichmentSlide;
+</file>
+
+<file path="frontend/src/components/hero-sec/hero-section.tsx">
+import React from 'react'
+import Link from 'next/link'
+import { ArrowRight, ChevronRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import Image from 'next/image'
+import { TextEffect } from '@/components/ui/text-effect'
+import { AnimatedGroup } from '@/components/ui/animated-group'
+import { HeroHeader } from '../header/header'
+{/* 
+import { Spotify } from '@/components/ui/svgs/spotify'
+import { SupabaseFull } from '@/components/ui/svgs/supabase'
+import { Hulu } from '@/components/ui/svgs/hulu'
+import { Bolt } from '@/components/ui/svgs/bolt'
+import { FirebaseFull } from '@/components/ui/svgs/firebase'
+import { Beacon } from '@/components/ui/svgs/beacon'
+import { Claude } from '@/components/ui/svgs/claude'
+import { VercelFull } from '@/components/ui/svgs/vercel'
+*/}
+
+const transitionVariants = {
+    item: {
+        hidden: {
+            opacity: 0,
+            filter: 'blur(12px)',
+            y: 12,
+        },
+        visible: {
+            opacity: 1,
+            filter: 'blur(0px)',
+            y: 0,
+            transition: {
+                type: 'spring',
+                bounce: 0.3,
+                duration: 1.5,
+            },
+        },
+    },
+} as const;
+
+export default function HeroSection() {
+    return (
+        <>
+            <HeroHeader />
+            <main className="overflow-hidden">
+                <div
+                    aria-hidden
+                    className="absolute inset-0 isolate hidden opacity-65 contain-strict lg:block">
+                    <div className="w-140 h-320 -translate-y-87.5 absolute left-0 top-0 -rotate-45 rounded-full bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,hsla(0,0%,85%,.08)_0,hsla(0,0%,55%,.02)_50%,hsla(0,0%,45%,0)_80%)]" />
+                    <div className="h-320 absolute left-0 top-0 w-60 -rotate-45 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.06)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)] [translate:5%_-50%]" />
+                    <div className="h-320 -translate-y-87.5 absolute left-0 top-0 w-60 -rotate-45 bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.04)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)]" />
+                </div>
+                <section>
+                    {/* FIXED: Specific padding to align with the background radial mask */}
+                    <div className="relative pt-24 pb-0 px-0 md:pt-48">
+                        <AnimatedGroup
+                            variants={{
+                                container: {
+                                    visible: {
+                                        transition: {
+                                            delayChildren: 1,
+                                        },
+                                    },
+                                },
+                                item: {
+                                    hidden: {
+                                        opacity: 0,
+                                        y: 20,
+                                    },
+                                    visible: {
+                                        opacity: 1,
+                                        y: 0,
+                                        transition: {
+                                            type: 'spring',
+                                            bounce: 0.3,
+                                            duration: 2,
+                                        },
+                                    },
+                                },
+                            }}
+                            className="mask-b-from-35% mask-b-to-90% absolute inset-0 top-56 -z-20 lg:top-32">
+                            <Image
+                                src="https://ik.imagekit.io/lrigu76hy/tailark/night-background.jpg?updatedAt=1745733451120"
+                                alt="background"
+                                className="hidden size-full dark:block object-cover"
+                                width="3276"
+                                height="4095"
+                                priority
+                            />
+                        </AnimatedGroup>
+
+                        <div
+                            aria-hidden
+                            className="absolute inset-0 -z-10 size-full [background:radial-gradient(125%_125%_at_50%_100%,transparent_0%,var(--color-background)_75%)]"
+                        />
+
+                        <div className="mx-auto max-w-7xl px-6">
+                            <div className="text-center sm:mx-auto lg:mr-auto lg:mt-0">
+                                <AnimatedGroup variants={transitionVariants}>
+                                    <Link
+                                        href="/features"
+                                        className="hover:bg-background dark:hover:border-t-border bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-zinc-950/5 transition-colors duration-300 dark:border-t-white/5 dark:shadow-zinc-950">
+                                        <span className="text-foreground text-sm">Industrial Sales Intelligence</span>
+                                        <span className="dark:border-background block h-4 w-0.5 border-l bg-white dark:bg-zinc-700"></span>
+
+                                        <div className="bg-background group-hover:bg-muted size-6 overflow-hidden rounded-full duration-500">
+                                            <div className="flex w-12 -translate-x-1/2 duration-500 ease-in-out group-hover:translate-x-0">
+                                                <span className="flex size-6">
+                                                    <ArrowRight className="m-auto size-3" />
+                                                </span>
+                                                <span className="flex size-6">
+                                                    <ArrowRight className="m-auto size-3" />
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                </AnimatedGroup>
+
+                                <TextEffect
+                                    preset="fade-in-blur"
+                                    speedSegment={0.3}
+                                    as="h1"
+                                    className="mx-auto mt-8 max-w-4xl text-balance text-5xl font-bold md:text-7xl lg:mt-16 xl:text-[4rem] tracking-tight">
+                                    Know Which Companies Are Researching Your Products
+                                </TextEffect>
+                                <TextEffect
+                                    per="line"
+                                    preset="fade-in-blur"
+                                    speedSegment={0.3}
+                                    delay={0.5}
+                                    as="p"
+                                    className="mx-auto mt-8 max-w-2xl text-balance text-lg text-muted-foreground">
+                                    AuraWorks identifies your anonymous industrial visitors and delivers their contact info to your inbox. Simple, weekly leads for your sales team.
+                                </TextEffect>
+
+                                <AnimatedGroup
+                                    variants={{
+                                        container: {
+                                            visible: {
+                                                transition: {
+                                                    staggerChildren: 0.05,
+                                                    delayChildren: 0.75,
+                                                },
+                                            },
+                                        },
+                                        ...transitionVariants,
+                                    }}
+                                    className="mt-12 flex flex-col items-center justify-center gap-4 md:flex-row">
+                                    <Button
+                                        asChild
+                                        size="lg"
+                                        className="rounded-xl px-8 text-base shadow-xl shadow-primary/20">
+                                        <Link href="/get-started">
+                                            <span className="text-nowrap">Get Started</span>
+                                        </Link>
+                                    </Button>
+                                    <Button
+                                        asChild
+                                        size="lg"
+                                        variant="ghost"
+                                        className="rounded-xl px-8 text-base">
+                                        <Link href="/book-call">
+                                            <span className="text-nowrap">Book a Call</span>
+                                        </Link>
+                                    </Button>
+                                </AnimatedGroup>
+                            </div>
+                        </div>
+
+                        <AnimatedGroup
+                            variants={{
+                                container: {
+                                    visible: {
+                                        transition: {
+                                            staggerChildren: 0.05,
+                                            delayChildren: 0.75,
+                                        },
+                                    },
+                                },
+                                ...transitionVariants,
+                            }}>
+                            <div className="mask-b-from-55% relative mr-0 mt-8 overflow-hidden px-2 sm:mr-0 sm:mt-12 md:mt-20">
+                                
+                                <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-2xl shadow-zinc-950/20 ring-1">
+                                    <Image
+                                        className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
+                                        src="/mail2.png"
+                                        alt="industrial lead report dashboard"
+                                        width="2700"
+                                        height="1440"
+                                        priority
+                                    />
+                                    <Image
+                                        className="z-2 border-border/25 aspect-15/8 relative rounded-2xl border dark:hidden"
+                                        src="/mail2-light.webp"
+                                        alt="industrial lead report dashboard"
+                                        width="2700"
+                                        height="1440"
+                                        priority
+                                    />
+                                </div>
+                            </div>
+                        </AnimatedGroup>
+                    </div>
+                </section>
+                
+                {/* Social Proof Section 
+                <section className="bg-background pb-16 pt-24 md:pb-32">
+                    <div className="group relative m-auto max-w-5xl px-6">
+                        <div className="group-hover:blur-xs **:fill-muted-foreground mx-auto grid max-w-2xl grid-cols-3 gap-x-12 gap-y-8 transition-all duration-500 group-hover:opacity-50 sm:gap-x-16 sm:gap-y-14 md:grid-cols-4">
+                            <Bolt className="mx-auto h-5 w-full" />
+                            <VercelFull className="mx-auto h-4 w-full" />
+                            <SupabaseFull className="mx-auto h-6" />
+                            <Hulu className="mx-auto h-4 w-full" />
+                            <Spotify className="mx-auto h-6 w-full" />
+                            <FirebaseFull className="mx-auto h-6 w-full" />
+                            <Beacon className="mx-auto h-4 w-full" />
+                            <Claude className="mx-auto h-5 w-full" />
+                        </div>
+                    </div>
+                </section>
+                */}
+            </main>
+        </>
+    )
 }
 </file>
 
@@ -7235,234 +7399,6 @@ async def send_mailgun_notification(email: str, name: str, subject: str = "Phase
             return False
 </file>
 
-<file path="frontend/src/components/hero-sec/hero-section.tsx">
-import React from 'react'
-import Link from 'next/link'
-import { ArrowRight, ChevronRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import Image from 'next/image'
-import { TextEffect } from '@/components/ui/text-effect'
-import { AnimatedGroup } from '@/components/ui/animated-group'
-import { HeroHeader } from '../header/header'
-{/* 
-import { Spotify } from '@/components/ui/svgs/spotify'
-import { SupabaseFull } from '@/components/ui/svgs/supabase'
-import { Hulu } from '@/components/ui/svgs/hulu'
-import { Bolt } from '@/components/ui/svgs/bolt'
-import { FirebaseFull } from '@/components/ui/svgs/firebase'
-import { Beacon } from '@/components/ui/svgs/beacon'
-import { Claude } from '@/components/ui/svgs/claude'
-import { VercelFull } from '@/components/ui/svgs/vercel'
-*/}
-
-const transitionVariants = {
-    item: {
-        hidden: {
-            opacity: 0,
-            filter: 'blur(12px)',
-            y: 12,
-        },
-        visible: {
-            opacity: 1,
-            filter: 'blur(0px)',
-            y: 0,
-            transition: {
-                type: 'spring',
-                bounce: 0.3,
-                duration: 1.5,
-            },
-        },
-    },
-} as const;
-
-export default function HeroSection() {
-    return (
-        <>
-            <HeroHeader />
-            <main className="overflow-hidden">
-                <div
-                    aria-hidden
-                    className="absolute inset-0 isolate hidden opacity-65 contain-strict lg:block">
-                    <div className="w-140 h-320 -translate-y-87.5 absolute left-0 top-0 -rotate-45 rounded-full bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,hsla(0,0%,85%,.08)_0,hsla(0,0%,55%,.02)_50%,hsla(0,0%,45%,0)_80%)]" />
-                    <div className="h-320 absolute left-0 top-0 w-60 -rotate-45 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.06)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)] [translate:5%_-50%]" />
-                    <div className="h-320 -translate-y-87.5 absolute left-0 top-0 w-60 -rotate-45 bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.04)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)]" />
-                </div>
-                <section>
-                    {/* FIXED: Specific padding to align with the background radial mask */}
-                    <div className="relative pt-24 pb-0 px-0 md:pt-48">
-                        <AnimatedGroup
-                            variants={{
-                                container: {
-                                    visible: {
-                                        transition: {
-                                            delayChildren: 1,
-                                        },
-                                    },
-                                },
-                                item: {
-                                    hidden: {
-                                        opacity: 0,
-                                        y: 20,
-                                    },
-                                    visible: {
-                                        opacity: 1,
-                                        y: 0,
-                                        transition: {
-                                            type: 'spring',
-                                            bounce: 0.3,
-                                            duration: 2,
-                                        },
-                                    },
-                                },
-                            }}
-                            className="mask-b-from-35% mask-b-to-90% absolute inset-0 top-56 -z-20 lg:top-32">
-                            <Image
-                                src="https://ik.imagekit.io/lrigu76hy/tailark/night-background.jpg?updatedAt=1745733451120"
-                                alt="background"
-                                className="hidden size-full dark:block object-cover"
-                                width="3276"
-                                height="4095"
-                                priority
-                            />
-                        </AnimatedGroup>
-
-                        <div
-                            aria-hidden
-                            className="absolute inset-0 -z-10 size-full [background:radial-gradient(125%_125%_at_50%_100%,transparent_0%,var(--color-background)_75%)]"
-                        />
-
-                        <div className="mx-auto max-w-7xl px-6">
-                            <div className="text-center sm:mx-auto lg:mr-auto lg:mt-0">
-                                <AnimatedGroup variants={transitionVariants}>
-                                    <Link
-                                        href="/features"
-                                        className="hover:bg-background dark:hover:border-t-border bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-zinc-950/5 transition-colors duration-300 dark:border-t-white/5 dark:shadow-zinc-950">
-                                        <span className="text-foreground text-sm">Industrial Sales Intelligence</span>
-                                        <span className="dark:border-background block h-4 w-0.5 border-l bg-white dark:bg-zinc-700"></span>
-
-                                        <div className="bg-background group-hover:bg-muted size-6 overflow-hidden rounded-full duration-500">
-                                            <div className="flex w-12 -translate-x-1/2 duration-500 ease-in-out group-hover:translate-x-0">
-                                                <span className="flex size-6">
-                                                    <ArrowRight className="m-auto size-3" />
-                                                </span>
-                                                <span className="flex size-6">
-                                                    <ArrowRight className="m-auto size-3" />
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                </AnimatedGroup>
-
-                                <TextEffect
-                                    preset="fade-in-blur"
-                                    speedSegment={0.3}
-                                    as="h1"
-                                    className="mx-auto mt-8 max-w-4xl text-balance text-5xl font-bold md:text-7xl lg:mt-16 xl:text-[4rem] tracking-tight">
-                                    Know Which Companies Are Researching Your Products
-                                </TextEffect>
-                                <TextEffect
-                                    per="line"
-                                    preset="fade-in-blur"
-                                    speedSegment={0.3}
-                                    delay={0.5}
-                                    as="p"
-                                    className="mx-auto mt-8 max-w-2xl text-balance text-lg text-muted-foreground">
-                                    AuraWorks identifies your anonymous industrial visitors and delivers their contact info to your inbox. Simple, weekly leads for your sales team.
-                                </TextEffect>
-
-                                <AnimatedGroup
-                                    variants={{
-                                        container: {
-                                            visible: {
-                                                transition: {
-                                                    staggerChildren: 0.05,
-                                                    delayChildren: 0.75,
-                                                },
-                                            },
-                                        },
-                                        ...transitionVariants,
-                                    }}
-                                    className="mt-12 flex flex-col items-center justify-center gap-4 md:flex-row">
-                                    <Button
-                                        asChild
-                                        size="lg"
-                                        className="rounded-xl px-8 text-base shadow-xl shadow-primary/20">
-                                        <Link href="/get-started">
-                                            <span className="text-nowrap">Get Started</span>
-                                        </Link>
-                                    </Button>
-                                    <Button
-                                        asChild
-                                        size="lg"
-                                        variant="ghost"
-                                        className="rounded-xl px-8 text-base">
-                                        <Link href="/book-call">
-                                            <span className="text-nowrap">Book a Call</span>
-                                        </Link>
-                                    </Button>
-                                </AnimatedGroup>
-                            </div>
-                        </div>
-
-                        <AnimatedGroup
-                            variants={{
-                                container: {
-                                    visible: {
-                                        transition: {
-                                            staggerChildren: 0.05,
-                                            delayChildren: 0.75,
-                                        },
-                                    },
-                                },
-                                ...transitionVariants,
-                            }}>
-                            <div className="mask-b-from-55% relative mr-0 mt-8 overflow-hidden px-2 sm:mr-0 sm:mt-12 md:mt-20">
-                                
-                                <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-2xl shadow-zinc-950/20 ring-1">
-                                    <Image
-                                        className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
-                                        src="/mail2.png"
-                                        alt="industrial lead report dashboard"
-                                        width="2700"
-                                        height="1440"
-                                        priority
-                                    />
-                                    <Image
-                                        className="z-2 border-border/25 aspect-15/8 relative rounded-2xl border dark:hidden"
-                                        src="/mail2-light.webp"
-                                        alt="industrial lead report dashboard"
-                                        width="2700"
-                                        height="1440"
-                                        priority
-                                    />
-                                </div>
-                            </div>
-                        </AnimatedGroup>
-                    </div>
-                </section>
-                
-                {/* Social Proof Section 
-                <section className="bg-background pb-16 pt-24 md:pb-32">
-                    <div className="group relative m-auto max-w-5xl px-6">
-                        <div className="group-hover:blur-xs **:fill-muted-foreground mx-auto grid max-w-2xl grid-cols-3 gap-x-12 gap-y-8 transition-all duration-500 group-hover:opacity-50 sm:gap-x-16 sm:gap-y-14 md:grid-cols-4">
-                            <Bolt className="mx-auto h-5 w-full" />
-                            <VercelFull className="mx-auto h-4 w-full" />
-                            <SupabaseFull className="mx-auto h-6" />
-                            <Hulu className="mx-auto h-4 w-full" />
-                            <Spotify className="mx-auto h-6 w-full" />
-                            <FirebaseFull className="mx-auto h-6 w-full" />
-                            <Beacon className="mx-auto h-4 w-full" />
-                            <Claude className="mx-auto h-5 w-full" />
-                        </div>
-                    </div>
-                </section>
-                */}
-            </main>
-        </>
-    )
-}
-</file>
-
 <file path="frontend/src/components/pricing/pricing.tsx">
 'use client'
 
@@ -7595,6 +7531,153 @@ export default function Pricing() {
 }
 </file>
 
+<file path="backend/app/services/enrichment.py">
+# backend/app/services/enrichment.py
+import httpx
+import logging
+import socket
+from app.core.config import settings
+from typing import Optional, List, Dict, Any
+
+logger = logging.getLogger("uvicorn")
+
+# --- AuraWorks Identity Bridge: Consumer ISP & Infrastructure Blacklist ---
+CONSUMER_ISP_KEYWORDS = [
+    "vodacom", "mtn", "telkom", "liquid", "cool ideas", "vumatel", "rain", 
+    "isp", "residential", "pool", "dynamic", "dsl", "fiber", "mobile"
+]
+
+def is_consumer_traffic(target_name: str) -> bool:
+    """Detects if a visit originates from a known consumer ISP."""
+    if not target_name:
+        return False
+    normalized = target_name.lower()
+    return any(keyword in normalized for keyword in CONSUMER_ISP_KEYWORDS)
+
+def perform_local_reverse_dns(ip_address: str) -> Dict[str, Any]:
+    """
+    Layer 1: Zero-Cost Classification.
+    Identifies cloud providers and obvious ISPs without burning API credits.
+    """
+    try:
+        hostname, _, _ = socket.gethostbyaddr(ip_address)
+        hostname = hostname.lower()
+        
+        if any(cloud in hostname for cloud in ["amazonaws", "googleusercontent", "azure", "static.cloud"]):
+            return {"type": "cloud", "provider": "Infrastructure", "confidence": 0.5}
+        if is_consumer_traffic(hostname):
+            return {"type": "isp", "provider": "Consumer ISP", "confidence": 0.2}
+        
+        return {"type": "business_static", "provider": hostname, "confidence": 0.7}
+    except Exception:
+        return {"type": "unknown", "provider": "Unknown", "confidence": 0.0}
+
+async def enrich_visitor_data(ip_address: str, volunteered_company: Optional[str] = None) -> dict:
+    """
+    Phase 01: Forensic IP Resolution with Warm Lead Overrides.
+    If 'volunteered_company' is provided, it forces a B2B high-confidence state.
+    """
+    if ip_address in ("127.0.0.1", "localhost", "::1"):
+        return {"company_name": "Local Test Environment", "is_b2b": False, "confidence_score": 1.0}
+
+    # 1. Warm Lead Override: If the user told us who they are, believe them.
+    if volunteered_company and not is_consumer_traffic(volunteered_company):
+        return {
+            "company_name": volunteered_company,
+            "domain": None,
+            "is_b2b": True,
+            "confidence_score": 1.0,
+            "industry": "Volunteered Data",
+            "provider_type": "Warm Lead"
+        }
+
+    # 2. Layer 1 Check (Local Reverse DNS)
+    local_intel = perform_local_reverse_dns(ip_address)
+
+    # 3. Layer 2 Check (IPinfo)
+    url = f"https://ipinfo.io/{ip_address}?token={settings.IPINFO_TOKEN}"
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url, timeout=5.0)
+            if response.status_code != 200:
+                return {"company_name": "Unknown", "is_b2b": False, "confidence_score": 0.0}
+
+            data = response.json()
+            company_data = data.get("company", {})
+            asn_data = data.get("asn", {})
+            
+            final_name = company_data.get("name")
+            final_domain = company_data.get("domain")
+
+            if not final_name:
+                org_full = data.get("org", "Unknown")
+                final_name = " ".join(org_full.split(" ")[1:]) if org_full.startswith("AS") else org_full
+
+            asn_type = asn_data.get("type", "").lower()
+            
+            # --- CALCULATE CONFIDENCE SCORE ---
+            confidence = 0.5 # Baseline
+            
+            if asn_type == "business": confidence += 0.4
+            if asn_type == "hosting": confidence -= 0.2
+            if is_consumer_traffic(final_name) or is_consumer_traffic(data.get("org", "")):
+                confidence -= 0.4
+            
+            # Final determination for the 'Industrial' threshold
+            is_b2b = confidence >= 0.5
+
+            return {
+                "company_name": final_name,
+                "domain": final_domain or asn_data.get("domain"),
+                "is_b2b": is_b2b,
+                "confidence_score": round(max(0.0, min(1.0, confidence)), 2),
+                "industry": asn_type or "unknown",
+                "city": data.get("city"),
+                "region": data.get("region"),
+                "provider_type": local_intel["type"]
+            }
+        except Exception as e:
+            logger.error(f"IPinfo Failure: {e}")
+            return {"company_name": "Error", "is_b2b": False, "confidence_score": 0.0}
+
+async def get_departmental_intelligence(domain: str) -> List[Dict]:
+    """
+    Phase 02: Industrial Cluster Mapping (Apollo.io).
+    """
+    if not settings.APOLLO_API_KEY or not domain or domain in ["unknown.com", "n/a"]:
+        return []
+
+    url = "https://api.apollo.io/v1/people/search"
+    target_departments = ["Procurement", "Operations", "Engineering", "Maintenance", "Supply Chain"]
+
+    payload = {
+        "api_key": settings.APOLLO_API_KEY,
+        "q_organization_domains": domain,
+        "person_titles": target_departments,
+        "organization_locations": ["South Africa"],
+        "display_mode": "regular",
+        "per_page": 5
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(url, json=payload, timeout=12.0)
+            if response.status_code == 200:
+                data = response.json()
+                people = data.get("people", [])
+                
+                return [{
+                    "name": person.get("title", "Lead"),
+                    "email": person.get("email"),
+                    "phone": person.get("phone_numbers", [{}])[0].get("raw_number"),
+                    "head_of_dept_linkedin": person.get("linkedin_url")
+                } for person in people]
+            return []
+        except Exception:
+            return []
+</file>
+
 <file path="backend/app/models/pageview.py">
 # backend/app/models/pageview.py
 from typing import Optional, Union
@@ -7665,6 +7748,99 @@ class PageView(SQLModel, table=True):
             nullable=False
         )
     )
+</file>
+
+<file path="backend/app/models/visit.py">
+# backend/app/models/visit.py
+from typing import Optional, List, Dict, Any
+from datetime import datetime
+from sqlmodel import SQLModel, Field, Column, DateTime, Relationship, JSON
+import sqlalchemy as sa
+
+class VisitBase(SQLModel):
+    """Shared fields between tracking schemas and the persistent database model."""
+    client_id: str = Field(index=True)
+    aura_id: str = Field(index=True)
+    url: str
+    referrer: Optional[str] = "direct"
+    timestamp: Optional[str] = None 
+    
+    # Global attribution fields
+    utm_source: Optional[str] = None
+    utm_medium: Optional[str] = None
+    utm_campaign: Optional[str] = None
+    utm_content: Optional[str] = None
+    utm_term: Optional[str] = None
+
+class Visit(SQLModel, table=True): 
+    """The granular ledger of every touchpoint. Multiple visits map to one Company."""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    
+    # --- RELATIONS ---
+    company_id: Optional[int] = Field(default=None, foreign_key="company.id", index=True)
+    
+    # --- IDENTITY & CONSENT ---
+    client_id: str = Field(index=True)
+    aura_id: str = Field(index=True) # Browser fingerprint/UID
+    ip_address: Optional[str] = Field(default="0.0.0.0", index=True)
+    is_consented: bool = Field(default=False, index=True) 
+    
+    # --- QUARANTINE & AUDIT (Rigid Logic v3.5) ---
+    # Statuses: verifying, verified, noise, internal
+    verification_status: str = Field(default="verifying", index=True)
+    last_audit_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), nullable=False)
+    )
+    
+    # --- FORENSIC SIGNATURES (Aura.js v3.5.0) ---
+    canvas_hash: Optional[str] = None
+    webgl_renderer: Optional[str] = None
+    clock_drift: Optional[float] = None
+    
+    # --- NETWORK INTELLIGENCE ---
+    effective_connection_type: Optional[str] = Field(default=None)
+    downlink_speed: Optional[float] = Field(default=None)
+    rtt: Optional[int] = Field(default=None)
+    
+    # --- BEHAVIORAL & INTENT ---
+    url: str
+    referrer: Optional[str] = "direct"
+    screen_resolution: Optional[str] = None
+    duration: int = Field(default=0)
+    capture_source: Optional[str] = Field(default=None, description="e.g., banner_warm_signal, authorized_blur")
+    
+    intent_cluster: Optional[str] = Field(default=None, index=True)
+    intent_metadata: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
+    
+    # --- ATTRIBUTION (Indexed for Lead Scoring) ---
+    utm_source: Optional[str] = Field(default=None, index=True)
+    utm_medium: Optional[str] = Field(default=None, index=True)
+    utm_campaign: Optional[str] = Field(default=None, index=True)
+    utm_content: Optional[str] = None
+    utm_term: Optional[str] = None
+
+    created_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), nullable=False)
+    )
+
+    company: Optional["Company"] = Relationship(back_populates="visits")
+
+class VisitCreate(VisitBase):
+    """Schema for initial ingestion via /track/entry"""
+    screen_resolution: Optional[str] = None
+    effective_connection_type: Optional[str] = None
+    downlink_speed: Optional[float] = None
+    rtt: Optional[int] = None
+
+class PageViewCreate(SQLModel):
+    """Schema for secondary tracking events like /track/exit and /track/event"""
+    client_id: str
+    aura_id: Optional[str] = None # Added Optional aura_id for session stitching
+    url: str
+    duration: Optional[int] = 0
+    event_type: str = "exit"
+    intent_cluster: Optional[str] = None
+    signature: Optional[Dict[str, Any]] = None # For receiving forensic identity data
 </file>
 
 <file path="tracker/src/public/aura.js">
@@ -7919,93 +8095,6 @@ class PageView(SQLModel, table=True):
 })();
 </file>
 
-<file path="backend/app/models/visit.py">
-# backend/app/models/visit.py
-from typing import Optional, List, Dict, Any
-from datetime import datetime
-from sqlmodel import SQLModel, Field, Column, DateTime, Relationship, JSON
-import sqlalchemy as sa
-
-class VisitBase(SQLModel):
-    client_id: str = Field(index=True)
-    aura_id: str = Field(index=True)
-    url: str
-    referrer: Optional[str] = "direct"
-    timestamp: Optional[str] = None 
-    # Base attribution fields for all tracking schemas
-    utm_source: Optional[str] = None
-    utm_medium: Optional[str] = None
-    utm_campaign: Optional[str] = None
-    utm_content: Optional[str] = None
-    utm_term: Optional[str] = None
-
-class Visit(SQLModel, table=True): 
-    """The granular ledger of every touchpoint. Multiple visits map to one Company."""
-    id: Optional[int] = Field(default=None, primary_key=True)
-    
-    # --- RELATIONS ---
-    company_id: Optional[int] = Field(default=None, foreign_key="company.id", index=True)
-    
-    # --- IDENTITY & CONSENT ---
-    client_id: str = Field(index=True)
-    aura_id: str = Field(index=True) # Browser fingerprint
-    ip_address: Optional[str] = Field(default="0.0.0.0", index=True)
-    is_consented: bool = Field(default=False, index=True) 
-    
-    # --- QUARANTINE & AUDIT (Rigid Logic v3.0) ---
-    verification_status: str = Field(default="verifying", index=True)
-    last_audit_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), nullable=False)
-    )
-    
-    # --- FORENSIC SIGNATURES (Tracker v2.4.0+) ---
-    canvas_hash: Optional[str] = None
-    webgl_renderer: Optional[str] = None
-    clock_drift: Optional[float] = None
-    
-    # --- NETWORK INTELLIGENCE ---
-    effective_connection_type: Optional[str] = Field(default=None, description="e.g., 4g, fiber")
-    downlink_speed: Optional[float] = Field(default=None, description="Mbps")
-    rtt: Optional[int] = Field(default=None, description="Round-trip time in ms")
-    
-    # --- BEHAVIORAL & INTENT CLUSTERING ---
-    url: str
-    referrer: Optional[str] = "direct"
-    screen_resolution: Optional[str] = None
-    duration: int = Field(default=0)
-    capture_source: Optional[str] = Field(default=None, description="Waitlist, Tracker, or Manual")
-    
-    intent_cluster: Optional[str] = Field(default=None, index=True)
-    intent_metadata: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
-    
-    # --- ATTRIBUTION ---
-    utm_source: Optional[str] = Field(default=None, index=True)
-    utm_medium: Optional[str] = Field(default=None, index=True)
-    utm_campaign: Optional[str] = Field(default=None, index=True)
-    utm_content: Optional[str] = None
-    utm_term: Optional[str] = None
-
-    created_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), nullable=False)
-    )
-
-    company: Optional["Company"] = Relationship(back_populates="visits")
-
-class VisitCreate(VisitBase):
-    """Schema for initial ingestion via track_entry"""
-    screen_resolution: Optional[str] = None
-    effective_connection_type: Optional[str] = None
-    downlink_speed: Optional[float] = None
-    rtt: Optional[int] = None
-
-class PageViewCreate(SQLModel):
-    client_id: str
-    url: str
-    duration: int
-    event_type: str = "exit"
-    intent_cluster: Optional[str] = None
-</file>
-
 <file path="backend/app/core/config.py">
 # backend/app/core/config.py
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -8073,207 +8162,6 @@ class Settings(BaseSettings):
     )
 
 settings = Settings()
-</file>
-
-<file path="backend/app/services/intelligence.py">
-# backend/app/services/intelligence.py
-import httpx
-import logging
-import asyncio
-from datetime import datetime, timedelta, timezone
-from typing import List, Optional, Dict, Any
-from sqlmodel import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from cachetools import TTLCache
-
-from app.models.visit import Visit
-from app.models.company import Company
-from app.models.waitlist import WaitlistLead
-from app.core.config import settings
-
-logger = logging.getLogger("uvicorn")
-
-# --- INDUSTRIAL CACHE LAYER ---
-ip_cache = TTLCache(maxsize=2000, ttl=86400)
-
-# --- UTILS: Industrial Formatting ---
-def format_zar(value: str) -> str:
-    if not value: return "N/A"
-    if "m" in value.lower(): return "R1,000,000+"
-    if "-" in value:
-        parts = value.replace('k', '000').split('-')
-        try:
-            formatted_parts = [f"R{int(p.strip()):,}" for p in parts]
-            return " - ".join(formatted_parts)
-        except: return value
-    clean_value = "".join(filter(str.isdigit, value))
-    return f"R{int(clean_value):,}" if clean_value else value
-
-# --- PHASE 01: The Enrichment Engine ---
-
-async def enrich_ip_intel(ip_address: str) -> Dict[str, Any]:
-    if not ip_address or ip_address in ["127.0.0.1", "0.0.0.0"]:
-        return {}
-    if ip_address in ip_cache:
-        return ip_cache[ip_address]
-    if not settings.IPINFO_TOKEN:
-        return {}
-
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(
-                f"https://ipinfo.io/{ip_address}?token={settings.IPINFO_TOKEN}", 
-                timeout=5.0
-            )
-            if response.status_code == 200:
-                data = response.json()
-                ip_cache[ip_address] = data
-                return data
-        except Exception as e:
-            logger.error(f"🌐 IPinfo enrichment failure: {e}")
-    return {}
-
-# --- PHASE 02: DeepSeek-V3 Intent Analysis ---
-
-async def analyze_corporate_intent(
-    company_name: str, 
-    industry: str, 
-    pathway: str, 
-    position: Optional[str] = None,
-    is_cluster: bool = False
-) -> str:
-    """
-    Executes clinical B2B intent analysis via DeepSeek.
-    Includes 'Position' context to identify Buying Committee roles.
-    """
-    if not settings.DEEPSEEK_API_KEY:
-        return "Intelligence engine calibrating. Analysis deferred."
-
-    persona_signal = f"Persona: {position if position else 'Undetermined'}"
-    context_signal = "BUYING COMMITTEE ALERT: 3+ unique devices." if is_cluster else "Individual Facility Entry."
-
-    prompt = f"""
-    Analyze B2B industrial traffic for:
-    Entity: {company_name}
-    Industry: {industry}
-    {persona_signal}
-    Pathway: {pathway}
-    Context: {context_signal}
-
-    Task: Provide a 2-sentence 'Executive Intent Summary'.
-    Tone: Clinical, sophisticated. Identify if this is a high-level decision maker or evaluator.
-    Labels: 'Discovery', 'Technical Evaluation', or 'Procurement'.
-    """
-
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(
-                "https://api.deepseek.com/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "deepseek-chat",
-                    "messages": [{"role": "user", "content": prompt}],
-                    "temperature": 0.2 
-                },
-                timeout=15.0 
-            )
-            if response.status_code == 200:
-                return response.json()['choices'][0]['message']['content'].strip()
-        except Exception as e:
-            logger.error(f"🤖 DeepSeek Failure: {e}")
-    return "Intelligence engine temporarily offline."
-
-# --- PHASE 03: Unified Journey & Ghost Enrichment ---
-
-async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
-    """
-    The Behavioral Ledger: Maps touchpoints and executes IP correlation.
-    Upgraded to prioritize volunteered 'Warm Lead' data.
-    """
-    if not aura_id:
-        return {"total_touches": 0, "pathway": "Direct", "intent_summary": "No signature."}
-
-    # 1. Forensic History Retrieval
-    stmt = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at)
-    res = await session.execute(stmt)
-    history = res.scalars().all()
-    
-    if not history:
-        return {"total_touches": 0, "pathway": "First Contact", "intent_summary": "Initial touchpoint recorded."}
-
-    last_visit = history[-1]
-
-    # 2. Cluster Detection (72h Threshold)
-    time_limit = datetime.now(timezone.utc) - timedelta(hours=72)
-    cluster_stmt = select(Visit).where(
-        Visit.ip_address == last_visit.ip_address,
-        Visit.created_at >= time_limit
-    )
-    cluster_res = await session.execute(cluster_stmt)
-    cluster_records = cluster_res.scalars().all()
-    unique_id_count = len({v.aura_id for v in cluster_records})
-    is_buying_committee = unique_id_count >= 3
-
-    # 3. Pathway Mapping
-    pages = [v.url.split('auraworks.co.za')[-1] if v.url else "/" for v in history]
-    unique_pathway = []
-    for p in pages:
-        if not unique_pathway or p != unique_pathway[-1]:
-            unique_pathway.append(p if p != "" else "/")
-    pathway_str = " → ".join(unique_pathway)
-
-    # 4. Resolve Company & Lead Context (The 'Warm' Check)
-    company = None
-    lead = None
-    
-    # Check if this aura_id has volunteered data (Warm Lead)
-    lead_stmt = select(WaitlistLead).where(WaitlistLead.aura_id == aura_id)
-    res_lead = await session.execute(lead_stmt)
-    lead = res_lead.scalars().first()
-
-    linked_visit = next((v for v in history if v.company_id), None)
-    if linked_visit:
-        company = await session.get(Company, linked_visit.company_id)
-    elif lead and lead.company_id:
-        company = await session.get(Company, lead.company_id)
-
-    # 5. Ghost-Enrichment & Facility Mapping
-    cluster_info = f"📍 Facility activity: {unique_id_count} IDs"
-    
-    if not company and last_visit.ip_address:
-        # Cross-reference IP with any existing lead in the same facility
-        past_lead_stmt = select(WaitlistLead).join(
-            Visit, WaitlistLead.aura_id == Visit.aura_id
-        ).where(Visit.ip_address == last_visit.ip_address)
-        
-        past_lead_res = await session.execute(past_lead_stmt)
-        past_lead = past_lead_res.scalars().first()
-        
-        if past_lead:
-            company = await session.get(Company, past_lead.company_id)
-            if company:
-                cluster_info += f" | 🔗 Ghost-linked: {company.name}"
-
-    # 6. DeepSeek Synthesis with Position context
-    intent = await analyze_corporate_intent(
-        company_name=company.name if company else (lead.company_name_raw if lead else "Anonymous Entity"),
-        industry=company.industry if company else "Industrial",
-        pathway=pathway_str,
-        position=lead.position if lead else None,
-        is_cluster=is_buying_committee
-    )
-
-    return {
-        "total_touches": len(history),
-        "pathway": pathway_str,
-        "intent_summary": f"{intent} \n\n{cluster_info}",
-        "is_cluster": is_buying_committee,
-        "is_warm_lead": lead is not None,
-        "is_high_intent": is_buying_committee or lead is not None or any(kw in pathway_str.lower() for kw in ["pricing", "audit", "waitlist"])
-    }
 </file>
 
 <file path="frontend/src/components/sections/form/get-started.tsx">
@@ -8528,6 +8416,207 @@ export default function GetStartedPage() {
 }
 </file>
 
+<file path="backend/app/services/intelligence.py">
+# backend/app/services/intelligence.py
+import httpx
+import logging
+import asyncio
+from datetime import datetime, timedelta, timezone
+from typing import List, Optional, Dict, Any
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from cachetools import TTLCache
+
+from app.models.visit import Visit
+from app.models.company import Company
+from app.models.waitlist import WaitlistLead
+from app.core.config import settings
+
+logger = logging.getLogger("uvicorn")
+
+# --- INDUSTRIAL CACHE LAYER ---
+ip_cache = TTLCache(maxsize=2000, ttl=86400)
+
+# --- UTILS: Industrial Formatting ---
+def format_zar(value: str) -> str:
+    if not value: return "N/A"
+    if "m" in value.lower(): return "R1,000,000+"
+    if "-" in value:
+        parts = value.replace('k', '000').split('-')
+        try:
+            formatted_parts = [f"R{int(p.strip()):,}" for p in parts]
+            return " - ".join(formatted_parts)
+        except: return value
+    clean_value = "".join(filter(str.isdigit, value))
+    return f"R{int(clean_value):,}" if clean_value else value
+
+# --- PHASE 01: The Enrichment Engine ---
+
+async def enrich_ip_intel(ip_address: str) -> Dict[str, Any]:
+    if not ip_address or ip_address in ["127.0.0.1", "0.0.0.0"]:
+        return {}
+    if ip_address in ip_cache:
+        return ip_cache[ip_address]
+    if not settings.IPINFO_TOKEN:
+        return {}
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(
+                f"https://ipinfo.io/{ip_address}?token={settings.IPINFO_TOKEN}", 
+                timeout=5.0
+            )
+            if response.status_code == 200:
+                data = response.json()
+                ip_cache[ip_address] = data
+                return data
+        except Exception as e:
+            logger.error(f"🌐 IPinfo enrichment failure: {e}")
+    return {}
+
+# --- PHASE 02: DeepSeek-V3 Intent Analysis ---
+
+async def analyze_corporate_intent(
+    company_name: str, 
+    industry: str, 
+    pathway: str, 
+    position: Optional[str] = None,
+    is_cluster: bool = False
+) -> str:
+    """
+    Executes clinical B2B intent analysis via DeepSeek.
+    Includes 'Position' context to identify Buying Committee roles.
+    """
+    if not settings.DEEPSEEK_API_KEY:
+        return "Intelligence engine calibrating. Analysis deferred."
+
+    persona_signal = f"Persona: {position if position else 'Undetermined'}"
+    context_signal = "BUYING COMMITTEE ALERT: 3+ unique devices." if is_cluster else "Individual Facility Entry."
+
+    prompt = f"""
+    Analyze B2B industrial traffic for:
+    Entity: {company_name}
+    Industry: {industry}
+    {persona_signal}
+    Pathway: {pathway}
+    Context: {context_signal}
+
+    Task: Provide a 2-sentence 'Executive Intent Summary'.
+    Tone: Clinical, sophisticated. Identify if this is a high-level decision maker or evaluator.
+    Labels: 'Discovery', 'Technical Evaluation', or 'Procurement'.
+    """
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                "https://api.deepseek.com/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "deepseek-chat",
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.2 
+                },
+                timeout=15.0 
+            )
+            if response.status_code == 200:
+                return response.json()['choices'][0]['message']['content'].strip()
+        except Exception as e:
+            logger.error(f"🤖 DeepSeek Failure: {e}")
+    return "Intelligence engine temporarily offline."
+
+# --- PHASE 03: Unified Journey & Ghost Enrichment ---
+
+async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
+    """
+    The Behavioral Ledger: Maps touchpoints and executes IP correlation.
+    Upgraded to prioritize volunteered 'Warm Lead' data.
+    """
+    if not aura_id:
+        return {"total_touches": 0, "pathway": "Direct", "intent_summary": "No signature."}
+
+    # 1. Forensic History Retrieval
+    stmt = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at)
+    res = await session.execute(stmt)
+    history = res.scalars().all()
+    
+    if not history:
+        return {"total_touches": 0, "pathway": "First Contact", "intent_summary": "Initial touchpoint recorded."}
+
+    last_visit = history[-1]
+
+    # 2. Cluster Detection (72h Threshold)
+    time_limit = datetime.now(timezone.utc) - timedelta(hours=72)
+    cluster_stmt = select(Visit).where(
+        Visit.ip_address == last_visit.ip_address,
+        Visit.created_at >= time_limit
+    )
+    cluster_res = await session.execute(cluster_stmt)
+    cluster_records = cluster_res.scalars().all()
+    unique_id_count = len({v.aura_id for v in cluster_records})
+    is_buying_committee = unique_id_count >= 3
+
+    # 3. Pathway Mapping
+    pages = [v.url.split('auraworks.co.za')[-1] if v.url else "/" for v in history]
+    unique_pathway = []
+    for p in pages:
+        if not unique_pathway or p != unique_pathway[-1]:
+            unique_pathway.append(p if p != "" else "/")
+    pathway_str = " → ".join(unique_pathway)
+
+    # 4. Resolve Company & Lead Context (The 'Warm' Check)
+    company = None
+    lead = None
+    
+    # Check if this aura_id has volunteered data (Warm Lead)
+    lead_stmt = select(WaitlistLead).where(WaitlistLead.aura_id == aura_id)
+    res_lead = await session.execute(lead_stmt)
+    lead = res_lead.scalars().first()
+
+    linked_visit = next((v for v in history if v.company_id), None)
+    if linked_visit:
+        company = await session.get(Company, linked_visit.company_id)
+    elif lead and lead.company_id:
+        company = await session.get(Company, lead.company_id)
+
+    # 5. Ghost-Enrichment & Facility Mapping
+    cluster_info = f"📍 Facility activity: {unique_id_count} IDs"
+    
+    if not company and last_visit.ip_address:
+        # Cross-reference IP with any existing lead in the same facility
+        past_lead_stmt = select(WaitlistLead).join(
+            Visit, WaitlistLead.aura_id == Visit.aura_id
+        ).where(Visit.ip_address == last_visit.ip_address)
+        
+        past_lead_res = await session.execute(past_lead_stmt)
+        past_lead = past_lead_res.scalars().first()
+        
+        if past_lead:
+            company = await session.get(Company, past_lead.company_id)
+            if company:
+                cluster_info += f" | 🔗 Ghost-linked: {company.name}"
+
+    # 6. DeepSeek Synthesis with Position context
+    intent = await analyze_corporate_intent(
+        company_name=company.name if company else (lead.company_name_raw if lead else "Anonymous Entity"),
+        industry=company.industry if company else "Industrial",
+        pathway=pathway_str,
+        position=lead.position if lead else None,
+        is_cluster=is_buying_committee
+    )
+
+    return {
+        "total_touches": len(history),
+        "pathway": pathway_str,
+        "intent_summary": f"{intent} \n\n{cluster_info}",
+        "is_cluster": is_buying_committee,
+        "is_warm_lead": lead is not None,
+        "is_high_intent": is_buying_committee or lead is not None or any(kw in pathway_str.lower() for kw in ["pricing", "audit", "waitlist"])
+    }
+</file>
+
 <file path="backend/app/models/waitlist.py">
 # backend/app/models/waitlist.py
 from datetime import datetime, timezone
@@ -8747,22 +8836,183 @@ async def get_admin_summary(session: AsyncSession = Depends(get_async_session)):
     }
 </file>
 
+<file path="backend/app/api/v1/waitlist.py">
+# backend/app/api/v1/waitlist.py
+import logging
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db import get_async_session, async_session_maker
+from app.models.waitlist import WaitlistLead 
+from app.models.company import Company
+from app.models.visit import Visit
+from app.services.intelligence import get_visitor_journey
+
+router = APIRouter()
+logger = logging.getLogger("uvicorn")
+
+# --- UTILS: Industrial Formatting ---
+def format_zar(value: str) -> str:
+    if not value: return "N/A"
+    if "m" in value.lower(): return "R1,000,000+"
+    if "-" in value:
+        parts = value.replace('k', '000').split('-')
+        try:
+            formatted_parts = [f"R{int(p.strip()):,}" for p in parts]
+            return " - ".join(formatted_parts)
+        except: return value
+    clean_value = "".join(filter(str.isdigit, value))
+    return f"R{int(clean_value):,}" if clean_value else value
+
+async def background_lead_analysis(lead_id: int, aura_id: str, payload: dict):
+    """
+    Asynchronous orchestration of the forensic audit and journey mapping.
+    Deferred processing to keep the user-facing response fast.
+    """
+    async with async_session_maker() as session:
+        try:
+            # Execute the Behavioral Ledger synthesis (DeepSeek + Cluster Analysis)
+            journey = await get_visitor_journey(aura_id, session)
+            
+            # Additional enrichment logic (Airtable, Slack, etc.) would trigger here
+            logger.info(f"📊 Intelligence Analysis Complete for {aura_id} (Lead: {lead_id})")
+        except Exception as e:
+            logger.error(f"❌ Background Analysis Error: {e}")
+
+@router.post("/join")
+async def join_waitlist(
+    payload: dict, 
+    background_tasks: BackgroundTasks,
+    session: AsyncSession = Depends(get_async_session)
+):
+    """
+    Primary Promotion Engine: 
+    Converts anonymous traffic into a Consented 'Warm Lead'.
+    Synchronizes volunteered data with forensic signatures.
+    """
+    logger.info(f"--- 📡 AURA SIGNAL: [PROMOTION INITIATED] ---")
+    
+    email = payload.get("email")
+    aura_id = payload.get("aura_id")
+    client_id = payload.get("client_id") # Multi-tenancy anchor
+    raw_company_name = payload.get("company") or payload.get("company_name")
+    website = payload.get("website")
+
+    if not email or not client_id:
+        raise HTTPException(status_code=400, detail="Incomplete lead parameters.")
+
+    try:
+        # 1. Resolve Jurisdictive Entity (Company Anchor)
+        domain = None
+        if website:
+            domain = website.replace("https://", "").replace("http://", "").split("/")[0].lower()
+        
+        # Search for company by domain or name within the client's silo
+        company_stmt = select(Company).where(
+            (Company.client_id == client_id) & 
+            ((Company.domain == domain) if domain else (Company.name == raw_company_name))
+        )
+        res_company = await session.execute(company_stmt)
+        company = res_company.scalars().first()
+
+        if not company:
+            company = Company(
+                client_id=client_id,
+                name=raw_company_name or "Unknown Industrial Entity", 
+                domain=domain,
+                industry=payload.get("industry"),
+                is_verified=True # Form submission auto-verifies the company name
+            )
+            session.add(company)
+            await session.commit()
+            await session.refresh(company)
+
+        # 2. Identity Promotion (POPIA Consented Lead)
+        # Check if a 'Warm Lead' already exists (e.g., from a partial banner capture)
+        lead_stmt = select(WaitlistLead).where(
+            WaitlistLead.email == email,
+            WaitlistLead.client_id == client_id
+        )
+        res_lead = await session.execute(lead_stmt)
+        lead = res_lead.scalars().first()
+        
+        if not lead:
+            # Also check by aura_id if email was previously unknown
+            aura_lead_stmt = select(WaitlistLead).where(
+                WaitlistLead.aura_id == aura_id,
+                WaitlistLead.client_id == client_id
+            )
+            res_aura = await session.execute(aura_lead_stmt)
+            lead = res_aura.scalars().first()
+
+        if not lead:
+            lead = WaitlistLead(email=email, client_id=client_id, aura_id=aura_id)
+        
+        # Deep Merge: Update all identity and professional context fields
+        lead.name = payload.get("name") or lead.name
+        lead.email = email
+        lead.company_id = company.id
+        lead.company_name_raw = raw_company_name or lead.company_name_raw
+        lead.department = payload.get("department") or lead.department
+        lead.position = payload.get("position") or payload.get("job_title") or lead.position
+        lead.industry = payload.get("industry") or lead.industry
+        lead.website = website or lead.website
+        lead.traffic = payload.get("traffic")
+        lead.avg_price = payload.get("avg_price")
+        lead.aura_id = aura_id
+        
+        session.add(lead)
+
+        # 3. Forensic Stitching & Janitor Shield
+        # Immediately promote all historical visits to 'verified' to prevent the 48h purge
+        if aura_id:
+            visit_stmt = select(Visit).where(Visit.aura_id == aura_id)
+            res_visits = await session.execute(visit_stmt)
+            past_visits = res_visits.scalars().all()
+            for v in past_visits:
+                v.is_consented = True
+                v.verification_status = "verified" 
+                v.company_id = company.id
+                session.add(v)
+
+        await session.commit()
+        await session.refresh(lead)
+
+        # 4. DEFERRED JOURNEY MAPPING
+        # Pass the forensic data for DeepSeek analysis in the background
+        background_tasks.add_task(
+            background_lead_analysis, 
+            lead_id=lead.id, 
+            aura_id=aura_id, 
+            payload=payload
+        )
+        
+        return {"status": "success", "message": "Lead verified and promoted."}
+
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"🚨 Promotion Failure: {e}")
+        raise HTTPException(status_code=500, detail="Industrial sync failed.")
+</file>
+
 <file path="backend/app/api/v1/track.py">
 # backend/app/api/v1/endpoints/track.py
 from fastapi import APIRouter, BackgroundTasks, Request, Header, HTTPException
 from typing import Optional, Dict, Any
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.visit import VisitCreate, Visit
+from pydantic import BaseModel
+import logging
+from datetime import datetime, timezone
+
+# Internal AuraWorks Imports
+from app.models.visit import Visit, VisitCreate, PageViewCreate
 from app.models.company import Company
 from app.models.waitlist import WaitlistLead
 from app.services.enrichment import enrich_visitor_data
 from app.services.notifications import post_to_visit_channel
 from app.services.intelligence import get_visitor_journey
 from app.db import async_session_maker
-from pydantic import BaseModel
-import logging
-from datetime import datetime, timezone
 
 router = APIRouter()
 logger = logging.getLogger("uvicorn")
@@ -8983,165 +9233,6 @@ async def track_exit(payload: PageViewCreate):
                 return {"status": "recorded", "duration": processed_duration}
             return {"status": "no_change"}
         return {"status": "pending_entry"}
-</file>
-
-<file path="backend/app/api/v1/waitlist.py">
-# backend/app/api/v1/waitlist.py
-import logging
-from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
-from sqlmodel import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.db import get_async_session, async_session_maker
-from app.models.waitlist import WaitlistLead 
-from app.models.company import Company
-from app.models.visit import Visit
-from app.services.intelligence import get_visitor_journey
-
-router = APIRouter()
-logger = logging.getLogger("uvicorn")
-
-# --- UTILS: Industrial Formatting ---
-def format_zar(value: str) -> str:
-    if not value: return "N/A"
-    if "m" in value.lower(): return "R1,000,000+"
-    if "-" in value:
-        parts = value.replace('k', '000').split('-')
-        try:
-            formatted_parts = [f"R{int(p.strip()):,}" for p in parts]
-            return " - ".join(formatted_parts)
-        except: return value
-    clean_value = "".join(filter(str.isdigit, value))
-    return f"R{int(clean_value):,}" if clean_value else value
-
-async def background_lead_analysis(lead_id: int, aura_id: str, payload: dict):
-    """
-    Asynchronous orchestration of the forensic audit and journey mapping.
-    Deferred processing to keep the user-facing response fast.
-    """
-    async with async_session_maker() as session:
-        try:
-            # Execute the Behavioral Ledger synthesis (DeepSeek + Cluster Analysis)
-            journey = await get_visitor_journey(aura_id, session)
-            
-            # Additional enrichment logic (Airtable, Slack, etc.) would trigger here
-            logger.info(f"📊 Intelligence Analysis Complete for {aura_id} (Lead: {lead_id})")
-        except Exception as e:
-            logger.error(f"❌ Background Analysis Error: {e}")
-
-@router.post("/join")
-async def join_waitlist(
-    payload: dict, 
-    background_tasks: BackgroundTasks,
-    session: AsyncSession = Depends(get_async_session)
-):
-    """
-    Primary Promotion Engine: 
-    Converts anonymous traffic into a Consented 'Warm Lead'.
-    Synchronizes volunteered data with forensic signatures.
-    """
-    logger.info(f"--- 📡 AURA SIGNAL: [PROMOTION INITIATED] ---")
-    
-    email = payload.get("email")
-    aura_id = payload.get("aura_id")
-    client_id = payload.get("client_id") # Multi-tenancy anchor
-    raw_company_name = payload.get("company") or payload.get("company_name")
-    website = payload.get("website")
-
-    if not email or not client_id:
-        raise HTTPException(status_code=400, detail="Incomplete lead parameters.")
-
-    try:
-        # 1. Resolve Jurisdictive Entity (Company Anchor)
-        domain = None
-        if website:
-            domain = website.replace("https://", "").replace("http://", "").split("/")[0].lower()
-        
-        # Search for company by domain or name within the client's silo
-        company_stmt = select(Company).where(
-            (Company.client_id == client_id) & 
-            ((Company.domain == domain) if domain else (Company.name == raw_company_name))
-        )
-        res_company = await session.execute(company_stmt)
-        company = res_company.scalars().first()
-
-        if not company:
-            company = Company(
-                client_id=client_id,
-                name=raw_company_name or "Unknown Industrial Entity", 
-                domain=domain,
-                industry=payload.get("industry"),
-                is_verified=True # Form submission auto-verifies the company name
-            )
-            session.add(company)
-            await session.commit()
-            await session.refresh(company)
-
-        # 2. Identity Promotion (POPIA Consented Lead)
-        # Check if a 'Warm Lead' already exists (e.g., from a partial banner capture)
-        lead_stmt = select(WaitlistLead).where(
-            WaitlistLead.email == email,
-            WaitlistLead.client_id == client_id
-        )
-        res_lead = await session.execute(lead_stmt)
-        lead = res_lead.scalars().first()
-        
-        if not lead:
-            # Also check by aura_id if email was previously unknown
-            aura_lead_stmt = select(WaitlistLead).where(
-                WaitlistLead.aura_id == aura_id,
-                WaitlistLead.client_id == client_id
-            )
-            res_aura = await session.execute(aura_lead_stmt)
-            lead = res_aura.scalars().first()
-
-        if not lead:
-            lead = WaitlistLead(email=email, client_id=client_id, aura_id=aura_id)
-        
-        # Deep Merge: Update all identity and professional context fields
-        lead.name = payload.get("name") or lead.name
-        lead.email = email
-        lead.company_id = company.id
-        lead.company_name_raw = raw_company_name or lead.company_name_raw
-        lead.department = payload.get("department") or lead.department
-        lead.position = payload.get("position") or payload.get("job_title") or lead.position
-        lead.industry = payload.get("industry") or lead.industry
-        lead.website = website or lead.website
-        lead.traffic = payload.get("traffic")
-        lead.avg_price = payload.get("avg_price")
-        lead.aura_id = aura_id
-        
-        session.add(lead)
-
-        # 3. Forensic Stitching & Janitor Shield
-        # Immediately promote all historical visits to 'verified' to prevent the 48h purge
-        if aura_id:
-            visit_stmt = select(Visit).where(Visit.aura_id == aura_id)
-            res_visits = await session.execute(visit_stmt)
-            past_visits = res_visits.scalars().all()
-            for v in past_visits:
-                v.is_consented = True
-                v.verification_status = "verified" 
-                v.company_id = company.id
-                session.add(v)
-
-        await session.commit()
-        await session.refresh(lead)
-
-        # 4. DEFERRED JOURNEY MAPPING
-        # Pass the forensic data for DeepSeek analysis in the background
-        background_tasks.add_task(
-            background_lead_analysis, 
-            lead_id=lead.id, 
-            aura_id=aura_id, 
-            payload=payload
-        )
-        
-        return {"status": "success", "message": "Lead verified and promoted."}
-
-    except Exception as e:
-        await session.rollback()
-        logger.error(f"🚨 Promotion Failure: {e}")
-        raise HTTPException(status_code=500, detail="Industrial sync failed.")
 </file>
 
 </files>
