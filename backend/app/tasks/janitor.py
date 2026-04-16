@@ -1,7 +1,9 @@
+# backend/app/tasks/janitor.py
 import logging
 from datetime import datetime, timedelta, timezone
-from sqlmodel import Session, select
-from app.db import engine
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db import engine, get_async_session
 from app.models.visit import Visit
 from app.models.waitlist import WaitlistLead
 
@@ -15,44 +17,55 @@ async def cleanup_unverified_visits():
     logger.info("🧹 AuraWorks OS: Activating 48-hour Janitor Sweep...")
     
     # 1. Define the 'Noise' Threshold (48 hours)
-    # We extended this from 24h to 48h to allow for 'Late Promotion'
+    # Allows a window for 'Late Promotion' via the Banner/Waitlist.
     threshold = datetime.now(timezone.utc) - timedelta(hours=48)
     
-    with Session(engine) as session:
+    # We use a manual session block here since this runs in a background task
+    async with AsyncSession(engine) as session:
         try:
             # 2. Identify 'Verifying' records older than the threshold
             statement = select(Visit).where(
                 Visit.verification_status == "verifying",
                 Visit.created_at < threshold
             )
-            candidates = session.exec(statement).all()
+            result = await session.execute(statement)
+            candidates = result.scalars().all()
             
             if not candidates:
                 logger.info("✅ Janitor: Forensic vault is already optimized.")
                 return
 
             purged_count = 0
+            promoted_count = 0
+
             for visit in candidates:
                 # 3. SAFETY CHECK: The 'Waitlist Shield'
-                # If an aura_id has a matching WaitlistLead, we NEVER delete it,
-                # even if the individual visit status is still 'verifying'.
-                has_lead = session.exec(
-                    select(WaitlistLead).where(WaitlistLead.aura_id == visit.aura_id)
-                ).first()
+                # If an aura_id has a matching WaitlistLead, we promote the visit.
+                # This ensures forensic data is saved for anyone who interacted with the banner.
+                lead_stmt = select(WaitlistLead).where(WaitlistLead.aura_id == visit.aura_id)
+                lead_res = await session.execute(lead_stmt)
+                has_lead = lead_res.scalars().first()
                 
                 if has_lead:
-                    # Upgrade the visit instead of deleting
+                    # Upgrade the visit status: Shielded from future purges
                     visit.verification_status = "verified"
+                    if has_lead.company_id:
+                        visit.company_id = has_lead.company_id
+                    
                     session.add(visit)
+                    promoted_count += 1
                     continue
 
                 # 4. Final Purge for actual noise (Residential/Bot traffic)
-                session.delete(visit)
+                await session.delete(visit)
                 purged_count += 1
 
-            session.commit()
-            logger.info(f"🗑️ Janitor: Purged {purged_count} noise signatures. Vault optimized.")
+            await session.commit()
+            logger.info(
+                f"🗑️ Janitor: Purged {purged_count} noise signatures. "
+                f"🛡️ Promoted {promoted_count} high-intent visits. Vault optimized."
+            )
 
         except Exception as e:
-            session.rollback()
+            await session.rollback()
             logger.error(f"🚨 Janitor Failure: {e}")

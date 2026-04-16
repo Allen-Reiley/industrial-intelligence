@@ -1,52 +1,115 @@
-from fastapi import APIRouter, Query, HTTPException
-from typing import List, Optional
-from sqlmodel import Session, select
-from app.db import engine
+# backend/app/api/v1/endpoints/leads.py
+from fastapi import APIRouter, Query, HTTPException, Depends
+from typing import List, Optional, Dict, Any
+from sqlmodel import select, desc, func
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+from app.db import get_async_session
 from app.models.waitlist import WaitlistLead
 from app.models.company import Company
+from app.models.visit import Visit
 import logging
 
 router = APIRouter()
 logger = logging.getLogger("uvicorn")
 
-@router.get("/", response_model=List[WaitlistLead])
+@router.get("/")
 async def get_leads(
-    aura_id: Optional[str] = Query(None),
-    limit: int = Query(default=10, le=100)
+    client_id: str = Query(...),
+    limit: int = Query(default=50, le=100),
+    session: AsyncSession = Depends(get_async_session)
 ):
     """
-    Retrieves captured leads. Returns an empty list if no leads are found,
-    preventing 422 errors on the frontend.
+    Industrial Ledger: Retrieves leads and prioritizes 'Warm Leads' (those with volunteered data).
+    Joins with Company data to show total corporate engagement.
     """
     try:
-        with Session(engine) as session:
-            statement = select(WaitlistLead).order_by(WaitlistLead.created_at.desc())
+        # 1. Build the Query: Order by creation but prioritize records with emails/positions
+        # This surfaces 'Warm Leads' who interacted with the banner/waitlist first
+        statement = (
+            select(WaitlistLead, Company)
+            .where(WaitlistLead.client_id == client_id)
+            .outerjoin(Company, WaitlistLead.company_id == Company.id)
+            .order_by(desc(WaitlistLead.created_at))
+            .limit(limit)
+        )
+        
+        results = await session.execute(statement)
+        leads_data = []
+
+        for lead, company in results:
+            # Determine 'Warmth' based on data completeness
+            is_warm = all([lead.email, lead.company_name_raw])
             
-            if aura_id:
-                statement = statement.where(WaitlistLead.aura_id == aura_id)
+            leads_data.append({
+                "id": lead.id,
+                "created_at": lead.created_at,
+                "name": lead.name or "Anonymous Lead",
+                "email": lead.email,
+                "position": lead.position,
+                "department": lead.department,
+                "aura_id": lead.aura_id,
+                "is_warm": is_warm,
+                "company": {
+                    "name": company.name if company else lead.company_name_raw or "Unknown Entity",
+                    "domain": company.domain if company else None,
+                    "industry": company.industry if company else lead.industry,
+                    "total_visits": company.total_visits if company else 1,
+                    "is_verified": company.is_verified if company else False
+                }
+            })
             
-            statement = statement.limit(limit)
-            results = session.exec(statement).all()
-            
-            return results
+        return leads_data
+
     except Exception as e:
         logger.error(f"🚨 Lead Retrieval Failure: {e}")
         raise HTTPException(status_code=500, detail="Internal Ledger Error")
 
 @router.get("/intelligence")
-async def get_lead_intelligence(domain: str):
+async def get_lead_intelligence(
+    aura_id: str, 
+    session: AsyncSession = Depends(get_async_session)
+):
     """
-    Provides firmographic context for a specific lead's company.
+    Provides the forensic audit for a specific lead, including their 
+    behavioral journey and facility activity clusters.
     """
     try:
-        with Session(engine) as session:
-            statement = select(Company).where(Company.domain == domain)
-            company = session.exec(statement).first()
-            
-            if not company:
-                return {"status": "not_enriched", "reason": "Company not yet verified"}
-                
-            return company
+        # 1. Resolve Lead Identity
+        lead_stmt = select(WaitlistLead).where(WaitlistLead.aura_id == aura_id)
+        res_lead = await session.execute(lead_stmt)
+        lead = res_lead.scalars().first()
+        
+        if not lead:
+            raise HTTPException(status_code=404, detail="Lead signature not found.")
+
+        # 2. Resolve Company Forensic Data
+        company = None
+        if lead.company_id:
+            company = await session.get(Company, lead.company_id)
+
+        # 3. Pull Visit History for Activity Heatmap
+        visit_stmt = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at.desc())
+        res_visits = await session.execute(visit_stmt)
+        visits = res_visits.scalars().all()
+
+        return {
+            "lead_profile": {
+                "name": lead.name,
+                "position": lead.position,
+                "department": lead.department,
+                "email": lead.email
+            },
+            "company_intel": company,
+            "forensic_trail": [
+                {"timestamp": v.created_at, "url": v.url, "duration": v.duration} 
+                for v in visits
+            ],
+            "total_engagement_points": len(visits)
+        }
+        
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"🚨 Intelligence Retrieval Failure: {e}")
         raise HTTPException(status_code=500, detail="Intelligence Engine Offline")

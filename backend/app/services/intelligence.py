@@ -11,13 +11,11 @@ from cachetools import TTLCache
 from app.models.visit import Visit
 from app.models.company import Company
 from app.models.waitlist import WaitlistLead
-from app.db import get_async_session
 from app.core.config import settings
 
 logger = logging.getLogger("uvicorn")
 
 # --- INDUSTRIAL CACHE LAYER ---
-# Cache firmographic data for 24h to avoid redundant API spend
 ip_cache = TTLCache(maxsize=2000, ttl=86400)
 
 # --- UTILS: Industrial Formatting ---
@@ -36,15 +34,10 @@ def format_zar(value: str) -> str:
 # --- PHASE 01: The Enrichment Engine ---
 
 async def enrich_ip_intel(ip_address: str) -> Dict[str, Any]:
-    """
-    Retrieves IP intelligence with a cache-first approach.
-    """
     if not ip_address or ip_address in ["127.0.0.1", "0.0.0.0"]:
         return {}
-
     if ip_address in ip_cache:
         return ip_cache[ip_address]
-
     if not settings.IPINFO_TOKEN:
         return {}
 
@@ -68,25 +61,29 @@ async def analyze_corporate_intent(
     company_name: str, 
     industry: str, 
     pathway: str, 
+    position: Optional[str] = None,
     is_cluster: bool = False
 ) -> str:
     """
     Executes clinical B2B intent analysis via DeepSeek.
+    Includes 'Position' context to identify Buying Committee roles.
     """
     if not settings.DEEPSEEK_API_KEY:
         return "Intelligence engine calibrating. Analysis deferred."
 
+    persona_signal = f"Persona: {position if position else 'Undetermined'}"
     context_signal = "BUYING COMMITTEE ALERT: 3+ unique devices." if is_cluster else "Individual Facility Entry."
 
     prompt = f"""
     Analyze B2B industrial traffic for:
     Entity: {company_name}
     Industry: {industry}
+    {persona_signal}
     Pathway: {pathway}
     Context: {context_signal}
 
     Task: Provide a 2-sentence 'Executive Intent Summary'.
-    Tone: Clinical, sophisticated. Identify persona and 'Temperature'.
+    Tone: Clinical, sophisticated. Identify if this is a high-level decision maker or evaluator.
     Labels: 'Discovery', 'Technical Evaluation', or 'Procurement'.
     """
 
@@ -116,6 +113,7 @@ async def analyze_corporate_intent(
 async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
     """
     The Behavioral Ledger: Maps touchpoints and executes IP correlation.
+    Upgraded to prioritize volunteered 'Warm Lead' data.
     """
     if not aura_id:
         return {"total_touches": 0, "pathway": "Direct", "intent_summary": "No signature."}
@@ -126,7 +124,7 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
     history = res.scalars().all()
     
     if not history:
-        return {"total_touches": 0, "pathway": "First Contact", "intent_summary": "Initial touchpoint."}
+        return {"total_touches": 0, "pathway": "First Contact", "intent_summary": "Initial touchpoint recorded."}
 
     last_visit = history[-1]
 
@@ -149,15 +147,26 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
             unique_pathway.append(p if p != "" else "/")
     pathway_str = " → ".join(unique_pathway)
 
-    # 4. Resolve Company Context
+    # 4. Resolve Company & Lead Context (The 'Warm' Check)
     company = None
+    lead = None
+    
+    # Check if this aura_id has volunteered data (Warm Lead)
+    lead_stmt = select(WaitlistLead).where(WaitlistLead.aura_id == aura_id)
+    res_lead = await session.execute(lead_stmt)
+    lead = res_lead.scalars().first()
+
     linked_visit = next((v for v in history if v.company_id), None)
     if linked_visit:
         company = await session.get(Company, linked_visit.company_id)
+    elif lead and lead.company_id:
+        company = await session.get(Company, lead.company_id)
 
-    # 5. Ghost-Enrichment via IP correlation
+    # 5. Ghost-Enrichment & Facility Mapping
     cluster_info = f"📍 Facility activity: {unique_id_count} IDs"
+    
     if not company and last_visit.ip_address:
+        # Cross-reference IP with any existing lead in the same facility
         past_lead_stmt = select(WaitlistLead).join(
             Visit, WaitlistLead.aura_id == Visit.aura_id
         ).where(Visit.ip_address == last_visit.ip_address)
@@ -170,11 +179,12 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
             if company:
                 cluster_info += f" | 🔗 Ghost-linked: {company.name}"
 
-    # 6. DeepSeek Synthesis
+    # 6. DeepSeek Synthesis with Position context
     intent = await analyze_corporate_intent(
-        company_name=company.name if company else "Anonymous Entity",
+        company_name=company.name if company else (lead.company_name_raw if lead else "Anonymous Entity"),
         industry=company.industry if company else "Industrial",
         pathway=pathway_str,
+        position=lead.position if lead else None,
         is_cluster=is_buying_committee
     )
 
@@ -183,5 +193,6 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
         "pathway": pathway_str,
         "intent_summary": f"{intent} \n\n{cluster_info}",
         "is_cluster": is_buying_committee,
-        "is_high_intent": is_buying_committee or any(kw in pathway_str.lower() for kw in ["pricing", "audit", "waitlist"])
+        "is_warm_lead": lead is not None,
+        "is_high_intent": is_buying_committee or lead is not None or any(kw in pathway_str.lower() for kw in ["pricing", "audit", "waitlist"])
     }

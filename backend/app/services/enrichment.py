@@ -1,3 +1,4 @@
+# backend/app/services/enrichment.py
 import httpx
 import logging
 import socket
@@ -37,18 +38,29 @@ def perform_local_reverse_dns(ip_address: str) -> Dict[str, Any]:
     except Exception:
         return {"type": "unknown", "provider": "Unknown", "confidence": 0.0}
 
-async def enrich_visitor_data(ip_address: str) -> dict:
+async def enrich_visitor_data(ip_address: str, volunteered_company: Optional[str] = None) -> dict:
     """
-    Phase 01: Forensic IP Resolution.
-    Calculates a 'B2B Confidence Score' instead of hard filtering.
+    Phase 01: Forensic IP Resolution with Warm Lead Overrides.
+    If 'volunteered_company' is provided, it forces a B2B high-confidence state.
     """
-    if ip_address in ("127.0.0.1", "localhost", "::1"):
+    if ip_address in ("127.0.0.1", "localhost", ::1"):
         return {"company_name": "Local Test Environment", "is_b2b": False, "confidence_score": 1.0}
 
-    # 1. Layer 1 Check (Local)
+    # 1. Warm Lead Override: If the user told us who they are, believe them.
+    if volunteered_company and not is_consumer_traffic(volunteered_company):
+        return {
+            "company_name": volunteered_company,
+            "domain": None,
+            "is_b2b": True,
+            "confidence_score": 1.0,
+            "industry": "Volunteered Data",
+            "provider_type": "Warm Lead"
+        }
+
+    # 2. Layer 1 Check (Local Reverse DNS)
     local_intel = perform_local_reverse_dns(ip_address)
 
-    # 2. Layer 2 Check (IPinfo)
+    # 3. Layer 2 Check (IPinfo)
     url = f"https://ipinfo.io/{ip_address}?token={settings.IPINFO_TOKEN}"
 
     async with httpx.AsyncClient() as client:
@@ -64,7 +76,6 @@ async def enrich_visitor_data(ip_address: str) -> dict:
             final_name = company_data.get("name")
             final_domain = company_data.get("domain")
 
-            # Fallback to org parsing if company block is empty
             if not final_name:
                 org_full = data.get("org", "Unknown")
                 final_name = " ".join(org_full.split(" ")[1:]) if org_full.startswith("AS") else org_full
@@ -72,7 +83,6 @@ async def enrich_visitor_data(ip_address: str) -> dict:
             asn_type = asn_data.get("type", "").lower()
             
             # --- CALCULATE CONFIDENCE SCORE ---
-            # 1.0 = Definite Corporate HQ | 0.0 = Definite Residential Noise
             confidence = 0.5 # Baseline
             
             if asn_type == "business": confidence += 0.4
@@ -113,29 +123,22 @@ async def get_departmental_intelligence(domain: str) -> List[Dict]:
         "person_titles": target_departments,
         "organization_locations": ["South Africa"],
         "display_mode": "regular",
-        "per_page": 5 # Leaner query to save credits
+        "per_page": 5
     }
 
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(url, json=payload, timeout=12.0)
-            if response.status_code != 200:
-                return []
-
-            data = response.json()
-            people = data.get("people", [])
-            
-            departments_found = []
-            for person in people:
-                departments_found.append({
+            if response.status_code == 200:
+                data = response.json()
+                people = data.get("people", [])
+                
+                return [{
                     "name": person.get("title", "Lead"),
                     "email": person.get("email"),
                     "phone": person.get("phone_numbers", [{}])[0].get("raw_number"),
                     "head_of_dept_linkedin": person.get("linkedin_url")
-                })
-            
-            return departments_found
-
-        except Exception as e:
+                } for person in people]
             return []
-            logger.error(f"Apollo Enrichment Failure for {domain}: {e}")
+        except Exception:
+            return []

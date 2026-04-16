@@ -6,7 +6,7 @@ import { ArrowRight, X } from 'lucide-react';
 // 1. Fixed Interface: Explicitly define onComplete to satisfy TS(2322)
 interface LeadEnrichmentProps {
   auraId: string | null;
-  onComplete: () => void; // Critical addition
+  onComplete: () => void;
   onDismiss: () => void;
 }
 
@@ -15,10 +15,29 @@ const LeadEnrichmentSlide = ({ auraId, onComplete, onDismiss }: LeadEnrichmentPr
   const [email, setEmail] = useState('');
   const [position, setPosition] = useState({ company: '', department: '', role: '' });
 
+  // --- AURA WORKS IDENTITY BRIDGE ---
+  // This helper dispatches a custom event that aura.js is specifically listening for.
+  const signalAuraWarmLead = (data: any) => {
+    if (typeof window !== 'undefined') {
+      const event = new CustomEvent('aura_warm_lead', {
+        detail: {
+          email: data.email || email,
+          company: data.company || position.company,
+          department: data.department || position.department,
+          position: data.role || position.role,
+        }
+      });
+      window.dispatchEvent(event);
+    }
+  };
+
   const handleEmailNext = async () => {
     if (!email) return;
     
-    // Immediate storage of email on 'Next'
+    // 1. Signal aura.js immediately to promote the lead forensic status
+    signalAuraWarmLead({ email });
+
+    // 2. Standard API Partial Capture
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/waitlist/join`, {
         method: 'POST',
@@ -37,6 +56,15 @@ const LeadEnrichmentSlide = ({ auraId, onComplete, onDismiss }: LeadEnrichmentPr
   };
 
   const handleFinalSubmit = async () => {
+    // 1. Signal aura.js with full professional context
+    signalAuraWarmLead({
+        email,
+        company: position.company,
+        department: position.department,
+        role: position.role
+    });
+
+    // 2. Standard API Full Capture
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/waitlist/join`, {
         method: 'POST',
@@ -44,13 +72,13 @@ const LeadEnrichmentSlide = ({ auraId, onComplete, onDismiss }: LeadEnrichmentPr
         body: JSON.stringify({
           email,
           aura_id: auraId,
-          company_name_raw: position.company, // Aligned with backend column name from logs
+          company_name_raw: position.company,
           industry: position.department,
           avg_price: position.role, 
           full_capture: true
         })
       });
-      onComplete(); // Successfully close the bridge
+      onComplete(); 
     } catch (err) {
       onComplete();
     }

@@ -1,11 +1,10 @@
 /**
  * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
- * Version: 3.3.0 (Multi-Tenant & Identity Standardized)
+ * Version: 3.5.0 (Full Forensics + Warm Lead Logic)
  * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
  */
 (async function() {
     const script = document.currentScript;
-    // The "Agency ID" (from data-id) defines which account owns the data.
     const agencyId = window.AURA_AGENCY_ID || script?.getAttribute('data-id');
     window.AURA_START_TIME = performance.now();
     
@@ -71,7 +70,8 @@
                 network: this.getNetworkInfo(),
                 drift: await this.measureDrift(),
                 screen: `${screen.width}x${screen.height}`,
-                is_incognito: await this.isIncognito()
+                is_incognito: await this.isIncognito(),
+                tz: Intl.DateTimeFormat().resolvedOptions().timeZone
             };
         },
         getNetworkInfo() {
@@ -128,13 +128,17 @@
                 this.isArmed = true;
                 this.dispatch('event', { event_type: 'consent_granted' });
             });
+
+            // WARM LEAD SIGNAL: Specifically for banner/waitlist interaction
+            window.addEventListener('aura_warm_lead', (e) => {
+                this.dispatch('identity', { 
+                    ...e.detail, 
+                    capture_source: 'banner_warm_signal' 
+                });
+            });
         },
         async dispatch(endpoint, payload, useBeacon = false) {
             const utms = AuraPersistence.getStoredUTMs();
-            
-            // Standardized Industrial Payload:
-            // - client_id: ALWAYS the Agency/Owner ID (for multi-tenant isolation)
-            // - aura_id: ALWAYS the Visitor's forensic UID (for session stitching)
             const data = {
                 client_id: agencyId, 
                 aura_id: this.auraId,
@@ -161,16 +165,16 @@
         },
         setupSensors() {
             document.addEventListener('blur', (e) => {
-                // We always capture the identity blur if it's an email, 
-                // but only if it meets industrial intent.
                 const target = e.target;
-                if (target.type === 'email' || target.name?.includes('email')) {
+                const fieldName = target.name?.toLowerCase() || "";
+                
+                // Enhanced: Detects email, company, and position fields on blur
+                if (target.type === 'email' || fieldName.includes('email')) {
                     if (target.value.includes('@')) {
-                        this.dispatch('identity', { 
-                            email: target.value, 
-                            capture_source: 'authorized_blur' 
-                        });
+                        this.dispatch('identity', { email: target.value, capture_source: 'field_blur' });
                     }
+                } else if (fieldName.includes('company') && target.value.length > 2) {
+                    this.dispatch('identity', { company_name: target.value, capture_source: 'field_blur' });
                 }
             }, true);
 
@@ -195,14 +199,14 @@
             window.addEventListener('pagehide', () => this.trackExit());
         },
         trackEntry() {
-            const sig = AuraFingerprint.getNetworkInfo();
+            const conn = AuraFingerprint.getNetworkInfo();
             this.dispatch('entry', { 
                 url: window.location.href, 
                 referrer: document.referrer || "direct",
                 screen_resolution: `${window.innerWidth}x${window.innerHeight}`,
-                effective_connection_type: sig.type,
-                downlink_speed: sig.downlink,
-                rtt: sig.rtt
+                effective_connection_type: conn.type,
+                downlink_speed: conn.downlink,
+                rtt: conn.rtt
             });
         },
         trackExit() {
@@ -234,7 +238,6 @@
         const auraId = await AuraPersistence.init();
         AuraTracker.init(auraId);
         
-        // Forensic identity delay to allow network to stabilize
         setTimeout(async () => {
             const sig = await AuraFingerprint.getFullSignature();
             await AuraTracker.dispatch('identity', { signature: sig });

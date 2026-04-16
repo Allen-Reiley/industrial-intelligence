@@ -1,16 +1,15 @@
 # backend/app/api/v1/endpoints/track.py
 from fastapi import APIRouter, BackgroundTasks, Request, Header, HTTPException
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.visit import VisitCreate, Visit
 from app.models.company import Company
-from app.models.lead import Lead  # Integrated Lead Model
-from app.models.pageview import PageViewCreate
+from app.models.waitlist import WaitlistLead
 from app.services.enrichment import enrich_visitor_data
 from app.services.notifications import post_to_visit_channel
 from app.services.intelligence import get_visitor_journey
-from app.services.airtable import airtable_engine
-from sqlmodel import Session, select
-from app.db import engine
+from app.db import async_session_maker
 from pydantic import BaseModel
 import logging
 from datetime import datetime, timezone
@@ -26,141 +25,121 @@ class ConsentPayload(BaseModel):
 class IdentityPayload(BaseModel):
     client_id: str
     aura_id: str
-    signature: Optional[Dict[str, Any]] = None
     email: Optional[str] = None
-    capture_source: Optional[str] = None
+    company_name: Optional[str] = None
+    department: Optional[str] = None
+    position: Optional[str] = None
+    signature: Optional[Dict[str, Any]] = None
 
 async def process_entry_logic(payload: VisitCreate, client_ip: str, background_tasks: BackgroundTasks):
-    """
-    Refined Ingestion: Quarantines hits for audit while auto-verifying whitelisted entities.
-    Propagates verified visits into the Lead ledger for multi-tenant intelligence.
-    """
-    with Session(engine) as session:
-        # 1. Resolve Firmographics
-        enriched_info = await enrich_visitor_data(client_ip)
-        domain = enriched_info.get("domain")
-        company_name = enriched_info.get("company_name", "Unknown")
-        confidence = enriched_info.get("confidence_score", 0.0)
-
-        # 2. Check for Existing Company (Scoped to Client/Agency)
-        company = None
-        if domain and domain not in ["unknown.com", "n/a"]:
-            company_statement = select(Company).where(
-                Company.domain == domain,
-                Company.client_id == payload.client_id
-            )
-            company = session.exec(company_statement).first()
-
-        # 3. Handle Company Record
-        if not company and domain and domain not in ["unknown.com", "n/a"]:
-            company = Company(
-                client_id=payload.client_id,
-                name=company_name,
-                domain=domain,
-                industry=enriched_info.get("industry"),
-                city=enriched_info.get("city"),
-                region=enriched_info.get("region"),
-                is_b2b=enriched_info.get("is_b2b", True),
-                is_verified=False
-            )
-            session.add(company)
-            session.commit()
-            session.refresh(company)
-        elif company:
-            company.total_visits += 1
-            session.add(company)
-
-        # 4. Visit Status Logic
-        initial_status = "verified" if (company and company.is_verified) else "verifying"
-        
-        db_visit = Visit(
-            company_id=company.id if company else None,
-            client_id=payload.client_id,
-            aura_id=payload.aura_id,
-            ip_address=client_ip,
-            url=payload.url,
-            referrer=payload.referrer,
-            verification_status=initial_status,
-            last_audit_at=datetime.now(timezone.utc),
-            utm_source=payload.utm_source,
-            utm_medium=payload.utm_medium,
-            utm_campaign=payload.utm_campaign,
-            is_consented=False 
-        )
-        
-        session.add(db_visit)
-
-        # 5. LEAD PROPAGATION LOGIC
-        # If the company is verified, automatically sync or update the Lead table
-        if company and company.is_verified:
-            existing_lead = session.exec(
-                select(Lead).where(
-                    Lead.aura_id == payload.aura_id,
-                    Lead.client_id == payload.client_id
+    async with async_session_maker() as session:
+        try:
+            # 1. Forensic Enrichment
+            enriched_info = await enrich_visitor_data(client_ip)
+            domain = enriched_info.get("domain")
+            
+            # 2. Entity Resolution & Visit Counter Logic
+            res = await session.execute(
+                select(Company).where(
+                    Company.domain == domain,
+                    Company.client_id == payload.client_id
                 )
-            ).first()
+            )
+            company = res.scalars().first()
 
-            if not existing_lead:
-                new_lead = Lead(
+            if company:
+                company.total_visits += 1 # Industrial Increment
+                session.add(company)
+            elif domain and domain not in ["unknown.com", "n/a"]:
+                company = Company(
                     client_id=payload.client_id,
-                    company_id=company.id,
-                    aura_id=payload.aura_id,
-                    company_name=company.name,
-                    domain=company.domain,
-                    industry=company.industry,
-                    lead_source="high_intent_visit",
-                    confidence_score=confidence
+                    name=enriched_info.get("company_name", "Unknown"),
+                    domain=domain,
+                    is_verified=False
                 )
-                session.add(new_lead)
-            else:
-                existing_lead.last_active_at = datetime.now(timezone.utc)
-                session.add(existing_lead)
+                session.add(company)
+            
+            await session.commit()
+            if company: await session.refresh(company)
 
-        session.commit()
-        session.refresh(db_visit)
+            # 3. Persistence of the Forensic Trail
+            db_visit = Visit(
+                company_id=company.id if company else None,
+                client_id=payload.client_id,
+                aura_id=payload.aura_id,
+                ip_address=client_ip,
+                url=payload.url,
+                verification_status="verified" if (company and company.is_verified) else "verifying"
+            )
+            session.add(db_visit)
+            await session.commit()
 
-        # 6. Dispatch to Channels (Airtable/Discord)
-        if confidence >= 0.5 or (company and company.is_verified):
-            airtable_data = {
-                "client_id": payload.client_id,
-                "company_name": company.name if company else "Anonymous Facility",
-                "domain": domain or "unknown.com",
-                "ip_address": client_ip,
-                "city": enriched_info.get("city", "Unknown"),
-                "region": enriched_info.get("region", "ZA"),
-                "aura_id": payload.aura_id
-            }
-            background_tasks.add_task(airtable_engine.push_visit, airtable_data)
+            # 4. Background Intelligence Dispatch
+            journey = await get_visitor_journey(payload.aura_id, session)
+            background_tasks.add_task(post_to_visit_channel, {"company": company.name if company else "Anonymous"}, journey)
 
-            journey = await get_visitor_journey(payload.aura_id, payload.client_id)
-            visit_report = {
-                "company_name": airtable_data["company_name"],
-                "network_type": payload.effective_connection_type or "Standard",
-                "aura_id": payload.aura_id,
-                "city": airtable_data["city"],
-                "region": airtable_data["region"]
-            }
-            background_tasks.add_task(post_to_visit_channel, visit_report, journey)
+        except Exception as e:
+            logger.error(f"🚨 Ingestion Error: {e}")
+
+@router.post("/identity")
+async def track_identity(payload: IdentityPayload):
+    """
+    Primary Warm Lead Registration: 
+    Captures volunteered data from the banner to upgrade forensic profiles.
+    """
+    async with async_session_maker() as session:
+        # 1. Resolve or Create the Warm Lead entry
+        res_lead = await session.execute(
+            select(WaitlistLead).where(
+                WaitlistLead.aura_id == payload.aura_id,
+                WaitlistLead.client_id == payload.client_id
+            )
+        )
+        lead = res_lead.scalars().first()
+
+        if not lead and payload.email:
+            lead = WaitlistLead(
+                client_id=payload.client_id,
+                aura_id=payload.aura_id,
+                email=payload.email
+            )
+        
+        if lead:
+            if payload.email: lead.email = payload.email
+            if payload.company_name: lead.company_name_raw = payload.company_name
+            if payload.department: lead.department = payload.department
+            if payload.position: lead.position = payload.position
+            session.add(lead)
+
+        # 2. Promote Forensic Visits to 'Verified' (The Janitor Shield)
+        res_visits = await session.execute(
+            select(Visit).where(Visit.aura_id == payload.aura_id)
+        )
+        visits = res_visits.scalars().all()
+        for v in visits:
+            v.verification_status = "verified" # Priority Upgrade
+            v.is_consented = True
+            session.add(v)
+
+        await session.commit()
+        return {"status": "warm_lead_registered"}
 
 @router.post("/entry")
-async def track_entry(
-    payload: VisitCreate, 
-    request: Request, 
-    background_tasks: BackgroundTasks,
-    x_forwarded_for: Optional[str] = Header(None)
-):
-    client_ip = x_forwarded_for.split(',')[0].strip() if x_forwarded_for else (request.client.host if request.client else "127.0.0.1")
+async def track_entry(payload: VisitCreate, request: Request, background_tasks: BackgroundTasks):
+    client_ip = request.headers.get("x-forwarded-for", request.client.host).split(',')[0]
     background_tasks.add_task(process_entry_logic, payload, client_ip, background_tasks)
     return {"status": "accepted"}
 
 @router.post("/identity")
 async def track_identity(payload: IdentityPayload):
-    with Session(engine) as session:
-        statement = select(Visit).where(
-            Visit.aura_id == payload.aura_id,
-            Visit.client_id == payload.client_id
-        ).order_by(Visit.created_at.desc())
-        visit = session.exec(statement).first()
+    async with async_session_maker() as session:
+        res = await session.execute(
+            select(Visit).where(
+                Visit.aura_id == payload.aura_id,
+                Visit.client_id == payload.client_id
+            ).order_by(Visit.created_at.desc())
+        )
+        visit = res.scalars().first()
         
         if visit:
             if payload.signature:
@@ -176,82 +155,81 @@ async def track_identity(payload: IdentityPayload):
             
             if payload.email:
                 visit.capture_source = payload.capture_source or "authorized_blur"
-                # Update Lead table if an email is captured
-                lead = session.exec(
+                res_lead = await session.execute(
                     select(Lead).where(
                         Lead.aura_id == payload.aura_id,
                         Lead.client_id == payload.client_id
                     )
-                ).first()
+                )
+                lead = res_lead.scalars().first()
                 if lead:
                     lead.email = payload.email
                     session.add(lead)
             
             session.add(visit)
-            session.commit()
+            await session.commit()
             return {"status": "identity_locked"}
         return {"status": "visit_not_found"}
 
 @router.post("/event")
 async def track_event(payload: PageViewCreate):
-    with Session(engine) as session:
-        # Note: aura.js sends visitor aura_id in the client_id field for events
-        statement = select(Visit).where(
-            Visit.aura_id == payload.client_id,
-            Visit.client_id == payload.client_id 
-        ).order_by(Visit.created_at.desc())
-        
-        visit = session.exec(statement).first()
+    async with async_session_maker() as session:
+        res = await session.execute(
+            select(Visit).where(
+                Visit.aura_id == payload.client_id,
+                Visit.client_id == payload.client_id 
+            ).order_by(Visit.created_at.desc())
+        )
+        visit = res.scalars().first()
         if visit:
             if payload.event_type == "intent_click":
                 visit.intent_cluster = payload.intent_cluster
                 visit.intent_metadata = {"target": payload.url, "path": payload.url}
-            session.commit()
+            await session.commit()
             return {"status": "event_logged"}
         return {"status": "pending_entry"}
 
 @router.post("/consent")
 async def track_consent(payload: ConsentPayload):
-    try:
-        with Session(engine) as session:
-            statement = select(Visit).where(
-                Visit.aura_id == payload.aura_id,
-                Visit.client_id == payload.client_id
+    async with async_session_maker() as session:
+        try:
+            res = await session.execute(
+                select(Visit).where(
+                    Visit.aura_id == payload.aura_id,
+                    Visit.client_id == payload.client_id
+                )
             )
-            visits = session.exec(statement).all()
+            visits = res.scalars().all()
             for v in visits:
                 v.is_consented = True
                 session.add(v)
-            session.commit()
+            await session.commit()
             return {"status": "consent_recorded"}
-    except Exception as e:
-        logger.error(f"❌ Consent Sync Error: {e}")
-        return {"status": "error"}
+        except Exception as e:
+            logger.error(f"❌ Consent Sync Error: {e}")
+            return {"status": "error"}
 
 @router.post("/exit")
 async def track_exit(payload: PageViewCreate):
     try:
-        try:
-            processed_duration = int(float(payload.duration))
-        except (ValueError, TypeError):
-            processed_duration = 0
+        processed_duration = int(float(payload.duration))
+    except (ValueError, TypeError):
+        processed_duration = 0
 
-        with Session(engine) as session:
-            statement = select(Visit).where(
+    async with async_session_maker() as session:
+        res = await session.execute(
+            select(Visit).where(
                 Visit.aura_id == payload.client_id,
                 Visit.url == payload.url
             ).order_by(Visit.created_at.desc())
-            
-            visit = session.exec(statement).first()
-            
-            if visit:
-                if processed_duration > (visit.duration or 0):
-                    visit.duration = processed_duration
-                    session.add(visit)
-                    session.commit()
-                    return {"status": "recorded", "duration": processed_duration}
-                return {"status": "no_change"}
-            return {"status": "pending_entry"}
-    except Exception as e:
-        logger.error(f"❌ Exit Tracking Error: {e}")
-        return {"status": "error"}
+        )
+        visit = res.scalars().first()
+        
+        if visit:
+            if processed_duration > (visit.duration or 0):
+                visit.duration = processed_duration
+                session.add(visit)
+                await session.commit()
+                return {"status": "recorded", "duration": processed_duration}
+            return {"status": "no_change"}
+        return {"status": "pending_entry"}
