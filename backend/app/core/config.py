@@ -51,7 +51,10 @@ class Settings(BaseSettings):
         "https://auraworks.co.za",
         "https://www.auraworks.co.za",
         "https://cdn.auraworks.co.za",
-        "https://dynamic-flow-production-a5d6.up.railway.app"
+        "https://dynamic-flow-production-a5d6.up.railway.app",
+        "https://industrial-intelligence-xi.vercel.app",
+        "industrial-intelligence-git-main-allen-reileys-projects.vercel.app",
+        "industrial-intelligence-lttxeot8z-allen-reileys-projects.vercel.app"
     ]
 
     # Modern Pydantic V2 Configuration
