@@ -1,10 +1,10 @@
+# backend/app/models/company.py
 from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime
 from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
 import sqlalchemy as sa
 
 # Use TYPE_CHECKING to avoid circular imports between models
-# These are only used by type checkers (IDE/Mypy) and ignored at runtime
 if TYPE_CHECKING:
     from app.models.visit import Visit
     from app.models.department import Department
@@ -14,9 +14,12 @@ class Company(SQLModel, table=True):
     """The Jurisdictive Entity record. The anchor for all B2B intelligence."""
     id: Optional[int] = Field(default=None, primary_key=True)
     
+    # --- MULTI-TENANCY ---
+    client_id: str = Field(index=True) # Silos companies to specific agency owners
+    
     # --- FIRMOGRAPHICS (Public Entity Data) ---
-    name: str = Field(index=True, unique=True)
-    domain: str = Field(index=True, unique=True)
+    name: str = Field(index=True) # Removed unique=True; different clients might track same company
+    domain: str = Field(index=True)
     industry: Optional[str] = None
     hq_phone: Optional[str] = None
     city: Optional[str] = None
@@ -34,12 +37,9 @@ class Company(SQLModel, table=True):
     intent_summary: Optional[str] = None 
     
     # --- RELATIONS ---
-    # CRITICAL: Using string literals ("Visit", "Department", "WaitlistLead") 
-    # allows SQLAlchemy to resolve these names AFTER all models are loaded.
+    # String literals allow SQLAlchemy to resolve names after all models load
     visits: List["Visit"] = Relationship(back_populates="company")
     departments: List["Department"] = Relationship(back_populates="company")
-    
-    # Renamed to 'leads' to match the back_populates in WaitlistLead
     leads: List["WaitlistLead"] = Relationship(back_populates="company")
 
     # --- TIMEKEEPING ---

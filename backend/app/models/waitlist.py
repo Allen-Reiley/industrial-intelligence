@@ -1,3 +1,4 @@
+# backend/app/models/waitlist.py
 from datetime import datetime, timezone
 from typing import Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship, Column, DateTime, String
@@ -18,15 +19,17 @@ class WaitlistLead(SQLModel, table=True):
     """
     id: Optional[int] = Field(default=None, primary_key=True)
     
+    # --- MULTI-TENANCY ---
+    client_id: str = Field(index=True) # Silos waitlist to the agency owner
+
     # --- ENTITY LINKAGE ---
-    # The 'Juristic Anchor' connecting the person to the jurisdictional body
     company_id: Optional[int] = Field(default=None, foreign_key="company.id", index=True)
     
     # --- IDENTITY (POPIA/PAIA Consented) ---
     name: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
-    email: str = Field(index=True, unique=True)
+    email: str = Field(index=True) # Unique per client_id managed via logic
     
-    # FIX: Explicitly naming the column to match the field name to stop UndefinedColumn errors
+    # Raw input before forensic normalization
     company_name_raw: Optional[str] = Field(
         default=None, 
         sa_column=Column("company_name_raw", String, nullable=True)
@@ -37,10 +40,7 @@ class WaitlistLead(SQLModel, table=True):
     # --- B2B AUDIT & FIRMOGRAPHICS ---
     website: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
     traffic: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
-    
-    # UPDATED: String type to accommodate dropdown ranges (e.g., "150k-500k")
     avg_price: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
-    
     crm: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
     
     # --- PROMOTIONAL STITCHING ---
@@ -59,12 +59,11 @@ class WaitlistLead(SQLModel, table=True):
         default_factory=get_utc_now,
         sa_column=Column(
             DateTime(timezone=True), 
-            onupdate=sa.func.now(), # Automatically updates on every database save
+            onupdate=sa.func.now(),
             nullable=False,
             server_default=sa.func.now()
         )
     )
 
     # --- RELATIONSHIPS ---
-    # Standardized to 'leads' to match Company.leads
     company: Optional["Company"] = Relationship(back_populates="leads")

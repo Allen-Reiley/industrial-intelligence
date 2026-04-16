@@ -1,3 +1,4 @@
+# backend/app/db.py
 import logging
 from sqlmodel import create_engine, SQLModel, Session
 from app.core.config import settings
@@ -5,7 +6,6 @@ from app.core.config import settings
 logger = logging.getLogger("uvicorn")
 
 # --- ENGINE INITIALIZATION ---
-# We check for the DATABASE_URL to prevent SQLAlchemy from crashing on 'None'
 if settings.DATABASE_URL:
     # Standard Industrial Engine for Production (PostgreSQL)
     engine = create_engine(
@@ -16,24 +16,26 @@ if settings.DATABASE_URL:
     )
 else:
     # Fallback Placeholder: Prevents the ArgumentError during app import.
-    # This allows the app to boot so you can debug Railway variables.
     logger.warning("🚨 DATABASE_URL not detected. Initializing NULL_MODE engine.")
     engine = create_engine("sqlite:///:memory:")
 
 def init_db():
     """
     Creates all tables defined in the Juristic Ledger.
-    Only executes if a valid production URL is present.
+    Explicit imports here ensure SQLModel registers all tables before metadata creation.
     """
     if not settings.DATABASE_URL:
         logger.error("❌ init_db: Operation aborted. No production database linked.")
         return
 
     try:
-        # Note: Ensure all models are imported before calling this
-        from app.models.visit import Visit
+        # Import all modular models here to register them with SQLModel.metadata
+        from app.models.client import Client
         from app.models.company import Company
-        from app.models.client import Client 
+        from app.models.visit import Visit
+        from app.models.waitlist import WaitlistLead
+        from app.models.pageview import PageView
+        from app.models.department import Department
         
         SQLModel.metadata.create_all(engine)
         logger.info("✅ Database Ledger: Schema verified and synchronized.")

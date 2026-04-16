@@ -4,7 +4,11 @@ from datetime import datetime
 import uuid
 from sqlmodel import SQLModel, Field
 
-class Client(SQLModel, table=True):  # <--- This must be named 'Client'
+class Client(SQLModel, table=True):
+    """
+    The Agency/Client entity. 
+    This is the parent 'Owner' of all visits, leads, and companies in the OS.
+    """
     id: str = Field(
         default_factory=lambda: str(uuid.uuid4()), 
         primary_key=True,
@@ -15,7 +19,6 @@ class Client(SQLModel, table=True):  # <--- This must be named 'Client'
     is_active: bool = Field(default=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
-# These helper classes are useful for the API later
 class ClientCreate(SQLModel):
     name: str
     website_url: Optional[str] = None
