@@ -17,19 +17,21 @@ class WaitlistLead(SQLModel, table=True):
     Individuals who have provided explicit Personal Consent via form submission.
     Linked to a parent Company entity as a Secondary Entity.
     """
+    __tablename__ = "waitlistlead"
+
     id: Optional[int] = Field(default=None, primary_key=True)
     
     # --- MULTI-TENANCY ---
-    client_id: str = Field(index=True) # Silos waitlist to the agency owner
+    # This field now exists in the DB after the migration above
+    client_id: str = Field(index=True, description="Silos waitlist to the agency owner")
 
     # --- ENTITY LINKAGE ---
     company_id: Optional[int] = Field(default=None, foreign_key="company.id", index=True)
     
     # --- IDENTITY (POPIA/PAIA Consented) ---
     name: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
-    email: str = Field(index=True) # Unique per client_id managed via logic
+    email: str = Field(index=True) 
     
-    # Raw input before forensic normalization
     company_name_raw: Optional[str] = Field(
         default=None, 
         sa_column=Column("company_name_raw", String, nullable=True)
@@ -44,7 +46,6 @@ class WaitlistLead(SQLModel, table=True):
     crm: Optional[str] = Field(default=None, sa_column=Column(String, nullable=True))
     
     # --- PROMOTIONAL STITCHING ---
-    # The forensic link used to upgrade anonymous visits to 'Consented'
     aura_id: Optional[str] = Field(default=None, index=True) 
     
     # --- AUTOMATION STATUS ---
@@ -52,16 +53,18 @@ class WaitlistLead(SQLModel, table=True):
     
     # --- METADATA & TIMEKEEPING ---
     created_at: datetime = Field(
-        default_factory=get_utc_now,
-        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=sa.func.now())
-    )
-    updated_at: datetime = Field(
-        default_factory=get_utc_now,
         sa_column=Column(
             DateTime(timezone=True), 
-            onupdate=sa.func.now(),
-            nullable=False,
+            nullable=False, 
             server_default=sa.func.now()
+        )
+    )
+    updated_at: datetime = Field(
+        sa_column=Column(
+            DateTime(timezone=True), 
+            nullable=False, 
+            server_default=sa.func.now(),
+            onupdate=sa.func.now()
         )
     )
 
