@@ -43,7 +43,7 @@ async def enrich_visitor_data(ip_address: str, volunteered_company: Optional[str
     Phase 01: Forensic IP Resolution with Warm Lead Overrides.
     If 'volunteered_company' is provided, it forces a B2B high-confidence state.
     """
-    if ip_address in ("127.0.0.1", "localhost", ::1"):
+    if ip_address in ("127.0.0.1", "localhost", "::1"):
         return {"company_name": "Local Test Environment", "is_b2b": False, "confidence_score": 1.0}
 
     # 1. Warm Lead Override: If the user told us who they are, believe them.
