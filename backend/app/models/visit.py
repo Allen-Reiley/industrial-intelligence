@@ -12,7 +12,7 @@ class VisitBase(SQLModel):
     referrer: Optional[str] = "direct"
     timestamp: Optional[str] = None 
     
-    # Global attribution fields
+    # Global attribution fields (Essential for ROI analysis)
     utm_source: Optional[str] = None
     utm_medium: Optional[str] = None
     utm_campaign: Optional[str] = None
@@ -24,6 +24,7 @@ class Visit(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     
     # --- RELATIONS ---
+    # Links this specific touchpoint to a Juristic Entity (Company)
     company_id: Optional[int] = Field(default=None, foreign_key="company.id", index=True)
     
     # --- IDENTITY & CONSENT ---
@@ -33,18 +34,20 @@ class Visit(SQLModel, table=True):
     is_consented: bool = Field(default=False, index=True) 
     
     # --- QUARANTINE & AUDIT (Rigid Logic v3.5) ---
-    # Statuses: verifying, verified, noise, internal
+    # Statuses: 'verifying' (new), 'verified' (warm/trusted), 'noise' (bot), 'internal' (you)
     verification_status: str = Field(default="verifying", index=True)
     last_audit_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), server_default=sa.func.now(), nullable=False)
     )
     
     # --- FORENSIC SIGNATURES (Aura.js v3.5.0) ---
+    # Used for deanonymization and cross-device stitching
     canvas_hash: Optional[str] = None
     webgl_renderer: Optional[str] = None
     clock_drift: Optional[float] = None
     
     # --- NETWORK INTELLIGENCE ---
+    # Identifies if they are on corporate fiber (low RTT) or mobile data
     effective_connection_type: Optional[str] = Field(default=None)
     downlink_speed: Optional[float] = Field(default=None)
     rtt: Optional[int] = Field(default=None)
@@ -53,13 +56,13 @@ class Visit(SQLModel, table=True):
     url: str
     referrer: Optional[str] = "direct"
     screen_resolution: Optional[str] = None
-    duration: int = Field(default=0)
+    duration: int = Field(default=0) # Total dwell time in seconds
     capture_source: Optional[str] = Field(default=None, description="e.g., banner_warm_signal, authorized_blur")
     
     intent_cluster: Optional[str] = Field(default=None, index=True)
     intent_metadata: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
     
-    # --- ATTRIBUTION (Indexed for Lead Scoring) ---
+    # --- ATTRIBUTION (Indexed for National Lead Scoring) ---
     utm_source: Optional[str] = Field(default=None, index=True)
     utm_medium: Optional[str] = Field(default=None, index=True)
     utm_campaign: Optional[str] = Field(default=None, index=True)
@@ -82,9 +85,9 @@ class VisitCreate(VisitBase):
 class PageViewCreate(SQLModel):
     """Schema for secondary tracking events like /track/exit and /track/event"""
     client_id: str
-    aura_id: Optional[str] = None # Added Optional aura_id for session stitching
+    aura_id: Optional[str] = None 
     url: str
     duration: Optional[int] = 0
     event_type: str = "exit"
     intent_cluster: Optional[str] = None
-    signature: Optional[Dict[str, Any]] = None # For receiving forensic identity data
+    signature: Optional[Dict[str, Any]] = None # Transmits Canvas/WebGL data to the Identity Bridge

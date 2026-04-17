@@ -16,10 +16,12 @@ from app.core.config import settings
 logger = logging.getLogger("uvicorn")
 
 # --- INDUSTRIAL CACHE LAYER ---
+# Prevents redundant API calls to IPinfo/DeepSeek within a 24-hour window
 ip_cache = TTLCache(maxsize=2000, ttl=86400)
 
 # --- UTILS: Industrial Formatting ---
 def format_zar(value: str) -> str:
+    """Formats raw numerical strings into clinical ZAR currency representation."""
     if not value: return "N/A"
     if "m" in value.lower(): return "R1,000,000+"
     if "-" in value:
@@ -34,7 +36,8 @@ def format_zar(value: str) -> str:
 # --- PHASE 01: The Enrichment Engine ---
 
 async def enrich_ip_intel(ip_address: str) -> Dict[str, Any]:
-    if not ip_address or ip_address in ["127.0.0.1", "0.0.0.0"]:
+    """Retrieves corporate metadata for a specific IP."""
+    if not ip_address or ip_address in ["127.0.0.1", "0.0.0.0", "::1"]:
         return {}
     if ip_address in ip_cache:
         return ip_cache[ip_address]
@@ -66,13 +69,13 @@ async def analyze_corporate_intent(
 ) -> str:
     """
     Executes clinical B2B intent analysis via DeepSeek.
-    Includes 'Position' context to identify Buying Committee roles.
+    Identifies if the visitor is an 'Individual Evaluator' or part of a 'Buying Committee'.
     """
     if not settings.DEEPSEEK_API_KEY:
         return "Intelligence engine calibrating. Analysis deferred."
 
     persona_signal = f"Persona: {position if position else 'Undetermined'}"
-    context_signal = "BUYING COMMITTEE ALERT: 3+ unique devices." if is_cluster else "Individual Facility Entry."
+    context_signal = "BUYING COMMITTEE ALERT: 3+ unique devices detected at this facility." if is_cluster else "Individual Facility Entry."
 
     prompt = f"""
     Analyze B2B industrial traffic for:
@@ -113,7 +116,7 @@ async def analyze_corporate_intent(
 async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
     """
     The Behavioral Ledger: Maps touchpoints and executes IP correlation.
-    Upgraded to prioritize volunteered 'Warm Lead' data.
+    Identifies 'Ghost Links' where anonymous users share an IP with known Warm Leads.
     """
     if not aura_id:
         return {"total_touches": 0, "pathway": "Direct", "intent_summary": "No signature."}
@@ -128,7 +131,8 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
 
     last_visit = history[-1]
 
-    # 2. Cluster Detection (72h Threshold)
+    # 2. Cluster Detection (72h Facility Window)
+    # Detects if multiple people at the same company are browsing your site.
     time_limit = datetime.now(timezone.utc) - timedelta(hours=72)
     cluster_stmt = select(Visit).where(
         Visit.ip_address == last_visit.ip_address,
@@ -139,7 +143,7 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
     unique_id_count = len({v.aura_id for v in cluster_records})
     is_buying_committee = unique_id_count >= 3
 
-    # 3. Pathway Mapping
+    # 3. Pathway Mapping (Cleanup URL flow)
     pages = [v.url.split('auraworks.co.za')[-1] if v.url else "/" for v in history]
     unique_pathway = []
     for p in pages:
@@ -147,26 +151,28 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
             unique_pathway.append(p if p != "" else "/")
     pathway_str = " → ".join(unique_pathway)
 
-    # 4. Resolve Company & Lead Context (The 'Warm' Check)
+    # 4. Resolve Identity Context
     company = None
     lead = None
     
-    # Check if this aura_id has volunteered data (Warm Lead)
+    # Check for volunteered data (The 'Warm' Check)
     lead_stmt = select(WaitlistLead).where(WaitlistLead.aura_id == aura_id)
     res_lead = await session.execute(lead_stmt)
     lead = res_lead.scalars().first()
 
+    # Link to Company model if forensic stitching has already occurred
     linked_visit = next((v for v in history if v.company_id), None)
     if linked_visit:
         company = await session.get(Company, linked_visit.company_id)
     elif lead and lead.company_id:
         company = await session.get(Company, lead.company_id)
 
-    # 5. Ghost-Enrichment & Facility Mapping
-    cluster_info = f"📍 Facility activity: {unique_id_count} IDs"
+    # 5. Ghost-Enrichment (IP-based Corporate Mapping)
+    cluster_info = f"📍 Facility Activity: {unique_id_count} device(s)"
     
     if not company and last_visit.ip_address:
-        # Cross-reference IP with any existing lead in the same facility
+        # If we don't know who this is, check if ANYONE from this IP ever identified themselves.
+        # This is how we deanonymize colleagues in the same building.
         past_lead_stmt = select(WaitlistLead).join(
             Visit, WaitlistLead.aura_id == Visit.aura_id
         ).where(Visit.ip_address == last_visit.ip_address)
@@ -177,9 +183,9 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
         if past_lead:
             company = await session.get(Company, past_lead.company_id)
             if company:
-                cluster_info += f" | 🔗 Ghost-linked: {company.name}"
+                cluster_info += f" | 🔗 Ghost-Linked: {company.name} (Identity via colleague)"
 
-    # 6. DeepSeek Synthesis with Position context
+    # 6. DeepSeek Synthesis
     intent = await analyze_corporate_intent(
         company_name=company.name if company else (lead.company_name_raw if lead else "Anonymous Entity"),
         industry=company.industry if company else "Industrial",

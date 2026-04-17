@@ -8,9 +8,11 @@ from typing import Optional, List, Dict, Any
 logger = logging.getLogger("uvicorn")
 
 # --- AuraWorks Identity Bridge: Consumer ISP & Infrastructure Blacklist ---
+# Tailored for the South African Market (National Expansion)
 CONSUMER_ISP_KEYWORDS = [
     "vodacom", "mtn", "telkom", "liquid", "cool ideas", "vumatel", "rain", 
-    "isp", "residential", "pool", "dynamic", "dsl", "fiber", "mobile"
+    "isp", "residential", "pool", "dynamic", "dsl", "fiber", "mobile",
+    "webafrica", "afrihost", "mweb", "vox", "supersonic"
 ]
 
 def is_consumer_traffic(target_name: str) -> bool:
@@ -29,8 +31,11 @@ def perform_local_reverse_dns(ip_address: str) -> Dict[str, Any]:
         hostname, _, _ = socket.gethostbyaddr(ip_address)
         hostname = hostname.lower()
         
-        if any(cloud in hostname for cloud in ["amazonaws", "googleusercontent", "azure", "static.cloud"]):
+        # Cloud/Data Center filtration
+        if any(cloud in hostname for cloud in ["amazonaws", "googleusercontent", "azure", "static.cloud", "hetzner"]):
             return {"type": "cloud", "provider": "Infrastructure", "confidence": 0.5}
+        
+        # Consumer ISP filtration
         if is_consumer_traffic(hostname):
             return {"type": "isp", "provider": "Consumer ISP", "confidence": 0.2}
         
@@ -41,12 +46,13 @@ def perform_local_reverse_dns(ip_address: str) -> Dict[str, Any]:
 async def enrich_visitor_data(ip_address: str, volunteered_company: Optional[str] = None) -> dict:
     """
     Phase 01: Forensic IP Resolution with Warm Lead Overrides.
-    If 'volunteered_company' is provided, it forces a B2B high-confidence state.
+    If 'volunteered_company' is provided (from Banner), it forces a B2B high-confidence state.
     """
+    # 0. Local/Dev Guard
     if ip_address in ("127.0.0.1", "localhost", "::1"):
         return {"company_name": "Local Test Environment", "is_b2b": False, "confidence_score": 1.0}
 
-    # 1. Warm Lead Override: If the user told us who they are, believe them.
+    # 1. Warm Lead Override: If the user provided a name via the industrial sync, use it.
     if volunteered_company and not is_consumer_traffic(volunteered_company):
         return {
             "company_name": volunteered_company,
@@ -61,6 +67,10 @@ async def enrich_visitor_data(ip_address: str, volunteered_company: Optional[str
     local_intel = perform_local_reverse_dns(ip_address)
 
     # 3. Layer 2 Check (IPinfo)
+    if not settings.IPINFO_TOKEN:
+        logger.warning("⚠️ IPinfo Token missing. Enrichment limited to Layer 1.")
+        return {"company_name": local_intel["provider"], "is_b2b": False, "confidence_score": 0.3}
+
     url = f"https://ipinfo.io/{ip_address}?token={settings.IPINFO_TOKEN}"
 
     async with httpx.AsyncClient() as client:
@@ -76,19 +86,20 @@ async def enrich_visitor_data(ip_address: str, volunteered_company: Optional[str
             final_name = company_data.get("name")
             final_domain = company_data.get("domain")
 
+            # Fallback to ASN org name if company enrichment is empty
             if not final_name:
                 org_full = data.get("org", "Unknown")
                 final_name = " ".join(org_full.split(" ")[1:]) if org_full.startswith("AS") else org_full
 
             asn_type = asn_data.get("type", "").lower()
             
-            # --- CALCULATE CONFIDENCE SCORE ---
+            # --- CALCULATE CONFIDENCE SCORE (Industrial Weighing) ---
             confidence = 0.5 # Baseline
             
             if asn_type == "business": confidence += 0.4
-            if asn_type == "hosting": confidence -= 0.2
+            if asn_type == "hosting": confidence -= 0.3 # Penalize VPNs/Bots
             if is_consumer_traffic(final_name) or is_consumer_traffic(data.get("org", "")):
-                confidence -= 0.4
+                confidence -= 0.4 # Penalize Residential
             
             # Final determination for the 'Industrial' threshold
             is_b2b = confidence >= 0.5
@@ -104,18 +115,20 @@ async def enrich_visitor_data(ip_address: str, volunteered_company: Optional[str
                 "provider_type": local_intel["type"]
             }
         except Exception as e:
-            logger.error(f"IPinfo Failure: {e}")
+            logger.error(f"🚨 IPinfo Failure: {e}")
             return {"company_name": "Error", "is_b2b": False, "confidence_score": 0.0}
 
 async def get_departmental_intelligence(domain: str) -> List[Dict]:
     """
     Phase 02: Industrial Cluster Mapping (Apollo.io).
+    Identifies departmental decision-makers within South African corporate domains.
     """
     if not settings.APOLLO_API_KEY or not domain or domain in ["unknown.com", "n/a"]:
         return []
 
     url = "https://api.apollo.io/v1/people/search"
-    target_departments = ["Procurement", "Operations", "Engineering", "Maintenance", "Supply Chain"]
+    # Targeted industrial roles
+    target_departments = ["Procurement", "Operations", "Engineering", "Maintenance", "Supply Chain", "Factory Manager"]
 
     payload = {
         "api_key": settings.APOLLO_API_KEY,
@@ -134,11 +147,12 @@ async def get_departmental_intelligence(domain: str) -> List[Dict]:
                 people = data.get("people", [])
                 
                 return [{
-                    "name": person.get("title", "Lead"),
+                    "role": person.get("title", "Lead"),
+                    "name": person.get("name"),
                     "email": person.get("email"),
-                    "phone": person.get("phone_numbers", [{}])[0].get("raw_number"),
-                    "head_of_dept_linkedin": person.get("linkedin_url")
+                    "linkedin_url": person.get("linkedin_url")
                 } for person in people]
             return []
-        except Exception:
+        except Exception as e:
+            logger.error(f"🚨 Apollo Enrichment Failure: {e}")
             return []
