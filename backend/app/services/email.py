@@ -1,5 +1,6 @@
 # backend/app/services/email.py
 import logging
+from typing import Optional
 import httpx
 from app.core.config import settings
 
