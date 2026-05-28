@@ -11,7 +11,9 @@ logger = logging.getLogger("uvicorn")
 
 # 1. Synchronous Engine (For Migrations and Admin Dashboards)
 # Converts asyncpg URL to standard postgresql if necessary
-sync_url = settings.DATABASE_URL.replace("postgresql+asyncpg://", "postgresql://") if settings.DATABASE_URL else None
+sync_url = settings.DATABASE_URL
+if sync_url and "postgresql+asyncpg://" in sync_url:
+    sync_url = sync_url.replace("postgresql+asyncpg://", "postgresql://")
 
 if sync_url:
     engine = create_engine(
@@ -25,15 +27,19 @@ else:
     logger.critical("🚨 DATABASE_URL missing. System entering Fail-Fast mode.")
     engine = None
 
-# 2. Asynchronous Engine (For Forensic Tracking & Identity API)
-# Ensures the URL uses the required +asyncpg driver
-async_url = settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://") if settings.DATABASE_URL else None
+# 2. Asynchronous Engine (For Forensic Tracking, Janitor Cycles & Identity API)
+# Ensures the URL uses the required +asyncpg driver explicitly
+async_url = settings.DATABASE_URL
+if async_url and async_url.startswith("postgresql://"):
+    async_url = async_url.replace("postgresql://", "postgresql+asyncpg://")
 
 if async_url:
     async_engine = create_async_engine(
         async_url,
         echo=False,
-        pool_pre_ping=True
+        pool_pre_ping=True,
+        pool_size=10,
+        max_overflow=20
     )
     async_session_maker = sessionmaker(
         async_engine, class_=AsyncSession, expire_on_commit=False
@@ -63,7 +69,7 @@ def init_db():
         from app.models.pageview import PageView
         
         SQLModel.metadata.create_all(engine)
-        logger.info("✅ Database Ledger: Schema verified.")
+        logger.info("✅ Database Ledger: Connection established and tables verified.")
     except Exception as e:
         logger.error(f"❌ Database Ledger: Sync failure: {e}")
 

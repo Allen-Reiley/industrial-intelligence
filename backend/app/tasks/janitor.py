@@ -3,7 +3,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.db import engine, get_async_session
+from app.db import async_engine
 from app.models.visit import Visit
 from app.models.waitlist import WaitlistLead
 
@@ -16,12 +16,16 @@ async def cleanup_unverified_visits():
     """
     logger.info("🧹 AuraWorks OS: Activating 48-hour Janitor Sweep...")
     
+    if not async_engine:
+        logger.error("❌ Janitor Sweep aborted: Async Database Engine not initialized.")
+        return
+
     # 1. Define the 'Noise' Threshold (48 hours)
     # Allows a window for 'Late Promotion' via the Banner/Waitlist.
     threshold = datetime.now(timezone.utc) - timedelta(hours=48)
     
-    # We use a manual session block here since this runs in a background task
-    async with AsyncSession(engine) as session:
+    # Use the async_engine explicitly for background worker execution
+    async with AsyncSession(async_engine) as session:
         try:
             # 2. Identify 'Verifying' records older than the threshold
             statement = select(Visit).where(

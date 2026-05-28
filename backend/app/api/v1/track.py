@@ -1,4 +1,4 @@
-# backend/app/api/v1/endpoints/track.py
+# backend/app/api/v1/track.py
 from fastapi import APIRouter, BackgroundTasks, Request, Header, HTTPException
 from typing import Optional, Dict, Any
 from sqlmodel import select
@@ -34,14 +34,18 @@ class IdentityPayload(BaseModel):
     capture_source: Optional[str] = "authorized_blur"
     signature: Optional[Dict[str, Any]] = None
 
-async def process_entry_logic(payload: VisitCreate, client_ip: str, background_tasks: BackgroundTasks):
+async def process_entry_logic(payload: VisitCreate, client_ip: str):
     """
     Main ingestion engine for raw visitor traffic. 
-    Handles Juristic Entity resolution and initial Forensic logging.
+    Isolated execution context safely handling background mutations.
     """
+    if not async_session_maker:
+        logger.error("❌ process_entry_logic: Aborted. Async Database Engine not initialized.")
+        return
+
     async with async_session_maker() as session:
         try:
-            # 1. Forensic Enrichment (National Waterfall)
+            # 1. Forensic Enrichment (Firmographic Resolution)
             enriched_info = await enrich_visitor_data(client_ip)
             domain = enriched_info.get("domain")
             
@@ -67,7 +71,8 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str, background_t
                 session.add(company)
             
             await session.commit()
-            if company: await session.refresh(company)
+            if company: 
+                await session.refresh(company)
 
             # 3. Persistence of the Forensic Trail
             db_visit = Visit(
@@ -77,28 +82,38 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str, background_t
                 ip_address=client_ip,
                 url=payload.url,
                 referrer=payload.referrer,
-                # New visitors start as 'verifying' unless the company is already trusted
                 verification_status="verified" if (company and company.is_verified) else "verifying"
             )
             session.add(db_visit)
             await session.commit()
+            await session.refresh(db_visit)
 
             # 4. Intelligence Synthesis & Notification
             journey = await get_visitor_journey(payload.aura_id, session)
-            background_tasks.add_task(
-                post_to_visit_channel, 
-                {"company": company.name if company else "Anonymous"}, 
-                journey
-            )
+            
+            # Map visit properties securely to fit notifications pipeline expects
+            visit_notification_payload = {
+                "aura_id": db_visit.aura_id,
+                "company_name": company.name if company else "Anonymous Entity",
+                "confidence_score": 1.0 if (company and company.is_verified) else 0.6,
+                "is_verified": company.is_verified if company else False,
+                "utm_source": getattr(payload, "utm_source", "Direct"),
+                "utm_medium": getattr(payload, "utm_medium", "None"),
+                "city": enriched_info.get("city", "Unknown"),
+                "region": enriched_info.get("region", "ZA")
+            }
+            
+            await post_to_visit_channel(visit_notification_payload, journey)
 
         except Exception as e:
+            await session.rollback()
             logger.error(f"🚨 Ingestion Error: {e}")
 
 @router.post("/entry")
 async def track_entry(payload: VisitCreate, request: Request, background_tasks: BackgroundTasks):
     # Resolve IP via proxy headers for Railway/Cloudfront compatibility
     client_ip = request.headers.get("x-forwarded-for", request.client.host).split(',')[0]
-    background_tasks.add_task(process_entry_logic, payload, client_ip, background_tasks)
+    background_tasks.add_task(process_entry_logic, payload, client_ip)
     return {"status": "accepted"}
 
 @router.post("/identity")
@@ -170,16 +185,19 @@ async def track_identity(payload: IdentityPayload):
 async def track_event(payload: PageViewCreate):
     """Logs behavioral intent clicks (e.g., 'Pricing', 'Industrial Sync')."""
     async with async_session_maker() as session:
+        # Standardized tracking normalization fallback
+        target_aura_id = payload.aura_id if getattr(payload, "aura_id", None) else payload.client_id
+        
         res = await session.execute(
             select(Visit).where(
-                Visit.aura_id == payload.client_id, # aura.js sends this in client_id field for events
+                Visit.aura_id == target_aura_id,
                 Visit.url == payload.url 
             ).order_by(Visit.created_at.desc())
         )
         visit = res.scalars().first()
         if visit:
-            if payload.event_type == "intent_click":
-                visit.intent_cluster = payload.intent_cluster
+            if getattr(payload, "event_type", None) == "intent_click":
+                visit.intent_cluster = getattr(payload, "intent_cluster", "General")
             await session.commit()
             return {"status": "event_logged"}
         return {"status": "pending_entry"}
@@ -209,9 +227,12 @@ async def track_exit(payload: PageViewCreate):
         processed_duration = 0
 
     async with async_session_maker() as session:
+        # Standardized tracking normalization fallback
+        target_aura_id = payload.aura_id if getattr(payload, "aura_id", None) else payload.client_id
+
         res = await session.execute(
             select(Visit).where(
-                Visit.aura_id == payload.client_id,
+                Visit.aura_id == target_aura_id,
                 Visit.url == payload.url
             ).order_by(Visit.created_at.desc())
         )

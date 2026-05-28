@@ -80,7 +80,7 @@
                 type: conn?.effectiveType || "unknown",
                 rtt: conn?.rtt,
                 downlink: conn?.downlink,
-                is_residential_prob: (conn?.saveData || (conn?.downlink && conn.downlink < 10))
+                is_residential_prob: !!(conn?.saveData || (conn?.downlink && conn.downlink < 10))
             };
         },
         getCanvas() {
@@ -187,7 +187,7 @@
                     this.dispatch('event', { 
                         event_type: 'intent_click', 
                         intent_cluster: text.substring(0, 20), 
-                        url: window.location.pathname 
+                        url: window.location.href 
                     });
                 }
             });

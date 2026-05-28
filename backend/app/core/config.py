@@ -37,10 +37,8 @@ class Settings(BaseSettings):
     # --- NOTIFICATIONS & DISPATCH ---
     SLACK_WEBHOOK_URL: Optional[str] = None        
     SLACK_VISIT_WEBHOOK_URL: Optional[str] = None  
-    MAILGUN_API_KEY: Optional[str] = None
-    MAILGUN_DOMAIN: str = "mg.auraworks.co.za"
     
-    # RESEND CORE DISPATCH
+    # --- EXCLUSIVE RESEND EMAIL DISPATCH ENGINE ---
     RESEND_API_KEY: Optional[str] = None
     RESEND_FROM_EMAIL: str = "AuraWorks <waitlist@auraworks.co.za>"
 

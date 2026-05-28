@@ -1,83 +1,80 @@
-from apscheduler.schedulers.background import BackgroundScheduler
-from sqlmodel import Session, select
-from app.db import engine
+# backend/app/core/scheduler.py
+import logging
+from datetime import datetime, timezone
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from sqlmodel import select
+from app.db import async_session_maker
 from app.models.company import Company
 from app.models.department import Department
 from app.services.enrichment import get_departmental_intelligence
-from datetime import datetime, timezone
-import asyncio
-import logging
 
 logger = logging.getLogger("uvicorn")
 
-def run_enrichment_cycle():
+async def run_enrichment_cycle():
     """
-    Industrial Enrichment Task:
-    Maps corporate departments for Juristic Entities using Apollo.io.
+    Industrial Async Enrichment Task:
+    Maps corporate departments for captured Juristic Entities via Apollo.io.
     """
-    # Create a dedicated event loop for this background thread to avoid loop conflicts
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+    if not async_session_maker:
+        logger.error("❌ Scheduler Enrichment Cycle: Aborted. Async Database Engine not initialized.")
+        return
 
-    with Session(engine) as session:
-        # Find companies with domains that require enrichment
-        # Logic: Domain must exist, and we haven't found any departments yet
-        statement = select(Company).where(Company.domain != None)
-        companies = session.exec(statement).all()
+    async with async_session_maker() as session:
+        try:
+            # Locate target companies requiring deep intelligence routing
+            statement = select(Company).where(Company.domain != None)
+            result = await session.execute(statement)
+            companies = result.scalars().all()
 
-        for company in companies:
-            try:
-                # 🛡️ API WASTE GATE:
-                # We check if this company already has departmental records.
-                # In a future update, we can check 'company.last_enriched_at' for 30-day refreshes.
-                existing_depts = session.exec(
-                    select(Department).where(Department.company_id == company.id)
-                ).first()
-                
-                if existing_depts:
-                    # Skip to save Apollo credits if already mapped
-                    continue
+            for company in companies:
+                try:
+                    # 🛡️ CREDIT WASTE GATE:
+                    # Verify if this company already possesses parsed industrial department layers.
+                    dept_stmt = select(Department).where(Department.company_id == company.id)
+                    dept_result = await session.execute(dept_stmt)
+                    existing_dept = dept_result.scalars().first()
+                    
+                    if existing_dept:
+                        # Skip execution block to preserve Apollo/Enrichment API token allocation
+                        continue
 
-                logger.info(f"🔍 Scheduled Enrichment: Researching {company.name} [{company.domain}]")
-                
-                # Execute the Apollo.io search via the async service
-                depts_data = loop.run_until_complete(get_departmental_intelligence(company.domain))
-                
-                if not depts_data:
-                    logger.info(f"ℹ️ No departments found for {company.domain}")
-                    continue
+                    logger.info(f"🔍 Forensic Enrichment: Querying {company.name} [{company.domain}]")
+                    
+                    # Direct async execution without breaking loop state or threading overhead
+                    depts_data = await get_departmental_intelligence(company.domain)
+                    
+                    if not depts_data:
+                        logger.info(f"ℹ️ Operational Intelligence: No structural departments identified for {company.domain}")
+                        continue
 
-                for dept in depts_data:
-                    new_dept = Department(
-                        company_id=company.id,
-                        name=dept.get('name', 'General'),
-                        email=dept.get('email'),
-                        phone=dept.get('phone'),
-                        head_of_dept_linkedin=dept.get('head_of_dept_linkedin')
-                    )
-                    session.add(new_dept)
-                
-                # Update company metadata if you decide to add this field to your Company model
-                # company.last_enriched_at = datetime.now(timezone.utc)
-                # session.add(company)
-                
-                session.commit()
-                logger.info(f"✅ Successfully mapped {len(depts_data)} departments for {company.name}")
+                    for dept in depts_data:
+                        new_dept = Department(
+                            company_id=company.id,
+                            name=dept.get('name', 'General'),
+                            email=dept.get('email'),
+                            phone=dept.get('phone'),
+                            head_of_dept_linkedin=dept.get('head_of_dept_linkedin')
+                        )
+                        session.add(new_dept)
+                    
+                    # Commit updates per juristic node to keep database logs interactive and up to date
+                    await session.commit()
+                    logger.info(f"✅ Structural Map Saved: Tied {len(depts_data)} departments to {company.name}")
 
-            except Exception as e:
-                session.rollback()
-                logger.error(f"❌ Enrichment Cycle Error for {company.name}: {e}")
-    
-    loop.close()
+                except Exception as inner_error:
+                    await session.rollback()
+                    logger.error(f"❌ Structural Mapping Failure for {company.name}: {inner_error}")
+
+        except Exception as global_error:
+            logger.error(f"❌ Global Enrichment Pipeline Exception: {global_error}")
 
 def start_scheduler():
     """
-    Initializes the AuraWorks Background Pipeline.
+    Initializes the Asynchronous AuraWorks Background Engine Pipeline.
     """
-    scheduler = BackgroundScheduler()
+    scheduler = AsyncIOScheduler()
     
-    # Task 1: Perform industrial enrichment every hour
-    # This captures companies added via tracking or waitlist that haven't been mapped yet.
+    # Ingest target juristic entities every hour for firmographic lead enrichment
     scheduler.add_job(
         run_enrichment_cycle, 
         'interval', 
@@ -86,8 +83,5 @@ def start_scheduler():
         replace_existing=True
     )
     
-    # Task 2: (Planned) Weekly ROI Audit Reports
-    # scheduler.add_job(generate_weekly_audit_reports, 'cron', day_of_week='mon', hour=8)
-    
     scheduler.start()
-    logger.info("🚀 AuraWorks Scheduler: Online. Monitoring Juristic Entities.")
+    logger.info("🚀 AuraWorks Async Scheduler: Online. Structural enrichment loop active.")

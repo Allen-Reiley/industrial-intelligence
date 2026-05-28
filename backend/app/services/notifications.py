@@ -1,6 +1,6 @@
-import os
-import httpx
+# backend/app/services/notifications.py
 import logging
+import httpx
 from app.core.config import settings
 
 logger = logging.getLogger("uvicorn")
@@ -18,7 +18,7 @@ async def post_to_visit_channel(visit_data: dict, journey: dict):
     # SPRINT B FILTER: Stop notification fatigue from residential noise
     confidence = visit_data.get("confidence_score", 0.0)
     if confidence < 0.5 and not visit_data.get("is_verified", False):
-        logger.info(f"🤫 Noise Suppression: Skip Slack for {visit_data.get('aura_id')[:8]} (Score: {confidence})")
+        logger.info(f"🤫 Noise Suppression: Skip Slack for {visit_data.get('aura_id', 'UNKNOWN')[:8]} (Score: {confidence})")
         return
 
     cluster_count = journey.get("cluster_count", 1)
@@ -28,9 +28,12 @@ async def post_to_visit_channel(visit_data: dict, journey: dict):
     emoji = "🏢" if is_corporate_cluster else "🏭"
     header = f"{emoji} Corporate Cluster" if is_corporate_cluster else f"{emoji} Industrial Facility"
 
-    # Deep Links for the Industrial Triad
-    airtable_url = f"https://airtable.com/{os.getenv('AIRTABLE_BASE_ID', '')}"
-    notion_url = f"https://www.notion.so/{os.getenv('NOTION_DATABASE_ID', '')}"
+    # Fallbacks derived gracefully from centralized settings
+    airtable_base = getattr(settings, "AIRTABLE_BASE_ID", "")
+    notion_db = getattr(settings, "NOTION_DATABASE_ID", "")
+    
+    airtable_url = f"https://airtable.com/{airtable_base}" if airtable_base else "#"
+    notion_url = f"https://www.notion.so/{notion_db}" if notion_db else "#"
 
     payload = {
         "blocks": [
@@ -42,7 +45,7 @@ async def post_to_visit_channel(visit_data: dict, journey: dict):
                 "type": "section",
                 "fields": [
                     {"type": "mrkdwn", "text": f"*Entity:*\n{visit_data.get('company_name', 'Anonymous Entity')}"},
-                    {"type": "mrkdwn", "text": f"*Confidence:*\n`{confidence * 100}%`"},
+                    {"type": "mrkdwn", "text": f"*Confidence:*\n`{int(confidence * 100)}%`"},
                     {"type": "mrkdwn", "text": f"*Attribution:*\n{visit_data.get('utm_source', 'Direct')} / {visit_data.get('utm_medium', 'None')}"},
                     {"type": "mrkdwn", "text": f"*Intent Score:*\n{journey.get('intent_score', 'Audit Pending')}"}
                 ]
@@ -50,27 +53,28 @@ async def post_to_visit_channel(visit_data: dict, journey: dict):
             {
                 "type": "context",
                 "elements": [
-                    {"type": "mrkdwn", "text": f"📍 Forensic Lock: `{visit_data.get('aura_id')[:8]}` | Location: {visit_data.get('city', 'Unknown')}, {visit_data.get('region', 'ZA')}"}
-                ]
-            },
-            {
-                "type": "actions",
-                "elements": [
-                    {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": "Airtable CRM"},
-                        "url": airtable_url,
-                        "style": "primary"
-                    },
-                    {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": "Notion Vault"},
-                        "url": notion_url
-                    }
+                    {"type": "mrkdwn", "text": f"📍 Forensic Lock: `{visit_data.get('aura_id', 'UNKNOWN')[:8]}` | Location: {visit_data.get('city', 'Unknown')}, {visit_data.get('region', 'ZA')}"}
                 ]
             }
         ]
     }
+
+    if airtable_base or notion_db:
+        actions_block = {"type": "actions", "elements": []}
+        if airtable_base:
+            actions_block["elements"].append({
+                "type": "button",
+                "text": {"type": "plain_text", "text": "Airtable CRM"},
+                "url": airtable_url,
+                "style": "primary"
+            })
+        if notion_db:
+            actions_block["elements"].append({
+                "type": "button",
+                "text": {"type": "plain_text", "text": "Notion Vault"},
+                "url": notion_url
+            })
+        payload["blocks"].append(actions_block)
 
     async with httpx.AsyncClient() as client:
         try:
@@ -89,8 +93,9 @@ async def post_to_slack(lead_data: dict, journey: dict = None):
         return
 
     journey = journey or {}
-    status_emoji = "💎" # Premium Lead Icon
-    notion_url = f"https://www.notion.so/{os.getenv('NOTION_DATABASE_ID', '')}"
+    status_emoji = "💎"
+    notion_db = getattr(settings, "NOTION_DATABASE_ID", "")
+    notion_url = f"https://www.notion.so/{notion_db}" if notion_db else "#"
 
     payload = {
         "blocks": [
@@ -106,56 +111,26 @@ async def post_to_slack(lead_data: dict, journey: dict = None):
                     {"type": "mrkdwn", "text": f"*Capture Source:*\n`{lead_data.get('capture_source', 'Verification')}`"},
                     {"type": "mrkdwn", "text": f"*Pathway:*\n{journey.get('pathway', 'Direct Entry')}"}
                 ]
-            },
-            {
-                "type": "actions",
-                "elements": [
-                    {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": "Read Full Audit"},
-                        "url": notion_url,
-                        "style": "primary"
-                    }
-                ]
             }
         ]
     }
     
+    if notion_db:
+        payload["blocks"].append({
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "Read Full Audit"},
+                    "url": notion_url,
+                    "style": "primary"
+                }
+            ]
+        })
+    
     async with httpx.AsyncClient() as client:
         try:
-            await client.post(settings.SLACK_WEBHOOK_URL, json=payload, timeout=10.0)
+            response = await client.post(settings.SLACK_WEBHOOK_URL, json=payload, timeout=10.0)
+            response.raise_for_status()
         except Exception as e:
             logger.error(f"Lead Channel Dispatch Failure: {e}")
-
-# --- PHASE 03: Industrial Mailer (Mailgun) ---
-
-async def send_mailgun_notification(email: str, name: str, subject: str = "Phase 01: Audit Initiated"):
-    """
-    Industrial Email Dispatch via Mailgun API for Client Onboarding.
-    """
-    if not settings.MAILGUN_API_KEY or not settings.MAILGUN_DOMAIN:
-        logger.warning("Mailgun credentials missing. Email skipped.")
-        return
-
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(
-                f"https://api.mailgun.net/v3/{settings.MAILGUN_DOMAIN}/messages",
-                auth=("api", settings.MAILGUN_API_KEY),
-                data={
-                    "from": f"AuraWorks <audit@{settings.MAILGUN_DOMAIN}>",
-                    "to": email,
-                    "subject": subject,
-                    "html": f"""
-                    <div style="font-family: sans-serif; color: #18181b;">
-                        <h3>System Audit: {name}</h3>
-                        <p>Your industrial intelligence audit has been queued for processing.</p>
-                        <p style="color: #71717a; font-size: 12px;">Ref: Industrial Forensic Bridge v3.0</p>
-                    </div>
-                    """
-                }
-            )
-            return response.status_code == 200
-        except Exception as e:
-            logger.error(f"Mailgun Dispatch Failure: {e}")
-            return False

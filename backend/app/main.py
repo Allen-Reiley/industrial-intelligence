@@ -4,7 +4,7 @@ import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import select, desc
+from sqlmodel import select, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timezone
 
@@ -14,6 +14,7 @@ from app.api.v1 import track, clients, identity, waitlist, leads
 from app.models.waitlist import WaitlistLead
 from app.models.company import Company 
 from app.tasks.janitor import cleanup_unverified_visits
+from app.core.scheduler import start_scheduler
 
 # Setup logging - Industrial Clinical Style
 logger = logging.getLogger("uvicorn")
@@ -53,14 +54,17 @@ async def lifespan(app: FastAPI):
     if settings.DATABASE_URL:
         try:
             init_db()
-            logger.info("✅ Database Ledger: Connection established and tables verified.")
         except Exception as e:
             logger.error(f"❌ Database Ledger: Failed to initialize. {e}")
     else:
         logger.warning("⚠️ Database Ledger: DATABASE_URL missing.")
 
+    # 1. Start the DB Janitor
     janitor_task = asyncio.create_task(run_janitor_loop())
     logger.info("扫 Janitor: Forensic sweep scheduled.")
+
+    # 2. Boot the Apollo.io Enrichment Async Scheduler
+    start_scheduler()
     
     yield
     
@@ -120,12 +124,12 @@ async def get_admin_summary(session: AsyncSession = Depends(get_async_session)):
     # Count Warm Leads (Volunteered Data)
     lead_count_stmt = select(func.count(WaitlistLead.id))
     lead_count_res = await session.execute(lead_count_stmt)
-    total_leads = lead_count_res.scalar()
+    total_leads = lead_count_res.scalar() or 0
 
     # Count High-Engagement Entities
     company_count_stmt = select(func.count(Company.id)).where(Company.total_visits > 5)
     company_count_res = await session.execute(company_count_stmt)
-    hot_companies = company_count_res.scalar()
+    hot_companies = company_count_res.scalar() or 0
 
     return {
         "total_warm_leads": total_leads,

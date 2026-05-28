@@ -17,31 +17,45 @@ logger = logging.getLogger("uvicorn")
 # --- UTILS: Industrial Formatting ---
 def format_zar(value: str) -> str:
     """Standardizes South African currency strings for industrial reporting."""
-    if not value: return "N/A"
-    if "m" in value.lower(): return "R1,000,000+"
-    if "-" in value:
-        parts = value.replace('k', '000').split('-')
+    if not value: 
+        return "N/A"
+    
+    val_str = str(value).strip().lower()
+    if "m" in val_str: 
+        return "R1,000,000+"
+    if "-" in val_str:
+        parts = val_str.replace('k', '000').split('-')
         try:
             formatted_parts = [f"R{int(p.strip()):,}" for p in parts]
             return " - ".join(formatted_parts)
-        except: return value
-    clean_value = "".join(filter(str.isdigit, value))
-    return f"R{int(clean_value):,}" if clean_value else value
+        except: 
+            return str(value)
+            
+    clean_value = "".join(filter(str.isdigit, val_str.replace('k', '000')))
+    return f"R{int(clean_value):,}" if clean_value else str(value)
 
 async def background_lead_analysis(lead_id: int, aura_id: str, payload: dict):
     """
     Asynchronous orchestration of the forensic audit and journey mapping.
     Deferred processing to keep the user-facing response time under 200ms.
     """
+    if not async_session_maker:
+        logger.error("❌ background_lead_analysis: Aborted. Async Database Engine not initialized.")
+        return
+
     async with async_session_maker() as session:
         try:
+            if not aura_id:
+                logger.info(f"ℹ️ Background Analysis: Skip journey mapping for missing aura_id (Lead ID: {lead_id})")
+                return
+
             # Execute the Behavioral Ledger synthesis (DeepSeek + Cluster Analysis)
             journey = await get_visitor_journey(aura_id, session)
             
             # This is where the Phase 2 'Airtable Bridge' and Slack Dispatch will trigger
             logger.info(f"📊 Intelligence Analysis Complete for {aura_id} (Lead ID: {lead_id})")
         except Exception as e:
-            logger.error(f"❌ Background Analysis Error: {e}")
+            logger.error(f"❌ Background Analysis Error for Lead ID {lead_id}: {e}")
 
 @router.post("/join")
 async def join_waitlist(
@@ -124,10 +138,10 @@ async def join_waitlist(
         lead.industry = payload.get("industry") or lead.industry
         lead.website = website or lead.website
         
-        # Industrial-specific metrics
+        # Industrial-specific metrics formatting normalization
         lead.traffic = payload.get("traffic")
-        lead.avg_price = payload.get("avg_price")
-        lead.aura_id = aura_id
+        lead.avg_price = format_zar(payload.get("avg_price")) if payload.get("avg_price") else lead.avg_price
+        lead.aura_id = aura_id or lead.aura_id
         
         session.add(lead)
 
