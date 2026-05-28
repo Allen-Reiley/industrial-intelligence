@@ -39,14 +39,16 @@ class Settings(BaseSettings):
     SLACK_VISIT_WEBHOOK_URL: Optional[str] = None  
     MAILGUN_API_KEY: Optional[str] = None
     MAILGUN_DOMAIN: str = "mg.auraworks.co.za"
+    
+    # RESEND CORE DISPATCH
     RESEND_API_KEY: Optional[str] = None
+    RESEND_FROM_EMAIL: str = "AuraWorks <waitlist@auraworks.co.za>"
 
     # --- EXTERNAL INTEGRATIONS ---
     NEXT_PUBLIC_WAITLIST_API_KEY: Optional[str] = None
     NEXT_PUBLIC_WAITLIST_ID: Optional[str] = None
 
     # --- CORS SETTINGS (Industrial Perimeter) ---
-    # Strict list of verified origins to protect tracking integrity
     ALLOWED_ORIGINS: List[str] = [
         "https://industrial-intelligence-xi.vercel.app", 
         "http://localhost:3000",

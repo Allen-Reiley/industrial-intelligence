@@ -8,6 +8,8 @@ from app.models.waitlist import WaitlistLead
 from app.models.company import Company
 from app.models.visit import Visit
 from app.services.intelligence import get_visitor_journey
+# PHASE 1: Import the new Resend notification engine
+from app.services.email import send_waitlist_success_email
 
 router = APIRouter()
 logger = logging.getLogger("uvicorn")
@@ -59,6 +61,7 @@ async def join_waitlist(
     client_id = payload.get("client_id") # Anchor for multi-tenancy
     raw_company_name = payload.get("company") or payload.get("company_name")
     website = payload.get("website")
+    recipient_name = payload.get("name")
 
     if not email or not client_id:
         raise HTTPException(status_code=400, detail="Incomplete lead parameters (Email/Client ID missing).")
@@ -112,7 +115,7 @@ async def join_waitlist(
             lead = WaitlistLead(email=email, client_id=client_id, aura_id=aura_id)
         
         # Merge volunteered context into the Lead object
-        lead.name = payload.get("name") or lead.name
+        lead.name = recipient_name or lead.name
         lead.email = email
         lead.company_id = company.id
         lead.company_name_raw = raw_company_name or lead.company_name_raw
@@ -143,7 +146,7 @@ async def join_waitlist(
         await session.commit()
         await session.refresh(lead)
 
-        # 4. DEFERRED JOURNEY MAPPING
+        # 4. DEFERRED JOURNEY MAPPING & NOTIFICATIONS
         # Launch heavy intelligence analysis without blocking the UI response
         background_tasks.add_task(
             background_lead_analysis, 
@@ -152,7 +155,14 @@ async def join_waitlist(
             payload=payload
         )
         
-        return {"status": "success", "message": "Lead promoted and forensic history shielded."}
+        # PHASE 1: Schedule the Resend confirmation email dispatch asynchronously
+        background_tasks.add_task(
+            send_waitlist_success_email,
+            recipient_email=email,
+            recipient_name=recipient_name
+        )
+        
+        return {"status": "success", "message": "Lead promoted and forensic history shielded. Confirmation queued."}
 
     except Exception as e:
         await session.rollback()
