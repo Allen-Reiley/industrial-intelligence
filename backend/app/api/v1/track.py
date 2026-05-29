@@ -6,18 +6,23 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 import logging
 from datetime import datetime, timezone
+from cachetools import TTLCache
 
 # Internal AuraWorks Imports
 from app.models.visit import Visit, VisitCreate, PageViewCreate
 from app.models.company import Company
 from app.models.waitlist import WaitlistLead
 from app.services.enrichment import enrich_visitor_data
-from app.services.notifications import post_to_visit_channel
+from app.services.notifications import post_to_slack
 from app.services.intelligence import get_visitor_journey
 from app.db import async_session_maker
 
 router = APIRouter()
 logger = logging.getLogger("uvicorn")
+
+# --- ANTI-SPAM LOCK ---
+# Prevents duplicate exit notifications if the browser fires multiple exit beacons
+exit_notification_cache = TTLCache(maxsize=2000, ttl=43200) # 12 hour cooldown
 
 class ConsentPayload(BaseModel):
     client_id: str
@@ -36,16 +41,15 @@ class IdentityPayload(BaseModel):
 
 async def process_entry_logic(payload: VisitCreate, client_ip: str):
     """
-    Main ingestion engine for raw visitor traffic. 
-    Sequentially blocks notification dispatch until DeepSeek intent has compiled.
+    SILENT INGESTION ENGINE:
+    Records raw traffic trails and resolves firmographics without triggering DeepSeek or Slack pings.
     """
     if not async_session_maker:
-        logger.error("❌ process_entry_logic: Aborted. Async Database Engine not initialized.")
         return
 
     async with async_session_maker() as session:
         try:
-            # 1. Forensic Enrichment (Firmographic Resolution)
+            # 1. Forensic Enrichment
             enriched_info = await enrich_visitor_data(client_ip)
             domain = enriched_info.get("domain")
             
@@ -86,45 +90,80 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
             )
             session.add(db_visit)
             await session.commit()
-            await session.refresh(db_visit)
-
-            # 4. AWAIT INTELLIGENCE SYNTHESIS (Halts sequential block until DeepSeek finishes)
-            journey = await get_visitor_journey(payload.aura_id, session)
             
-            # 5. Pack visit properties securely with full context resolved
-            visit_notification_payload = {
-                "aura_id": db_visit.aura_id,
-                "company_name": company.name if company else "Anonymous Entity",
-                "confidence_score": 1.0 if (company and company.is_verified) else 0.6,
-                "is_verified": company.is_verified if company else False,
-                "utm_source": getattr(payload, "utm_source", "Direct"),
-                "utm_medium": getattr(payload, "utm_medium", "None"),
-                "city": enriched_info.get("city", "Unknown"),
-                "region": enriched_info.get("region", "ZA")
-            }
-            
-            # 6. Dispatch clear notification package to Slack
-            await post_to_visit_channel(visit_notification_payload, journey)
-
         except Exception as e:
             await session.rollback()
-            logger.error(f"🚨 Ingestion Error: {e}")
+            logger.error(f"🚨 Silent Ingestion Error: {e}")
+
+async def process_exit_logic(aura_id: str, client_id: str):
+    """
+    THE BATCH PROCESSOR:
+    Fires exclusively upon departure. Evaluates identity data gates to avoid chat pollution.
+    Compiles the entire session trail into a single structured prompt for DeepSeek analysis.
+    """
+    if not async_session_maker:
+        return
+
+    # Anti-Spam: Skip duplicate execution loops for the same session footprint
+    if aura_id in exit_notification_cache:
+        return
+
+    async with async_session_maker() as session:
+        try:
+            # 1. THE GATEKEEPER: Did they convert or hand over data via banner forms?
+            lead_stmt = select(WaitlistLead).where(
+                WaitlistLead.aura_id == aura_id,
+                WaitlistLead.client_id == client_id
+            )
+            lead = (await session.execute(lead_stmt)).scalars().first()
+
+            # Ghost tracking bypass: If no identity attributes exist, terminate silently.
+            if not lead:
+                return
+
+            # Active context throttle lock
+            exit_notification_cache[aura_id] = True
+            logger.info(f"🚪 High-Intent Exit Flagged for {aura_id}. Compiling full DeepSeek journey matrix...")
+
+            # 2. Compile the full session ledger into a single operational object
+            journey = await get_visitor_journey(aura_id, session)
+
+            # 3. Resolve Company Reference parameters
+            company_name = lead.company_name_raw or "Anonymous Entity"
+            if lead.company_id:
+                company = await session.get(Company, lead.company_id)
+                if company:
+                    company_name = company.name
+
+            # 4. Normalize the unified dataset dictionary payload
+            complete_lead_payload = {
+                "id": lead.id,
+                "aura_id": lead.aura_id,
+                "name": lead.name or "Unknown Lead",
+                "email": lead.email,
+                "company_name_final": company_name,
+                "department": lead.department or "Undetermined",
+                "position": lead.position or "Evaluator",
+                "capture_source": "banner_interaction",
+            }
+
+            # 5. Route the clean, fully-formed summary packet to Slack
+            await post_to_slack(lead_data=complete_lead_payload, journey=journey)
+            logger.info(f"✅ DeepSeek Batch Processing summary successfully delivered for {aura_id}")
+
+        except Exception as e:
+            logger.error(f"🚨 Exit Logic Batch Error: {e}")
 
 @router.post("/entry")
 async def track_entry(payload: VisitCreate, request: Request, background_tasks: BackgroundTasks):
-    # Resolve IP via proxy headers for Railway/Cloudfront compatibility
     client_ip = request.headers.get("x-forwarded-for", request.client.host).split(',')[0]
     background_tasks.add_task(process_entry_logic, payload, client_ip)
     return {"status": "accepted"}
 
 @router.post("/identity")
 async def track_identity(payload: IdentityPayload):
-    """
-    Identity Bridge: Upgrades anonymous forensic profiles using volunteered data.
-    Stitches signatures (Canvas/WebGL) to the database record.
-    """
+    """Upgrades anonymous forensic profiles using volunteered banner form data."""
     async with async_session_maker() as session:
-        # 1. Fetch the most recent visit for this ID to attach signatures
         res = await session.execute(
             select(Visit).where(
                 Visit.aura_id == payload.aura_id,
@@ -136,7 +175,6 @@ async def track_identity(payload: IdentityPayload):
         if not visit:
             return {"status": "visit_not_found"}
 
-        # 2. Forensic Locking (Canvas/WebGL/Clock)
         if payload.signature:
             sig = payload.signature
             visit.canvas_hash = sig.get("canvas")
@@ -148,14 +186,11 @@ async def track_identity(payload: IdentityPayload):
                 visit.downlink_speed = net.get("downlink")
                 visit.rtt = net.get("rtt")
 
-        # 3. Warm Lead Promotion (The Janitor Shield)
         if payload.email:
-            # Update the visit metadata
             visit.capture_source = payload.capture_source
-            visit.verification_status = "verified" # Shielded from 48h purge
+            visit.verification_status = "verified" # Activate Janitor Shield
             visit.is_consented = True
 
-            # Resolve or Create the WaitlistLead entry
             res_lead = await session.execute(
                 select(WaitlistLead).where(
                     WaitlistLead.aura_id == payload.aura_id,
@@ -171,7 +206,6 @@ async def track_identity(payload: IdentityPayload):
                     email=payload.email
                 )
             
-            # Enrich lead record with provided context
             lead.email = payload.email
             if payload.company_name: lead.company_name_raw = payload.company_name
             if payload.department: lead.department = payload.department
@@ -184,11 +218,8 @@ async def track_identity(payload: IdentityPayload):
 
 @router.post("/event")
 async def track_event(payload: PageViewCreate):
-    """Logs behavioral intent clicks (e.g., 'Pricing', 'Industrial Sync')."""
     async with async_session_maker() as session:
-        # Standardized tracking normalization fallback
         target_aura_id = payload.aura_id if getattr(payload, "aura_id", None) else payload.client_id
-        
         res = await session.execute(
             select(Visit).where(
                 Visit.aura_id == target_aura_id,
@@ -220,17 +251,16 @@ async def track_consent(payload: ConsentPayload):
         return {"status": "consent_recorded"}
 
 @router.post("/exit")
-async def track_exit(payload: PageViewCreate):
-    """Records session duration upon visitor departure."""
+async def track_exit(payload: PageViewCreate, background_tasks: BackgroundTasks):
+    """Records session metrics upon departure and coordinates the batch analytical thread."""
     try:
         processed_duration = int(float(payload.duration))
     except (ValueError, TypeError):
         processed_duration = 0
 
-    async with async_session_maker() as session:
-        # Standardized tracking normalization fallback
-        target_aura_id = payload.aura_id if getattr(payload, "aura_id", None) else payload.client_id
+    target_aura_id = payload.aura_id if getattr(payload, "aura_id", None) else payload.client_id
 
+    async with async_session_maker() as session:
         res = await session.execute(
             select(Visit).where(
                 Visit.aura_id == target_aura_id,
@@ -244,5 +274,9 @@ async def track_exit(payload: PageViewCreate):
                 visit.duration = processed_duration
                 session.add(visit)
                 await session.commit()
-                return {"status": "recorded"}
-        return {"status": "pending_entry"}
+
+    # Launch Batch Intelligence processing sequentially when the session closes down
+    if target_aura_id and payload.client_id:
+        background_tasks.add_task(process_exit_logic, target_aura_id, payload.client_id)
+
+    return {"status": "recorded"}

@@ -906,6 +906,407 @@ export default function ContentSection2() {
 }
 </file>
 
+<file path="frontend/src/components/sections/about/about-cta.tsx">
+// @/components/sections/about/about-cta.tsx
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+
+export function AboutCTA() {
+    return (
+        <section className="py-24 md:py-48">
+            <div className="mx-auto max-w-5xl px-6 text-center">
+                <h2 className="text-balance text-4xl font-semibold lg:text-5xl tracking-tight">
+                    Join an exclusive network of industrial leaders.
+                </h2>
+                <p className="mx-auto mt-6 max-w-xl text-muted-foreground">
+                    We cap our client base at 100 firms to ensure premium delivery and high-intent lead tiering. Secure your slot in the engine today.
+                </p>
+
+                <div className="mt-12 flex flex-wrap justify-center gap-4">
+                    <Button
+                        asChild
+                        size="lg"
+                        className="rounded-xl px-10 shadow-xl shadow-primary/10">
+                        <Link href="/get-started">
+                            <span>Get Started</span>
+                        </Link>
+                    </Button>
+
+                    <Button
+                        asChild
+                        size="lg"
+                        variant="outline"
+                        className="rounded-xl px-10">
+                        <Link href="/book-call">
+                            <span>Book a Call</span>
+                        </Link>
+                    </Button>
+                </div>
+            </div>
+        </section>
+    )
+}
+</file>
+
+<file path="frontend/src/components/sections/about/about-hero.tsx">
+// @/components/sections/about/about-hero.tsx
+'use client'
+import { TextEffect } from '@/components/ui/text-effect'
+
+export function AboutHero() {
+    return (
+        <section className="relative pt-32 pb-16 md:pt-48">
+            <div className="mx-auto max-w-5xl px-6">
+                <div className="max-w-3xl">
+                    <span className="text-primary text-sm font-semibold tracking-widest uppercase italic">The Philosophy</span>
+                    <h1 className="mt-8 text-balance text-5xl font-bold tracking-tight md:text-7xl">
+                        <TextEffect preset="fade-in-blur" speedSegment={0.3}>
+                            Engineering Growth via Logic.
+                        </TextEffect>
+                    </h1>
+                    <p className="mt-10 text-xl text-muted-foreground leading-relaxed border-l-2 border-primary/20 pl-8">
+                        AuraWorks (Pty) Ltd was founded on a single premise: Industrial sales shouldn't be a guessing game. We build the systems that bridge the gap between anonymous interest and signed contracts.
+                    </p>
+                </div>
+            </div>
+        </section>
+    )
+}
+</file>
+
+<file path="frontend/src/components/sections/about/founder-profile.tsx">
+// @/components/sections/about/founder-profile.tsx
+import Image from 'next/image'
+
+export function FounderProfile() {
+    return (
+        <section className="py-24 bg-zinc-50/50 dark:bg-zinc-950/20 border-y">
+            <div className="mx-auto max-w-5xl px-6">
+                <div className="grid gap-16 md:grid-cols-2 items-center">
+                    <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border bg-muted shadow-2xl">
+                        {/* Placeholder for your "Quiet Premium" AI-generated headshot */}
+                        <Image 
+                            src="/founder-headshot.png" 
+                            alt="Reitumetse Sethabela - Founder" 
+                            fill 
+                            className="object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                        />
+                    </div>
+                    <div className="space-y-8">
+                        <div>
+                            <h2 className="text-3xl font-bold tracking-tight">Reitumetse Sethabela</h2>
+                            <p className="text-primary font-mono text-sm mt-1 uppercase tracking-widest">Founder & Systems Architect</p>
+                        </div>
+                        <p className="text-muted-foreground leading-relaxed">
+                            With a background in engineering and a relentless focus on specialized cognitive systems, I built AuraWorks to solve the "Expertise Paradox" in sales. 
+                        </p>
+                        <p className="text-muted-foreground leading-relaxed">
+                            We don't sell "marketing hype." We deploy stable, logic-driven infrastructure—built on high-performance technology like Python and PostgreSQL—to identify and enrich juristic leads for the SADC industrial sector.
+                        </p>
+                        <div className="pt-4">
+                             <blockquote className="italic text-sm text-foreground/80 border-l-2 border-primary pl-4">
+                                "The goal isn't more traffic. The goal is unmasked revenue."
+                             </blockquote>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    )
+}
+</file>
+
+<file path="frontend/src/components/sections/about/values.tsx">
+// @/components/sections/about/values.tsx
+export function ValuesSection() {
+    const values = [
+        { label: "01", title: "Precision Over Volume", desc: "We would rather deliver 5 high-intent mining leads than 5,000 random clicks." },
+        { label: "02", title: "Technical Authority", desc: "Our systems are built for stability. We use 'boring,' predictable technology to ensure 99.9% uptime for your lead routing." },
+        { label: "03", title: "Industrial Focus", desc: "We specialize in the South African manufacturing and construction verticals. We speak the language of spec-sheets and RFPs." }
+    ]
+
+    return (
+        <section className="py-24 md:py-32">
+            <div className="mx-auto max-w-5xl px-6">
+                <h3 className="text-2xl font-semibold mb-16 tracking-tight">The AuraWorks Standard</h3>
+                <div className="grid gap-12 md:grid-cols-3">
+                    {values.map((v, i) => (
+                        <div key={i} className="space-y-4">
+                            <span className="text-primary font-mono text-xs">{v.label}</span>
+                            <h4 className="font-bold text-lg">{v.title}</h4>
+                            <p className="text-sm text-muted-foreground leading-relaxed">{v.desc}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    )
+}
+</file>
+
+<file path="frontend/src/components/sections/features/feature-grid.tsx">
+// @/components/sections/features/feature-grid.tsx
+import { Mail, Globe, Users, BarChart3 } from 'lucide-react'
+
+const detailFeatures = [
+    { title: "Weekly Lead Digests", desc: "No dashboard fatigue. We deliver a curated PDF and CSV of your hottest leads directly to your inbox every Monday morning.", icon: Mail },
+    { title: "South African Industrial Focus", desc: "Optimized specifically for the SADC region, recognizing local mining houses and logistics firms.", icon: Globe },
+    { title: "Contact Enrichment", desc: "Not just company names. We find the relevant LinkedIn profiles and public emails for key decision-makers.", icon: Users },
+    { title: "Spec-Sheet Tracking", desc: "Know exactly which technical drawings or pricing sheets were downloaded and by which firm.", icon: BarChart3 }
+]
+
+export function FeatureGrid() {
+    return (
+        <section className="py-24">
+            <div className="mx-auto max-w-5xl px-6 text-center mb-16">
+                <h2 className="text-3xl font-bold">Everything needed to shorten the sales cycle.</h2>
+            </div>
+            <div className="mx-auto max-w-5xl px-6 grid gap-px bg-border overflow-hidden rounded-3xl border md:grid-cols-2">
+                {detailFeatures.map((f, i) => (
+                    <div key={i} className="bg-background p-10 space-y-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 transition-colors">
+                        <f.icon className="size-5 text-muted-foreground" />
+                        <h3 className="font-bold text-lg">{f.title}</h3>
+                        <p className="text-muted-foreground text-sm leading-relaxed">{f.desc}</p>
+                    </div>
+                ))}
+            </div>
+        </section>
+    )
+}
+</file>
+
+<file path="frontend/src/components/sections/features/features-cta.tsx">
+// @/components/sections/features/features-cta.tsx
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+
+export function FeaturesCTA() {
+    return (
+        <section className="py-24 md:py-48">
+            <div className="mx-auto max-w-5xl px-6 text-center">
+                <h2 className="text-balance text-4xl font-semibold lg:text-5xl tracking-tight">
+                    Deploy the identity bridge today.
+                </h2>
+                <p className="mx-auto mt-6 max-w-2xl text-muted-foreground text-lg">
+                    Stop letting anonymous industrial traffic leave without a trace. Turn your website into a high-intent lead generation engine.
+                </p>
+
+                <div className="mt-12 flex flex-wrap justify-center gap-4">
+                    <Button
+                        asChild
+                        size="lg"
+                        className="rounded-xl px-10 shadow-xl shadow-primary/10">
+                        <Link href="/get-started">
+                            <span>Get Started</span>
+                        </Link>
+                    </Button>
+
+                    <Button
+                        asChild
+                        size="lg"
+                        variant="outline"
+                        className="rounded-xl px-10">
+                        <Link href="/pricing">
+                            <span>View Pricing</span>
+                        </Link>
+                    </Button>
+                </div>
+                {/* 
+                <p className="mt-8 text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground/50">
+                    Industrial Sales Intelligence • AuraWorks Engine 1.1
+                </p>
+                */}
+            </div>
+        </section>
+    )
+}
+</file>
+
+<file path="frontend/src/components/sections/features/identity-bridge.tsx">
+// @/components/sections/features/identity-bridge.tsx
+import Image from 'next/image'
+
+export function IdentityBridge() {
+    return (
+        <section className="py-24 border-y bg-zinc-50/30 dark:bg-zinc-950/20">
+            <div className="mx-auto max-w-5xl px-6">
+                <div className="grid gap-16 md:grid-cols-2 items-center">
+                    <div className="space-y-6">
+                        <h2 className="text-3xl font-bold tracking-tight md:text-4xl">The Identity Bridge Protocol</h2>
+                        <p className="text-muted-foreground">
+                            Standard analytics tell you *where* people clicked. AuraWorks tells you *who* is paying for the internet. 
+                        </p>
+                        <div className="space-y-4">
+                            <div className="flex gap-4">
+                                <div className="mt-1 flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">01</div>
+                                <div>
+                                    <h4 className="font-medium">Firmographic Enrichment</h4>
+                                    <p className="text-sm text-muted-foreground">We query live corporate databases to pull revenue tiers, employee counts, and HQ locations for every visitor.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <div className="mt-1 flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">02</div>
+                                <div>
+                                    <h4 className="font-medium">Intent Scoring</h4>
+                                    <p className="text-sm text-muted-foreground">Our algorithms weigh visit duration and technical spec downloads to tier leads from "Curiosity" to "Procurement Ready."</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="relative aspect-square rounded-3xl border bg-background p-4 shadow-2xl">
+                        {/* Placeholder for the "Bridge" Architecture Diagram */}
+                        <div className="flex items-center justify-center h-full w-full bg-muted/50 rounded-2xl border border-dashed">
+                             <span className="text-xs text-muted-foreground uppercase tracking-widest">[ Identity Bridge Schema Diagram ]</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    )
+}
+</file>
+
+<file path="frontend/src/components/sections/solutions/compliance-bridge.tsx">
+// @/components/sections/solutions/compliance-bridge.tsx
+export function ComplianceBridge() {
+    return (
+        <section className="py-24 bg-zinc-50/50 dark:bg-zinc-950/20 border-y">
+            <div className="mx-auto max-w-5xl px-6">
+                <div className="max-w-2xl">
+                    <h2 className="text-3xl font-bold tracking-tight md:text-4xl">POPIA-Compliant Lead Capture</h2>
+                    <p className="mt-6 text-muted-foreground leading-relaxed">
+                        Data privacy is not a hurdle; it's a structural requirement. AuraWorks operates on a "Juristic-First" model. We resolve business entities, not individual consumers, ensuring your sales team remains compliant with South African data protection laws while maintaining a high-performance outbound strategy.
+                    </p>
+                    <div className="mt-8 grid grid-cols-2 gap-8 border-t pt-8">
+                        <div>
+                            <h4 className="font-semibold text-sm">Legal Firewall</h4>
+                            <p className="text-xs text-muted-foreground mt-2">Built-in consent triggers for first-party data enrichment.</p>
+                        </div>
+                        <div>
+                            <h4 className="font-semibold text-sm">Transparency Mode</h4>
+                            <p className="text-xs text-muted-foreground mt-2">Automated opt-out and data management for all identified leads.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    )
+}
+</file>
+
+<file path="frontend/src/components/sections/solutions/solutions-cta.tsx">
+// @/components/sections/solutions/solutions-cta.tsx
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+
+export function SolutionsCTA() {
+    return (
+        <section className="py-24 md:py-48">
+            <div className="mx-auto max-w-5xl px-6 text-center">
+                <h2 className="text-balance text-4xl font-semibold lg:text-5xl tracking-tight italic">Shorten the path to the purchase order.</h2>
+                <p className="mx-auto mt-6 max-w-xl text-muted-foreground">
+                    Stop guessing. Start knowing which industrial firms are in market. Deploy the engine today.
+                </p>
+                <div className="mt-12 flex flex-wrap justify-center gap-4">
+                    <Button asChild size="lg" className="rounded-xl px-10 shadow-xl shadow-primary/10">
+                        <Link href="/get-started">Deploy Engine</Link>
+                    </Button>
+                    <Button asChild size="lg" variant="outline" className="rounded-xl px-10">
+                        <Link href="/book-call">Book a Call</Link>
+                    </Button>
+                </div>
+            </div>
+        </section>
+    )
+}
+</file>
+
+<file path="frontend/src/components/sections/solutions/solutions-hero.tsx">
+// @/components/sections/solutions/solutions-hero.tsx
+'use client'
+
+import { TextEffect } from '@/components/ui/text-effect'
+
+export function SolutionsHero() {
+    return (
+        <section className="relative pt-32 pb-16 overflow-hidden md:pt-48">
+             <div
+                aria-hidden
+                className="absolute inset-0 -z-10 size-full [background:radial-gradient(120%_120%_at_50%_0%,transparent_0%,var(--color-background)_85%)]"
+            />
+            <div className="mx-auto max-w-5xl px-6">
+                <div className="max-w-3xl">
+                    <span className="text-primary text-sm font-semibold tracking-widest uppercase">Vertical Deployment</span>
+                    <h1 className="mt-6 text-balance text-5xl font-bold tracking-tight md:text-7xl">
+                        <TextEffect preset="fade-in-blur" speedSegment={0.3}>
+                            Tailored for Heavy Industry.
+                        </TextEffect>
+                    </h1>
+                    <p className="mt-8 text-lg text-muted-foreground md:text-xl leading-relaxed">
+                        Generic sales tools fail in the industrial sector. AuraWorks is built for firms where the sales cycle is measured in months and the contracts in millions.
+                    </p>
+                </div>
+            </div>
+        </section>
+    )
+}
+</file>
+
+<file path="frontend/src/components/sections/solutions/vertical-stacks.tsx">
+// @/components/sections/solutions/vertical-stacks.tsx
+import { cn } from '@/lib/utils'
+
+const verticals = [
+    {
+        title: "Mining & Resource Extraction",
+        problem: "Procurement officers from Tier-1 mining houses browse your specs months before a tender is issued.",
+        solution: "Identify the specific mining site or regional HQ researching your equipment, allowing your reps to engage before the RFP goes public.",
+        stats: "Ideal for: Drill rigs, safety gear, and processing plant OEMs."
+    },
+    {
+        title: "Industrial Manufacturing",
+        problem: "Engineers are looking for technical CAD files and load capacities, but remain anonymous.",
+        solution: "Track which manufacturing firms are downloading your technical documentation to gauge their project timeline and capacity needs.",
+        stats: "Ideal for: Precision tooling, automation systems, and raw material suppliers."
+    },
+    {
+        title: "Logistics & Infrastructure",
+        problem: "Large-scale fleet and warehouse managers are comparing your rates and coverage areas in secret.",
+        solution: "Unmask the logistics directors from corporate entities, focusing your outbound efforts on firms with active expansion intent.",
+        stats: "Ideal for: 3PL providers, fleet management, and cold-chain specialists."
+    }
+]
+
+export function VerticalStacks() {
+    return (
+        <section className="py-24">
+            <div className="mx-auto max-w-5xl px-6 space-y-24">
+                {verticals.map((v, i) => (
+                    <div key={i} className={cn("grid gap-12 md:grid-cols-2 items-start", i % 2 !== 0 && "md:flex-row-reverse")}>
+                        <div className="space-y-6">
+                            <h2 className="text-3xl font-medium tracking-tight">{v.title}</h2>
+                            <div className="space-y-4 border-l-2 border-primary/10 pl-6">
+                                <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground/60">The Challenge</p>
+                                <p className="text-muted-foreground italic">"{v.problem}"</p>
+                            </div>
+                            <div className="space-y-4">
+                                <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground/60">The AuraWorks Edge</p>
+                                <p className="leading-relaxed">{v.solution}</p>
+                            </div>
+                            <p className="text-xs font-mono text-primary/70 bg-primary/5 w-fit px-3 py-1 rounded-full uppercase">{v.stats}</p>
+                        </div>
+                        <div className="bg-zinc-100 dark:bg-zinc-900 aspect-video rounded-2xl border flex items-center justify-center overflow-hidden">
+                             {/* Placeholder for vertical-specific UI/Screenshot */}
+                             <span className="text-[10px] text-muted-foreground uppercase tracking-widest">[ Vertical Intent Dashboard ]</span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </section>
+    )
+}
+</file>
+
 <file path="frontend/src/components/ui/animated-group.tsx">
 'use client';
 import { ReactNode } from 'react';
@@ -3661,6 +4062,27 @@ format = %(levelname)-5.5s [%(name)s] %(message)s
 datefmt = %H:%M:%S
 </file>
 
+<file path="frontend/src/app/(pages)/about/page.tsx">
+import { AboutHero } from "@/components/sections/about/about-hero";
+import { FounderProfile } from "@/components/sections/about/founder-profile";
+import { ValuesSection } from "@/components/sections/about/values";
+import { AboutCTA } from "@/components/sections/about/about-cta";
+import { HeroHeader } from "@/components/header/header";
+import Footer from "@/components/footer/footer";
+
+export default function AboutPage() {
+  return (
+  <div>
+    <HeroHeader />
+    <AboutHero />
+    <FounderProfile />
+    <ValuesSection />
+    <AboutCTA />
+    <Footer />
+  </div>);
+}
+</file>
+
 <file path="frontend/src/app/(pages)/book-call/page.tsx">
 import BookCallPage from "@/components/book-call/call-page";
 
@@ -3690,6 +4112,29 @@ import ProfessionalDisclaimerPage from "@/components/sections/disclaimer/disclai
 
 export default function ProfessionalDisclaimer() {
     return <ProfessionalDisclaimerPage />
+}
+</file>
+
+<file path="frontend/src/app/(pages)/features/page.tsx">
+import FeaturesHero from "@/components/sections/features/features-hero";
+import { IdentityBridge } from "@/components/sections/features/identity-bridge";
+import { FeatureGrid } from "@/components/sections/features/feature-grid";
+import { FeaturesCTA } from "@/components/sections/features/features-cta";
+import CallToAction from "@/components/cta/call-to-action";
+import Footer from "@/components/footer/footer";
+import { HeroHeader } from "@/components/header/header";
+
+export default function FeaturesPage() {
+  return (
+    <div>
+      <HeroHeader />
+      <FeaturesHero />
+      <IdentityBridge />
+      <FeatureGrid />
+      <FeaturesCTA /> 
+      <Footer />
+    </div>
+  );
 }
 </file>
 
@@ -3730,6 +4175,28 @@ import SecurityPage from "@/components/sections/security/security";
 
 export default function Security() {
     return <SecurityPage />
+}
+</file>
+
+<file path="frontend/src/app/(pages)/solution/page.tsx">
+import { SolutionsHero } from '@/components/sections/solutions/solutions-hero';
+import { VerticalStacks } from '@/components/sections/solutions/vertical-stacks';
+import { ComplianceBridge } from '@/components/sections/solutions/compliance-bridge';
+import { SolutionsCTA } from '@/components/sections/solutions/solutions-cta';
+import { HeroHeader } from '@/components/header/header';
+import Footer from '@/components/footer/footer';
+
+export default function SolutionPage() {
+  return (
+    <div>
+      <HeroHeader />
+      <SolutionsHero />
+      <VerticalStacks />
+      <ComplianceBridge />
+      <SolutionsCTA />
+      <Footer />
+    </div>
+  );
 }
 </file>
 
@@ -4403,144 +4870,6 @@ export default function Pricing() {
 }
 </file>
 
-<file path="frontend/src/components/sections/about/about-cta.tsx">
-// @/components/sections/about/about-cta.tsx
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-
-export function AboutCTA() {
-    return (
-        <section className="py-24 md:py-48">
-            <div className="mx-auto max-w-5xl px-6 text-center">
-                <h2 className="text-balance text-4xl font-semibold lg:text-5xl tracking-tight">
-                    Join an exclusive network of industrial leaders.
-                </h2>
-                <p className="mx-auto mt-6 max-w-xl text-muted-foreground">
-                    We cap our client base at 100 firms to ensure premium delivery and high-intent lead tiering. Secure your slot in the engine today.
-                </p>
-
-                <div className="mt-12 flex flex-wrap justify-center gap-4">
-                    <Button
-                        asChild
-                        size="lg"
-                        className="rounded-xl px-10 shadow-xl shadow-primary/10">
-                        <Link href="/get-started">
-                            <span>Get Started</span>
-                        </Link>
-                    </Button>
-
-                    <Button
-                        asChild
-                        size="lg"
-                        variant="outline"
-                        className="rounded-xl px-10">
-                        <Link href="/book-call">
-                            <span>Book a Call</span>
-                        </Link>
-                    </Button>
-                </div>
-            </div>
-        </section>
-    )
-}
-</file>
-
-<file path="frontend/src/components/sections/about/about-hero.tsx">
-// @/components/sections/about/about-hero.tsx
-'use client'
-import { TextEffect } from '@/components/ui/text-effect'
-
-export function AboutHero() {
-    return (
-        <section className="relative pt-32 pb-16 md:pt-48">
-            <div className="mx-auto max-w-5xl px-6">
-                <div className="max-w-3xl">
-                    <span className="text-primary text-sm font-semibold tracking-widest uppercase italic">The Philosophy</span>
-                    <h1 className="mt-8 text-balance text-5xl font-bold tracking-tight md:text-7xl">
-                        <TextEffect preset="fade-in-blur" speedSegment={0.3}>
-                            Engineering Growth via Logic.
-                        </TextEffect>
-                    </h1>
-                    <p className="mt-10 text-xl text-muted-foreground leading-relaxed border-l-2 border-primary/20 pl-8">
-                        AuraWorks (Pty) Ltd was founded on a single premise: Industrial sales shouldn't be a guessing game. We build the systems that bridge the gap between anonymous interest and signed contracts.
-                    </p>
-                </div>
-            </div>
-        </section>
-    )
-}
-</file>
-
-<file path="frontend/src/components/sections/about/founder-profile.tsx">
-// @/components/sections/about/founder-profile.tsx
-import Image from 'next/image'
-
-export function FounderProfile() {
-    return (
-        <section className="py-24 bg-zinc-50/50 dark:bg-zinc-950/20 border-y">
-            <div className="mx-auto max-w-5xl px-6">
-                <div className="grid gap-16 md:grid-cols-2 items-center">
-                    <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border bg-muted shadow-2xl">
-                        {/* Placeholder for your "Quiet Premium" AI-generated headshot */}
-                        <Image 
-                            src="/founder-headshot.png" 
-                            alt="Reitumetse Sethabela - Founder" 
-                            fill 
-                            className="object-cover grayscale hover:grayscale-0 transition-all duration-700"
-                        />
-                    </div>
-                    <div className="space-y-8">
-                        <div>
-                            <h2 className="text-3xl font-bold tracking-tight">Reitumetse Sethabela</h2>
-                            <p className="text-primary font-mono text-sm mt-1 uppercase tracking-widest">Founder & Systems Architect</p>
-                        </div>
-                        <p className="text-muted-foreground leading-relaxed">
-                            With a background in engineering and a relentless focus on specialized cognitive systems, I built AuraWorks to solve the "Expertise Paradox" in sales. 
-                        </p>
-                        <p className="text-muted-foreground leading-relaxed">
-                            We don't sell "marketing hype." We deploy stable, logic-driven infrastructure—built on high-performance technology like Python and PostgreSQL—to identify and enrich juristic leads for the SADC industrial sector.
-                        </p>
-                        <div className="pt-4">
-                             <blockquote className="italic text-sm text-foreground/80 border-l-2 border-primary pl-4">
-                                "The goal isn't more traffic. The goal is unmasked revenue."
-                             </blockquote>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    )
-}
-</file>
-
-<file path="frontend/src/components/sections/about/values.tsx">
-// @/components/sections/about/values.tsx
-export function ValuesSection() {
-    const values = [
-        { label: "01", title: "Precision Over Volume", desc: "We would rather deliver 5 high-intent mining leads than 5,000 random clicks." },
-        { label: "02", title: "Technical Authority", desc: "Our systems are built for stability. We use 'boring,' predictable technology to ensure 99.9% uptime for your lead routing." },
-        { label: "03", title: "Industrial Focus", desc: "We specialize in the South African manufacturing and construction verticals. We speak the language of spec-sheets and RFPs." }
-    ]
-
-    return (
-        <section className="py-24 md:py-32">
-            <div className="mx-auto max-w-5xl px-6">
-                <h3 className="text-2xl font-semibold mb-16 tracking-tight">The AuraWorks Standard</h3>
-                <div className="grid gap-12 md:grid-cols-3">
-                    {values.map((v, i) => (
-                        <div key={i} className="space-y-4">
-                            <span className="text-primary font-mono text-xs">{v.label}</span>
-                            <h4 className="font-bold text-lg">{v.title}</h4>
-                            <p className="text-sm text-muted-foreground leading-relaxed">{v.desc}</p>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </section>
-    )
-}
-</file>
-
 <file path="frontend/src/components/sections/cookies/cookie-policy.tsx">
 // @/app/cookies/page.tsx
 'use client'
@@ -4841,122 +5170,48 @@ export default function ProfessionalDisclaimerPage() {
 }
 </file>
 
-<file path="frontend/src/components/sections/features/feature-grid.tsx">
-// @/components/sections/features/feature-grid.tsx
-import { Mail, Globe, Users, BarChart3 } from 'lucide-react'
+<file path="frontend/src/components/sections/features/features-hero.tsx">
+// 
+'use client'
 
-const detailFeatures = [
-    { title: "Weekly Lead Digests", desc: "No dashboard fatigue. We deliver a curated PDF and CSV of your hottest leads directly to your inbox every Monday morning.", icon: Mail },
-    { title: "South African Industrial Focus", desc: "Optimized specifically for the SADC region, recognizing local mining houses and logistics firms.", icon: Globe },
-    { title: "Contact Enrichment", desc: "Not just company names. We find the relevant LinkedIn profiles and public emails for key decision-makers.", icon: Users },
-    { title: "Spec-Sheet Tracking", desc: "Know exactly which technical drawings or pricing sheets were downloaded and by which firm.", icon: BarChart3 }
-]
+import { TextEffect } from '@/components/ui/text-effect'
+import { AnimatedGroup } from '@/components/ui/animated-group'
+import { ShieldCheck, Database, Zap } from 'lucide-react'
 
-export function FeatureGrid() {
+export default function FeaturesHero() {
     return (
-        <section className="py-24">
-            <div className="mx-auto max-w-5xl px-6 text-center mb-16">
-                <h2 className="text-3xl font-bold">Everything needed to shorten the sales cycle.</h2>
-            </div>
-            <div className="mx-auto max-w-5xl px-6 grid gap-px bg-border overflow-hidden rounded-3xl border md:grid-cols-2">
-                {detailFeatures.map((f, i) => (
-                    <div key={i} className="bg-background p-10 space-y-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 transition-colors">
-                        <f.icon className="size-5 text-muted-foreground" />
-                        <h3 className="font-bold text-lg">{f.title}</h3>
-                        <p className="text-muted-foreground text-sm leading-relaxed">{f.desc}</p>
-                    </div>
-                ))}
-            </div>
-        </section>
-    )
-}
-</file>
-
-<file path="frontend/src/components/sections/features/features-cta.tsx">
-// @/components/sections/features/features-cta.tsx
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-
-export function FeaturesCTA() {
-    return (
-        <section className="py-24 md:py-48">
-            <div className="mx-auto max-w-5xl px-6 text-center">
-                <h2 className="text-balance text-4xl font-semibold lg:text-5xl tracking-tight">
-                    Deploy the identity bridge today.
-                </h2>
-                <p className="mx-auto mt-6 max-w-2xl text-muted-foreground text-lg">
-                    Stop letting anonymous industrial traffic leave without a trace. Turn your website into a high-intent lead generation engine.
-                </p>
-
-                <div className="mt-12 flex flex-wrap justify-center gap-4">
-                    <Button
-                        asChild
-                        size="lg"
-                        className="rounded-xl px-10 shadow-xl shadow-primary/10">
-                        <Link href="/get-started">
-                            <span>Get Started</span>
-                        </Link>
-                    </Button>
-
-                    <Button
-                        asChild
-                        size="lg"
-                        variant="outline"
-                        className="rounded-xl px-10">
-                        <Link href="/pricing">
-                            <span>View Pricing</span>
-                        </Link>
-                    </Button>
-                </div>
-                {/* 
-                <p className="mt-8 text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground/50">
-                    Industrial Sales Intelligence • AuraWorks Engine 1.1
-                </p>
-                */}
-            </div>
-        </section>
-    )
-}
-</file>
-
-<file path="frontend/src/components/sections/features/identity-bridge.tsx">
-// @/components/sections/features/identity-bridge.tsx
-import Image from 'next/image'
-
-export function IdentityBridge() {
-    return (
-        <section className="py-24 border-y bg-zinc-50/30 dark:bg-zinc-950/20">
+        <section className="relative pt-32 pb-20 overflow-hidden md:pt-48">
             <div className="mx-auto max-w-5xl px-6">
-                <div className="grid gap-16 md:grid-cols-2 items-center">
-                    <div className="space-y-6">
-                        <h2 className="text-3xl font-bold tracking-tight md:text-4xl">The Identity Bridge Protocol</h2>
-                        <p className="text-muted-foreground">
-                            Standard analytics tell you *where* people clicked. AuraWorks tells you *who* is paying for the internet. 
-                        </p>
-                        <div className="space-y-4">
-                            <div className="flex gap-4">
-                                <div className="mt-1 flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">01</div>
-                                <div>
-                                    <h4 className="font-medium">Firmographic Enrichment</h4>
-                                    <p className="text-sm text-muted-foreground">We query live corporate databases to pull revenue tiers, employee counts, and HQ locations for every visitor.</p>
-                                </div>
-                            </div>
-                            <div className="flex gap-4">
-                                <div className="mt-1 flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">02</div>
-                                <div>
-                                    <h4 className="font-medium">Intent Scoring</h4>
-                                    <p className="text-sm text-muted-foreground">Our algorithms weigh visit duration and technical spec downloads to tier leads from "Curiosity" to "Procurement Ready."</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="relative aspect-square rounded-3xl border bg-background p-4 shadow-2xl">
-                        {/* Placeholder for the "Bridge" Architecture Diagram */}
-                        <div className="flex items-center justify-center h-full w-full bg-muted/50 rounded-2xl border border-dashed">
-                             <span className="text-xs text-muted-foreground uppercase tracking-widest">[ Identity Bridge Schema Diagram ]</span>
-                        </div>
-                    </div>
+                <div className="max-w-3xl">
+                    <h1 className="text-5xl font-bold tracking-tight md:text-7xl">
+                        <TextEffect preset="fade-in-blur" speedSegment={0.3}>
+                            De-anonymize Your Industrial Traffic.
+                        </TextEffect>
+                    </h1>
+                    <p className="mt-8 text-lg text-muted-foreground md:text-xl">
+                        The AuraWorks Engine isn't just a tracker. It is a proprietary Identity Bridge that resolves anonymous IP strings into high-intent corporate entities within the South African industrial sector.
+                    </p>
                 </div>
+
+                <AnimatedGroup 
+                    className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-3"
+                    variants={{
+                        container: { visible: { transition: { staggerChildren: 0.1, delayChildren: 0.5 } } },
+                        item: { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }
+                    }}
+                >
+                    {[
+                        { icon: ShieldCheck, title: "POPIA Compliant", desc: "First-party consent protocols built directly into the tracking handshake." },
+                        { icon: Database, title: "Juristic Resolution", desc: "We map traffic to registered business entities, filtering out 98% of residential noise." },
+                        { icon: Zap, title: "Zero Latency", desc: "Our lightweight script adds <20ms to your page load while capturing deep intent data." }
+                    ].map((feature, i) => (
+                        <div key={i} className="group relative rounded-2xl border p-8 bg-card/50 backdrop-blur-sm transition-colors hover:bg-muted/50">
+                            <feature.icon className="size-6 text-primary mb-4" />
+                            <h3 className="font-semibold text-lg">{feature.title}</h3>
+                            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
+                        </div>
+                    ))}
+                </AnimatedGroup>
             </div>
         </section>
     )
@@ -5600,147 +5855,6 @@ export default function SecurityPage() {
                 </div>
             </div>
         </main>
-    )
-}
-</file>
-
-<file path="frontend/src/components/sections/solutions/compliance-bridge.tsx">
-// @/components/sections/solutions/compliance-bridge.tsx
-export function ComplianceBridge() {
-    return (
-        <section className="py-24 bg-zinc-50/50 dark:bg-zinc-950/20 border-y">
-            <div className="mx-auto max-w-5xl px-6">
-                <div className="max-w-2xl">
-                    <h2 className="text-3xl font-bold tracking-tight md:text-4xl">POPIA-Compliant Lead Capture</h2>
-                    <p className="mt-6 text-muted-foreground leading-relaxed">
-                        Data privacy is not a hurdle; it's a structural requirement. AuraWorks operates on a "Juristic-First" model. We resolve business entities, not individual consumers, ensuring your sales team remains compliant with South African data protection laws while maintaining a high-performance outbound strategy.
-                    </p>
-                    <div className="mt-8 grid grid-cols-2 gap-8 border-t pt-8">
-                        <div>
-                            <h4 className="font-semibold text-sm">Legal Firewall</h4>
-                            <p className="text-xs text-muted-foreground mt-2">Built-in consent triggers for first-party data enrichment.</p>
-                        </div>
-                        <div>
-                            <h4 className="font-semibold text-sm">Transparency Mode</h4>
-                            <p className="text-xs text-muted-foreground mt-2">Automated opt-out and data management for all identified leads.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    )
-}
-</file>
-
-<file path="frontend/src/components/sections/solutions/solutions-cta.tsx">
-// @/components/sections/solutions/solutions-cta.tsx
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-
-export function SolutionsCTA() {
-    return (
-        <section className="py-24 md:py-48">
-            <div className="mx-auto max-w-5xl px-6 text-center">
-                <h2 className="text-balance text-4xl font-semibold lg:text-5xl tracking-tight italic">Shorten the path to the purchase order.</h2>
-                <p className="mx-auto mt-6 max-w-xl text-muted-foreground">
-                    Stop guessing. Start knowing which industrial firms are in market. Deploy the engine today.
-                </p>
-                <div className="mt-12 flex flex-wrap justify-center gap-4">
-                    <Button asChild size="lg" className="rounded-xl px-10 shadow-xl shadow-primary/10">
-                        <Link href="/get-started">Deploy Engine</Link>
-                    </Button>
-                    <Button asChild size="lg" variant="outline" className="rounded-xl px-10">
-                        <Link href="/book-call">Book a Call</Link>
-                    </Button>
-                </div>
-            </div>
-        </section>
-    )
-}
-</file>
-
-<file path="frontend/src/components/sections/solutions/solutions-hero.tsx">
-// @/components/sections/solutions/solutions-hero.tsx
-'use client'
-
-import { TextEffect } from '@/components/ui/text-effect'
-
-export function SolutionsHero() {
-    return (
-        <section className="relative pt-32 pb-16 overflow-hidden md:pt-48">
-             <div
-                aria-hidden
-                className="absolute inset-0 -z-10 size-full [background:radial-gradient(120%_120%_at_50%_0%,transparent_0%,var(--color-background)_85%)]"
-            />
-            <div className="mx-auto max-w-5xl px-6">
-                <div className="max-w-3xl">
-                    <span className="text-primary text-sm font-semibold tracking-widest uppercase">Vertical Deployment</span>
-                    <h1 className="mt-6 text-balance text-5xl font-bold tracking-tight md:text-7xl">
-                        <TextEffect preset="fade-in-blur" speedSegment={0.3}>
-                            Tailored for Heavy Industry.
-                        </TextEffect>
-                    </h1>
-                    <p className="mt-8 text-lg text-muted-foreground md:text-xl leading-relaxed">
-                        Generic sales tools fail in the industrial sector. AuraWorks is built for firms where the sales cycle is measured in months and the contracts in millions.
-                    </p>
-                </div>
-            </div>
-        </section>
-    )
-}
-</file>
-
-<file path="frontend/src/components/sections/solutions/vertical-stacks.tsx">
-// @/components/sections/solutions/vertical-stacks.tsx
-import { cn } from '@/lib/utils'
-
-const verticals = [
-    {
-        title: "Mining & Resource Extraction",
-        problem: "Procurement officers from Tier-1 mining houses browse your specs months before a tender is issued.",
-        solution: "Identify the specific mining site or regional HQ researching your equipment, allowing your reps to engage before the RFP goes public.",
-        stats: "Ideal for: Drill rigs, safety gear, and processing plant OEMs."
-    },
-    {
-        title: "Industrial Manufacturing",
-        problem: "Engineers are looking for technical CAD files and load capacities, but remain anonymous.",
-        solution: "Track which manufacturing firms are downloading your technical documentation to gauge their project timeline and capacity needs.",
-        stats: "Ideal for: Precision tooling, automation systems, and raw material suppliers."
-    },
-    {
-        title: "Logistics & Infrastructure",
-        problem: "Large-scale fleet and warehouse managers are comparing your rates and coverage areas in secret.",
-        solution: "Unmask the logistics directors from corporate entities, focusing your outbound efforts on firms with active expansion intent.",
-        stats: "Ideal for: 3PL providers, fleet management, and cold-chain specialists."
-    }
-]
-
-export function VerticalStacks() {
-    return (
-        <section className="py-24">
-            <div className="mx-auto max-w-5xl px-6 space-y-24">
-                {verticals.map((v, i) => (
-                    <div key={i} className={cn("grid gap-12 md:grid-cols-2 items-start", i % 2 !== 0 && "md:flex-row-reverse")}>
-                        <div className="space-y-6">
-                            <h2 className="text-3xl font-medium tracking-tight">{v.title}</h2>
-                            <div className="space-y-4 border-l-2 border-primary/10 pl-6">
-                                <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground/60">The Challenge</p>
-                                <p className="text-muted-foreground italic">"{v.problem}"</p>
-                            </div>
-                            <div className="space-y-4">
-                                <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground/60">The AuraWorks Edge</p>
-                                <p className="leading-relaxed">{v.solution}</p>
-                            </div>
-                            <p className="text-xs font-mono text-primary/70 bg-primary/5 w-fit px-3 py-1 rounded-full uppercase">{v.stats}</p>
-                        </div>
-                        <div className="bg-zinc-100 dark:bg-zinc-900 aspect-video rounded-2xl border flex items-center justify-center overflow-hidden">
-                             {/* Placeholder for vertical-specific UI/Screenshot */}
-                             <span className="text-[10px] text-muted-foreground uppercase tracking-widest">[ Vertical Intent Dashboard ]</span>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </section>
     )
 }
 </file>
@@ -6923,72 +7037,6 @@ def filter_business_contacts(contacts: List[Dict]) -> List[Dict]:
     ]
 </file>
 
-<file path="frontend/src/app/(pages)/about/page.tsx">
-import { AboutHero } from "@/components/sections/about/about-hero";
-import { FounderProfile } from "@/components/sections/about/founder-profile";
-import { ValuesSection } from "@/components/sections/about/values";
-import { AboutCTA } from "@/components/sections/about/about-cta";
-import { HeroHeader } from "@/components/header/header";
-import Footer from "@/components/footer/footer";
-
-export default function AboutPage() {
-  return (
-  <div>
-    <HeroHeader />
-    <AboutHero />
-    <FounderProfile />
-    <ValuesSection />
-    <AboutCTA />
-    <Footer />
-  </div>);
-}
-</file>
-
-<file path="frontend/src/app/(pages)/features/page.tsx">
-import FeaturesHero from "@/components/sections/features/features-hero";
-import { IdentityBridge } from "@/components/sections/features/identity-bridge";
-import { FeatureGrid } from "@/components/sections/features/feature-grid";
-import { FeaturesCTA } from "@/components/sections/features/features-cta";
-import CallToAction from "@/components/cta/call-to-action";
-import Footer from "@/components/footer/footer";
-import { HeroHeader } from "@/components/header/header";
-
-export default function FeaturesPage() {
-  return (
-    <div>
-      <HeroHeader />
-      <FeaturesHero />
-      <IdentityBridge />
-      <FeatureGrid />
-      <FeaturesCTA /> 
-      <Footer />
-    </div>
-  );
-}
-</file>
-
-<file path="frontend/src/app/(pages)/solution/page.tsx">
-import { SolutionsHero } from '@/components/sections/solutions/solutions-hero';
-import { VerticalStacks } from '@/components/sections/solutions/vertical-stacks';
-import { ComplianceBridge } from '@/components/sections/solutions/compliance-bridge';
-import { SolutionsCTA } from '@/components/sections/solutions/solutions-cta';
-import { HeroHeader } from '@/components/header/header';
-import Footer from '@/components/footer/footer';
-
-export default function SolutionPage() {
-  return (
-    <div>
-      <HeroHeader />
-      <SolutionsHero />
-      <VerticalStacks />
-      <ComplianceBridge />
-      <SolutionsCTA />
-      <Footer />
-    </div>
-  );
-}
-</file>
-
 <file path="frontend/src/app/not-found.tsx">
 // @/app/not-found.tsx
 'use client'
@@ -7366,54 +7414,6 @@ export default function Footer() {
                 </div>
             </div>
         </footer>
-    )
-}
-</file>
-
-<file path="frontend/src/components/sections/features/features-hero.tsx">
-// 
-'use client'
-
-import { TextEffect } from '@/components/ui/text-effect'
-import { AnimatedGroup } from '@/components/ui/animated-group'
-import { ShieldCheck, Database, Zap } from 'lucide-react'
-
-export default function FeaturesHero() {
-    return (
-        <section className="relative pt-32 pb-20 overflow-hidden md:pt-48">
-            <div className="mx-auto max-w-5xl px-6">
-                <div className="max-w-3xl">
-                    <h1 className="text-5xl font-bold tracking-tight md:text-7xl">
-                        <TextEffect preset="fade-in-blur" speedSegment={0.3}>
-                            De-anonymize Your Industrial Traffic.
-                        </TextEffect>
-                    </h1>
-                    <p className="mt-8 text-lg text-muted-foreground md:text-xl">
-                        The AuraWorks Engine isn't just a tracker. It is a proprietary Identity Bridge that resolves anonymous IP strings into high-intent corporate entities within the South African industrial sector.
-                    </p>
-                </div>
-
-                <AnimatedGroup 
-                    className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-3"
-                    variants={{
-                        container: { visible: { transition: { staggerChildren: 0.1, delayChildren: 0.5 } } },
-                        item: { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }
-                    }}
-                >
-                    {[
-                        { icon: ShieldCheck, title: "POPIA Compliant", desc: "First-party consent protocols built directly into the tracking handshake." },
-                        { icon: Database, title: "Juristic Resolution", desc: "We map traffic to registered business entities, filtering out 98% of residential noise." },
-                        { icon: Zap, title: "Zero Latency", desc: "Our lightweight script adds <20ms to your page load while capturing deep intent data." }
-                    ].map((feature, i) => (
-                        <div key={i} className="group relative rounded-2xl border p-8 bg-card/50 backdrop-blur-sm transition-colors hover:bg-muted/50">
-                            <feature.icon className="size-6 text-primary mb-4" />
-                            <h3 className="font-semibold text-lg">{feature.title}</h3>
-                            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
-                        </div>
-                    ))}
-                </AnimatedGroup>
-            </div>
-        </section>
     )
 }
 </file>
@@ -9988,6 +9988,133 @@ dependencies = [
 ]
 </file>
 
+<file path="frontend/src/app/layout.jsx">
+import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
+import "./globals.css";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { GoogleAnalytics } from '@next/third-parties/google';
+import { Analytics } from "@vercel/analytics/next";
+import AuraConsentBanner from "@/components/consent-banner/consent-banner";
+import AuraTracker from "@/components/tracker/aura-tracker";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const viewport = {
+  themeColor: "#ffffff",
+  width: "device-width",
+  initialScale: 1,
+};
+
+export const metadata = {
+  metadataBase: new URL("https://auraworks.co.za"),
+  title: {
+    default: "AuraWorks | Industrial Sales Intelligence & Lead Generation",
+    template: "%s | AuraWorks",
+  },
+  description: "Identify companies visiting your website. AuraWorks turns anonymous industrial traffic into high-intent sales leads for B2B firms in South Africa.",
+  category: 'technology',
+  classification: 'Industrial Sales Intelligence',
+  keywords: [
+    "B2B Lead Generation South Africa",
+    "Industrial Sales Intelligence",
+    "Intent-Based Lead Generation",
+    "Identity Resolution",
+    "POPIA Compliant Lead Generation",
+    "Anonymous Visitor Identification",
+    "Sales Automation for Manufacturing",
+    "Mining Sector Leads",
+    "Engineering Sales Intelligence",
+    "Revenue Systems Architecture",
+    "Gauteng B2B Sales Tools",
+    "East Rand Industrial Marketing"
+  ],
+  icons: {
+    icon: [
+      { url: "/icon.png", type: "image/png", sizes: "32x32" },
+      { url: "/icon-48.png", type: "image/png", sizes: "48x48" },
+      { url: "/favicon.ico", sizes: "any" }, 
+    ],
+    apple: [
+      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" }
+    ],
+  },
+  manifest: "/manifest.json",
+  authors: [{ name: "Reitumetse Sethabela", url: "https://auraworks.co.za" }],
+  creator: "Reitumetse Sethabela",
+  publisher: "AuraWorks (Pty) Ltd",
+  openGraph: {
+    title: "AuraWorks | Industrial Sales Intelligence",
+    description: "Turn anonymous industrial traffic into high-intent sales leads. POPIA-compliant B2B identification.",
+    url: "https://auraworks.co.za",
+    siteName: "AuraWorks",
+    locale: "en_ZA",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "AuraWorks | Industrial Sales Intelligence Dashboard",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AuraWorks | B2B Intelligence",
+    description: "Industrial Lead Generation & Identity Resolution.",
+    images: ["/twitter-image.jpg"],
+  },
+  alternates: {
+    canonical: "https://auraworks.co.za",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+};
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body className="antialiased">
+        {children}
+
+        {/* AuraWorks Industrial Intelligence 
+          Silo: AuraWorks (Pty) Ltd Primary Ledger
+        */}
+        <AuraTracker 
+          clientId="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0" 
+        />
+
+        <AuraConsentBanner />
+        
+        {/* Third-party Analytics */}
+        <SpeedInsights />
+        <GoogleAnalytics gaId="G-2LE9FLFM12" />
+        <Analytics />
+      </body>
+    </html>
+  );
+}
+</file>
+
 <file path="tracker/src/public/aura.js">
 /**
  * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
@@ -10336,133 +10463,6 @@ class PageViewCreate(SQLModel):
     signature: Optional[Dict[str, Any]] = None # Transmits Canvas/WebGL data to the Identity Bridge
 </file>
 
-<file path="frontend/src/app/layout.jsx">
-import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
-import "./globals.css";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { GoogleAnalytics } from '@next/third-parties/google';
-import { Analytics } from "@vercel/analytics/next";
-import AuraConsentBanner from "@/components/consent-banner/consent-banner";
-import AuraTracker from "@/components/tracker/aura-tracker";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export const viewport = {
-  themeColor: "#ffffff",
-  width: "device-width",
-  initialScale: 1,
-};
-
-export const metadata = {
-  metadataBase: new URL("https://auraworks.co.za"),
-  title: {
-    default: "AuraWorks | Industrial Sales Intelligence & Lead Generation",
-    template: "%s | AuraWorks",
-  },
-  description: "Identify companies visiting your website. AuraWorks turns anonymous industrial traffic into high-intent sales leads for B2B firms in South Africa.",
-  category: 'technology',
-  classification: 'Industrial Sales Intelligence',
-  keywords: [
-    "B2B Lead Generation South Africa",
-    "Industrial Sales Intelligence",
-    "Intent-Based Lead Generation",
-    "Identity Resolution",
-    "POPIA Compliant Lead Generation",
-    "Anonymous Visitor Identification",
-    "Sales Automation for Manufacturing",
-    "Mining Sector Leads",
-    "Engineering Sales Intelligence",
-    "Revenue Systems Architecture",
-    "Gauteng B2B Sales Tools",
-    "East Rand Industrial Marketing"
-  ],
-  icons: {
-    icon: [
-      { url: "/icon.png", type: "image/png", sizes: "32x32" },
-      { url: "/icon-48.png", type: "image/png", sizes: "48x48" },
-      { url: "/favicon.ico", sizes: "any" }, 
-    ],
-    apple: [
-      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" }
-    ],
-  },
-  manifest: "/manifest.json",
-  authors: [{ name: "Reitumetse Sethabela", url: "https://auraworks.co.za" }],
-  creator: "Reitumetse Sethabela",
-  publisher: "AuraWorks (Pty) Ltd",
-  openGraph: {
-    title: "AuraWorks | Industrial Sales Intelligence",
-    description: "Turn anonymous industrial traffic into high-intent sales leads. POPIA-compliant B2B identification.",
-    url: "https://auraworks.co.za",
-    siteName: "AuraWorks",
-    locale: "en_ZA",
-    type: "website",
-    images: [
-      {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "AuraWorks | Industrial Sales Intelligence Dashboard",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "AuraWorks | B2B Intelligence",
-    description: "Industrial Lead Generation & Identity Resolution.",
-    images: ["/twitter-image.jpg"],
-  },
-  alternates: {
-    canonical: "https://auraworks.co.za",
-  },
-  robots: {
-    index: true,
-    follow: true,
-    nocache: false,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
-  },
-};
-
-export default function RootLayout({ children }) {
-  return (
-    <html lang="en">
-      <body className="antialiased">
-        {children}
-
-        {/* AuraWorks Industrial Intelligence 
-          Silo: AuraWorks (Pty) Ltd Primary Ledger
-        */}
-        <AuraTracker 
-          clientId="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0" 
-        />
-
-        <AuraConsentBanner />
-        
-        {/* Third-party Analytics */}
-        <SpeedInsights />
-        <GoogleAnalytics gaId="G-2LE9FLFM12" />
-        <Analytics />
-      </body>
-    </html>
-  );
-}
-</file>
-
 <file path="frontend/src/components/sections/form/get-started.tsx">
 'use client'
 
@@ -10715,6 +10715,77 @@ export default function GetStartedPage() {
 }
 </file>
 
+<file path="backend/app/core/config.py">
+# backend/app/core/config.py
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional, List
+
+class Settings(BaseSettings):
+    # --- APP SETTINGS ---
+    PROJECT_NAME: str = "AuraWorks Industrial Intelligence OS"
+    VERSION: str = "3.2.1"  # Forensic v3.2.1 Async Support
+    API_V1_STR: str = "/api/v1"
+
+    # --- SECURITY & AUTH ---
+    # Formal authentication for the industrial dashboard
+    ADMIN_API_KEY: str = "change-me-in-production" 
+    SECRET_KEY: Optional[str] = None  
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 11520  # 8 days (matches long-cycle industrial procurement)
+    
+    # --- DATABASE ---
+    # Set to Optional to prevent build-time crashes on platforms like Railway
+    DATABASE_URL: Optional[str] = None 
+    
+    # --- ENRICHMENT TRIAD (National Scaling) ---
+    IPINFO_TOKEN: Optional[str] = None 
+    APOLLO_API_KEY: Optional[str] = None 
+    
+    # --- INTELLIGENCE BRAIN ---
+    DEEPSEEK_API_KEY: Optional[str] = None 
+    
+    # --- THE VAULT (Airtable Sink) ---
+    AIRTABLE_BASE_ID: Optional[str] = None 
+    AIRTABLE_API_KEY: Optional[str] = None
+    AIRTABLE_TABLE_NAME: str = "Forensic_Leads" 
+    
+    # --- PROJECT SPACE (Notion) ---
+    NOTION_DATABASE_ID: Optional[str] = None 
+    NOTION_TOKEN: Optional[str] = None
+
+    # --- NOTIFICATIONS & DISPATCH ---
+    SLACK_WEBHOOK_URL: Optional[str] = None        
+    SLACK_VISIT_WEBHOOK_URL: Optional[str] = None  
+    
+    # --- EXCLUSIVE RESEND EMAIL DISPATCH ENGINE ---
+    RESEND_API_KEY: Optional[str] = None
+    RESEND_FROM_EMAIL: str = "AuraWorks <waitlist@auraworks.co.za>"
+
+    # --- EXTERNAL INTEGRATIONS ---
+    NEXT_PUBLIC_WAITLIST_API_KEY: Optional[str] = None
+    NEXT_PUBLIC_WAITLIST_ID: Optional[str] = None
+
+    # --- CORS SETTINGS (Industrial Perimeter) ---
+    ALLOWED_ORIGINS: List[str] = [
+        "https://industrial-intelligence-xi.vercel.app", 
+        "http://localhost:3000",
+        "https://auraworks.co.za",
+        "https://www.auraworks.co.za",
+        "https://cdn.auraworks.co.za",
+        "https://dynamic-flow-production-a5d6.up.railway.app",
+        "https://industrial-intelligence-git-main-allen-reileys-projects.vercel.app",
+        "https://industrial-intelligence-lttxeot8z-allen-reileys-projects.vercel.app"
+    ]
+
+    # Modern Pydantic V2 Configuration
+    model_config = SettingsConfigDict(
+        env_file=None, # Prevents local .env from overriding production environment vars
+        case_sensitive=True,
+        extra="ignore"  # Prevents crash if extra metadata env vars are passed by Railway
+    )
+
+settings = Settings()
+</file>
+
 <file path="backend/app/services/intelligence.py">
 # backend/app/services/intelligence.py
 import httpx
@@ -10955,77 +11026,6 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
         "is_warm_lead": lead is not None,
         "is_high_intent": is_buying_committee or lead is not None or any(kw in pathway_str.lower() for kw in ["pricing", "audit", "waitlist"])
     }
-</file>
-
-<file path="backend/app/core/config.py">
-# backend/app/core/config.py
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional, List
-
-class Settings(BaseSettings):
-    # --- APP SETTINGS ---
-    PROJECT_NAME: str = "AuraWorks Industrial Intelligence OS"
-    VERSION: str = "3.2.1"  # Forensic v3.2.1 Async Support
-    API_V1_STR: str = "/api/v1"
-
-    # --- SECURITY & AUTH ---
-    # Formal authentication for the industrial dashboard
-    ADMIN_API_KEY: str = "change-me-in-production" 
-    SECRET_KEY: Optional[str] = None  
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 11520  # 8 days (matches long-cycle industrial procurement)
-    
-    # --- DATABASE ---
-    # Set to Optional to prevent build-time crashes on platforms like Railway
-    DATABASE_URL: Optional[str] = None 
-    
-    # --- ENRICHMENT TRIAD (National Scaling) ---
-    IPINFO_TOKEN: Optional[str] = None 
-    APOLLO_API_KEY: Optional[str] = None 
-    
-    # --- INTELLIGENCE BRAIN ---
-    DEEPSEEK_API_KEY: Optional[str] = None 
-    
-    # --- THE VAULT (Airtable Sink) ---
-    AIRTABLE_BASE_ID: Optional[str] = None 
-    AIRTABLE_API_KEY: Optional[str] = None
-    AIRTABLE_TABLE_NAME: str = "Forensic_Leads" 
-    
-    # --- PROJECT SPACE (Notion) ---
-    NOTION_DATABASE_ID: Optional[str] = None 
-    NOTION_TOKEN: Optional[str] = None
-
-    # --- NOTIFICATIONS & DISPATCH ---
-    SLACK_WEBHOOK_URL: Optional[str] = None        
-    SLACK_VISIT_WEBHOOK_URL: Optional[str] = None  
-    
-    # --- EXCLUSIVE RESEND EMAIL DISPATCH ENGINE ---
-    RESEND_API_KEY: Optional[str] = None
-    RESEND_FROM_EMAIL: str = "AuraWorks <waitlist@auraworks.co.za>"
-
-    # --- EXTERNAL INTEGRATIONS ---
-    NEXT_PUBLIC_WAITLIST_API_KEY: Optional[str] = None
-    NEXT_PUBLIC_WAITLIST_ID: Optional[str] = None
-
-    # --- CORS SETTINGS (Industrial Perimeter) ---
-    ALLOWED_ORIGINS: List[str] = [
-        "https://industrial-intelligence-xi.vercel.app", 
-        "http://localhost:3000",
-        "https://auraworks.co.za",
-        "https://www.auraworks.co.za",
-        "https://cdn.auraworks.co.za",
-        "https://dynamic-flow-production-a5d6.up.railway.app",
-        "https://industrial-intelligence-git-main-allen-reileys-projects.vercel.app",
-        "https://industrial-intelligence-lttxeot8z-allen-reileys-projects.vercel.app"
-    ]
-
-    # Modern Pydantic V2 Configuration
-    model_config = SettingsConfigDict(
-        env_file=None, # Prevents local .env from overriding production environment vars
-        case_sensitive=True,
-        extra="ignore"  # Prevents crash if extra metadata env vars are passed by Railway
-    )
-
-settings = Settings()
 </file>
 
 <file path="backend/app/models/waitlist.py">
@@ -11494,18 +11494,23 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 import logging
 from datetime import datetime, timezone
+from cachetools import TTLCache
 
 # Internal AuraWorks Imports
 from app.models.visit import Visit, VisitCreate, PageViewCreate
 from app.models.company import Company
 from app.models.waitlist import WaitlistLead
 from app.services.enrichment import enrich_visitor_data
-from app.services.notifications import post_to_visit_channel
+from app.services.notifications import post_to_slack
 from app.services.intelligence import get_visitor_journey
 from app.db import async_session_maker
 
 router = APIRouter()
 logger = logging.getLogger("uvicorn")
+
+# --- ANTI-SPAM LOCK ---
+# Prevents duplicate exit notifications if the browser fires multiple exit beacons
+exit_notification_cache = TTLCache(maxsize=2000, ttl=43200) # 12 hour cooldown
 
 class ConsentPayload(BaseModel):
     client_id: str
@@ -11524,16 +11529,15 @@ class IdentityPayload(BaseModel):
 
 async def process_entry_logic(payload: VisitCreate, client_ip: str):
     """
-    Main ingestion engine for raw visitor traffic. 
-    Sequentially blocks notification dispatch until DeepSeek intent has compiled.
+    SILENT INGESTION ENGINE:
+    Records raw traffic trails and resolves firmographics without triggering DeepSeek or Slack pings.
     """
     if not async_session_maker:
-        logger.error("❌ process_entry_logic: Aborted. Async Database Engine not initialized.")
         return
 
     async with async_session_maker() as session:
         try:
-            # 1. Forensic Enrichment (Firmographic Resolution)
+            # 1. Forensic Enrichment
             enriched_info = await enrich_visitor_data(client_ip)
             domain = enriched_info.get("domain")
             
@@ -11574,45 +11578,80 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
             )
             session.add(db_visit)
             await session.commit()
-            await session.refresh(db_visit)
-
-            # 4. AWAIT INTELLIGENCE SYNTHESIS (Halts sequential block until DeepSeek finishes)
-            journey = await get_visitor_journey(payload.aura_id, session)
             
-            # 5. Pack visit properties securely with full context resolved
-            visit_notification_payload = {
-                "aura_id": db_visit.aura_id,
-                "company_name": company.name if company else "Anonymous Entity",
-                "confidence_score": 1.0 if (company and company.is_verified) else 0.6,
-                "is_verified": company.is_verified if company else False,
-                "utm_source": getattr(payload, "utm_source", "Direct"),
-                "utm_medium": getattr(payload, "utm_medium", "None"),
-                "city": enriched_info.get("city", "Unknown"),
-                "region": enriched_info.get("region", "ZA")
-            }
-            
-            # 6. Dispatch clear notification package to Slack
-            await post_to_visit_channel(visit_notification_payload, journey)
-
         except Exception as e:
             await session.rollback()
-            logger.error(f"🚨 Ingestion Error: {e}")
+            logger.error(f"🚨 Silent Ingestion Error: {e}")
+
+async def process_exit_logic(aura_id: str, client_id: str):
+    """
+    THE BATCH PROCESSOR:
+    Fires exclusively upon departure. Evaluates identity data gates to avoid chat pollution.
+    Compiles the entire session trail into a single structured prompt for DeepSeek analysis.
+    """
+    if not async_session_maker:
+        return
+
+    # Anti-Spam: Skip duplicate execution loops for the same session footprint
+    if aura_id in exit_notification_cache:
+        return
+
+    async with async_session_maker() as session:
+        try:
+            # 1. THE GATEKEEPER: Did they convert or hand over data via banner forms?
+            lead_stmt = select(WaitlistLead).where(
+                WaitlistLead.aura_id == aura_id,
+                WaitlistLead.client_id == client_id
+            )
+            lead = (await session.execute(lead_stmt)).scalars().first()
+
+            # Ghost tracking bypass: If no identity attributes exist, terminate silently.
+            if not lead:
+                return
+
+            # Active context throttle lock
+            exit_notification_cache[aura_id] = True
+            logger.info(f"🚪 High-Intent Exit Flagged for {aura_id}. Compiling full DeepSeek journey matrix...")
+
+            # 2. Compile the full session ledger into a single operational object
+            journey = await get_visitor_journey(aura_id, session)
+
+            # 3. Resolve Company Reference parameters
+            company_name = lead.company_name_raw or "Anonymous Entity"
+            if lead.company_id:
+                company = await session.get(Company, lead.company_id)
+                if company:
+                    company_name = company.name
+
+            # 4. Normalize the unified dataset dictionary payload
+            complete_lead_payload = {
+                "id": lead.id,
+                "aura_id": lead.aura_id,
+                "name": lead.name or "Unknown Lead",
+                "email": lead.email,
+                "company_name_final": company_name,
+                "department": lead.department or "Undetermined",
+                "position": lead.position or "Evaluator",
+                "capture_source": "banner_interaction",
+            }
+
+            # 5. Route the clean, fully-formed summary packet to Slack
+            await post_to_slack(lead_data=complete_lead_payload, journey=journey)
+            logger.info(f"✅ DeepSeek Batch Processing summary successfully delivered for {aura_id}")
+
+        except Exception as e:
+            logger.error(f"🚨 Exit Logic Batch Error: {e}")
 
 @router.post("/entry")
 async def track_entry(payload: VisitCreate, request: Request, background_tasks: BackgroundTasks):
-    # Resolve IP via proxy headers for Railway/Cloudfront compatibility
     client_ip = request.headers.get("x-forwarded-for", request.client.host).split(',')[0]
     background_tasks.add_task(process_entry_logic, payload, client_ip)
     return {"status": "accepted"}
 
 @router.post("/identity")
 async def track_identity(payload: IdentityPayload):
-    """
-    Identity Bridge: Upgrades anonymous forensic profiles using volunteered data.
-    Stitches signatures (Canvas/WebGL) to the database record.
-    """
+    """Upgrades anonymous forensic profiles using volunteered banner form data."""
     async with async_session_maker() as session:
-        # 1. Fetch the most recent visit for this ID to attach signatures
         res = await session.execute(
             select(Visit).where(
                 Visit.aura_id == payload.aura_id,
@@ -11624,7 +11663,6 @@ async def track_identity(payload: IdentityPayload):
         if not visit:
             return {"status": "visit_not_found"}
 
-        # 2. Forensic Locking (Canvas/WebGL/Clock)
         if payload.signature:
             sig = payload.signature
             visit.canvas_hash = sig.get("canvas")
@@ -11636,14 +11674,11 @@ async def track_identity(payload: IdentityPayload):
                 visit.downlink_speed = net.get("downlink")
                 visit.rtt = net.get("rtt")
 
-        # 3. Warm Lead Promotion (The Janitor Shield)
         if payload.email:
-            # Update the visit metadata
             visit.capture_source = payload.capture_source
-            visit.verification_status = "verified" # Shielded from 48h purge
+            visit.verification_status = "verified" # Activate Janitor Shield
             visit.is_consented = True
 
-            # Resolve or Create the WaitlistLead entry
             res_lead = await session.execute(
                 select(WaitlistLead).where(
                     WaitlistLead.aura_id == payload.aura_id,
@@ -11659,7 +11694,6 @@ async def track_identity(payload: IdentityPayload):
                     email=payload.email
                 )
             
-            # Enrich lead record with provided context
             lead.email = payload.email
             if payload.company_name: lead.company_name_raw = payload.company_name
             if payload.department: lead.department = payload.department
@@ -11672,11 +11706,8 @@ async def track_identity(payload: IdentityPayload):
 
 @router.post("/event")
 async def track_event(payload: PageViewCreate):
-    """Logs behavioral intent clicks (e.g., 'Pricing', 'Industrial Sync')."""
     async with async_session_maker() as session:
-        # Standardized tracking normalization fallback
         target_aura_id = payload.aura_id if getattr(payload, "aura_id", None) else payload.client_id
-        
         res = await session.execute(
             select(Visit).where(
                 Visit.aura_id == target_aura_id,
@@ -11708,17 +11739,16 @@ async def track_consent(payload: ConsentPayload):
         return {"status": "consent_recorded"}
 
 @router.post("/exit")
-async def track_exit(payload: PageViewCreate):
-    """Records session duration upon visitor departure."""
+async def track_exit(payload: PageViewCreate, background_tasks: BackgroundTasks):
+    """Records session metrics upon departure and coordinates the batch analytical thread."""
     try:
         processed_duration = int(float(payload.duration))
     except (ValueError, TypeError):
         processed_duration = 0
 
-    async with async_session_maker() as session:
-        # Standardized tracking normalization fallback
-        target_aura_id = payload.aura_id if getattr(payload, "aura_id", None) else payload.client_id
+    target_aura_id = payload.aura_id if getattr(payload, "aura_id", None) else payload.client_id
 
+    async with async_session_maker() as session:
         res = await session.execute(
             select(Visit).where(
                 Visit.aura_id == target_aura_id,
@@ -11732,8 +11762,12 @@ async def track_exit(payload: PageViewCreate):
                 visit.duration = processed_duration
                 session.add(visit)
                 await session.commit()
-                return {"status": "recorded"}
-        return {"status": "pending_entry"}
+
+    # Launch Batch Intelligence processing sequentially when the session closes down
+    if target_aura_id and payload.client_id:
+        background_tasks.add_task(process_exit_logic, target_aura_id, payload.client_id)
+
+    return {"status": "recorded"}
 </file>
 
 </files>
