@@ -37,8 +37,8 @@ def format_zar(value: str) -> str:
 async def background_lead_analysis(lead_id: int, aura_id: str, payload: dict):
     """
     Sequential Forensic Orchestration Engine.
-    Holds back external system sinks (Slack) until DeepSeek and 
-    firmographic intelligence have fully compiled their data.
+    Holds back external system sinks (Slack, Airtable) until DeepSeek 
+    and firmographic intelligence have fully compiled their data.
     """
     if not async_session_maker:
         logger.error("❌ background_lead_analysis: Aborted. Async Engine offline.")
@@ -95,8 +95,12 @@ async def background_lead_analysis(lead_id: int, aura_id: str, payload: dict):
             from app.services.notifications import post_to_slack
             await post_to_slack(lead_data=complete_lead_payload, journey=journey)
 
-            # Future Phase 2 Bridges can plug in here cleanly:
-            # await sync_to_airtable(complete_lead_payload, journey)
+            # PHASE 3: The Airtable Bridge
+            from app.services.vault import sync_to_airtable
+            await sync_to_airtable(complete_lead_payload, journey)
+            
+            # PHASE 4: Notion Bridge (Deferred)
+            # from app.services.vault import sync_to_notion
             # await sync_to_notion(complete_lead_payload, journey)
 
             logger.info(f"✅ Full Synchronization Cycle Complete for Lead ID: {lead_id}")

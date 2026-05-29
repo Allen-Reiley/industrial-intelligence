@@ -75,6 +75,7 @@ backend/
       notifications.py
       notion.py
       reports.py
+      vault.py
     tasks/
       bridge.py
       janitor.py
@@ -297,6 +298,69 @@ def create_client(client_in: ClientCreate, session: Session = Depends(get_sessio
 
 <file path="backend/app/services/reports.py">
 
+</file>
+
+<file path="backend/app/services/vault.py">
+# backend/app/services/vault.py
+import httpx
+import logging
+import urllib.parse
+from typing import Dict, Any
+from app.core.config import settings
+
+logger = logging.getLogger("uvicorn")
+
+async def sync_to_airtable(lead_data: Dict[str, Any], journey: Dict[str, Any]):
+    """
+    Phase 3: The Airtable Bridge.
+    Pushes the compiled lead and DeepSeek intent securely into Airtable.
+    """
+    if not settings.AIRTABLE_API_KEY or not settings.AIRTABLE_BASE_ID:
+        logger.warning("⚠️ Airtable Sync skipped: Credentials not configured.")
+        return
+
+    # URL Encoding protects against spaces in the table name string
+    safe_table_name = urllib.parse.quote(settings.AIRTABLE_TABLE_NAME)
+    url = f"https://api.airtable.com/v0/{settings.AIRTABLE_BASE_ID}/{safe_table_name}"
+    
+    headers = {
+        "Authorization": f"Bearer {settings.AIRTABLE_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    # 1. Map raw properties
+    raw_fields = {
+        "Name": lead_data.get("name") or "Unknown Entity",
+        "Email": lead_data.get("email"),
+        "Company": lead_data.get("company_name_final") or "Unknown",
+        "Position": lead_data.get("position") or "Evaluator",
+        "Department": lead_data.get("department") or "Undetermined",
+        "Industry": lead_data.get("industry") or "Industrial",
+        "Pathway": journey.get("pathway") or "Direct",
+        "Intent Summary": journey.get("intent_summary") or "Pending",
+        "Status": "Needs Review" # IMPORTANT: Create this tag exactly in your Airtable drop-down
+    }
+
+    # 2. Airtable API Safety Filter: Strip completely empty (None) values to prevent 422 schema crashes
+    clean_fields = {k: v for k, v in raw_fields.items() if v is not None}
+
+    payload = {
+        "records": [
+            {
+                "fields": clean_fields
+            }
+        ]
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(url, headers=headers, json=payload, timeout=10.0)
+            if response.status_code == 200:
+                logger.info(f"🟢 Airtable Sync Success for Lead: {lead_data.get('email')}")
+            else:
+                logger.error(f"❌ Airtable Sync Failed ({response.status_code}): {response.text}")
+        except Exception as e:
+            logger.error(f"🚨 Airtable Transport Error: {e}")
 </file>
 
 <file path="backend/.python-version">
@@ -1116,6 +1180,54 @@ export function FeaturesCTA() {
                     Industrial Sales Intelligence • AuraWorks Engine 1.1
                 </p>
                 */}
+            </div>
+        </section>
+    )
+}
+</file>
+
+<file path="frontend/src/components/sections/features/features-hero.tsx">
+// 
+'use client'
+
+import { TextEffect } from '@/components/ui/text-effect'
+import { AnimatedGroup } from '@/components/ui/animated-group'
+import { ShieldCheck, Database, Zap } from 'lucide-react'
+
+export default function FeaturesHero() {
+    return (
+        <section className="relative pt-32 pb-20 overflow-hidden md:pt-48">
+            <div className="mx-auto max-w-5xl px-6">
+                <div className="max-w-3xl">
+                    <h1 className="text-5xl font-bold tracking-tight md:text-7xl">
+                        <TextEffect preset="fade-in-blur" speedSegment={0.3}>
+                            De-anonymize Your Industrial Traffic.
+                        </TextEffect>
+                    </h1>
+                    <p className="mt-8 text-lg text-muted-foreground md:text-xl">
+                        The AuraWorks Engine isn't just a tracker. It is a proprietary Identity Bridge that resolves anonymous IP strings into high-intent corporate entities within the South African industrial sector.
+                    </p>
+                </div>
+
+                <AnimatedGroup 
+                    className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-3"
+                    variants={{
+                        container: { visible: { transition: { staggerChildren: 0.1, delayChildren: 0.5 } } },
+                        item: { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }
+                    }}
+                >
+                    {[
+                        { icon: ShieldCheck, title: "POPIA Compliant", desc: "First-party consent protocols built directly into the tracking handshake." },
+                        { icon: Database, title: "Juristic Resolution", desc: "We map traffic to registered business entities, filtering out 98% of residential noise." },
+                        { icon: Zap, title: "Zero Latency", desc: "Our lightweight script adds <20ms to your page load while capturing deep intent data." }
+                    ].map((feature, i) => (
+                        <div key={i} className="group relative rounded-2xl border p-8 bg-card/50 backdrop-blur-sm transition-colors hover:bg-muted/50">
+                            <feature.icon className="size-6 text-primary mb-4" />
+                            <h3 className="font-semibold text-lg">{feature.title}</h3>
+                            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
+                        </div>
+                    ))}
+                </AnimatedGroup>
             </div>
         </section>
     )
@@ -5166,54 +5278,6 @@ export default function ProfessionalDisclaimerPage() {
                 </div>
             </div>
         </main>
-    )
-}
-</file>
-
-<file path="frontend/src/components/sections/features/features-hero.tsx">
-// 
-'use client'
-
-import { TextEffect } from '@/components/ui/text-effect'
-import { AnimatedGroup } from '@/components/ui/animated-group'
-import { ShieldCheck, Database, Zap } from 'lucide-react'
-
-export default function FeaturesHero() {
-    return (
-        <section className="relative pt-32 pb-20 overflow-hidden md:pt-48">
-            <div className="mx-auto max-w-5xl px-6">
-                <div className="max-w-3xl">
-                    <h1 className="text-5xl font-bold tracking-tight md:text-7xl">
-                        <TextEffect preset="fade-in-blur" speedSegment={0.3}>
-                            De-anonymize Your Industrial Traffic.
-                        </TextEffect>
-                    </h1>
-                    <p className="mt-8 text-lg text-muted-foreground md:text-xl">
-                        The AuraWorks Engine isn't just a tracker. It is a proprietary Identity Bridge that resolves anonymous IP strings into high-intent corporate entities within the South African industrial sector.
-                    </p>
-                </div>
-
-                <AnimatedGroup 
-                    className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-3"
-                    variants={{
-                        container: { visible: { transition: { staggerChildren: 0.1, delayChildren: 0.5 } } },
-                        item: { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }
-                    }}
-                >
-                    {[
-                        { icon: ShieldCheck, title: "POPIA Compliant", desc: "First-party consent protocols built directly into the tracking handshake." },
-                        { icon: Database, title: "Juristic Resolution", desc: "We map traffic to registered business entities, filtering out 98% of residential noise." },
-                        { icon: Zap, title: "Zero Latency", desc: "Our lightweight script adds <20ms to your page load while capturing deep intent data." }
-                    ].map((feature, i) => (
-                        <div key={i} className="group relative rounded-2xl border p-8 bg-card/50 backdrop-blur-sm transition-colors hover:bg-muted/50">
-                            <feature.icon className="size-6 text-primary mb-4" />
-                            <h3 className="font-semibold text-lg">{feature.title}</h3>
-                            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
-                        </div>
-                    ))}
-                </AnimatedGroup>
-            </div>
-        </section>
     )
 }
 </file>
@@ -11291,8 +11355,8 @@ def format_zar(value: str) -> str:
 async def background_lead_analysis(lead_id: int, aura_id: str, payload: dict):
     """
     Sequential Forensic Orchestration Engine.
-    Holds back external system sinks (Slack) until DeepSeek and 
-    firmographic intelligence have fully compiled their data.
+    Holds back external system sinks (Slack, Airtable) until DeepSeek 
+    and firmographic intelligence have fully compiled their data.
     """
     if not async_session_maker:
         logger.error("❌ background_lead_analysis: Aborted. Async Engine offline.")
@@ -11349,8 +11413,12 @@ async def background_lead_analysis(lead_id: int, aura_id: str, payload: dict):
             from app.services.notifications import post_to_slack
             await post_to_slack(lead_data=complete_lead_payload, journey=journey)
 
-            # Future Phase 2 Bridges can plug in here cleanly:
-            # await sync_to_airtable(complete_lead_payload, journey)
+            # PHASE 3: The Airtable Bridge
+            from app.services.vault import sync_to_airtable
+            await sync_to_airtable(complete_lead_payload, journey)
+            
+            # PHASE 4: Notion Bridge (Deferred)
+            # from app.services.vault import sync_to_notion
             # await sync_to_notion(complete_lead_payload, journey)
 
             logger.info(f"✅ Full Synchronization Cycle Complete for Lead ID: {lead_id}")
