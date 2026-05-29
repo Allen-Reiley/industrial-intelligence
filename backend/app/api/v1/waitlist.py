@@ -11,6 +11,9 @@ from app.services.intelligence import get_visitor_journey
 # PHASE 1: Import the new Resend notification engine
 from app.services.email import send_waitlist_success_email
 
+# GLOBALLY IMPORT THE VAULT BRIDGES TO FIX SCOPE ERRORS
+from app.services.vault import sync_to_airtable, sync_to_notion
+
 router = APIRouter()
 logger = logging.getLogger("uvicorn")
 
@@ -82,7 +85,9 @@ async def background_lead_analysis(lead_id: int, aura_id: str, payload: dict):
                 "website": lead.website or "N/A",
                 "capture_source": "waitlist_conversion",
                 "traffic": lead.traffic or "N/A",
-                "avg_price": lead.avg_price or "N/A"
+                "avg_price": lead.avg_price or "N/A",
+                "city": journey.get("city", "Unknown"),
+                "region": journey.get("region", "ZA")
             }
 
             logger.info(f"✨ DeepSeek Data compiled for Lead ID {lead_id}. Releasing external notification gates...")
@@ -96,12 +101,10 @@ async def background_lead_analysis(lead_id: int, aura_id: str, payload: dict):
             await post_to_slack(lead_data=complete_lead_payload, journey=journey)
 
             # PHASE 3: The Airtable Bridge
-            from app.services.vault import sync_to_airtable
             await sync_to_airtable(complete_lead_payload, journey)
             
-            # PHASE 4: Notion Bridge (Deferred)
+            # PHASE 4: The Notion Bridge
             await sync_to_notion(complete_lead_payload, journey)
-            from app.services.vault import sync_to_notion
 
             logger.info(f"✅ Full Synchronization Cycle Complete for Lead ID: {lead_id}")
 
