@@ -4267,6 +4267,138 @@ export const HeroHeader = () => {
 }
 </file>
 
+<file path="frontend/src/components/pricing/pricing.tsx">
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Check } from 'lucide-react'
+import Link from 'next/link'
+import { HeroHeader } from '../header/header'
+import { TextEffect } from '../ui/text-effect'
+import { AnimatedGroup } from '../ui/animated-group'
+
+const transitionVariants = {
+    item: {
+        hidden: { opacity: 0, filter: 'blur(12px)', y: 12 },
+        visible: {
+            opacity: 1,
+            filter: 'blur(0px)',
+            y: 0,
+            transition: { type: 'spring', bounce: 0.3, duration: 1.5 },
+        },
+    },
+} as const;
+
+export default function Pricing() {
+    const [hasMounted, setHasMounted] = useState(false);
+
+    useEffect(() => {
+        setHasMounted(true);
+    }, []);
+
+    if (!hasMounted) {
+        return <div className="sr-only">AuraWorks Pricing - R120k/yr Annual Engine</div>;
+    }
+
+    return (
+        <>
+            <HeroHeader />
+            <div className="relative py-12 md:py-32">
+                <div className="mx-auto max-w-5xl px-4 md:px-6">
+                    <div className="mx-auto max-w-2xl text-center">
+                        <h2 className="text-balance text-3xl font-bold md:text-4xl lg:text-5xl leading-tight">
+                            <TextEffect preset="fade-in-blur" speedSegment={0.3}>
+                                Deploy Your Industrial Growth Engine
+                            </TextEffect>
+                        </h2>
+                        <div className="text-muted-foreground mt-6 text-base md:text-lg px-2">
+                            <AnimatedGroup variants={transitionVariants}>
+                                One year of unmasked revenue. Total visibility into the construction, mining, logistics, and manufacturing firms visiting your site.
+                            </AnimatedGroup>
+                        </div>
+                    </div>
+
+                    <div className="mt-12 md:mt-20">
+                        {/* Added overflow-hidden to prevent layout shift */}
+                        <div className="bg-card relative rounded-3xl border shadow-2xl shadow-zinc-950/5 overflow-hidden">
+                            <div className="grid items-center gap-0 md:gap-12 divide-y md:grid-cols-2 md:divide-x md:divide-y-0">
+                                
+                                {/* LEFT COLUMN: Pricing & CTA */}
+                                <div className="p-8 md:p-12 text-center">
+                                    <div className="text-xl md:text-2xl font-semibold italic">
+                                        <AnimatedGroup variants={transitionVariants}>
+                                            AuraWorks Annual Engine
+                                        </AnimatedGroup>
+                                    </div>
+
+                                    <AnimatedGroup variants={transitionVariants}>
+                                        {/* FIX: break-words and responsive text size */}
+                                        <div className="mt-3 text-[10px] md:text-sm text-muted-foreground uppercase tracking-[0.2em] break-words">
+                                            Enterprise Sales Intelligence
+                                        </div>
+                                    </AnimatedGroup>
+
+                                    <AnimatedGroup variants={transitionVariants}>
+                                        {/* FIX: Fluid pricing text to prevent overflow */}
+                                        <div className="mb-8 mt-10 inline-flex items-baseline font-bold">
+                                            <span className="text-2xl md:text-4xl font-medium text-foreground mr-1">R</span>
+                                            <span className="text-5xl md:text-7xl tracking-tighter">120k</span>
+                                            <span className="text-base md:text-lg font-normal text-muted-foreground ml-1">/yr</span>
+                                        </div>
+                                    </AnimatedGroup>
+
+                                    <div className="flex justify-center w-full">
+                                        <AnimatedGroup variants={transitionVariants} className="w-full md:w-auto">
+                                            <Button
+                                                asChild
+                                                size="lg"
+                                                className="w-full md:w-auto px-10 py-7 text-base md:text-lg font-medium tracking-tight shadow-xl">
+                                                <Link href="/get-started">Request Enterprise Access</Link>
+                                            </Button>
+                                        </AnimatedGroup>
+                                    </div>
+
+                                    <div className="text-muted-foreground mt-10 text-[11px] md:text-xs leading-relaxed max-w-[280px] md:max-w-xs mx-auto">
+                                        <TextEffect preset="fade-in-blur" speedSegment={0.3}>
+                                            Annual License includes: Dedicated Identity Bridge, Full Social Enrichment, and Priority Industrial Lead Routing.
+                                        </TextEffect>
+                                    </div>
+                                </div>
+
+                                {/* RIGHT COLUMN: Features */}
+                                <div className="p-8 md:p-12 bg-zinc-50/50 dark:bg-zinc-900/10">
+                                    <AnimatedGroup variants={transitionVariants} className="space-y-8">
+                                        <ul role="list" className="space-y-5">
+                                            {[
+                                                'Real-time identity resolution for SA and International traffic',
+                                                'Weekly "Hot Lead" reports delivered to your inbox',
+                                                'LinkedIn & Corporate Email enrichment',
+                                                'POPIA-compliant visitor consent management',
+                                                'Industrial-sector automated nurture sequence'
+                                            ].map((item, index) => (
+                                                <li key={index} className="flex items-start gap-3">
+                                                    <Check className="size-4 text-primary mt-1 shrink-0" />
+                                                    <span className="text-sm md:text-base font-medium leading-snug">{item}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        <div className="text-muted-foreground text-xs md:text-sm leading-relaxed border-t pt-8 italic">
+                                            "Designed for firms that measure success in multi-million Rand contracts, not clicks."
+                                        </div>
+                                    </AnimatedGroup>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </>
+    )
+}
+</file>
+
 <file path="frontend/src/components/sections/about/about-cta.tsx">
 // @/components/sections/about/about-cta.tsx
 import { Button } from '@/components/ui/button'
@@ -6593,96 +6725,6 @@ Routes are explicitly registered in app/main.py to prevent circular dependency c
 """
 </file>
 
-<file path="backend/app/core/scheduler.py">
-# backend/app/core/scheduler.py
-import logging
-from datetime import datetime, timezone
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from sqlmodel import select
-from app.db import async_session_maker
-from app.models.company import Company
-from app.models.department import Department
-from app.services.enrichment import get_departmental_intelligence
-
-logger = logging.getLogger("uvicorn")
-
-async def run_enrichment_cycle():
-    """
-    Industrial Async Enrichment Task:
-    Maps corporate departments for captured Juristic Entities via Apollo.io.
-    """
-    if not async_session_maker:
-        logger.error("❌ Scheduler Enrichment Cycle: Aborted. Async Database Engine not initialized.")
-        return
-
-    async with async_session_maker() as session:
-        try:
-            # Locate target companies requiring deep intelligence routing
-            statement = select(Company).where(Company.domain != None)
-            result = await session.execute(statement)
-            companies = result.scalars().all()
-
-            for company in companies:
-                try:
-                    # 🛡️ CREDIT WASTE GATE:
-                    # Verify if this company already possesses parsed industrial department layers.
-                    dept_stmt = select(Department).where(Department.company_id == company.id)
-                    dept_result = await session.execute(dept_stmt)
-                    existing_dept = dept_result.scalars().first()
-                    
-                    if existing_dept:
-                        # Skip execution block to preserve Apollo/Enrichment API token allocation
-                        continue
-
-                    logger.info(f"🔍 Forensic Enrichment: Querying {company.name} [{company.domain}]")
-                    
-                    # Direct async execution without breaking loop state or threading overhead
-                    depts_data = await get_departmental_intelligence(company.domain)
-                    
-                    if not depts_data:
-                        logger.info(f"ℹ️ Operational Intelligence: No structural departments identified for {company.domain}")
-                        continue
-
-                    for dept in depts_data:
-                        new_dept = Department(
-                            company_id=company.id,
-                            name=dept.get('name', 'General'),
-                            email=dept.get('email'),
-                            phone=dept.get('phone'),
-                            head_of_dept_linkedin=dept.get('head_of_dept_linkedin')
-                        )
-                        session.add(new_dept)
-                    
-                    # Commit updates per juristic node to keep database logs interactive and up to date
-                    await session.commit()
-                    logger.info(f"✅ Structural Map Saved: Tied {len(depts_data)} departments to {company.name}")
-
-                except Exception as inner_error:
-                    await session.rollback()
-                    logger.error(f"❌ Structural Mapping Failure for {company.name}: {inner_error}")
-
-        except Exception as global_error:
-            logger.error(f"❌ Global Enrichment Pipeline Exception: {global_error}")
-
-def start_scheduler():
-    """
-    Initializes the Asynchronous AuraWorks Background Engine Pipeline.
-    """
-    scheduler = AsyncIOScheduler()
-    
-    # Ingest target juristic entities every hour for firmographic lead enrichment
-    scheduler.add_job(
-        run_enrichment_cycle, 
-        'interval', 
-        hours=1, 
-        id='industrial_enrichment',
-        replace_existing=True
-    )
-    
-    scheduler.start()
-    logger.info("🚀 AuraWorks Async Scheduler: Online. Structural enrichment loop active.")
-</file>
-
 <file path="backend/app/models/department.py">
 from typing import Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
@@ -7266,138 +7308,6 @@ export default function Footer() {
 }
 </file>
 
-<file path="frontend/src/components/pricing/pricing.tsx">
-'use client'
-
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Check } from 'lucide-react'
-import Link from 'next/link'
-import { HeroHeader } from '../header/header'
-import { TextEffect } from '../ui/text-effect'
-import { AnimatedGroup } from '../ui/animated-group'
-
-const transitionVariants = {
-    item: {
-        hidden: { opacity: 0, filter: 'blur(12px)', y: 12 },
-        visible: {
-            opacity: 1,
-            filter: 'blur(0px)',
-            y: 0,
-            transition: { type: 'spring', bounce: 0.3, duration: 1.5 },
-        },
-    },
-} as const;
-
-export default function Pricing() {
-    const [hasMounted, setHasMounted] = useState(false);
-
-    useEffect(() => {
-        setHasMounted(true);
-    }, []);
-
-    if (!hasMounted) {
-        return <div className="sr-only">AuraWorks Pricing - R120k/yr Annual Engine</div>;
-    }
-
-    return (
-        <>
-            <HeroHeader />
-            <div className="relative py-12 md:py-32">
-                <div className="mx-auto max-w-5xl px-4 md:px-6">
-                    <div className="mx-auto max-w-2xl text-center">
-                        <h2 className="text-balance text-3xl font-bold md:text-4xl lg:text-5xl leading-tight">
-                            <TextEffect preset="fade-in-blur" speedSegment={0.3}>
-                                Deploy Your Industrial Growth Engine
-                            </TextEffect>
-                        </h2>
-                        <div className="text-muted-foreground mt-6 text-base md:text-lg px-2">
-                            <AnimatedGroup variants={transitionVariants}>
-                                One year of unmasked revenue. Total visibility into the construction, mining, logistics, and manufacturing firms visiting your site.
-                            </AnimatedGroup>
-                        </div>
-                    </div>
-
-                    <div className="mt-12 md:mt-20">
-                        {/* Added overflow-hidden to prevent layout shift */}
-                        <div className="bg-card relative rounded-3xl border shadow-2xl shadow-zinc-950/5 overflow-hidden">
-                            <div className="grid items-center gap-0 md:gap-12 divide-y md:grid-cols-2 md:divide-x md:divide-y-0">
-                                
-                                {/* LEFT COLUMN: Pricing & CTA */}
-                                <div className="p-8 md:p-12 text-center">
-                                    <div className="text-xl md:text-2xl font-semibold italic">
-                                        <AnimatedGroup variants={transitionVariants}>
-                                            AuraWorks Annual Engine
-                                        </AnimatedGroup>
-                                    </div>
-
-                                    <AnimatedGroup variants={transitionVariants}>
-                                        {/* FIX: break-words and responsive text size */}
-                                        <div className="mt-3 text-[10px] md:text-sm text-muted-foreground uppercase tracking-[0.2em] break-words">
-                                            Enterprise Sales Intelligence
-                                        </div>
-                                    </AnimatedGroup>
-
-                                    <AnimatedGroup variants={transitionVariants}>
-                                        {/* FIX: Fluid pricing text to prevent overflow */}
-                                        <div className="mb-8 mt-10 inline-flex items-baseline font-bold">
-                                            <span className="text-2xl md:text-4xl font-medium text-foreground mr-1">R</span>
-                                            <span className="text-5xl md:text-7xl tracking-tighter">120k</span>
-                                            <span className="text-base md:text-lg font-normal text-muted-foreground ml-1">/yr</span>
-                                        </div>
-                                    </AnimatedGroup>
-
-                                    <div className="flex justify-center w-full">
-                                        <AnimatedGroup variants={transitionVariants} className="w-full md:w-auto">
-                                            <Button
-                                                asChild
-                                                size="lg"
-                                                className="w-full md:w-auto px-10 py-7 text-base md:text-lg font-medium tracking-tight shadow-xl">
-                                                <Link href="/get-started">Request Enterprise Access</Link>
-                                            </Button>
-                                        </AnimatedGroup>
-                                    </div>
-
-                                    <div className="text-muted-foreground mt-10 text-[11px] md:text-xs leading-relaxed max-w-[280px] md:max-w-xs mx-auto">
-                                        <TextEffect preset="fade-in-blur" speedSegment={0.3}>
-                                            Annual License includes: Dedicated Identity Bridge, Full Social Enrichment, and Priority Industrial Lead Routing.
-                                        </TextEffect>
-                                    </div>
-                                </div>
-
-                                {/* RIGHT COLUMN: Features */}
-                                <div className="p-8 md:p-12 bg-zinc-50/50 dark:bg-zinc-900/10">
-                                    <AnimatedGroup variants={transitionVariants} className="space-y-8">
-                                        <ul role="list" className="space-y-5">
-                                            {[
-                                                'Real-time identity resolution for SA and International traffic',
-                                                'Weekly "Hot Lead" reports delivered to your inbox',
-                                                'LinkedIn & Corporate Email enrichment',
-                                                'POPIA-compliant visitor consent management',
-                                                'Industrial-sector automated nurture sequence'
-                                            ].map((item, index) => (
-                                                <li key={index} className="flex items-start gap-3">
-                                                    <Check className="size-4 text-primary mt-1 shrink-0" />
-                                                    <span className="text-sm md:text-base font-medium leading-snug">{item}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                        <div className="text-muted-foreground text-xs md:text-sm leading-relaxed border-t pt-8 italic">
-                                            "Designed for firms that measure success in multi-million Rand contracts, not clicks."
-                                        </div>
-                                    </AnimatedGroup>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </>
-    )
-}
-</file>
-
 <file path="frontend/src/components/sections/features/features-hero.tsx">
 // 
 'use client'
@@ -7765,6 +7675,96 @@ async def get_lead_intelligence(
     except Exception as e:
         logger.error(f"🚨 Intelligence Retrieval Failure: {e}")
         raise HTTPException(status_code=500, detail="Intelligence Engine Offline")
+</file>
+
+<file path="backend/app/core/scheduler.py">
+# backend/app/core/scheduler.py
+import logging
+from datetime import datetime, timezone
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from sqlmodel import select
+from app.db import async_session_maker
+from app.models.company import Company
+from app.models.department import Department
+from app.services.enrichment import get_departmental_intelligence
+
+logger = logging.getLogger("uvicorn")
+
+async def run_enrichment_cycle():
+    """
+    Industrial Async Enrichment Task:
+    Maps corporate departments for captured Juristic Entities via Apollo.io.
+    """
+    if not async_session_maker:
+        logger.error("❌ Scheduler Enrichment Cycle: Aborted. Async Database Engine not initialized.")
+        return
+
+    async with async_session_maker() as session:
+        try:
+            # Locate target companies requiring deep intelligence routing
+            statement = select(Company).where(Company.domain != None)
+            result = await session.execute(statement)
+            companies = result.scalars().all()
+
+            for company in companies:
+                try:
+                    # 🛡️ CREDIT WASTE GATE:
+                    # Verify if this company already possesses parsed industrial department layers.
+                    dept_stmt = select(Department).where(Department.company_id == company.id)
+                    dept_result = await session.execute(dept_stmt)
+                    existing_dept = dept_result.scalars().first()
+                    
+                    if existing_dept:
+                        # Skip execution block to preserve Apollo/Enrichment API token allocation
+                        continue
+
+                    logger.info(f"🔍 Forensic Enrichment: Querying {company.name} [{company.domain}]")
+                    
+                    # Direct async execution without breaking loop state or threading overhead
+                    depts_data = await get_departmental_intelligence(company.domain)
+                    
+                    if not depts_data:
+                        logger.info(f"ℹ️ Operational Intelligence: No structural departments identified for {company.domain}")
+                        continue
+
+                    for dept in depts_data:
+                        new_dept = Department(
+                            company_id=company.id,
+                            name=dept.get('name', 'General'),
+                            email=dept.get('email'),
+                            phone=dept.get('phone'),
+                            head_of_dept_linkedin=dept.get('head_of_dept_linkedin')
+                        )
+                        session.add(new_dept)
+                    
+                    # Commit updates per juristic node to keep database logs interactive and up to date
+                    await session.commit()
+                    logger.info(f"✅ Structural Map Saved: Tied {len(depts_data)} departments to {company.name}")
+
+                except Exception as inner_error:
+                    await session.rollback()
+                    logger.error(f"❌ Structural Mapping Failure for {company.name}: {inner_error}")
+
+        except Exception as global_error:
+            logger.error(f"❌ Global Enrichment Pipeline Exception: {global_error}")
+
+def start_scheduler():
+    """
+    Initializes the Asynchronous AuraWorks Background Engine Pipeline.
+    """
+    scheduler = AsyncIOScheduler()
+    
+    # Ingest target juristic entities every hour for firmographic lead enrichment
+    scheduler.add_job(
+        run_enrichment_cycle, 
+        'interval', 
+        hours=1, 
+        id='industrial_enrichment',
+        replace_existing=True
+    )
+    
+    scheduler.start()
+    logger.info("🚀 AuraWorks Async Scheduler: Online. Structural enrichment loop active.")
 </file>
 
 <file path="backend/app/services/airtable.py">
@@ -8506,181 +8506,6 @@ async def send_waitlist_success_email(recipient_email: str, recipient_name: Opti
     )
 </file>
 
-<file path="backend/app/tasks/janitor.py">
-# backend/app/tasks/janitor.py
-import logging
-from datetime import datetime, timedelta, timezone
-from sqlmodel import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.db import async_engine
-from app.models.visit import Visit
-from app.models.waitlist import WaitlistLead
-
-logger = logging.getLogger("uvicorn")
-
-async def cleanup_unverified_visits():
-    """
-    The Industrial Janitor: Purges residential/bot noise while 
-    protecting high-intent leads and the 'Ghost Bridge'.
-    """
-    logger.info("🧹 AuraWorks OS: Activating 48-hour Janitor Sweep...")
-    
-    if not async_engine:
-        logger.error("❌ Janitor Sweep aborted: Async Database Engine not initialized.")
-        return
-
-    # 1. Define the 'Noise' Threshold (48 hours)
-    # Allows a window for 'Late Promotion' via the Banner/Waitlist.
-    threshold = datetime.now(timezone.utc) - timedelta(hours=48)
-    
-    # Use the async_engine explicitly for background worker execution
-    async with AsyncSession(async_engine) as session:
-        try:
-            # 2. Identify 'Verifying' records older than the threshold
-            statement = select(Visit).where(
-                Visit.verification_status == "verifying",
-                Visit.created_at < threshold
-            )
-            result = await session.execute(statement)
-            candidates = result.scalars().all()
-            
-            if not candidates:
-                logger.info("✅ Janitor: Forensic vault is already optimized.")
-                return
-
-            purged_count = 0
-            promoted_count = 0
-
-            for visit in candidates:
-                # 3. SAFETY CHECK: The 'Waitlist Shield'
-                # If an aura_id has a matching WaitlistLead, we promote the visit.
-                # This ensures forensic data is saved for anyone who interacted with the banner.
-                lead_stmt = select(WaitlistLead).where(WaitlistLead.aura_id == visit.aura_id)
-                lead_res = await session.execute(lead_stmt)
-                has_lead = lead_res.scalars().first()
-                
-                if has_lead:
-                    # Upgrade the visit status: Shielded from future purges
-                    visit.verification_status = "verified"
-                    if has_lead.company_id:
-                        visit.company_id = has_lead.company_id
-                    
-                    session.add(visit)
-                    promoted_count += 1
-                    continue
-
-                # 4. Final Purge for actual noise (Residential/Bot traffic)
-                await session.delete(visit)
-                purged_count += 1
-
-            await session.commit()
-            logger.info(
-                f"🗑️ Janitor: Purged {purged_count} noise signatures. "
-                f"🛡️ Promoted {promoted_count} high-intent visits. Vault optimized."
-            )
-
-        except Exception as e:
-            await session.rollback()
-            logger.error(f"🚨 Janitor Failure: {e}")
-</file>
-
-<file path="backend/app/db.py">
-# backend/app/db.py
-import logging
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
-from sqlmodel import SQLModel, create_engine, Session
-from app.core.config import settings
-
-logger = logging.getLogger("uvicorn")
-
-# --- ENGINE INITIALIZATION ---
-
-# 1. Synchronous Engine (For Migrations and Admin Dashboards)
-# Converts asyncpg URL to standard postgresql if necessary
-sync_url = settings.DATABASE_URL
-if sync_url and "postgresql+asyncpg://" in sync_url:
-    sync_url = sync_url.replace("postgresql+asyncpg://", "postgresql://")
-
-if sync_url:
-    engine = create_engine(
-        sync_url,
-        echo=False,
-        pool_pre_ping=True, # Critical for Railway idle connection recovery
-        pool_size=10,
-        max_overflow=20
-    )
-else:
-    logger.critical("🚨 DATABASE_URL missing. System entering Fail-Fast mode.")
-    engine = None
-
-# 2. Asynchronous Engine (For Forensic Tracking, Janitor Cycles & Identity API)
-# Ensures the URL uses the required +asyncpg driver explicitly
-async_url = settings.DATABASE_URL
-if async_url and async_url.startswith("postgresql://"):
-    async_url = async_url.replace("postgresql://", "postgresql+asyncpg://")
-
-if async_url:
-    async_engine = create_async_engine(
-        async_url,
-        echo=False,
-        pool_pre_ping=True,
-        pool_size=10,
-        max_overflow=20
-    )
-    async_session_maker = sessionmaker(
-        async_engine, class_=AsyncSession, expire_on_commit=False
-    )
-else:
-    async_engine = None
-    async_session_maker = None
-
-
-# --- INITIALIZATION & DEPENDENCIES ---
-
-def init_db():
-    """
-    Schema Synchronization.
-    Note: Standardizes the ledger. Production uses Alembic for migrations.
-    """
-    if not engine:
-        logger.error("❌ init_db: Operation aborted. No database linked.")
-        return
-
-    try:
-        # Explicit imports to register models with SQLModel.metadata
-        from app.models.client import Client
-        from app.models.company import Company
-        from app.models.visit import Visit
-        from app.models.waitlist import WaitlistLead
-        from app.models.pageview import PageView
-        
-        SQLModel.metadata.create_all(engine)
-        logger.info("✅ Database Ledger: Connection established and tables verified.")
-    except Exception as e:
-        logger.error(f"❌ Database Ledger: Sync failure: {e}")
-
-async def get_async_session() -> AsyncSession:
-    """
-    Dependency generator for Async FastAPI routes (Tracking/Identity).
-    """
-    if not async_session_maker:
-        raise ConnectionError("Async Database Engine not initialized. Check asyncpg installation.")
-    
-    async with async_session_maker() as session:
-        yield session
-
-def get_session():
-    """
-    Dependency generator for Synchronous routes (Admin/Dashboard).
-    """
-    if not engine:
-        raise ConnectionError("Synchronous Database Engine not initialized.")
-        
-    with Session(engine) as session:
-        yield session
-</file>
-
 <file path="frontend/src/app/dashboard/page.tsx">
 "use client";
 
@@ -9186,6 +9011,10 @@ export async function submitToWaitlist(formData: any) {
      */
     const endpoint = getEndpoint('api/v1/waitlist/join');
 
+    // Fetch the client/tenant configuration key safely from environment bindings or window space
+    const clientId = process.env.NEXT_PUBLIC_WAITLIST_API_KEY || 
+                     (typeof window !== 'undefined' ? (window as any).AURA_AGENCY_ID : null);
+
     try {
         const response = await fetch(endpoint, {
             method: 'POST',
@@ -9194,6 +9023,11 @@ export async function submitToWaitlist(formData: any) {
             },
             body: JSON.stringify({
                 ...formData,
+                /**
+                 * THE TENANT ANCHOR:
+                 * Explicitly assigns client_id to satisfy backend validation criteria.
+                 */
+                client_id: clientId,
                 /**
                  * THE STITCH:
                  * Automatically grab the aura_id (forensic signature) from storage.
@@ -9371,143 +9205,179 @@ async def resolve_identity(
     return {"status": "new_identity", "message": "Forensic profile initialized."}
 </file>
 
-<file path="backend/app/services/notifications.py">
-# backend/app/services/notifications.py
+<file path="backend/app/tasks/janitor.py">
+# backend/app/tasks/janitor.py
 import logging
-import httpx
+from datetime import datetime, timedelta, timezone
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db import async_engine
+from app.models.visit import Visit
+from app.models.waitlist import WaitlistLead
+
+logger = logging.getLogger("uvicorn")
+
+async def cleanup_unverified_visits():
+    """
+    The Industrial Janitor: Purges residential/bot noise while 
+    protecting high-intent leads and the 'Ghost Bridge'.
+    """
+    logger.info("🧹 AuraWorks OS: Activating 48-hour Janitor Sweep...")
+    
+    if not async_engine:
+        logger.error("❌ Janitor Sweep aborted: Async Database Engine not initialized.")
+        return
+
+    # 1. Define the 'Noise' Threshold (48 hours)
+    # Allows a window for 'Late Promotion' via the Banner/Waitlist.
+    threshold = datetime.now(timezone.utc) - timedelta(hours=48)
+    
+    # Use the async_engine explicitly for background worker execution
+    async with AsyncSession(async_engine) as session:
+        try:
+            # 2. Identify 'Verifying' records older than the threshold
+            statement = select(Visit).where(
+                Visit.verification_status == "verifying",
+                Visit.created_at < threshold
+            )
+            result = await session.execute(statement)
+            candidates = result.scalars().all()
+            
+            if not candidates:
+                logger.info("✅ Janitor: Forensic vault is already optimized.")
+                return
+
+            purged_count = 0
+            promoted_count = 0
+
+            for visit in candidates:
+                # 3. SAFETY CHECK: The 'Waitlist Shield'
+                # If an aura_id has a matching WaitlistLead, we promote the visit.
+                # This ensures forensic data is saved for anyone who interacted with the banner.
+                lead_stmt = select(WaitlistLead).where(WaitlistLead.aura_id == visit.aura_id)
+                lead_res = await session.execute(lead_stmt)
+                has_lead = lead_res.scalars().first()
+                
+                if has_lead:
+                    # Upgrade the visit status: Shielded from future purges
+                    visit.verification_status = "verified"
+                    if has_lead.company_id:
+                        visit.company_id = has_lead.company_id
+                    
+                    session.add(visit)
+                    promoted_count += 1
+                    continue
+
+                # 4. Final Purge for actual noise (Residential/Bot traffic)
+                await session.delete(visit)
+                purged_count += 1
+
+            await session.commit()
+            logger.info(
+                f"🗑️ Janitor: Purged {purged_count} noise signatures. "
+                f"🛡️ Promoted {promoted_count} high-intent visits. Vault optimized."
+            )
+
+        except Exception as e:
+            await session.rollback()
+            logger.error(f"🚨 Janitor Failure: {e}")
+</file>
+
+<file path="backend/app/db.py">
+# backend/app/db.py
+import logging
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+from sqlmodel import SQLModel, create_engine, Session
 from app.core.config import settings
 
 logger = logging.getLogger("uvicorn")
 
-# --- PHASE 01: The #visit Channel (Industrial Pager) ---
+# --- ENGINE INITIALIZATION ---
 
-async def post_to_visit_channel(visit_data: dict, journey: dict):
+# 1. Synchronous Engine (For Migrations and Admin Dashboards)
+# Converts asyncpg URL to standard postgresql if necessary
+sync_url = settings.DATABASE_URL
+if sync_url and "postgresql+asyncpg://" in sync_url:
+    sync_url = sync_url.replace("postgresql+asyncpg://", "postgresql://")
+
+if sync_url:
+    engine = create_engine(
+        sync_url,
+        echo=False,
+        pool_pre_ping=True, # Critical for Railway idle connection recovery
+        pool_size=10,
+        max_overflow=20
+    )
+else:
+    logger.critical("🚨 DATABASE_URL missing. System entering Fail-Fast mode.")
+    engine = None
+
+# 2. Asynchronous Engine (For Forensic Tracking, Janitor Cycles & Identity API)
+# Ensures the URL uses the required +asyncpg driver explicitly
+async_url = settings.DATABASE_URL
+if async_url and async_url.startswith("postgresql://"):
+    async_url = async_url.replace("postgresql://", "postgresql+asyncpg://")
+
+if async_url:
+    async_engine = create_async_engine(
+        async_url,
+        echo=False,
+        pool_pre_ping=True,
+        pool_size=10,
+        max_overflow=20
+    )
+    async_session_maker = sessionmaker(
+        async_engine, class_=AsyncSession, expire_on_commit=False
+    )
+else:
+    async_engine = None
+    async_session_maker = None
+
+
+# --- INITIALIZATION & DEPENDENCIES ---
+
+def init_db():
     """
-    High-speed Signal for the #visit channel.
-    Only triggers for High-Confidence (>= 0.5) or Verified traffic.
+    Schema Synchronization.
+    Note: Standardizes the ledger. Production uses Alembic for migrations.
     """
-    if not settings.SLACK_VISIT_WEBHOOK_URL:
+    if not engine:
+        logger.error("❌ init_db: Operation aborted. No database linked.")
         return
 
-    # SPRINT B FILTER: Stop notification fatigue from residential noise
-    confidence = visit_data.get("confidence_score", 0.0)
-    if confidence < 0.5 and not visit_data.get("is_verified", False):
-        logger.info(f"🤫 Noise Suppression: Skip Slack for {visit_data.get('aura_id', 'UNKNOWN')[:8]} (Score: {confidence})")
-        return
+    try:
+        # Explicit imports to register models with SQLModel.metadata
+        from app.models.client import Client
+        from app.models.company import Company
+        from app.models.visit import Visit
+        from app.models.waitlist import WaitlistLead
+        from app.models.pageview import PageView
+        
+        SQLModel.metadata.create_all(engine)
+        logger.info("✅ Database Ledger: Connection established and tables verified.")
+    except Exception as e:
+        logger.error(f"❌ Database Ledger: Sync failure: {e}")
 
-    cluster_count = journey.get("cluster_count", 1)
-    is_corporate_cluster = cluster_count >= 3
-    
-    # Industrial Visual Indicators: Clean & Clinical
-    emoji = "🏢" if is_corporate_cluster else "🏭"
-    header = f"{emoji} Corporate Cluster" if is_corporate_cluster else f"{emoji} Industrial Facility"
-
-    # Fallbacks derived gracefully from centralized settings
-    airtable_base = getattr(settings, "AIRTABLE_BASE_ID", "")
-    notion_db = getattr(settings, "NOTION_DATABASE_ID", "")
-    
-    airtable_url = f"https://airtable.com/{airtable_base}" if airtable_base else "#"
-    notion_url = f"https://www.notion.so/{notion_db}" if notion_db else "#"
-
-    payload = {
-        "blocks": [
-            {
-                "type": "header",
-                "text": {"type": "plain_text", "text": header}
-            },
-            {
-                "type": "section",
-                "fields": [
-                    {"type": "mrkdwn", "text": f"*Entity:*\n{visit_data.get('company_name', 'Anonymous Entity')}"},
-                    {"type": "mrkdwn", "text": f"*Confidence:*\n`{int(confidence * 100)}%`"},
-                    {"type": "mrkdwn", "text": f"*Attribution:*\n{visit_data.get('utm_source', 'Direct')} / {visit_data.get('utm_medium', 'None')}"},
-                    {"type": "mrkdwn", "text": f"*Intent Score:*\n{journey.get('intent_score', 'Audit Pending')}"}
-                ]
-            },
-            {
-                "type": "context",
-                "elements": [
-                    {"type": "mrkdwn", "text": f"📍 Forensic Lock: `{visit_data.get('aura_id', 'UNKNOWN')[:8]}` | Location: {visit_data.get('city', 'Unknown')}, {visit_data.get('region', 'ZA')}"}
-                ]
-            }
-        ]
-    }
-
-    if airtable_base or notion_db:
-        actions_block = {"type": "actions", "elements": []}
-        if airtable_base:
-            actions_block["elements"].append({
-                "type": "button",
-                "text": {"type": "plain_text", "text": "Airtable CRM"},
-                "url": airtable_url,
-                "style": "primary"
-            })
-        if notion_db:
-            actions_block["elements"].append({
-                "type": "button",
-                "text": {"type": "plain_text", "text": "Notion Vault"},
-                "url": notion_url
-            })
-        payload["blocks"].append(actions_block)
-
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(settings.SLACK_VISIT_WEBHOOK_URL, json=payload, timeout=10.0)
-            response.raise_for_status()
-        except Exception as e:
-            logger.error(f"Visit Channel Pager Failure: {e}")
-
-# --- PHASE 02: Lead Notifications (Identity Promotion) ---
-
-async def post_to_slack(lead_data: dict, journey: dict = None):
+async def get_async_session() -> AsyncSession:
     """
-    Standard lead notification for identified conversions (Promotion).
+    Dependency generator for Async FastAPI routes (Tracking/Identity).
     """
-    if not settings.SLACK_WEBHOOK_URL:
-        return
-
-    journey = journey or {}
-    status_emoji = "💎"
-    notion_db = getattr(settings, "NOTION_DATABASE_ID", "")
-    notion_url = f"https://www.notion.so/{notion_db}" if notion_db else "#"
-
-    payload = {
-        "blocks": [
-            {
-                "type": "header",
-                "text": {"type": "plain_text", "text": f"{status_emoji} Identity Promoted"}
-            },
-            {
-                "type": "section",
-                "fields": [
-                    {"type": "mrkdwn", "text": f"*Entity:*\n{lead_data.get('company_name_final', 'Anonymous Entity')}"},
-                    {"type": "mrkdwn", "text": f"*Lead:*\n{lead_data.get('name')} ({lead_data.get('email')})"},
-                    {"type": "mrkdwn", "text": f"*Capture Source:*\n`{lead_data.get('capture_source', 'Verification')}`"},
-                    {"type": "mrkdwn", "text": f"*Pathway:*\n{journey.get('pathway', 'Direct Entry')}"}
-                ]
-            }
-        ]
-    }
+    if not async_session_maker:
+        raise ConnectionError("Async Database Engine not initialized. Check asyncpg installation.")
     
-    if notion_db:
-        payload["blocks"].append({
-            "type": "actions",
-            "elements": [
-                {
-                    "type": "button",
-                    "text": {"type": "plain_text", "text": "Read Full Audit"},
-                    "url": notion_url,
-                    "style": "primary"
-                }
-            ]
-        })
-    
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(settings.SLACK_WEBHOOK_URL, json=payload, timeout=10.0)
-            response.raise_for_status()
-        except Exception as e:
-            logger.error(f"Lead Channel Dispatch Failure: {e}")
+    async with async_session_maker() as session:
+        yield session
+
+def get_session():
+    """
+    Dependency generator for Synchronous routes (Admin/Dashboard).
+    """
+    if not engine:
+        raise ConnectionError("Synchronous Database Engine not initialized.")
+        
+    with Session(engine) as session:
+        yield session
 </file>
 
 <file path="structure.md">
@@ -9715,6 +9585,145 @@ class Company(SQLModel, table=True):
             onupdate=sa.func.now()
         )
     )
+</file>
+
+<file path="backend/app/services/notifications.py">
+# backend/app/services/notifications.py
+import logging
+import httpx
+from app.core.config import settings
+
+logger = logging.getLogger("uvicorn")
+
+# --- PHASE 01: The #visit Channel (Industrial Pager) ---
+
+async def post_to_visit_channel(visit_data: dict, journey: dict):
+    """
+    High-speed Signal for the #visit channel.
+    Only triggers for High-Confidence (>= 0.5) or Verified traffic.
+    """
+    if not settings.SLACK_VISIT_WEBHOOK_URL:
+        return
+
+    # SPRINT B FILTER: Stop notification fatigue from residential noise
+    confidence = visit_data.get("confidence_score", 0.0)
+    if confidence < 0.5 and not visit_data.get("is_verified", False):
+        logger.info(f"🤫 Noise Suppression: Skip Slack for {visit_data.get('aura_id', 'UNKNOWN')[:8]} (Score: {confidence})")
+        return
+
+    cluster_count = journey.get("cluster_count", 1)
+    is_corporate_cluster = cluster_count >= 3
+    
+    # Industrial Visual Indicators: Clean & Clinical
+    emoji = "🏢" if is_corporate_cluster else "🏭"
+    header = f"{emoji} Corporate Cluster" if is_corporate_cluster else f"{emoji} Industrial Facility"
+
+    # Fallbacks derived gracefully from centralized settings
+    airtable_base = getattr(settings, "AIRTABLE_BASE_ID", "")
+    notion_db = getattr(settings, "NOTION_DATABASE_ID", "")
+    
+    airtable_url = f"https://airtable.com/{airtable_base}" if airtable_base else "#"
+    notion_url = f"https://www.notion.so/{notion_db}" if notion_db else "#"
+
+    payload = {
+        "blocks": [
+            {
+                "type": "header",
+                "text": {"type": "plain_text", "text": header}
+            },
+            {
+                "type": "section",
+                "fields": [
+                    {"type": "mrkdwn", "text": f"*Entity:*\n{visit_data.get('company_name', 'Anonymous Entity')}"},
+                    {"type": "mrkdwn", "text": f"*Confidence:*\n`{int(confidence * 100)}%`"},
+                    {"type": "mrkdwn", "text": f"*Attribution:*\n{visit_data.get('utm_source', 'Direct')} / {visit_data.get('utm_medium', 'None')}"},
+                    {"type": "mrkdwn", "text": f"*Intent Score:*\n{journey.get('intent_score', 'Audit Pending')}"}
+                ]
+            },
+            {
+                "type": "context",
+                "elements": [
+                    {"type": "mrkdwn", "text": f"📍 Forensic Lock: `{visit_data.get('aura_id', 'UNKNOWN')[:8]}` | Location: {visit_data.get('city', 'Unknown')}, {visit_data.get('region', 'ZA')}"}
+                ]
+            }
+        ]
+    }
+
+    if airtable_base or notion_db:
+        actions_block = {"type": "actions", "elements": []}
+        if airtable_base:
+            actions_block["elements"].append({
+                "type": "button",
+                "text": {"type": "plain_text", "text": "Airtable CRM"},
+                "url": airtable_url,
+                "style": "primary"
+            })
+        if notion_db:
+            actions_block["elements"].append({
+                "type": "button",
+                "text": {"type": "plain_text", "text": "Notion Vault"},
+                "url": notion_url
+            })
+        payload["blocks"].append(actions_block)
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(settings.SLACK_VISIT_WEBHOOK_URL, json=payload, timeout=10.0)
+            response.raise_for_status()
+        except Exception as e:
+            logger.error(f"Visit Channel Pager Failure: {e}")
+
+# --- PHASE 02: Lead Notifications (Identity Promotion) ---
+
+async def post_to_slack(lead_data: dict, journey: dict = None):
+    """
+    Standard lead notification for identified conversions (Promotion).
+    """
+    if not settings.SLACK_WEBHOOK_URL:
+        return
+
+    journey = journey or {}
+    status_emoji = "💎"
+    notion_db = getattr(settings, "NOTION_DATABASE_ID", "")
+    notion_url = f"https://www.notion.so/{notion_db}" if notion_db else "#"
+
+    payload = {
+        "blocks": [
+            {
+                "type": "header",
+                "text": {"type": "plain_text", "text": f"{status_emoji} Identity Promoted"}
+            },
+            {
+                "type": "section",
+                "fields": [
+                    {"type": "mrkdwn", "text": f"*Entity:*\n{lead_data.get('company_name_final', 'Anonymous Entity')}"},
+                    {"type": "mrkdwn", "text": f"*Lead:*\n{lead_data.get('name')} ({lead_data.get('email')})"},
+                    {"type": "mrkdwn", "text": f"*Capture Source:*\n`{lead_data.get('capture_source', 'Verification')}`"},
+                    {"type": "mrkdwn", "text": f"*Pathway:*\n{journey.get('pathway', 'Direct Entry')}"}
+                ]
+            }
+        ]
+    }
+    
+    if notion_db:
+        payload["blocks"].append({
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "Read Full Audit"},
+                    "url": notion_url,
+                    "style": "primary"
+                }
+            ]
+        })
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(settings.SLACK_WEBHOOK_URL, json=payload, timeout=10.0)
+            response.raise_for_status()
+        except Exception as e:
+            logger.error(f"Lead Channel Dispatch Failure: {e}")
 </file>
 
 <file path="backend/app/models/pageview.py">
@@ -10706,77 +10715,6 @@ export default function GetStartedPage() {
 }
 </file>
 
-<file path="backend/app/core/config.py">
-# backend/app/core/config.py
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional, List
-
-class Settings(BaseSettings):
-    # --- APP SETTINGS ---
-    PROJECT_NAME: str = "AuraWorks Industrial Intelligence OS"
-    VERSION: str = "3.2.1"  # Forensic v3.2.1 Async Support
-    API_V1_STR: str = "/api/v1"
-
-    # --- SECURITY & AUTH ---
-    # Formal authentication for the industrial dashboard
-    ADMIN_API_KEY: str = "change-me-in-production" 
-    SECRET_KEY: Optional[str] = None  
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 11520  # 8 days (matches long-cycle industrial procurement)
-    
-    # --- DATABASE ---
-    # Set to Optional to prevent build-time crashes on platforms like Railway
-    DATABASE_URL: Optional[str] = None 
-    
-    # --- ENRICHMENT TRIAD (National Scaling) ---
-    IPINFO_TOKEN: Optional[str] = None 
-    APOLLO_API_KEY: Optional[str] = None 
-    
-    # --- INTELLIGENCE BRAIN ---
-    DEEPSEEK_API_KEY: Optional[str] = None 
-    
-    # --- THE VAULT (Airtable Sink) ---
-    AIRTABLE_BASE_ID: Optional[str] = None 
-    AIRTABLE_API_KEY: Optional[str] = None
-    AIRTABLE_TABLE_NAME: str = "Forensic_Leads" 
-    
-    # --- PROJECT SPACE (Notion) ---
-    NOTION_DATABASE_ID: Optional[str] = None 
-    NOTION_TOKEN: Optional[str] = None
-
-    # --- NOTIFICATIONS & DISPATCH ---
-    SLACK_WEBHOOK_URL: Optional[str] = None        
-    SLACK_VISIT_WEBHOOK_URL: Optional[str] = None  
-    
-    # --- EXCLUSIVE RESEND EMAIL DISPATCH ENGINE ---
-    RESEND_API_KEY: Optional[str] = None
-    RESEND_FROM_EMAIL: str = "AuraWorks <waitlist@auraworks.co.za>"
-
-    # --- EXTERNAL INTEGRATIONS ---
-    NEXT_PUBLIC_WAITLIST_API_KEY: Optional[str] = None
-    NEXT_PUBLIC_WAITLIST_ID: Optional[str] = None
-
-    # --- CORS SETTINGS (Industrial Perimeter) ---
-    ALLOWED_ORIGINS: List[str] = [
-        "https://industrial-intelligence-xi.vercel.app", 
-        "http://localhost:3000",
-        "https://auraworks.co.za",
-        "https://www.auraworks.co.za",
-        "https://cdn.auraworks.co.za",
-        "https://dynamic-flow-production-a5d6.up.railway.app",
-        "https://industrial-intelligence-git-main-allen-reileys-projects.vercel.app",
-        "https://industrial-intelligence-lttxeot8z-allen-reileys-projects.vercel.app"
-    ]
-
-    # Modern Pydantic V2 Configuration
-    model_config = SettingsConfigDict(
-        env_file=None, # Prevents local .env from overriding production environment vars
-        case_sensitive=True,
-        extra="ignore"  # Prevents crash if extra metadata env vars are passed by Railway
-    )
-
-settings = Settings()
-</file>
-
 <file path="backend/app/services/intelligence.py">
 # backend/app/services/intelligence.py
 import httpx
@@ -10982,6 +10920,77 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
         "is_warm_lead": lead is not None,
         "is_high_intent": is_buying_committee or lead is not None or any(kw in pathway_str.lower() for kw in ["pricing", "audit", "waitlist"])
     }
+</file>
+
+<file path="backend/app/core/config.py">
+# backend/app/core/config.py
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional, List
+
+class Settings(BaseSettings):
+    # --- APP SETTINGS ---
+    PROJECT_NAME: str = "AuraWorks Industrial Intelligence OS"
+    VERSION: str = "3.2.1"  # Forensic v3.2.1 Async Support
+    API_V1_STR: str = "/api/v1"
+
+    # --- SECURITY & AUTH ---
+    # Formal authentication for the industrial dashboard
+    ADMIN_API_KEY: str = "change-me-in-production" 
+    SECRET_KEY: Optional[str] = None  
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 11520  # 8 days (matches long-cycle industrial procurement)
+    
+    # --- DATABASE ---
+    # Set to Optional to prevent build-time crashes on platforms like Railway
+    DATABASE_URL: Optional[str] = None 
+    
+    # --- ENRICHMENT TRIAD (National Scaling) ---
+    IPINFO_TOKEN: Optional[str] = None 
+    APOLLO_API_KEY: Optional[str] = None 
+    
+    # --- INTELLIGENCE BRAIN ---
+    DEEPSEEK_API_KEY: Optional[str] = None 
+    
+    # --- THE VAULT (Airtable Sink) ---
+    AIRTABLE_BASE_ID: Optional[str] = None 
+    AIRTABLE_API_KEY: Optional[str] = None
+    AIRTABLE_TABLE_NAME: str = "Forensic_Leads" 
+    
+    # --- PROJECT SPACE (Notion) ---
+    NOTION_DATABASE_ID: Optional[str] = None 
+    NOTION_TOKEN: Optional[str] = None
+
+    # --- NOTIFICATIONS & DISPATCH ---
+    SLACK_WEBHOOK_URL: Optional[str] = None        
+    SLACK_VISIT_WEBHOOK_URL: Optional[str] = None  
+    
+    # --- EXCLUSIVE RESEND EMAIL DISPATCH ENGINE ---
+    RESEND_API_KEY: Optional[str] = None
+    RESEND_FROM_EMAIL: str = "AuraWorks <waitlist@auraworks.co.za>"
+
+    # --- EXTERNAL INTEGRATIONS ---
+    NEXT_PUBLIC_WAITLIST_API_KEY: Optional[str] = None
+    NEXT_PUBLIC_WAITLIST_ID: Optional[str] = None
+
+    # --- CORS SETTINGS (Industrial Perimeter) ---
+    ALLOWED_ORIGINS: List[str] = [
+        "https://industrial-intelligence-xi.vercel.app", 
+        "http://localhost:3000",
+        "https://auraworks.co.za",
+        "https://www.auraworks.co.za",
+        "https://cdn.auraworks.co.za",
+        "https://dynamic-flow-production-a5d6.up.railway.app",
+        "https://industrial-intelligence-git-main-allen-reileys-projects.vercel.app",
+        "https://industrial-intelligence-lttxeot8z-allen-reileys-projects.vercel.app"
+    ]
+
+    # Modern Pydantic V2 Configuration
+    model_config = SettingsConfigDict(
+        env_file=None, # Prevents local .env from overriding production environment vars
+        case_sensitive=True,
+        extra="ignore"  # Prevents crash if extra metadata env vars are passed by Railway
+    )
+
+settings = Settings()
 </file>
 
 <file path="backend/app/models/waitlist.py">

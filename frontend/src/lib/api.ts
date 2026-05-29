@@ -28,6 +28,10 @@ export async function submitToWaitlist(formData: any) {
      */
     const endpoint = getEndpoint('api/v1/waitlist/join');
 
+    // Fetch the client/tenant configuration key safely from environment bindings or window space
+    const clientId = process.env.NEXT_PUBLIC_WAITLIST_API_KEY || 
+                     (typeof window !== 'undefined' ? (window as any).AURA_AGENCY_ID : null);
+
     try {
         const response = await fetch(endpoint, {
             method: 'POST',
@@ -36,6 +40,11 @@ export async function submitToWaitlist(formData: any) {
             },
             body: JSON.stringify({
                 ...formData,
+                /**
+                 * THE TENANT ANCHOR:
+                 * Explicitly assigns client_id to satisfy backend validation criteria.
+                 */
+                client_id: clientId,
                 /**
                  * THE STITCH:
                  * Automatically grab the aura_id (forensic signature) from storage.
