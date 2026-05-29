@@ -37,7 +37,7 @@ class IdentityPayload(BaseModel):
 async def process_entry_logic(payload: VisitCreate, client_ip: str):
     """
     Main ingestion engine for raw visitor traffic. 
-    Isolated execution context safely handling background mutations.
+    Sequentially blocks notification dispatch until DeepSeek intent has compiled.
     """
     if not async_session_maker:
         logger.error("❌ process_entry_logic: Aborted. Async Database Engine not initialized.")
@@ -88,10 +88,10 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
             await session.commit()
             await session.refresh(db_visit)
 
-            # 4. Intelligence Synthesis & Notification
+            # 4. AWAIT INTELLIGENCE SYNTHESIS (Halts sequential block until DeepSeek finishes)
             journey = await get_visitor_journey(payload.aura_id, session)
             
-            # Map visit properties securely to fit notifications pipeline expects
+            # 5. Pack visit properties securely with full context resolved
             visit_notification_payload = {
                 "aura_id": db_visit.aura_id,
                 "company_name": company.name if company else "Anonymous Entity",
@@ -103,6 +103,7 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
                 "region": enriched_info.get("region", "ZA")
             }
             
+            # 6. Dispatch clear notification package to Slack
             await post_to_visit_channel(visit_notification_payload, journey)
 
         except Exception as e:

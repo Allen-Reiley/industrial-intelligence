@@ -1,7 +1,6 @@
 # backend/app/services/intelligence.py
 import httpx
 import logging
-import asyncio
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Dict, Any
 from sqlmodel import select
@@ -34,6 +33,36 @@ def format_zar(value: str) -> str:
     return f"R{int(clean_value):,}" if clean_value else value
 
 # --- PHASE 01: The Enrichment Engine ---
+
+async def enrich_visitor_data(ip_address: str) -> Dict[str, Any]:
+    """
+    Standardized entry wrapper expected by app/api/v1/track.py.
+    Retrieves and parses firmographic metadata for incoming traffic patterns.
+    """
+    raw_data = await enrich_ip_intel(ip_address)
+    if not raw_data:
+        return {"company_name": "Anonymous Entity", "domain": "unknown.com", "city": "Unknown", "region": "ZA"}
+        
+    # Standardize the IPinfo payload schema out to match the ingestion interface parameters
+    asn_org = raw_data.get("org", "Unknown")
+    company_name = "Anonymous Entity"
+    domain = "unknown.com"
+    
+    # Simple extraction loop to strip typical ASN tags (e.g. "AS37054 AuraWorks (Pty) Ltd")
+    if " " in asn_org:
+        parts = asn_org.split(" ", 1)
+        potential_name = parts[1]
+        if not any(provider in potential_name.lower() for provider in ["telkom", "vodacom", "mtn", "liquid", "mweb"]):
+            company_name = potential_name
+            # Generate dummy domain parameter reference if unavailable from basic IPinfo nodes
+            domain = f"{company_name.lower().replace(' ', '').replace('(pty)ltd', '')}.co.za"
+
+    return {
+        "company_name": raw_data.get("company", {}).get("name") or company_name,
+        "domain": raw_data.get("company", {}).get("domain") or domain,
+        "city": raw_data.get("city", "Unknown"),
+        "region": raw_data.get("region", "ZA")
+    }
 
 async def enrich_ip_intel(ip_address: str) -> Dict[str, Any]:
     """Retrieves corporate metadata for a specific IP."""
@@ -68,7 +97,7 @@ async def analyze_corporate_intent(
     is_cluster: bool = False
 ) -> str:
     """
-    Executes clinical B2B intent analysis via DeepSeek.
+    Executes clinical B2B intent analysis via verified DeepSeek endpoints.
     Identifies if the visitor is an 'Individual Evaluator' or part of a 'Buying Committee'.
     """
     if not settings.DEEPSEEK_API_KEY:
@@ -78,7 +107,7 @@ async def analyze_corporate_intent(
     context_signal = "BUYING COMMITTEE ALERT: 3+ unique devices detected at this facility." if is_cluster else "Individual Facility Entry."
 
     prompt = f"""
-    Analyze B2B industrial traffic for:
+    Analyze B2B industrial traffic profile parameters:
     Entity: {company_name}
     Industry: {industry}
     {persona_signal}
@@ -86,14 +115,15 @@ async def analyze_corporate_intent(
     Context: {context_signal}
 
     Task: Provide a 2-sentence 'Executive Intent Summary'.
-    Tone: Clinical, sophisticated. Identify if this is a high-level decision maker or evaluator.
+    Tone: Clinical, sophisticated, direct, conversational. DO NOT add chat filler text or preambles.
     Labels: 'Discovery', 'Technical Evaluation', or 'Procurement'.
     """
 
     async with httpx.AsyncClient() as client:
         try:
+            # Corrected DeepSeek Base URL path mapping (Stripped out /v1/)
             response = await client.post(
-                "https://api.deepseek.com/v1/chat/completions",
+                "https://api.deepseek.com/chat/completions",
                 headers={
                     "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
                     "Content-Type": "application/json"
@@ -101,12 +131,14 @@ async def analyze_corporate_intent(
                 json={
                     "model": "deepseek-chat",
                     "messages": [{"role": "user", "content": prompt}],
-                    "temperature": 0.2 
+                    "temperature": 0.2
                 },
                 timeout=15.0 
             )
             if response.status_code == 200:
                 return response.json()['choices'][0]['message']['content'].strip()
+            else:
+                logger.error(f"🤖 DeepSeek API returned code {response.status_code}: {response.text}")
         except Exception as e:
             logger.error(f"🤖 DeepSeek Failure: {e}")
     return "Intelligence engine temporarily offline."
@@ -131,12 +163,15 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
 
     last_visit = history[-1]
 
-    # 2. Cluster Detection (72h Facility Window)
-    # Detects if multiple people at the same company are browsing your site.
-    time_limit = datetime.now(timezone.utc) - timedelta(hours=72)
+    # 2. Timezone-Naive DB Parity Safe Guard Check
+    # Ensures database timestamp compatibility to avoid offset runtime crashes
+    time_offset = datetime.now(timezone.utc) - timedelta(hours=72)
+    # Convert safety boundary check to a naive datetime if database field lacks timezone indexing
+    db_compatible_time = time_offset.replace(tzinfo=None)
+
     cluster_stmt = select(Visit).where(
         Visit.ip_address == last_visit.ip_address,
-        Visit.created_at >= time_limit
+        Visit.created_at >= db_compatible_time
     )
     cluster_res = await session.execute(cluster_stmt)
     cluster_records = cluster_res.scalars().all()

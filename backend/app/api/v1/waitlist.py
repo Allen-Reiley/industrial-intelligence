@@ -36,26 +36,73 @@ def format_zar(value: str) -> str:
 
 async def background_lead_analysis(lead_id: int, aura_id: str, payload: dict):
     """
-    Asynchronous orchestration of the forensic audit and journey mapping.
-    Deferred processing to keep the user-facing response time under 200ms.
+    Sequential Forensic Orchestration Engine.
+    Holds back external system sinks (Slack) until DeepSeek and 
+    firmographic intelligence have fully compiled their data.
     """
     if not async_session_maker:
-        logger.error("❌ background_lead_analysis: Aborted. Async Database Engine not initialized.")
+        logger.error("❌ background_lead_analysis: Aborted. Async Engine offline.")
         return
 
     async with async_session_maker() as session:
         try:
-            if not aura_id:
-                logger.info(f"ℹ️ Background Analysis: Skip journey mapping for missing aura_id (Lead ID: {lead_id})")
+            logger.info(f"⏳ Ingesting Sequential Audit Pipeline for Lead ID: {lead_id}")
+
+            # 1. Pull the fresh lead record to get the linked company context
+            lead_stmt = select(WaitlistLead).where(WaitlistLead.id == lead_id)
+            lead_res = await session.execute(lead_stmt)
+            lead = lead_res.scalars().first()
+
+            if not lead:
+                logger.error(f"❌ Sequential Pipeline Error: Lead ID {lead_id} not found in DB.")
                 return
 
-            # Execute the Behavioral Ledger synthesis (DeepSeek + Cluster Analysis)
+            # 2. Compile Unified Journey & Ghost Enrichment (Awaits DeepSeek completely before proceeding)
             journey = await get_visitor_journey(aura_id, session)
+
+            # 3. Pull resolved company context for notifications
+            company_name = "Anonymous Entity"
+            if lead.company_id:
+                company = await session.get(Company, lead.company_id)
+                if company:
+                    company_name = company.name
+            elif lead.company_name_raw:
+                company_name = lead.company_name_raw
+
+            # 4. Pack the complete, unified data dictionary
+            complete_lead_payload = {
+                "id": lead.id,
+                "aura_id": lead.aura_id,
+                "name": lead.name,
+                "email": lead.email,
+                "company_name_final": company_name,
+                "department": lead.department or "Undetermined",
+                "position": lead.position or "Evaluator",
+                "industry": lead.industry or "Industrial",
+                "website": lead.website or "N/A",
+                "capture_source": "waitlist_conversion",
+                "traffic": lead.traffic or "N/A",
+                "avg_price": lead.avg_price or "N/A"
+            }
+
+            logger.info(f"✨ DeepSeek Data compiled for Lead ID {lead_id}. Releasing external notification gates...")
+
+            # =================================================================
+            # 5. RELEASE GATES: Dispatch completed data packets sequentially
+            # =================================================================
             
-            # This is where the Phase 2 'Airtable Bridge' and Slack Dispatch will trigger
-            logger.info(f"📊 Intelligence Analysis Complete for {aura_id} (Lead ID: {lead_id})")
+            # Dispatch Premium Identity Promotion Alert to Slack with full data resolved
+            from app.services.notifications import post_to_slack
+            await post_to_slack(lead_data=complete_lead_payload, journey=journey)
+
+            # Future Phase 2 Bridges can plug in here cleanly:
+            # await sync_to_airtable(complete_lead_payload, journey)
+            # await sync_to_notion(complete_lead_payload, journey)
+
+            logger.info(f"✅ Full Synchronization Cycle Complete for Lead ID: {lead_id}")
+
         except Exception as e:
-            logger.error(f"❌ Background Analysis Error for Lead ID {lead_id}: {e}")
+            logger.error(f"🚨 Sequential Lead Pipeline Failure for Lead ID {lead_id}: {e}")
 
 @router.post("/join")
 async def join_waitlist(
