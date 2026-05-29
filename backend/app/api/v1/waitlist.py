@@ -100,8 +100,8 @@ async def background_lead_analysis(lead_id: int, aura_id: str, payload: dict):
             await sync_to_airtable(complete_lead_payload, journey)
             
             # PHASE 4: Notion Bridge (Deferred)
-            # from app.services.vault import sync_to_notion
-            # await sync_to_notion(complete_lead_payload, journey)
+            await sync_to_notion(complete_lead_payload, journey)
+            from app.services.vault import sync_to_notion
 
             logger.info(f"✅ Full Synchronization Cycle Complete for Lead ID: {lead_id}")
 

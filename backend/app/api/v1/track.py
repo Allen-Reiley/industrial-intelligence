@@ -135,7 +135,7 @@ async def process_exit_logic(aura_id: str, client_id: str):
                 if company:
                     company_name = company.name
 
-            # 4. Normalize the unified dataset dictionary payload
+            # 4. Normalize the unified dataset dictionary payload with Location data included
             complete_lead_payload = {
                 "id": lead.id,
                 "aura_id": lead.aura_id,
@@ -144,12 +144,30 @@ async def process_exit_logic(aura_id: str, client_id: str):
                 "company_name_final": company_name,
                 "department": lead.department or "Undetermined",
                 "position": lead.position or "Evaluator",
+                "industry": lead.industry or "Industrial",
+                "website": lead.website or "N/A",
                 "capture_source": "banner_interaction",
+                "city": journey.get("city") or "Unknown",
+                "region": journey.get("region") or "ZA"
             }
 
-            # 5. Route the clean, fully-formed summary packet to Slack
+            # =================================================================
+            # 5. RELEASE GATES: Dispatch compiled datasets sequentially
+            # =================================================================
+
+            # Route the clean, fully-formed summary packet to Slack
             await post_to_slack(lead_data=complete_lead_payload, journey=journey)
-            logger.info(f"✅ DeepSeek Batch Processing summary successfully delivered for {aura_id}")
+            
+            # Phase 3 & Phase 4 Vault Bridge integrations
+            from app.services.vault import sync_to_airtable, sync_to_notion
+            
+            # Push completed session summary metrics out to Airtable
+            await sync_to_airtable(complete_lead_payload, journey)
+            
+            # Spin up the comprehensive canvas log layout space inside Notion
+            await sync_to_notion(complete_lead_payload, journey)
+
+            logger.info(f"✅ DeepSeek Batch Processing synchronized delivery complete for {aura_id}")
 
         except Exception as e:
             logger.error(f"🚨 Exit Logic Batch Error: {e}")
