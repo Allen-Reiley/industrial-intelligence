@@ -607,6 +607,22 @@ This tracker script is proprietary software. Unauthorized copying, modification,
 ---
 </file>
 
+<file path="frontend/src/app/(pages)/book-call/page.tsx">
+import BookCallPage from "@/components/book-call/call-page";
+
+export default function BookCall() {
+  return <BookCallPage />;
+}
+</file>
+
+<file path="frontend/src/app/(pages)/get-started/page.tsx">
+import GetStartedPage from "@/components/sections/form/get-started";
+
+export default function GetStarted() {
+  return <GetStartedPage />;
+}
+</file>
+
 <file path="frontend/src/app/(pages)/pricing/page.tsx">
 import Pricing from '@/components/pricing/pricing';
 
@@ -781,6 +797,27 @@ export default function PricingPage() {
 }
 </file>
 
+<file path="frontend/src/app/page.tsx">
+import Image from "next/image";
+import HeroSection from "@/components/hero-sec/hero-section";
+import ContentSection1 from "@/components/content/content-1";
+import ContentSection2 from "@/components/content/content-2";
+import CallToAction from "@/components/cta/call-to-action";
+import Footer from "@/components/footer/footer";
+
+export default function Home() {
+  return (
+    <main>
+      <HeroSection />
+      <ContentSection1 />
+      <ContentSection2 />
+      <CallToAction />
+      <Footer />
+    </main>
+  );
+}
+</file>
+
 <file path="frontend/src/components/content/content-1.tsx">
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
@@ -899,6 +936,43 @@ export default function ContentSection2() {
                                 height={929}
                             />
                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    )
+}
+</file>
+
+<file path="frontend/src/components/cta/call-to-action.tsx">
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+
+export default function CallToAction() {
+    return (
+        <section className="py-16 md:py-32">
+            <div className="mx-auto max-w-5xl px-6">
+                <div className="text-center">
+                    <h2 className="text-balance text-4xl font-semibold lg:text-5xl">Turn your website into a sales machine.</h2>
+                    <p className="mt-4">Get a weekly list of high-intent B2B leads for a flat monthly/annual retainer. No complex software to learn — just results delivered to your inbox.</p>
+
+                    <div className="mt-12 flex flex-wrap justify-center gap-4">
+                        <Button
+                            asChild
+                            size="lg">
+                            <Link href="/get-started">
+                                <span>Get Started</span>
+                            </Link>
+                        </Button>
+
+                        <Button
+                            asChild
+                            size="lg"
+                            variant="outline">
+                            <Link href="/book-a-call">
+                                <span>Book a Call</span>
+                            </Link>
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -1352,6 +1426,117 @@ export function VerticalStacks() {
                 ))}
             </div>
         </section>
+    )
+}
+</file>
+
+<file path="frontend/src/components/sections/get-started-modal.tsx">
+// @/components/sections/get-started-modal.tsx
+'use client'
+
+import React from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { X, Building2, Mail, User, Briefcase } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+
+interface GetStartedModalProps {
+    isOpen: boolean;
+    setIsOpen: (open: boolean) => void;
+}
+
+export default function GetStartedModal({ isOpen, setIsOpen }: GetStartedModalProps) {
+    return (
+        <AnimatePresence>
+            {isOpen && (
+                <>
+                    {/* Backdrop */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setIsOpen(false)}
+                        className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm"
+                    />
+
+                    {/* The Modal - Using the layoutId logic from Expandable Screen */}
+                    <motion.div
+                        layoutId="get-started-popup"
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                        className="fixed inset-0 z-[110] m-auto h-full w-full overflow-y-auto bg-background p-6 shadow-2xl md:h-fit md:max-h-[90vh] md:max-w-2xl md:rounded-3xl md:border"
+                    >
+                        <div className="relative mx-auto w-full pt-8">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setIsOpen(false)}
+                                className="absolute right-0 top-0 rounded-full"
+                            >
+                                <X className="h-6 w-6" />
+                            </Button>
+
+                            <div className="space-y-2 text-center">
+                                <h2 className="text-3xl font-bold tracking-tight">Join the AuraWorks Beta</h2>
+                                <p className="text-muted-foreground text-sm">
+                                    Capping initial access to 100 industrial partners.
+                                </p>
+                            </div>
+
+                            <form className="mt-8 grid gap-5 pb-8" onSubmit={(e) => e.preventDefault()}>
+                                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">Full Name</Label>
+                                        <div className="relative">
+                                            <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <Input id="name" placeholder="John Doe" className="pl-10 rounded-xl" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email">Work Email</Label>
+                                        <div className="relative">
+                                            <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <Input id="email" type="email" placeholder="john@company.co.za" className="pl-10 rounded-xl" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="company">Company Name</Label>
+                                    <div className="relative">
+                                        <Building2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                        <Input id="company" placeholder="e.g. Rand Mining Gear" className="pl-10 rounded-xl" />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="industry">Industry Vertical</Label>
+                                    <div className="relative">
+                                        <Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                        <select 
+                                            id="industry"
+                                            className="flex h-10 w-full rounded-xl border border-input bg-background pl-10 pr-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                        >
+                                            <option value="">Select industry...</option>
+                                            <option value="mining">Mining & Resources</option>
+                                            <option value="manufacturing">Manufacturing</option>
+                                            <option value="logistics">Logistics</option>
+                                            <option value="construction">Heavy Construction</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <Button size="lg" className="mt-2 w-full rounded-xl font-semibold shadow-lg shadow-primary/20">
+                                    Request Access
+                                </Button>
+                            </form>
+                        </div>
+                    </motion.div>
+                </>
+            )}
+        </AnimatePresence>
     )
 }
 </file>
@@ -4132,14 +4317,6 @@ export default function AboutPage() {
 }
 </file>
 
-<file path="frontend/src/app/(pages)/book-call/page.tsx">
-import BookCallPage from "@/components/book-call/call-page";
-
-export default function BookCall() {
-  return <BookCallPage />;
-}
-</file>
-
 <file path="frontend/src/app/(pages)/cookies-policy/page.tsx">
 import CookieConsentPage from "@/components/sections/cookies/cookie-policy";
 
@@ -4184,14 +4361,6 @@ export default function FeaturesPage() {
       <Footer />
     </div>
   );
-}
-</file>
-
-<file path="frontend/src/app/(pages)/get-started/page.tsx">
-import GetStartedPage from "@/components/sections/form/get-started";
-
-export default function GetStarted() {
-  return <GetStartedPage />;
 }
 </file>
 
@@ -4542,6 +4711,67 @@ export default function AdminDashboard() {
 }
 </file>
 
+<file path="frontend/src/app/not-found.tsx">
+// @/app/not-found.tsx
+'use client'
+
+import React from 'react'
+import Link from 'next/link'
+import { ArrowLeft, Home, Search } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+
+export default function NotFound() {
+    return (
+        <main className="relative min-h-screen flex items-center justify-center bg-background px-6">
+            {/* Background Radial Glow - Matching your Hero theme */}
+            <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-full opacity-20 [background:radial-gradient(50%_50%_at_50%_50%,var(--color-primary)_0%,transparent_100%)] blur-3xl" />
+            </div>
+
+            <div className="text-center">
+                {/* 404 Visual */}
+                <div className="relative mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-2xl border bg-muted/30 shadow-inner">
+                    <Search className="h-10 w-10 text-muted-foreground/50" />
+                    <span className="absolute -right-2 -top-2 flex h-8 w-12 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground shadow-lg">
+                        404
+                    </span>
+                </div>
+
+                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+                    Page Not Found
+                </h1>
+                
+                <p className="mx-auto mt-6 max-w-md text-balance text-muted-foreground">
+                    The intelligence report you're looking for doesn't exist or has been moved to a different sector.
+                </p>
+
+                <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                    <Button asChild size="lg" className="rounded-xl px-8 shadow-xl shadow-primary/20">
+                        <Link href="/">
+                            <Home className="mr-2 h-4 w-4" />
+                            Return Home
+                        </Link>
+                    </Button>
+                    
+                    <Button variant="ghost" asChild size="lg" className="rounded-xl px-8">
+                        <Link href="/customer-support">
+                            <span>Contact Support</span>
+                        </Link>
+                    </Button>
+                </div>
+
+                {/* Subtle breadcrumb/footer style text */}
+                <div className="mt-16 flex items-center justify-center gap-2 text-sm text-muted-foreground/60">
+                    <span className="h-px w-8 bg-border" />
+                    <span>AuraWorks (Pty) Ltd — Systems Architect</span>
+                    <span className="h-px w-8 bg-border" />
+                </div>
+            </div>
+        </main>
+    )
+}
+</file>
+
 <file path="frontend/src/app/robots.ts">
 import { MetadataRoute } from 'next';
 
@@ -4626,39 +4856,301 @@ export default function sitemap(): MetadataRoute.Sitemap {
 }
 </file>
 
-<file path="frontend/src/components/cta/call-to-action.tsx">
+<file path="frontend/src/components/footer/footer.tsx">
+import { Logo } from '@/components/ui/logo'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
+import { ChevronsUpDown } from 'lucide-react'
 import Link from 'next/link'
 
-export default function CallToAction() {
+const links = [
+    {
+        group: 'Product',
+        items: [
+            {
+                title: 'Features',
+                href: '/features',
+            },
+            {
+                title: 'Solution',
+                href: '/solution',
+            },
+            {
+                title: 'Customers',
+                href: '#',
+            },
+            {
+                title: 'Pricing',
+                href: '/pricing',
+            },
+            {
+                title: 'Help',
+                href: '#',
+            },
+            {
+                title: 'About',
+                href: '/about',
+            },
+        ],
+    },
+    {
+        group: 'Solution',
+        items: [
+            {
+                title: 'Startup',
+                href: '#',
+            },
+            {
+                title: 'Freelancers',
+                href: '#',
+            },
+            {
+                title: 'Organizations',
+                href: '#',
+            },
+            {
+                title: 'Students',
+                href: '#',
+            },
+            {
+                title: 'Collaboration',
+                href: '#',
+            },
+            {
+                title: 'Design',
+                href: '#',
+            },
+            {
+                title: 'Management',
+                href: '#',
+            },
+        ],
+    },
+    {
+        group: 'Company',
+        items: [
+            {
+                title: 'About',
+                href: '/about',
+            },
+            {
+                title: 'Blog',
+                href: '/blog',
+            },
+            {
+                title: 'Contact',
+                href: '/customer-support',
+            },
+            {
+                title: 'Help',
+                href: '#',
+            },
+        ],
+    },
+    {
+        group: 'Legal',
+        items: [
+            {
+                title: 'Licence',
+                href: '/license',
+            },
+            {
+                title: 'Privacy',
+                href: '/privacy-policy',
+            },
+            {
+                title: 'Cookies',
+                href: '/cookies-policy',
+            },
+            {
+                title: 'Terms of Service',
+                href: '/terms-of-service',
+            },
+            {
+                title: 'POPIA Manual',
+                href: '/popia-manual',
+            },
+            {
+                title: 'Disclaimer',
+                href: '/disclaimer',
+            },
+            {
+                title: 'Security',
+                href: '/security',
+            },
+        ],
+    },
+]
+
+export default function Footer() {
     return (
-        <section className="py-16 md:py-32">
-            <div className="mx-auto max-w-5xl px-6">
-                <div className="text-center">
-                    <h2 className="text-balance text-4xl font-semibold lg:text-5xl">Turn your website into a sales machine.</h2>
-                    <p className="mt-4">Get a weekly list of high-intent B2B leads for a flat monthly/annual retainer. No complex software to learn — just results delivered to your inbox.</p>
-
-                    <div className="mt-12 flex flex-wrap justify-center gap-4">
-                        <Button
-                            asChild
-                            size="lg">
-                            <Link href="/get-started">
-                                <span>Get Started</span>
-                            </Link>
-                        </Button>
-
-                        <Button
-                            asChild
-                            size="lg"
-                            variant="outline">
-                            <Link href="/book-a-call">
-                                <span>Book a Call</span>
-                            </Link>
-                        </Button>
+        <footer className="border-b bg-white pt-20 dark:bg-transparent">
+            <div className="mb-8 border-b md:mb-12">
+                <div className="mx-auto flex max-w-5xl flex-wrap items-end justify-between gap-6 px-6 pb-6">
+                    <Link
+                        href="/"
+                        aria-label="go home"
+                        className="block size-fit">
+                        <Logo />
+                    </Link>
+                    <div className="flex flex-wrap justify-center gap-6 text-sm">
+                        <Link
+                            href="#"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="X/Twitter"
+                            className="text-muted-foreground hover:text-primary block">
+                            <svg
+                                className="size-6"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="1em"
+                                height="1em"
+                                viewBox="0 0 24 24">
+                                <path
+                                    fill="currentColor"
+                                    d="M10.488 14.651L15.25 21h7l-7.858-10.478L20.93 3h-2.65l-5.117 5.886L8.75 3h-7l7.51 10.015L2.32 21h2.65zM16.25 19L5.75 5h2l10.5 14z"></path>
+                            </svg>
+                        </Link>
+                        <Link
+                            href="#"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="LinkedIn"
+                            className="text-muted-foreground hover:text-primary block">
+                            <svg
+                                className="size-6"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="1em"
+                                height="1em"
+                                viewBox="0 0 24 24">
+                                <path
+                                    fill="currentColor"
+                                    d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93zM6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37z"></path>
+                            </svg>
+                        </Link>
+                        <Link
+                            href="#"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Facebook"
+                            className="text-muted-foreground hover:text-primary block">
+                            <svg
+                                className="size-6"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="1em"
+                                height="1em"
+                                viewBox="0 0 24 24">
+                                <path
+                                    fill="currentColor"
+                                    d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95"></path>
+                            </svg>
+                        </Link>
+                        <Link
+                            href="#"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Threads"
+                            className="text-muted-foreground hover:text-primary block">
+                            <svg
+                                className="size-6"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="1em"
+                                height="1em"
+                                viewBox="0 0 24 24">
+                                <path
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="1.5"
+                                    d="M19.25 8.505c-1.577-5.867-7-5.5-7-5.5s-7.5-.5-7.5 8.995s7.5 8.996 7.5 8.996s4.458.296 6.5-3.918c.667-1.858.5-5.573-6-5.573c0 0-3 0-3 2.5c0 .976 1 2 2.5 2s3.171-1.027 3.5-3c1-6-4.5-6.5-6-4"
+                                    color="currentColor"></path>
+                            </svg>
+                        </Link>
+                        <Link
+                            href="#"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Instagram"
+                            className="text-muted-foreground hover:text-primary block">
+                            <svg
+                                className="size-6"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="1em"
+                                height="1em"
+                                viewBox="0 0 24 24">
+                                <path
+                                    fill="currentColor"
+                                    d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4zm9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8A1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5a5 5 0 0 1-5 5a5 5 0 0 1-5-5a5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3"></path>
+                            </svg>
+                        </Link>
+                        <Link
+                            href="#"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="TikTok"
+                            className="text-muted-foreground hover:text-primary block">
+                            <svg
+                                className="size-6"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="1em"
+                                height="1em"
+                                viewBox="0 0 24 24">
+                                <path
+                                    fill="currentColor"
+                                    d="M16.6 5.82s.51.5 0 0A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6c0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64c0 3.33 2.76 5.7 5.69 5.7c3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48"></path>
+                            </svg>
+                        </Link>
                     </div>
                 </div>
             </div>
-        </section>
+            <div className="mx-auto max-w-5xl px-6">
+                <div className="grid gap-12 md:grid-cols-5 md:gap-0 lg:grid-cols-4">
+                    <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 md:col-span-5 md:row-start-1 lg:col-span-3">
+                        {links.map((link, index) => (
+                            <div
+                                key={index}
+                                className="space-y-4 text-sm">
+                                <span className="block font-medium">{link.group}</span>
+                                {link.items.map((item, index) => (
+                                    <Link
+                                        key={index}
+                                        href={item.href}
+                                        className="text-muted-foreground hover:text-primary block duration-150">
+                                        <span>{item.title}</span>
+                                    </Link>
+                                ))}
+                            </div>
+                        ))}
+                    </div>
+                    <form className="row-start-1 border-b pb-8 text-sm md:col-span-2 md:border-none lg:col-span-1">
+                        <div className="space-y-4">
+                            <Label
+                                htmlFor="mail"
+                                className="block font-medium">
+                                Newsletter
+                            </Label>
+                            <div className="flex gap-2">
+                                <Input
+                                    type="email"
+                                    id="mail"
+                                    name="mail"
+                                    placeholder="Your email"
+                                    className="h-8 text-sm"
+                                />
+                                <Button size="sm">Submit</Button>
+                            </div>
+                            <span className="text-muted-foreground block text-sm">Don't miss any update!</span>
+                        </div>
+                    </form>
+                </div>
+                <div className="mt-12 flex flex-wrap items-end justify-between gap-6 border-t py-6">
+                    <small className="text-muted-foreground order-last block text-center text-sm md:order-first">© {2026} AuraWorks (Pty) Ltd, All rights reserved</small>
+                </div>
+            </div>
+        </footer>
     )
 }
 </file>
@@ -6366,117 +6858,6 @@ export default function TermsOfServicePage() {
 }
 </file>
 
-<file path="frontend/src/components/sections/get-started-modal.tsx">
-// @/components/sections/get-started-modal.tsx
-'use client'
-
-import React from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { X, Building2, Mail, User, Briefcase } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-
-interface GetStartedModalProps {
-    isOpen: boolean;
-    setIsOpen: (open: boolean) => void;
-}
-
-export default function GetStartedModal({ isOpen, setIsOpen }: GetStartedModalProps) {
-    return (
-        <AnimatePresence>
-            {isOpen && (
-                <>
-                    {/* Backdrop */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setIsOpen(false)}
-                        className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm"
-                    />
-
-                    {/* The Modal - Using the layoutId logic from Expandable Screen */}
-                    <motion.div
-                        layoutId="get-started-popup"
-                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="fixed inset-0 z-[110] m-auto h-full w-full overflow-y-auto bg-background p-6 shadow-2xl md:h-fit md:max-h-[90vh] md:max-w-2xl md:rounded-3xl md:border"
-                    >
-                        <div className="relative mx-auto w-full pt-8">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setIsOpen(false)}
-                                className="absolute right-0 top-0 rounded-full"
-                            >
-                                <X className="h-6 w-6" />
-                            </Button>
-
-                            <div className="space-y-2 text-center">
-                                <h2 className="text-3xl font-bold tracking-tight">Join the AuraWorks Beta</h2>
-                                <p className="text-muted-foreground text-sm">
-                                    Capping initial access to 100 industrial partners.
-                                </p>
-                            </div>
-
-                            <form className="mt-8 grid gap-5 pb-8" onSubmit={(e) => e.preventDefault()}>
-                                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="name">Full Name</Label>
-                                        <div className="relative">
-                                            <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <Input id="name" placeholder="John Doe" className="pl-10 rounded-xl" />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="email">Work Email</Label>
-                                        <div className="relative">
-                                            <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <Input id="email" type="email" placeholder="john@company.co.za" className="pl-10 rounded-xl" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="company">Company Name</Label>
-                                    <div className="relative">
-                                        <Building2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                        <Input id="company" placeholder="e.g. Rand Mining Gear" className="pl-10 rounded-xl" />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="industry">Industry Vertical</Label>
-                                    <div className="relative">
-                                        <Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                        <select 
-                                            id="industry"
-                                            className="flex h-10 w-full rounded-xl border border-input bg-background pl-10 pr-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                        >
-                                            <option value="">Select industry...</option>
-                                            <option value="mining">Mining & Resources</option>
-                                            <option value="manufacturing">Manufacturing</option>
-                                            <option value="logistics">Logistics</option>
-                                            <option value="construction">Heavy Construction</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <Button size="lg" className="mt-2 w-full rounded-xl font-semibold shadow-lg shadow-primary/20">
-                                    Request Access
-                                </Button>
-                            </form>
-                        </div>
-                    </motion.div>
-                </>
-            )}
-        </AnimatePresence>
-    )
-}
-</file>
-
 <file path="frontend/src/components/ui/logo.tsx">
 // frontend/src/components/brand/Logo.tsx
 import Image from 'next/image'
@@ -7266,510 +7647,108 @@ def filter_business_contacts(contacts: List[Dict]) -> List[Dict]:
     ]
 </file>
 
-<file path="backend/app/services/vault.py">
-# backend/app/services/vault.py
-import httpx
-import logging
-from typing import Dict, Any
-from app.core.config import settings
-
-logger = logging.getLogger("uvicorn")
-
-# ... (keep your sync_to_airtable function exactly the same as previously fixed) ...
-
-async def sync_to_notion(lead_data: Dict[str, Any], journey: Dict[str, Any]):
-    """
-    Phase 4: The Notion Vault Bridge.
-    Creates an itemized ledger entry mapping ALL associated firmographic,
-    behavioral, and DeepSeek intelligence assets to the Notion Workspace canvas.
-    """
-    if not settings.NOTION_TOKEN or not settings.NOTION_DATABASE_ID:
-        logger.warning("⚠️ Notion Sync skipped: Credentials not configured.")
-        return
-
-    url = "https://api.notion.com/v1/pages"
-    
-    headers = {
-        "Authorization": f"Bearer {settings.NOTION_TOKEN}",
-        "Content-Type": "application/json",
-        "Notion-Version": "2022-06-28"
-    }
-
-    # Extract clean parameters from both incoming dictionaries with fallback safe-guards
-    company_name = lead_data.get("company_name_final") or lead_data.get("company_name") or "Anonymous Entity"
-    lead_name = lead_data.get("name") or "Unknown Lead"
-    email = lead_data.get("email") or "unknown@entity.co.za"
-    position = lead_data.get("position") or "Evaluator"
-    department = lead_data.get("department") or "Undetermined"
-    industry = lead_data.get("industry") or "Industrial"
-    website_url = lead_data.get("website") or "https://auraworks.co.za"
-    
-    # Extract journey stats
-    total_touches = str(journey.get("total_touches", "1"))
-    pathway_text = journey.get("pathway") or "Direct Ingestion"
-    summary_text = journey.get("intent_summary") or "No intelligence data compiled."
-    
-    # Location data mapping from track.py / enrichment payloads
-    city = lead_data.get("city") or journey.get("city") or "Unknown"
-    region = lead_data.get("region") or journey.get("region") or "ZA"
-    location_str = f"{city}, {region}"
-
-    # Deeply structured properties to map ALL parameters into Notion types
-    payload = {
-        "parent": {"database_id": settings.NOTION_DATABASE_ID},
-        "properties": {
-            "Entity": {
-                "title": [{"text": {"content": company_name}}]
-            },
-            "Lead Name": {
-                "rich_text": [{"text": {"content": lead_name}}]
-            },
-            "Email": {
-                "email": email
-            },
-            "Position": {
-                "rich_text": [{"text": {"content": position}}]
-            },
-            "Department": {
-                "rich_text": [{"text": {"content": department}}]
-            },
-            "Industry": {
-                "rich_text": [{"text": {"content": industry}}]
-            },
-            "Location": {
-                "rich_text": [{"text": {"content": location_str}}]
-            },
-            "Total Touches": {
-                "rich_text": [{"text": {"content": total_touches}}]
-            },
-            "URL": {
-                "url": website_url if website_url.startswith("http") else f"https://{website_url}"
-            },
-            "Status": {
-                "select": {"name": "New Lead"}
-            }
-        },
-        "children": [
-            {
-                "object": "block",
-                "type": "heading_2",
-                "heading_2": {
-                    "rich_text": [{"type": "text", "text": {"content": "DeepSeek Industrial Intent Analysis"}}]
-                }
-            },
-            {
-                "object": "block",
-                "type": "paragraph",
-                "paragraph": {
-                    "rich_text": [{"type": "text", "text": {"content": summary_text}}]
-                }
-            },
-            {
-                "object": "block",
-                "type": "heading_2",
-                "heading_2": {
-                    "rich_text": [{"type": "text", "text": {"content": "Complete Behavioral Pathway Trail"}}]
-                }
-            },
-            {
-                "object": "block",
-                "type": "paragraph",
-                "paragraph": {
-                    "rich_text": [{"type": "text", "text": {"content": pathway_text}}]
-                }
-            }
-        ]
-    }
-
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(url, headers=headers, json=payload, timeout=10.0)
-            if response.status_code in [200, 201]:
-                logger.info(f"🟢 Notion Sync Success for Entity: {company_name}")
-            else:
-                logger.error(f"❌ Notion Sync Failed ({response.status_code}): {response.text}")
-        except Exception as e:
-            logger.error(f"🚨 Notion Transport Error: {e}")
-</file>
-
-<file path="frontend/src/app/not-found.tsx">
-// @/app/not-found.tsx
+<file path="frontend/src/components/book-call/call-page.tsx">
+// @/app/book-call/page.tsx
 'use client'
 
 import React from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Home, Search } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Clock, ShieldCheck, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { HeroHeader } from '@/components/header/header'
 
-export default function NotFound() {
-    return (
-        <main className="relative min-h-screen flex items-center justify-center bg-background px-6">
-            {/* Background Radial Glow - Matching your Hero theme */}
-            <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-full opacity-20 [background:radial-gradient(50%_50%_at_50%_50%,var(--color-primary)_0%,transparent_100%)] blur-3xl" />
-            </div>
-
-            <div className="text-center">
-                {/* 404 Visual */}
-                <div className="relative mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-2xl border bg-muted/30 shadow-inner">
-                    <Search className="h-10 w-10 text-muted-foreground/50" />
-                    <span className="absolute -right-2 -top-2 flex h-8 w-12 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground shadow-lg">
-                        404
-                    </span>
-                </div>
-
-                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-                    Page Not Found
-                </h1>
-                
-                <p className="mx-auto mt-6 max-w-md text-balance text-muted-foreground">
-                    The intelligence report you're looking for doesn't exist or has been moved to a different sector.
-                </p>
-
-                <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                    <Button asChild size="lg" className="rounded-xl px-8 shadow-xl shadow-primary/20">
-                        <Link href="/">
-                            <Home className="mr-2 h-4 w-4" />
-                            Return Home
-                        </Link>
-                    </Button>
-                    
-                    <Button variant="ghost" asChild size="lg" className="rounded-xl px-8">
-                        <Link href="/customer-support">
-                            <span>Contact Support</span>
-                        </Link>
-                    </Button>
-                </div>
-
-                {/* Subtle breadcrumb/footer style text */}
-                <div className="mt-16 flex items-center justify-center gap-2 text-sm text-muted-foreground/60">
-                    <span className="h-px w-8 bg-border" />
-                    <span>AuraWorks (Pty) Ltd — Systems Architect</span>
-                    <span className="h-px w-8 bg-border" />
-                </div>
-            </div>
-        </main>
-    )
-}
-</file>
-
-<file path="frontend/src/app/page.tsx">
-import Image from "next/image";
-import HeroSection from "@/components/hero-sec/hero-section";
-import ContentSection1 from "@/components/content/content-1";
-import ContentSection2 from "@/components/content/content-2";
-import CallToAction from "@/components/cta/call-to-action";
-import Footer from "@/components/footer/footer";
-
-export default function Home() {
-  return (
-    <main>
-      <HeroSection />
-      <ContentSection1 />
-      <ContentSection2 />
-      <CallToAction />
-      <Footer />
-    </main>
-  );
-}
-</file>
-
-<file path="frontend/src/components/footer/footer.tsx">
-import { Logo } from '@/components/ui/logo'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { cn } from '@/lib/utils'
-import { ChevronsUpDown } from 'lucide-react'
-import Link from 'next/link'
-
-const links = [
+const benefits = [
     {
-        group: 'Product',
-        items: [
-            {
-                title: 'Features',
-                href: '/features',
-            },
-            {
-                title: 'Solution',
-                href: '/solution',
-            },
-            {
-                title: 'Customers',
-                href: '#',
-            },
-            {
-                title: 'Pricing',
-                href: '/pricing',
-            },
-            {
-                title: 'Help',
-                href: '#',
-            },
-            {
-                title: 'About',
-                href: '/about',
-            },
-        ],
+        title: "15-Minute Discovery",
+        desc: "A brief technical overview of how we identify your anonymous traffic.",
+        icon: <Clock className="h-5 w-5 text-primary" />
     },
     {
-        group: 'Solution',
-        items: [
-            {
-                title: 'Startup',
-                href: '#',
-            },
-            {
-                title: 'Freelancers',
-                href: '#',
-            },
-            {
-                title: 'Organizations',
-                href: '#',
-            },
-            {
-                title: 'Students',
-                href: '#',
-            },
-            {
-                title: 'Collaboration',
-                href: '#',
-            },
-            {
-                title: 'Design',
-                href: '#',
-            },
-            {
-                title: 'Management',
-                href: '#',
-            },
-        ],
+        title: "Systems Review",
+        desc: "We analyze your current site traffic to see if you're a fit for the 100-client cohort.",
+        icon: <Zap className="h-5 w-5 text-primary" />
     },
     {
-        group: 'Company',
-        items: [
-            {
-                title: 'About',
-                href: '/about',
-            },
-            {
-                title: 'Blog',
-                href: '/blog',
-            },
-            {
-                title: 'Contact',
-                href: '/customer-support',
-            },
-            {
-                title: 'Help',
-                href: '#',
-            },
-        ],
-    },
-    {
-        group: 'Legal',
-        items: [
-            {
-                title: 'Licence',
-                href: '/license',
-            },
-            {
-                title: 'Privacy',
-                href: '/privacy-policy',
-            },
-            {
-                title: 'Cookies',
-                href: '/cookies-policy',
-            },
-            {
-                title: 'Terms of Service',
-                href: '/terms-of-service',
-            },
-            {
-                title: 'POPIA Manual',
-                href: '/popia-manual',
-            },
-            {
-                title: 'Disclaimer',
-                href: '/disclaimer',
-            },
-            {
-                title: 'Security',
-                href: '/security',
-            },
-        ],
-    },
+        title: "Privacy First",
+        desc: "A look at our Identity Bridge and how we stay POPIA compliant.",
+        icon: <ShieldCheck className="h-5 w-5 text-primary" />
+    }
 ]
 
-export default function Footer() {
-    return (
-        <footer className="border-b bg-white pt-20 dark:bg-transparent">
-            <div className="mb-8 border-b md:mb-12">
-                <div className="mx-auto flex max-w-5xl flex-wrap items-end justify-between gap-6 px-6 pb-6">
-                    <Link
-                        href="/"
-                        aria-label="go home"
-                        className="block size-fit">
-                        <Logo />
+export default function BookCallPage() {
+    return <>
+        
+        <main className="min-h-screen bg-background">
+            {/* Minimal Header specifically for this page */}
+            <nav className="p-6">
+                <Button variant="ghost" asChild className="text-muted-foreground hover:text-foreground">
+                    <Link href="/">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back to Home
                     </Link>
-                    <div className="flex flex-wrap justify-center gap-6 text-sm">
-                        <Link
-                            href="#"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="X/Twitter"
-                            className="text-muted-foreground hover:text-primary block">
-                            <svg
-                                className="size-6"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="1em"
-                                height="1em"
-                                viewBox="0 0 24 24">
-                                <path
-                                    fill="currentColor"
-                                    d="M10.488 14.651L15.25 21h7l-7.858-10.478L20.93 3h-2.65l-5.117 5.886L8.75 3h-7l7.51 10.015L2.32 21h2.65zM16.25 19L5.75 5h2l10.5 14z"></path>
-                            </svg>
-                        </Link>
-                        <Link
-                            href="#"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="LinkedIn"
-                            className="text-muted-foreground hover:text-primary block">
-                            <svg
-                                className="size-6"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="1em"
-                                height="1em"
-                                viewBox="0 0 24 24">
-                                <path
-                                    fill="currentColor"
-                                    d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93zM6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37z"></path>
-                            </svg>
-                        </Link>
-                        <Link
-                            href="#"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="Facebook"
-                            className="text-muted-foreground hover:text-primary block">
-                            <svg
-                                className="size-6"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="1em"
-                                height="1em"
-                                viewBox="0 0 24 24">
-                                <path
-                                    fill="currentColor"
-                                    d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95"></path>
-                            </svg>
-                        </Link>
-                        <Link
-                            href="#"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="Threads"
-                            className="text-muted-foreground hover:text-primary block">
-                            <svg
-                                className="size-6"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="1em"
-                                height="1em"
-                                viewBox="0 0 24 24">
-                                <path
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="1.5"
-                                    d="M19.25 8.505c-1.577-5.867-7-5.5-7-5.5s-7.5-.5-7.5 8.995s7.5 8.996 7.5 8.996s4.458.296 6.5-3.918c.667-1.858.5-5.573-6-5.573c0 0-3 0-3 2.5c0 .976 1 2 2.5 2s3.171-1.027 3.5-3c1-6-4.5-6.5-6-4"
-                                    color="currentColor"></path>
-                            </svg>
-                        </Link>
-                        <Link
-                            href="#"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="Instagram"
-                            className="text-muted-foreground hover:text-primary block">
-                            <svg
-                                className="size-6"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="1em"
-                                height="1em"
-                                viewBox="0 0 24 24">
-                                <path
-                                    fill="currentColor"
-                                    d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4zm9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8A1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5a5 5 0 0 1-5 5a5 5 0 0 1-5-5a5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3"></path>
-                            </svg>
-                        </Link>
-                        <Link
-                            href="#"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="TikTok"
-                            className="text-muted-foreground hover:text-primary block">
-                            <svg
-                                className="size-6"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="1em"
-                                height="1em"
-                                viewBox="0 0 24 24">
-                                <path
-                                    fill="currentColor"
-                                    d="M16.6 5.82s.51.5 0 0A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6c0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64c0 3.33 2.76 5.7 5.69 5.7c3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48"></path>
-                            </svg>
-                        </Link>
-                    </div>
-                </div>
-            </div>
-            <div className="mx-auto max-w-5xl px-6">
-                <div className="grid gap-12 md:grid-cols-5 md:gap-0 lg:grid-cols-4">
-                    <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 md:col-span-5 md:row-start-1 lg:col-span-3">
-                        {links.map((link, index) => (
-                            <div
-                                key={index}
-                                className="space-y-4 text-sm">
-                                <span className="block font-medium">{link.group}</span>
-                                {link.items.map((item, index) => (
-                                    <Link
-                                        key={index}
-                                        href={item.href}
-                                        className="text-muted-foreground hover:text-primary block duration-150">
-                                        <span>{item.title}</span>
-                                    </Link>
-                                ))}
+                </Button>
+            </nav>
+
+            <div className="mx-auto max-w-7xl px-6 pb-24 pt-10 lg:flex lg:gap-x-12 lg:px-8">
+                {/* Left Column: Context & Authority */}
+                <div className="flex-1 lg:max-w-md">
+                    <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+                        Schedule a Strategy Session
+                    </h1>
+                    <p className="mt-6 text-lg text-muted-foreground">
+                        Let's discuss how AuraWorks can bridge the gap between your website visitors and your sales team's inbox.
+                    </p>
+
+                    <div className="mt-12 space-y-8">
+                        {benefits.map((item, idx) => (
+                            <div key={idx} className="flex gap-x-4">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border bg-muted/50">
+                                    {item.icon}
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-foreground">{item.title}</h3>
+                                    <p className="text-sm text-muted-foreground">{item.desc}</p>
+                                </div>
                             </div>
                         ))}
                     </div>
-                    <form className="row-start-1 border-b pb-8 text-sm md:col-span-2 md:border-none lg:col-span-1">
-                        <div className="space-y-4">
-                            <Label
-                                htmlFor="mail"
-                                className="block font-medium">
-                                Newsletter
-                            </Label>
-                            <div className="flex gap-2">
-                                <Input
-                                    type="email"
-                                    id="mail"
-                                    name="mail"
-                                    placeholder="Your email"
-                                    className="h-8 text-sm"
-                                />
-                                <Button size="sm">Submit</Button>
-                            </div>
-                            <span className="text-muted-foreground block text-sm">Don't miss any update!</span>
+
+                    <div className="mt-12 rounded-2xl border bg-muted/30 p-6">
+                        <div className="flex items-center gap-x-2 text-sm font-medium text-primary">
+                            <CheckCircle2 className="h-4 w-4" />
+                            <span>Current Cohort Status: 12/100 Seats Filled</span>
                         </div>
-                    </form>
+                    </div>
                 </div>
-                <div className="mt-12 flex flex-wrap items-end justify-between gap-6 border-t py-6">
-                    <small className="text-muted-foreground order-last block text-center text-sm md:order-first">© {2026} AuraWorks (Pty) Ltd, All rights reserved</small>
+
+                {/* Right Column: The Scheduler */}
+                <div className="mt-16 flex-1 lg:mt-0">
+                    <div className="relative h-[650px] w-full overflow-hidden rounded-2xl border bg-card shadow-2xl">
+                        {/* REPLACE THE SRC BELOW WITH YOUR CALENDLY OR CAL.COM LINK 
+                            Or use a placeholder div if you haven't set one up yet.
+                        */}
+                        <iframe
+                            src="https://calendly.com/auraworks221/30min"
+                            width="100%"
+                            height="100%"
+                            frameBorder="0"
+                            title="Schedule a Call"
+                            className="bg-white dark:bg-zinc-900"
+                        ></iframe>
+                        
+                        {/* Loader Overlay (Optional) */}
+                        <div className="absolute inset-0 -z-10 flex items-center justify-center bg-muted">
+                            <span className="text-sm text-muted-foreground">Loading Scheduler...</span>
+                        </div>
+                    </div>
+                    
+                    <p className="mt-4 text-center text-sm text-muted-foreground">
+                        Prefer email? <Link href="mailto:reitumetse@auraworks.co.za" className="text-primary hover:underline">reitumetse@auraworks.co.za</Link>
+                    </p>
                 </div>
             </div>
-        </footer>
-    )
+        </main>
+    </>
 }
 </file>
 
@@ -8203,108 +8182,297 @@ class AirtableEngine:
 airtable_engine = AirtableEngine()
 </file>
 
-<file path="frontend/src/components/book-call/call-page.tsx">
-// @/app/book-call/page.tsx
-'use client'
+<file path="frontend/src/app/dashboard/page.tsx">
+"use client";
 
-import React from 'react'
-import Link from 'next/link'
-import { ArrowLeft, CheckCircle2, Clock, ShieldCheck, Zap } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { HeroHeader } from '@/components/header/header'
+import React, { useEffect, useState, useMemo } from 'react';
+import { 
+  Building2, 
+  MapPin, 
+  Clock, 
+  Globe, 
+  ShieldCheck, 
+  Zap,
+  Activity,
+  RefreshCcw,
+  MousePointer2,
+  ChevronRight,
+  LayoutGrid,
+  List
+} from 'lucide-react';
 
-const benefits = [
-    {
-        title: "15-Minute Discovery",
-        desc: "A brief technical overview of how we identify your anonymous traffic.",
-        icon: <Clock className="h-5 w-5 text-primary" />
-    },
-    {
-        title: "Systems Review",
-        desc: "We analyze your current site traffic to see if you're a fit for the 100-client cohort.",
-        icon: <Zap className="h-5 w-5 text-primary" />
-    },
-    {
-        title: "Privacy First",
-        desc: "A look at our Identity Bridge and how we stay POPIA compliant.",
-        icon: <ShieldCheck className="h-5 w-5 text-primary" />
+// --- DATA CONTRACTS ---
+interface Lead {
+  id: number;
+  company_name: string | null;
+  is_b2b: boolean;
+  industry: string | null;
+  ip_address: string;
+  city: string | null;
+  region: string | null;
+  country: string | null;
+  duration: number | null;
+  url: string | null;
+  referrer: string | null;
+  created_at: string;
+  hit_count?: number;
+}
+
+interface GroupedEntity {
+  main: Lead;
+  totalHits: number;
+  totalDuration: number;
+  paths: { url: string; duration: number; hits: number }[];
+}
+
+export default function UnifiedDashboard() {
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [viewMode, setViewMode] = useState<'cards' | 'ledger'>('ledger');
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://dynamic-flow-production-a5d6.up.railway.app";
+
+  // --- IDENTITY BRIDGE LOGIC ---
+  const groupedEntities = useMemo(() => {
+    const groups: Record<string, GroupedEntity> = {};
+    
+    leads.forEach(lead => {
+      const key = lead.ip_address;
+      if (!groups[key]) {
+        groups[key] = { main: lead, totalHits: 0, totalDuration: 0, paths: [] };
+      }
+      
+      const pathIndex = groups[key].paths.findIndex(p => p.url === lead.url);
+      const currentHits = lead.hit_count || 1;
+      const currentDuration = lead.duration || 0;
+
+      groups[key].totalHits += currentHits;
+      groups[key].totalDuration += currentDuration;
+
+      if (pathIndex > -1) {
+        groups[key].paths[pathIndex].duration += currentDuration;
+        groups[key].paths[pathIndex].hits += currentHits;
+      } else {
+        groups[key].paths.push({ 
+          url: lead.url || "/", 
+          duration: currentDuration, 
+          hits: currentHits 
+        });
+      }
+    });
+    
+    return Object.values(groups).sort((a, b) => 
+      new Date(b.main.created_at).getTime() - new Date(a.main.created_at).getTime()
+    );
+  }, [leads]);
+
+  const fetchData = async () => {
+    setIsRefreshing(true);
+    try {
+      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/leads`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setLeads(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("AuraWorks Identity Bridge Failure:", err);
+      setLeads([]);
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
     }
-]
+  };
 
-export default function BookCallPage() {
-    return <>
-        
-        <main className="min-h-screen bg-background">
-            {/* Minimal Header specifically for this page */}
-            <nav className="p-6">
-                <Button variant="ghost" asChild className="text-muted-foreground hover:text-foreground">
-                    <Link href="/">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Home
-                    </Link>
-                </Button>
-            </nav>
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
-            <div className="mx-auto max-w-7xl px-6 pb-24 pt-10 lg:flex lg:gap-x-12 lg:px-8">
-                {/* Left Column: Context & Authority */}
-                <div className="flex-1 lg:max-w-md">
-                    <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-                        Schedule a Strategy Session
-                    </h1>
-                    <p className="mt-6 text-lg text-muted-foreground">
-                        Let's discuss how AuraWorks can bridge the gap between your website visitors and your sales team's inbox.
-                    </p>
+  const getPathname = (urlStr: string | null) => {
+    if (!urlStr) return "/";
+    try {
+      const urlObj = new URL(urlStr.startsWith('http') ? urlStr : `https://${urlStr}`);
+      return urlObj.pathname;
+    } catch (e) { return urlStr; }
+  };
 
-                    <div className="mt-12 space-y-8">
-                        {benefits.map((item, idx) => (
-                            <div key={idx} className="flex gap-x-4">
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border bg-muted/50">
-                                    {item.icon}
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-foreground">{item.title}</h3>
-                                    <p className="text-sm text-muted-foreground">{item.desc}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#09090b]">
+      <div className="h-8 w-8 border-2 border-zinc-800 border-t-emerald-500 rounded-full animate-spin mb-4" />
+      <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.3em]">Synchronizing Intelligence...</p>
+    </div>
+  );
 
-                    <div className="mt-12 rounded-2xl border bg-muted/30 p-6">
-                        <div className="flex items-center gap-x-2 text-sm font-medium text-primary">
-                            <CheckCircle2 className="h-4 w-4" />
-                            <span>Current Cohort Status: 12/100 Seats Filled</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Right Column: The Scheduler */}
-                <div className="mt-16 flex-1 lg:mt-0">
-                    <div className="relative h-[650px] w-full overflow-hidden rounded-2xl border bg-card shadow-2xl">
-                        {/* REPLACE THE SRC BELOW WITH YOUR CALENDLY OR CAL.COM LINK 
-                            Or use a placeholder div if you haven't set one up yet.
-                        */}
-                        <iframe
-                            src="https://calendly.com/auraworks221/30min"
-                            width="100%"
-                            height="100%"
-                            frameBorder="0"
-                            title="Schedule a Call"
-                            className="bg-white dark:bg-zinc-900"
-                        ></iframe>
-                        
-                        {/* Loader Overlay (Optional) */}
-                        <div className="absolute inset-0 -z-10 flex items-center justify-center bg-muted">
-                            <span className="text-sm text-muted-foreground">Loading Scheduler...</span>
-                        </div>
-                    </div>
-                    
-                    <p className="mt-4 text-center text-sm text-muted-foreground">
-                        Prefer email? <Link href="mailto:reitumetse@auraworks.co.za" className="text-primary hover:underline">reitumetse@auraworks.co.za</Link>
-                    </p>
-                </div>
+  return (
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 pb-20 font-sans selection:bg-emerald-500/30">
+      {/* --- REFINED NAV BAR --- */}
+      <nav className="border-b border-zinc-900 bg-[#09090b]/80 backdrop-blur-md sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <div className="h-10 w-10 rounded-lg bg-zinc-100 flex items-center justify-center text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+              <Activity className="h-5 w-5" />
             </div>
-        </main>
-    </>
+            <div>
+              <div className="flex items-center gap-2 text-[10px] tracking-[0.3em] text-emerald-500 font-bold uppercase">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Live Signal Ledger</span>
+              </div>
+              <h1 className="text-lg font-light tracking-tight">Intelligence Dashboard</h1>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex bg-zinc-900 rounded-lg p-1 mr-4 border border-zinc-800">
+              <button 
+                onClick={() => setViewMode('ledger')}
+                className={`p-1.5 rounded-md transition-all ${viewMode === 'ledger' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                <List className="h-4 w-4" />
+              </button>
+              <button 
+                onClick={() => setViewMode('cards')}
+                className={`p-1.5 rounded-md transition-all ${viewMode === 'cards' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+            </div>
+            <button onClick={fetchData} className="p-2 hover:bg-zinc-900 rounded-full border border-zinc-800 transition-colors">
+              <RefreshCcw className={`h-4 w-4 text-zinc-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-7xl mx-auto px-6 mt-12">
+        {groupedEntities.length > 0 ? (
+          viewMode === 'ledger' ? (
+            /* --- JURISTIC LEDGER VIEW --- */
+            <div className="border border-zinc-800 rounded-xl overflow-hidden bg-zinc-900/20 shadow-2xl">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-zinc-900/50 text-zinc-500 text-[10px] uppercase tracking-[0.2em] border-b border-zinc-800">
+                  <tr>
+                    <th className="px-6 py-5 font-bold">Entity Identity</th>
+                    <th className="px-6 py-5 font-bold">Jurisdiction / IP</th>
+                    <th className="px-6 py-5 font-bold text-center">Signals</th>
+                    <th className="px-6 py-5 font-bold text-right">Last Attribution</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/50">
+                  {groupedEntities.map(({ main: lead, totalHits }) => (
+                    <tr key={lead.ip_address} className="hover:bg-zinc-800/30 transition-colors group">
+                      <td className="px-6 py-6">
+                        <div className="flex items-center gap-4">
+                          <div className="h-10 w-10 rounded bg-zinc-800 flex items-center justify-center text-zinc-500 font-bold border border-zinc-700 group-hover:border-emerald-500/50 transition-colors">
+                            {lead.company_name?.charAt(0) || <Globe className="h-4 w-4" />}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-zinc-100 group-hover:text-emerald-400 transition-colors leading-none mb-1">
+                              {lead.company_name || "Unresolved Juristic Entity"}
+                            </div>
+                            <div className="text-[11px] text-zinc-500 font-mono tracking-tighter">
+                              {lead.industry || 'Industrial'} • {lead.is_b2b ? 'B2B Locked' : 'General'}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-6">
+                        <div className="text-zinc-300 text-xs flex items-center gap-1.5">
+                          <MapPin className="h-3 w-3 text-zinc-600" />
+                          {lead.city || 'Hub'}, {lead.country || 'ZAF'}
+                        </div>
+                        <div className="text-[10px] text-zinc-500 font-mono mt-1 italic">{lead.ip_address}</div>
+                      </td>
+                      <td className="px-6 py-6 text-center">
+                        <span className="px-3 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-emerald-500 text-[10px] font-black uppercase tracking-widest group-hover:bg-emerald-500/10 transition-colors">
+                          {totalHits} Events
+                        </span>
+                      </td>
+                      <td className="px-6 py-6 text-right text-zinc-500 tabular-nums text-[11px]">
+                        {new Date(lead.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            /* --- FORENSIC CARD VIEW --- */
+            <div className="grid gap-8 max-w-5xl mx-auto">
+              {groupedEntities.map(({ main: lead, paths, totalHits }) => (
+                <div key={lead.ip_address} className="rounded-2xl border border-zinc-800 bg-zinc-900/30 transition-all hover:border-zinc-700 shadow-xl overflow-hidden group">
+                  <div className="p-8">
+                    <div className="flex justify-between items-start gap-4 mb-8">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <h2 className="text-2xl font-bold tracking-tight text-white group-hover:text-emerald-400 transition-colors">
+                            {lead.company_name || "Unresolved Juristic Entity"}
+                          </h2>
+                          {lead.is_b2b && (
+                            <div className="flex items-center gap-1 rounded bg-emerald-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-emerald-500 border border-emerald-500/20">
+                              <ShieldCheck className="h-3 w-3" /> Juristic
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4 text-zinc-500">
+                          <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest">
+                            <MapPin className="h-3.5 w-3.5" /> {lead.city || "Hub"}, {lead.country || "ZAF"}
+                          </div>
+                          <div className="font-mono text-[10px] bg-zinc-800 px-2 py-0.5 rounded border border-zinc-700 text-zinc-400">
+                            {lead.ip_address}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.2em] block mb-1">Capture Epoch</span>
+                        <p className="text-[11px] font-bold text-zinc-400 tabular-nums">{new Date(lead.created_at).toLocaleString()}</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 mb-4">
+                        <MousePointer2 className="h-3 w-3 text-emerald-500" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">Interaction Intelligence</span>
+                      </div>
+                      {paths.map((p, idx) => (
+                        <div key={idx} className="flex items-center justify-between bg-zinc-800/40 rounded-xl p-4 border border-zinc-800/60 hover:bg-zinc-800/60 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <Zap className="h-3.5 w-3.5 text-emerald-500" />
+                            <span className="text-xs font-mono font-bold text-zinc-300">{getPathname(p.url)}</span>
+                          </div>
+                          <div className="flex items-center gap-8 text-right">
+                            <div>
+                              <div className="text-[8px] uppercase text-zinc-600 font-black tracking-widest">Dwell</div>
+                              <div className="text-[11px] font-mono font-bold text-zinc-100">{p.duration}s</div>
+                            </div>
+                            <div>
+                              <div className="text-[8px] uppercase text-zinc-600 font-black tracking-widest">Signal</div>
+                              <div className="text-[11px] font-mono font-bold text-emerald-500">{p.hits}x</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="px-8 py-4 bg-zinc-900/60 border-t border-zinc-800 flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                    <span className="flex items-center gap-2 italic">Ref: {lead.referrer || "Direct Ingress"}</span>
+                    <button className="flex items-center gap-1 hover:text-emerald-500 transition-colors group/btn">
+                      Trace Source <ChevronRight className="h-3 w-3 group-hover/btn:translate-x-0.5 transition-transform" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        ) : (
+          <div className="text-center py-40 rounded-3xl border border-dashed border-zinc-800 bg-zinc-900/10">
+            <Activity className="h-10 w-10 text-zinc-800 mb-4 mx-auto" />
+            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">No Signal Attributed</h3>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 </file>
 
@@ -8633,298 +8801,184 @@ async def send_waitlist_success_email(recipient_email: str, recipient_name: Opti
     )
 </file>
 
-<file path="frontend/src/app/dashboard/page.tsx">
-"use client";
+<file path="backend/app/services/vault.py">
+# backend/app/services/vault.py
+import httpx
+import logging
+import urllib.parse
+from typing import Dict, Any
+from app.core.config import settings
 
-import React, { useEffect, useState, useMemo } from 'react';
-import { 
-  Building2, 
-  MapPin, 
-  Clock, 
-  Globe, 
-  ShieldCheck, 
-  Zap,
-  Activity,
-  RefreshCcw,
-  MousePointer2,
-  ChevronRight,
-  LayoutGrid,
-  List
-} from 'lucide-react';
+logger = logging.getLogger("uvicorn")
 
-// --- DATA CONTRACTS ---
-interface Lead {
-  id: number;
-  company_name: string | null;
-  is_b2b: boolean;
-  industry: string | null;
-  ip_address: string;
-  city: string | null;
-  region: string | null;
-  country: string | null;
-  duration: number | null;
-  url: string | null;
-  referrer: string | null;
-  created_at: string;
-  hit_count?: number;
-}
+async def sync_to_airtable(lead_data: Dict[str, Any], journey: Dict[str, Any]):
+    """
+    Phase 3: The Airtable Bridge.
+    Pushes the compiled lead metrics, session journey, URL footprints, 
+    and DeepSeek intent summaries securely into Airtable.
+    """
+    if not settings.AIRTABLE_API_KEY or not settings.AIRTABLE_BASE_ID:
+        logger.warning("⚠️ Airtable Sync skipped: Credentials not configured.")
+        return
 
-interface GroupedEntity {
-  main: Lead;
-  totalHits: number;
-  totalDuration: number;
-  paths: { url: string; duration: number; hits: number }[];
-}
-
-export default function UnifiedDashboard() {
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [viewMode, setViewMode] = useState<'cards' | 'ledger'>('ledger');
-
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://dynamic-flow-production-a5d6.up.railway.app";
-
-  // --- IDENTITY BRIDGE LOGIC ---
-  const groupedEntities = useMemo(() => {
-    const groups: Record<string, GroupedEntity> = {};
+    # URL Encoding handles any structural spaces inside your table name configuration
+    safe_table_name = urllib.parse.quote(settings.AIRTABLE_TABLE_NAME)
+    url = f"https://api.airtable.com/v0/{settings.AIRTABLE_BASE_ID}/{safe_table_name}"
     
-    leads.forEach(lead => {
-      const key = lead.ip_address;
-      if (!groups[key]) {
-        groups[key] = { main: lead, totalHits: 0, totalDuration: 0, paths: [] };
-      }
-      
-      const pathIndex = groups[key].paths.findIndex(p => p.url === lead.url);
-      const currentHits = lead.hit_count || 1;
-      const currentDuration = lead.duration || 0;
-
-      groups[key].totalHits += currentHits;
-      groups[key].totalDuration += currentDuration;
-
-      if (pathIndex > -1) {
-        groups[key].paths[pathIndex].duration += currentDuration;
-        groups[key].paths[pathIndex].hits += currentHits;
-      } else {
-        groups[key].paths.push({ 
-          url: lead.url || "/", 
-          duration: currentDuration, 
-          hits: currentHits 
-        });
-      }
-    });
-    
-    return Object.values(groups).sort((a, b) => 
-      new Date(b.main.created_at).getTime() - new Date(a.main.created_at).getTime()
-    );
-  }, [leads]);
-
-  const fetchData = async () => {
-    setIsRefreshing(true);
-    try {
-      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/leads`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setLeads(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("AuraWorks Identity Bridge Failure:", err);
-      setLeads([]);
-    } finally {
-      setLoading(false);
-      setIsRefreshing(false);
+    headers = {
+        "Authorization": f"Bearer {settings.AIRTABLE_API_KEY}",
+        "Content-Type": "application/json"
     }
-  };
 
-  useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 60000);
-    return () => clearInterval(interval);
-  }, []);
+    # Map internal data schemas strictly to your Airtable Column Headers
+    raw_fields = {
+        "Company": lead_data.get("company_name_final") or "Unknown Entity",
+        "Lead Name": lead_data.get("name") or "Unknown Lead",
+        "Email": lead_data.get("email"),
+        "Position": lead_data.get("position") or "Evaluator",
+        "Department": lead_data.get("department") or "Undetermined",
+        "Industry": lead_data.get("industry") or "Industrial",
+        "URL": lead_data.get("website") or "N/A", 
+        "Pathway": journey.get("pathway") or "Direct",
+        "Intent Summary": journey.get("intent_summary") or "Pending Intelligence...",
+        "Status": "Needs Review"
+    }
 
-  const getPathname = (urlStr: string | null) => {
-    if (!urlStr) return "/";
-    try {
-      const urlObj = new URL(urlStr.startsWith('http') ? urlStr : `https://${urlStr}`);
-      return urlObj.pathname;
-    } catch (e) { return urlStr; }
-  };
+    # Safety Barrier: Strip out any keys containing Python 'None' values
+    clean_fields = {k: v for k, v in raw_fields.items() if v is not None}
 
-  if (loading) return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#09090b]">
-      <div className="h-8 w-8 border-2 border-zinc-800 border-t-emerald-500 rounded-full animate-spin mb-4" />
-      <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.3em]">Synchronizing Intelligence...</p>
-    </div>
-  );
+    payload = {
+        "records": [
+            {
+                "fields": clean_fields
+            }
+        ]
+    }
 
-  return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100 pb-20 font-sans selection:bg-emerald-500/30">
-      {/* --- REFINED NAV BAR --- */}
-      <nav className="border-b border-zinc-900 bg-[#09090b]/80 backdrop-blur-md sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <div className="h-10 w-10 rounded-lg bg-zinc-100 flex items-center justify-center text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-              <Activity className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 text-[10px] tracking-[0.3em] text-emerald-500 font-bold uppercase">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Live Signal Ledger</span>
-              </div>
-              <h1 className="text-lg font-light tracking-tight">Intelligence Dashboard</h1>
-            </div>
-          </div>
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(url, headers=headers, json=payload, timeout=10.0)
+            if response.status_code == 200:
+                logger.info(f"🟢 Airtable Sync Success for Lead: {lead_data.get('email')}")
+            else:
+                logger.error(f"❌ Airtable Sync Failed ({response.status_code}): {response.text}")
+        except Exception as e:
+            logger.error(f"🚨 Airtable Transport Error: {e}")
 
-          <div className="flex items-center gap-3">
-            <div className="flex bg-zinc-900 rounded-lg p-1 mr-4 border border-zinc-800">
-              <button 
-                onClick={() => setViewMode('ledger')}
-                className={`p-1.5 rounded-md transition-all ${viewMode === 'ledger' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
-              >
-                <List className="h-4 w-4" />
-              </button>
-              <button 
-                onClick={() => setViewMode('cards')}
-                className={`p-1.5 rounded-md transition-all ${viewMode === 'cards' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </button>
-            </div>
-            <button onClick={fetchData} className="p-2 hover:bg-zinc-900 rounded-full border border-zinc-800 transition-colors">
-              <RefreshCcw className={`h-4 w-4 text-zinc-400 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
-        </div>
-      </nav>
 
-      <div className="max-w-7xl mx-auto px-6 mt-12">
-        {groupedEntities.length > 0 ? (
-          viewMode === 'ledger' ? (
-            /* --- JURISTIC LEDGER VIEW --- */
-            <div className="border border-zinc-800 rounded-xl overflow-hidden bg-zinc-900/20 shadow-2xl">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-zinc-900/50 text-zinc-500 text-[10px] uppercase tracking-[0.2em] border-b border-zinc-800">
-                  <tr>
-                    <th className="px-6 py-5 font-bold">Entity Identity</th>
-                    <th className="px-6 py-5 font-bold">Jurisdiction / IP</th>
-                    <th className="px-6 py-5 font-bold text-center">Signals</th>
-                    <th className="px-6 py-5 font-bold text-right">Last Attribution</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-800/50">
-                  {groupedEntities.map(({ main: lead, totalHits }) => (
-                    <tr key={lead.ip_address} className="hover:bg-zinc-800/30 transition-colors group">
-                      <td className="px-6 py-6">
-                        <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded bg-zinc-800 flex items-center justify-center text-zinc-500 font-bold border border-zinc-700 group-hover:border-emerald-500/50 transition-colors">
-                            {lead.company_name?.charAt(0) || <Globe className="h-4 w-4" />}
-                          </div>
-                          <div>
-                            <div className="font-semibold text-zinc-100 group-hover:text-emerald-400 transition-colors leading-none mb-1">
-                              {lead.company_name || "Unresolved Juristic Entity"}
-                            </div>
-                            <div className="text-[11px] text-zinc-500 font-mono tracking-tighter">
-                              {lead.industry || 'Industrial'} • {lead.is_b2b ? 'B2B Locked' : 'General'}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-6">
-                        <div className="text-zinc-300 text-xs flex items-center gap-1.5">
-                          <MapPin className="h-3 w-3 text-zinc-600" />
-                          {lead.city || 'Hub'}, {lead.country || 'ZAF'}
-                        </div>
-                        <div className="text-[10px] text-zinc-500 font-mono mt-1 italic">{lead.ip_address}</div>
-                      </td>
-                      <td className="px-6 py-6 text-center">
-                        <span className="px-3 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-emerald-500 text-[10px] font-black uppercase tracking-widest group-hover:bg-emerald-500/10 transition-colors">
-                          {totalHits} Events
-                        </span>
-                      </td>
-                      <td className="px-6 py-6 text-right text-zinc-500 tabular-nums text-[11px]">
-                        {new Date(lead.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            /* --- FORENSIC CARD VIEW --- */
-            <div className="grid gap-8 max-w-5xl mx-auto">
-              {groupedEntities.map(({ main: lead, paths, totalHits }) => (
-                <div key={lead.ip_address} className="rounded-2xl border border-zinc-800 bg-zinc-900/30 transition-all hover:border-zinc-700 shadow-xl overflow-hidden group">
-                  <div className="p-8">
-                    <div className="flex justify-between items-start gap-4 mb-8">
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                          <h2 className="text-2xl font-bold tracking-tight text-white group-hover:text-emerald-400 transition-colors">
-                            {lead.company_name || "Unresolved Juristic Entity"}
-                          </h2>
-                          {lead.is_b2b && (
-                            <div className="flex items-center gap-1 rounded bg-emerald-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-emerald-500 border border-emerald-500/20">
-                              <ShieldCheck className="h-3 w-3" /> Juristic
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-4 text-zinc-500">
-                          <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest">
-                            <MapPin className="h-3.5 w-3.5" /> {lead.city || "Hub"}, {lead.country || "ZAF"}
-                          </div>
-                          <div className="font-mono text-[10px] bg-zinc-800 px-2 py-0.5 rounded border border-zinc-700 text-zinc-400">
-                            {lead.ip_address}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.2em] block mb-1">Capture Epoch</span>
-                        <p className="text-[11px] font-bold text-zinc-400 tabular-nums">{new Date(lead.created_at).toLocaleString()}</p>
-                      </div>
-                    </div>
+async def sync_to_notion(lead_data: Dict[str, Any], journey: Dict[str, Any]):
+    """
+    Phase 4: The Notion Vault Bridge.
+    Creates an itemized ledger entry mapping ALL associated firmographic,
+    behavioral, and DeepSeek intelligence assets to the Notion Workspace canvas.
+    """
+    if not settings.NOTION_TOKEN or not settings.NOTION_DATABASE_ID:
+        logger.warning("⚠️ Notion Sync skipped: Credentials not configured.")
+        return
 
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 mb-4">
-                        <MousePointer2 className="h-3 w-3 text-emerald-500" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">Interaction Intelligence</span>
-                      </div>
-                      {paths.map((p, idx) => (
-                        <div key={idx} className="flex items-center justify-between bg-zinc-800/40 rounded-xl p-4 border border-zinc-800/60 hover:bg-zinc-800/60 transition-colors">
-                          <div className="flex items-center gap-3">
-                            <Zap className="h-3.5 w-3.5 text-emerald-500" />
-                            <span className="text-xs font-mono font-bold text-zinc-300">{getPathname(p.url)}</span>
-                          </div>
-                          <div className="flex items-center gap-8 text-right">
-                            <div>
-                              <div className="text-[8px] uppercase text-zinc-600 font-black tracking-widest">Dwell</div>
-                              <div className="text-[11px] font-mono font-bold text-zinc-100">{p.duration}s</div>
-                            </div>
-                            <div>
-                              <div className="text-[8px] uppercase text-zinc-600 font-black tracking-widest">Signal</div>
-                              <div className="text-[11px] font-mono font-bold text-emerald-500">{p.hits}x</div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="px-8 py-4 bg-zinc-900/60 border-t border-zinc-800 flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-zinc-500">
-                    <span className="flex items-center gap-2 italic">Ref: {lead.referrer || "Direct Ingress"}</span>
-                    <button className="flex items-center gap-1 hover:text-emerald-500 transition-colors group/btn">
-                      Trace Source <ChevronRight className="h-3 w-3 group-hover/btn:translate-x-0.5 transition-transform" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )
-        ) : (
-          <div className="text-center py-40 rounded-3xl border border-dashed border-zinc-800 bg-zinc-900/10">
-            <Activity className="h-10 w-10 text-zinc-800 mb-4 mx-auto" />
-            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">No Signal Attributed</h3>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+    url = "https://api.notion.com/v1/pages"
+    
+    headers = {
+        "Authorization": f"Bearer {settings.NOTION_TOKEN}",
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28"
+    }
+
+    # Extract clean parameters with fallback safe-guards
+    company_name = lead_data.get("company_name_final") or lead_data.get("company_name") or "Anonymous Entity"
+    lead_name = lead_data.get("name") or "Unknown Lead"
+    email = lead_data.get("email") or "unknown@entity.co.za"
+    position = lead_data.get("position") or "Evaluator"
+    department = lead_data.get("department") or "Undetermined"
+    industry = lead_data.get("industry") or "Industrial"
+    website_url = lead_data.get("website") or "https://auraworks.co.za"
+    
+    # Extract journey stats
+    total_touches = str(journey.get("total_touches", "1"))
+    pathway_text = journey.get("pathway") or "Direct Ingestion"
+    summary_text = journey.get("intent_summary") or "No intelligence data compiled."
+    
+    # Location data mapping
+    city = lead_data.get("city") or journey.get("city") or "Unknown"
+    region = lead_data.get("region") or journey.get("region") or "ZA"
+    location_str = f"{city}, {region}"
+
+    # Deeply structured properties to map ALL parameters into Notion types
+    payload = {
+        "parent": {"database_id": settings.NOTION_DATABASE_ID},
+        "properties": {
+            "Entity": {
+                "title": [{"text": {"content": company_name}}]
+            },
+            "Lead Name": {
+                "rich_text": [{"text": {"content": lead_name}}]
+            },
+            "Email": {
+                "email": email
+            },
+            "Position": {
+                "rich_text": [{"text": {"content": position}}]
+            },
+            "Department": {
+                "rich_text": [{"text": {"content": department}}]
+            },
+            "Industry": {
+                "rich_text": [{"text": {"content": industry}}]
+            },
+            "Location": {
+                "rich_text": [{"text": {"content": location_str}}]
+            },
+            "Total Touches": {
+                "rich_text": [{"text": {"content": total_touches}}]
+            },
+            "URL": {
+                "url": website_url if website_url.startswith("http") else f"https://{website_url}"
+            },
+            "Status": {
+                "select": {"name": "New Lead"}
+            }
+        },
+        "children": [
+            {
+                "object": "block",
+                "type": "heading_2",
+                "heading_2": {
+                    "rich_text": [{"type": "text", "text": {"content": "DeepSeek Industrial Intent Analysis"}}]
+                }
+            },
+            {
+                "object": "block",
+                "type": "paragraph",
+                "paragraph": {
+                    "rich_text": [{"type": "text", "text": {"content": summary_text}}]
+                }
+            },
+            {
+                "object": "block",
+                "type": "heading_2",
+                "heading_2": {
+                    "rich_text": [{"type": "text", "text": {"content": "Complete Behavioral Pathway Trail"}}]
+                }
+            },
+            {
+                "object": "block",
+                "type": "paragraph",
+                "paragraph": {
+                    "rich_text": [{"type": "text", "text": {"content": pathway_text}}]
+                }
+            }
+        ]
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(url, headers=headers, json=payload, timeout=10.0)
+            if response.status_code in [200, 201]:
+                logger.info(f"🟢 Notion Sync Success for Entity: {company_name}")
+            else:
+                logger.error(f"❌ Notion Sync Failed ({response.status_code}): {response.text}")
+        except Exception as e:
+            logger.error(f"🚨 Notion Transport Error: {e}")
 </file>
 
 <file path="frontend/src/components/consent-banner/lead-enrichment-slide.tsx">
@@ -10242,6 +10296,258 @@ export default function RootLayout({ children }) {
 }
 </file>
 
+<file path="frontend/src/components/sections/form/get-started.tsx">
+'use client'
+
+import React, { useState, type FormEvent } from 'react'
+import { 
+    Building2, Mail, User, Briefcase, ArrowLeft, 
+    Globe, BarChart3, Tag, Database, Loader2, 
+    Lock, ArrowRight, CheckCircle, ChevronDown
+} from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import Link from 'next/link'
+import { cn } from '@/lib/utils'
+import { submitToWaitlist } from "@/lib/api";
+
+export default function GetStartedPage() {
+    const [step, setStep] = useState(1)
+    const [isLoading, setIsLoading] = useState(false)
+    const [isSuccess, setIsSuccess] = useState(false)
+    
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        company: '',
+        industry: '',
+        website: '',
+        traffic: '',
+        avg_price: '', 
+        crm: ''
+    })
+
+    const handleNext = (e: FormEvent) => {
+        e.preventDefault()
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(formData.email)) {
+            alert("Please enter a valid work email address.")
+            return
+        }
+        setStep(2)
+    }
+
+    const handleSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        
+        try {
+            const aura_id = typeof window !== 'undefined' ? localStorage.getItem('aura_uid') : null;
+            await submitToWaitlist({
+                ...formData,
+                aura_id: aura_id
+            });
+            setIsSuccess(true);
+        } catch (error: any) {
+            console.error("Submission Error:", error);
+            alert("System Update: We encountered a synchronization delay. Please try again in a moment.");
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    return (
+        <main className="relative min-h-screen flex items-center justify-center bg-background px-6 py-12 overflow-hidden">
+            <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-full opacity-30 [background:radial-gradient(50%_50%_at_50%_10%_var(--color-primary)_0%,transparent_100%)] blur-3xl" />
+            </div>
+
+            <div className="w-full max-w-xl relative">
+                
+                <div className="mb-8 flex items-center justify-between">
+                    {step === 1 ? (
+                        <Button variant="ghost" asChild className="-ml-2 text-muted-foreground hover:text-foreground">
+                            <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link>
+                        </Button>
+                    ) : (
+                        <Button variant="ghost" onClick={() => setStep(1)} className="-ml-2 text-muted-foreground hover:text-foreground">
+                            <ArrowLeft className="mr-2 h-4 w-4" /> Previous Step
+                        </Button>
+                    )}
+
+                    <div className="flex items-center gap-3">
+                        <div className="flex gap-1">
+                            <div className={cn("h-1.5 w-6 rounded-full transition-all duration-500", step === 1 ? "bg-primary" : "bg-muted")} />
+                            <div className={cn("h-1.5 w-6 rounded-full transition-all duration-500", step === 2 ? "bg-primary" : "bg-muted")} />
+                        </div>
+                        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
+                            Phase 0{step}
+                        </span>
+                    </div>
+                </div>
+
+                <div className="relative overflow-hidden rounded-3xl border bg-card/50 backdrop-blur-sm shadow-2xl">
+                    {isSuccess ? (
+                        <div className="p-12 text-center animate-in fade-in zoom-in duration-500">
+                            <div className="mb-6 flex justify-center">
+                                <div className="rounded-full bg-primary/10 p-3">
+                                    <CheckCircle className="h-12 w-12 text-primary" />
+                                </div>
+                            </div>
+                            <h2 className="text-3xl font-bold tracking-tight">Audit Initiated</h2>
+                            <p className="text-muted-foreground mt-4 text-sm max-w-sm mx-auto">
+                                Thank you, {formData.name.split(' ')[0]}. We've added {formData.company} to the Phase 01 queue. 
+                            </p>
+                            <Button asChild variant="outline" className="mt-8 rounded-xl">
+                                <Link href="/">Return to Home</Link>
+                            </Button>
+                        </div>
+                    ) : (
+                        <div 
+                            className="flex transition-transform duration-700 ease-[cubic-bezier(0.87,_0,_0.13,_1)]" 
+                            style={{ transform: `translateX(-${(step - 1) * 100}%)` }}
+                        >
+                            
+                            {/* STEP 1: Identification */}
+                            <div className="w-full shrink-0 p-8 md:p-12">
+                                <div className="mb-10">
+                                    <h1 className="text-3xl font-bold tracking-tight">Identity</h1>
+                                    <p className="text-muted-foreground mt-2 text-sm">Basic credentials for the 100-partner cohort.</p>
+                                </div>
+
+                                <form onSubmit={handleNext} className="grid gap-6">
+                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                        <div className="space-y-2">
+                                            <Label>Full Name</Label>
+                                            <div className="relative">
+                                                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                                <Input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="John Doe" className="pl-10 rounded-xl bg-muted/30" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Work Email</Label>
+                                            <div className="relative">
+                                                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                                <Input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="john@mining.co.za" className="pl-10 rounded-xl bg-muted/30" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Company Name</Label>
+                                        <div className="relative">
+                                            <Building2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <Input required value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} placeholder="e.g. Rand Industrial" className="pl-10 rounded-xl bg-muted/30" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Industry</Label>
+                                        <div className="relative">
+                                            <Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <select required value={formData.industry} onChange={e => setFormData({...formData, industry: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm outline-none appearance-none">
+                                                <option value="">Select industry...</option>
+                                                <option value="mining">Mining & Resources</option>
+                                                <option value="manufacturing">Manufacturing</option>
+                                                <option value="logistics">Logistics</option>
+                                                <option value="construction">Heavy Construction</option>
+                                                <option value="other">Other Industrial</option>
+                                            </select>
+                                            <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                                        </div>
+                                    </div>
+                                    <Button type="submit" size="lg" className="mt-4 rounded-xl font-bold group">
+                                        Continue to Audit <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                    </Button>
+                                </form>
+                            </div>
+
+                            {/* STEP 2: Qualification */}
+                            <div className="w-full shrink-0 p-8 md:p-12">
+                                <div className="mb-10">
+                                    <h2 className="text-3xl font-bold tracking-tight">Audit</h2>
+                                    <p className="text-muted-foreground mt-2 text-sm">System markers for ROI calculation.</p>
+                                </div>
+
+                                <form onSubmit={handleSubmit} className="grid gap-6">
+                                    <div className="space-y-2">
+                                        <Label>Website Link</Label>
+                                        <div className="relative">
+                                            <Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <Input required value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} placeholder="https://..." className="pl-10 rounded-xl bg-muted/30" />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                        <div className="space-y-2">
+                                            <Label>Monthly Traffic</Label>
+                                            <div className="relative">
+                                                <BarChart3 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                                <select required value={formData.traffic} onChange={e => setFormData({...formData, traffic: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm outline-none appearance-none">
+                                                    <option value="">Select range...</option>
+                                                    <option value="0-1k">0 - 1,000</option>
+                                                    <option value="1k-5k">1,000 - 5,000</option>
+                                                    <option value="5k-20k">5,000 - 20,000</option>
+                                                    <option value="20k+">20,000+</option>
+                                                </select>
+                                                <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Avg Product Price</Label>
+                                            <div className="relative">
+                                                <Tag className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                                {/* UPDATED: Structured Dropdown for Average Price */}
+                                                <select 
+                                                    required 
+                                                    value={formData.avg_price} 
+                                                    onChange={e => setFormData({...formData, avg_price: e.target.value})} 
+                                                    className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm outline-none appearance-none"
+                                                >
+                                                    <option value="">Select range...</option>
+                                                    <option value="10k-50k">R10,000 - R50,000</option>
+                                                    <option value="50k-150k">R50,000 - R150,000</option>
+                                                    <option value="150k-500k">R150,000 - R500,000</option>
+                                                    <option value="500k-1m">R500,000 - R1,000,000</option>
+                                                    <option value="1m+">R1,000,000+</option>
+                                                </select>
+                                                <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>CRM System</Label>
+                                        <div className="relative">
+                                            <Database className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                            <select required value={formData.crm} onChange={e => setFormData({...formData, crm: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm outline-none appearance-none">
+                                                <option value="">Select CRM...</option>
+                                                <option value="hubspot">HubSpot</option>
+                                                <option value="salesforce">Salesforce</option>
+                                                <option value="pipedrive">Pipedrive</option>
+                                                <option value="zoho">Zoho</option>
+                                                <option value="other">Other / Custom</option>
+                                                <option value="none">No CRM</option>
+                                            </select>
+                                            <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                                        </div>
+                                    </div>
+                                    <Button type="submit" disabled={isLoading} size="lg" className="mt-4 rounded-xl font-bold shadow-xl shadow-primary/20">
+                                        {isLoading ? <Loader2 className="animate-spin" /> : "Request Access"}
+                                    </Button>
+                                </form>
+                            </div>
+
+                        </div>
+                    )}
+                </div>
+
+                <div className="mt-10 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.3em] font-bold text-muted-foreground/40">
+                    <Lock className="h-3 w-3" /> Secure Infrastructure Pipeline
+                </div>
+            </div>
+        </main>
+    )
+}
+</file>
+
 <file path="tracker/src/public/aura.js">
 /**
  * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
@@ -10588,258 +10894,6 @@ class PageViewCreate(SQLModel):
     event_type: str = "exit"
     intent_cluster: Optional[str] = None
     signature: Optional[Dict[str, Any]] = None # Transmits Canvas/WebGL data to the Identity Bridge
-</file>
-
-<file path="frontend/src/components/sections/form/get-started.tsx">
-'use client'
-
-import React, { useState, type FormEvent } from 'react'
-import { 
-    Building2, Mail, User, Briefcase, ArrowLeft, 
-    Globe, BarChart3, Tag, Database, Loader2, 
-    Lock, ArrowRight, CheckCircle, ChevronDown
-} from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import Link from 'next/link'
-import { cn } from '@/lib/utils'
-import { submitToWaitlist } from "@/lib/api";
-
-export default function GetStartedPage() {
-    const [step, setStep] = useState(1)
-    const [isLoading, setIsLoading] = useState(false)
-    const [isSuccess, setIsSuccess] = useState(false)
-    
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        company: '',
-        industry: '',
-        website: '',
-        traffic: '',
-        avg_price: '', 
-        crm: ''
-    })
-
-    const handleNext = (e: FormEvent) => {
-        e.preventDefault()
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!emailRegex.test(formData.email)) {
-            alert("Please enter a valid work email address.")
-            return
-        }
-        setStep(2)
-    }
-
-    const handleSubmit = async (e: FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
-        
-        try {
-            const aura_id = typeof window !== 'undefined' ? localStorage.getItem('aura_uid') : null;
-            await submitToWaitlist({
-                ...formData,
-                aura_id: aura_id
-            });
-            setIsSuccess(true);
-        } catch (error: any) {
-            console.error("Submission Error:", error);
-            alert("System Update: We encountered a synchronization delay. Please try again in a moment.");
-        } finally {
-            setIsLoading(false);
-        }
-    }
-
-    return (
-        <main className="relative min-h-screen flex items-center justify-center bg-background px-6 py-12 overflow-hidden">
-            <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-full opacity-30 [background:radial-gradient(50%_50%_at_50%_10%_var(--color-primary)_0%,transparent_100%)] blur-3xl" />
-            </div>
-
-            <div className="w-full max-w-xl relative">
-                
-                <div className="mb-8 flex items-center justify-between">
-                    {step === 1 ? (
-                        <Button variant="ghost" asChild className="-ml-2 text-muted-foreground hover:text-foreground">
-                            <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link>
-                        </Button>
-                    ) : (
-                        <Button variant="ghost" onClick={() => setStep(1)} className="-ml-2 text-muted-foreground hover:text-foreground">
-                            <ArrowLeft className="mr-2 h-4 w-4" /> Previous Step
-                        </Button>
-                    )}
-
-                    <div className="flex items-center gap-3">
-                        <div className="flex gap-1">
-                            <div className={cn("h-1.5 w-6 rounded-full transition-all duration-500", step === 1 ? "bg-primary" : "bg-muted")} />
-                            <div className={cn("h-1.5 w-6 rounded-full transition-all duration-500", step === 2 ? "bg-primary" : "bg-muted")} />
-                        </div>
-                        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
-                            Phase 0{step}
-                        </span>
-                    </div>
-                </div>
-
-                <div className="relative overflow-hidden rounded-3xl border bg-card/50 backdrop-blur-sm shadow-2xl">
-                    {isSuccess ? (
-                        <div className="p-12 text-center animate-in fade-in zoom-in duration-500">
-                            <div className="mb-6 flex justify-center">
-                                <div className="rounded-full bg-primary/10 p-3">
-                                    <CheckCircle className="h-12 w-12 text-primary" />
-                                </div>
-                            </div>
-                            <h2 className="text-3xl font-bold tracking-tight">Audit Initiated</h2>
-                            <p className="text-muted-foreground mt-4 text-sm max-w-sm mx-auto">
-                                Thank you, {formData.name.split(' ')[0]}. We've added {formData.company} to the Phase 01 queue. 
-                            </p>
-                            <Button asChild variant="outline" className="mt-8 rounded-xl">
-                                <Link href="/">Return to Home</Link>
-                            </Button>
-                        </div>
-                    ) : (
-                        <div 
-                            className="flex transition-transform duration-700 ease-[cubic-bezier(0.87,_0,_0.13,_1)]" 
-                            style={{ transform: `translateX(-${(step - 1) * 100}%)` }}
-                        >
-                            
-                            {/* STEP 1: Identification */}
-                            <div className="w-full shrink-0 p-8 md:p-12">
-                                <div className="mb-10">
-                                    <h1 className="text-3xl font-bold tracking-tight">Identity</h1>
-                                    <p className="text-muted-foreground mt-2 text-sm">Basic credentials for the 100-partner cohort.</p>
-                                </div>
-
-                                <form onSubmit={handleNext} className="grid gap-6">
-                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                        <div className="space-y-2">
-                                            <Label>Full Name</Label>
-                                            <div className="relative">
-                                                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                                <Input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="John Doe" className="pl-10 rounded-xl bg-muted/30" />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Work Email</Label>
-                                            <div className="relative">
-                                                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                                <Input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="john@mining.co.za" className="pl-10 rounded-xl bg-muted/30" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Company Name</Label>
-                                        <div className="relative">
-                                            <Building2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <Input required value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} placeholder="e.g. Rand Industrial" className="pl-10 rounded-xl bg-muted/30" />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Industry</Label>
-                                        <div className="relative">
-                                            <Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <select required value={formData.industry} onChange={e => setFormData({...formData, industry: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm outline-none appearance-none">
-                                                <option value="">Select industry...</option>
-                                                <option value="mining">Mining & Resources</option>
-                                                <option value="manufacturing">Manufacturing</option>
-                                                <option value="logistics">Logistics</option>
-                                                <option value="construction">Heavy Construction</option>
-                                                <option value="other">Other Industrial</option>
-                                            </select>
-                                            <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
-                                        </div>
-                                    </div>
-                                    <Button type="submit" size="lg" className="mt-4 rounded-xl font-bold group">
-                                        Continue to Audit <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                                    </Button>
-                                </form>
-                            </div>
-
-                            {/* STEP 2: Qualification */}
-                            <div className="w-full shrink-0 p-8 md:p-12">
-                                <div className="mb-10">
-                                    <h2 className="text-3xl font-bold tracking-tight">Audit</h2>
-                                    <p className="text-muted-foreground mt-2 text-sm">System markers for ROI calculation.</p>
-                                </div>
-
-                                <form onSubmit={handleSubmit} className="grid gap-6">
-                                    <div className="space-y-2">
-                                        <Label>Website Link</Label>
-                                        <div className="relative">
-                                            <Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <Input required value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} placeholder="https://..." className="pl-10 rounded-xl bg-muted/30" />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                        <div className="space-y-2">
-                                            <Label>Monthly Traffic</Label>
-                                            <div className="relative">
-                                                <BarChart3 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                                <select required value={formData.traffic} onChange={e => setFormData({...formData, traffic: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm outline-none appearance-none">
-                                                    <option value="">Select range...</option>
-                                                    <option value="0-1k">0 - 1,000</option>
-                                                    <option value="1k-5k">1,000 - 5,000</option>
-                                                    <option value="5k-20k">5,000 - 20,000</option>
-                                                    <option value="20k+">20,000+</option>
-                                                </select>
-                                                <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Avg Product Price</Label>
-                                            <div className="relative">
-                                                <Tag className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                                {/* UPDATED: Structured Dropdown for Average Price */}
-                                                <select 
-                                                    required 
-                                                    value={formData.avg_price} 
-                                                    onChange={e => setFormData({...formData, avg_price: e.target.value})} 
-                                                    className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm outline-none appearance-none"
-                                                >
-                                                    <option value="">Select range...</option>
-                                                    <option value="10k-50k">R10,000 - R50,000</option>
-                                                    <option value="50k-150k">R50,000 - R150,000</option>
-                                                    <option value="150k-500k">R150,000 - R500,000</option>
-                                                    <option value="500k-1m">R500,000 - R1,000,000</option>
-                                                    <option value="1m+">R1,000,000+</option>
-                                                </select>
-                                                <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>CRM System</Label>
-                                        <div className="relative">
-                                            <Database className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                            <select required value={formData.crm} onChange={e => setFormData({...formData, crm: e.target.value})} className="flex h-10 w-full rounded-xl border border-input bg-muted/30 pl-10 pr-3 py-2 text-sm outline-none appearance-none">
-                                                <option value="">Select CRM...</option>
-                                                <option value="hubspot">HubSpot</option>
-                                                <option value="salesforce">Salesforce</option>
-                                                <option value="pipedrive">Pipedrive</option>
-                                                <option value="zoho">Zoho</option>
-                                                <option value="other">Other / Custom</option>
-                                                <option value="none">No CRM</option>
-                                            </select>
-                                            <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
-                                        </div>
-                                    </div>
-                                    <Button type="submit" disabled={isLoading} size="lg" className="mt-4 rounded-xl font-bold shadow-xl shadow-primary/20">
-                                        {isLoading ? <Loader2 className="animate-spin" /> : "Request Access"}
-                                    </Button>
-                                </form>
-                            </div>
-
-                        </div>
-                    )}
-                </div>
-
-                <div className="mt-10 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.3em] font-bold text-muted-foreground/40">
-                    <Lock className="h-3 w-3" /> Secure Infrastructure Pipeline
-                </div>
-            </div>
-        </main>
-    )
-}
 </file>
 
 <file path="backend/app/core/config.py">
@@ -11378,244 +11432,6 @@ async def get_admin_summary(session: AsyncSession = Depends(get_async_session)):
     }
 </file>
 
-<file path="backend/app/api/v1/waitlist.py">
-# backend/app/api/v1/waitlist.py
-import logging
-from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
-from sqlmodel import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.db import get_async_session, async_session_maker
-from app.models.waitlist import WaitlistLead 
-from app.models.company import Company
-from app.models.visit import Visit
-from app.services.intelligence import get_visitor_journey
-# PHASE 1: Import the new Resend notification engine
-from app.services.email import send_waitlist_success_email
-
-router = APIRouter()
-logger = logging.getLogger("uvicorn")
-
-# --- UTILS: Industrial Formatting ---
-def format_zar(value: str) -> str:
-    """Standardizes South African currency strings for industrial reporting."""
-    if not value: 
-        return "N/A"
-    
-    val_str = str(value).strip().lower()
-    if "m" in val_str: 
-        return "R1,000,000+"
-    if "-" in val_str:
-        parts = val_str.replace('k', '000').split('-')
-        try:
-            formatted_parts = [f"R{int(p.strip()):,}" for p in parts]
-            return " - ".join(formatted_parts)
-        except: 
-            return str(value)
-            
-    clean_value = "".join(filter(str.isdigit, val_str.replace('k', '000')))
-    return f"R{int(clean_value):,}" if clean_value else str(value)
-
-async def background_lead_analysis(lead_id: int, aura_id: str, payload: dict):
-    """
-    Sequential Forensic Orchestration Engine.
-    Holds back external system sinks (Slack, Airtable) until DeepSeek 
-    and firmographic intelligence have fully compiled their data.
-    """
-    if not async_session_maker:
-        logger.error("❌ background_lead_analysis: Aborted. Async Engine offline.")
-        return
-
-    async with async_session_maker() as session:
-        try:
-            logger.info(f"⏳ Ingesting Sequential Audit Pipeline for Lead ID: {lead_id}")
-
-            # 1. Pull the fresh lead record to get the linked company context
-            lead_stmt = select(WaitlistLead).where(WaitlistLead.id == lead_id)
-            lead_res = await session.execute(lead_stmt)
-            lead = lead_res.scalars().first()
-
-            if not lead:
-                logger.error(f"❌ Sequential Pipeline Error: Lead ID {lead_id} not found in DB.")
-                return
-
-            # 2. Compile Unified Journey & Ghost Enrichment (Awaits DeepSeek completely before proceeding)
-            journey = await get_visitor_journey(aura_id, session)
-
-            # 3. Pull resolved company context for notifications
-            company_name = "Anonymous Entity"
-            if lead.company_id:
-                company = await session.get(Company, lead.company_id)
-                if company:
-                    company_name = company.name
-            elif lead.company_name_raw:
-                company_name = lead.company_name_raw
-
-            # 4. Pack the complete, unified data dictionary
-            complete_lead_payload = {
-                "id": lead.id,
-                "aura_id": lead.aura_id,
-                "name": lead.name,
-                "email": lead.email,
-                "company_name_final": company_name,
-                "department": lead.department or "Undetermined",
-                "position": lead.position or "Evaluator",
-                "industry": lead.industry or "Industrial",
-                "website": lead.website or "N/A",
-                "capture_source": "waitlist_conversion",
-                "traffic": lead.traffic or "N/A",
-                "avg_price": lead.avg_price or "N/A"
-            }
-
-            logger.info(f"✨ DeepSeek Data compiled for Lead ID {lead_id}. Releasing external notification gates...")
-
-            # =================================================================
-            # 5. RELEASE GATES: Dispatch completed data packets sequentially
-            # =================================================================
-            
-            # Dispatch Premium Identity Promotion Alert to Slack with full data resolved
-            from app.services.notifications import post_to_slack
-            await post_to_slack(lead_data=complete_lead_payload, journey=journey)
-
-            # PHASE 3: The Airtable Bridge
-            from app.services.vault import sync_to_airtable
-            await sync_to_airtable(complete_lead_payload, journey)
-            
-            # PHASE 4: Notion Bridge (Deferred)
-            await sync_to_notion(complete_lead_payload, journey)
-            from app.services.vault import sync_to_notion
-
-            logger.info(f"✅ Full Synchronization Cycle Complete for Lead ID: {lead_id}")
-
-        except Exception as e:
-            logger.error(f"🚨 Sequential Lead Pipeline Failure for Lead ID {lead_id}: {e}")
-
-@router.post("/join")
-async def join_waitlist(
-    payload: dict, 
-    background_tasks: BackgroundTasks,
-    session: AsyncSession = Depends(get_async_session)
-):
-    """
-    The Promotion Engine: 
-    Converts anonymous traffic into a POPIA-consented 'Warm Lead'.
-    Synchronizes volunteered company data with backend forensic signatures.
-    """
-    logger.info(f"--- 📡 AURA SIGNAL: [PROMOTION INITIATED] ---")
-    
-    email = payload.get("email")
-    aura_id = payload.get("aura_id")
-    client_id = payload.get("client_id") # Anchor for multi-tenancy
-    raw_company_name = payload.get("company") or payload.get("company_name")
-    website = payload.get("website")
-    recipient_name = payload.get("name")
-
-    if not email or not client_id:
-        raise HTTPException(status_code=400, detail="Incomplete lead parameters (Email/Client ID missing).")
-
-    try:
-        # 1. Resolve Jurisdictive Entity (Company Anchor)
-        domain = None
-        if website:
-            domain = website.replace("https://", "").replace("http://", "").split("/")[0].lower()
-        
-        # Search for company by domain or name within the specific client's silo
-        company_stmt = select(Company).where(
-            (Company.client_id == client_id) & 
-            ((Company.domain == domain) if domain else (Company.name == raw_company_name))
-        )
-        res_company = await session.execute(company_stmt)
-        company = res_company.scalars().first()
-
-        if not company:
-            # Create a new Juristic record if this is a first-time encounter
-            company = Company(
-                client_id=client_id,
-                name=raw_company_name or "Unknown Industrial Entity", 
-                domain=domain,
-                industry=payload.get("industry"),
-                is_verified=True # Direct form submission serves as manual verification
-            )
-            session.add(company)
-            await session.commit()
-            await session.refresh(company)
-
-        # 2. Identity Promotion & Lead Deep-Merge
-        # Check if we already have a partial record for this person
-        lead_stmt = select(WaitlistLead).where(
-            WaitlistLead.email == email,
-            WaitlistLead.client_id == client_id
-        )
-        res_lead = await session.execute(lead_stmt)
-        lead = res_lead.scalars().first()
-        
-        if not lead and aura_id:
-            # Fallback: check if we have a record based on their browser ID
-            aura_lead_stmt = select(WaitlistLead).where(
-                WaitlistLead.aura_id == aura_id,
-                WaitlistLead.client_id == client_id
-            )
-            res_aura = await session.execute(aura_lead_stmt)
-            lead = res_aura.scalars().first()
-
-        if not lead:
-            lead = WaitlistLead(email=email, client_id=client_id, aura_id=aura_id)
-        
-        # Merge volunteered context into the Lead object
-        lead.name = recipient_name or lead.name
-        lead.email = email
-        lead.company_id = company.id
-        lead.company_name_raw = raw_company_name or lead.company_name_raw
-        lead.department = payload.get("department") or lead.department
-        lead.position = payload.get("position") or payload.get("job_title") or lead.position
-        lead.industry = payload.get("industry") or lead.industry
-        lead.website = website or lead.website
-        
-        # Industrial-specific metrics formatting normalization
-        lead.traffic = payload.get("traffic")
-        lead.avg_price = format_zar(payload.get("avg_price")) if payload.get("avg_price") else lead.avg_price
-        lead.aura_id = aura_id or lead.aura_id
-        
-        session.add(lead)
-
-        # 3. Forensic Stitching & The Janitor Shield
-        # Promote all historical visits to 'verified' to prevent 48h automated deletion
-        if aura_id:
-            visit_stmt = select(Visit).where(Visit.aura_id == aura_id)
-            res_visits = await session.execute(visit_stmt)
-            past_visits = res_visits.scalars().all()
-            for v in past_visits:
-                v.is_consented = True
-                v.verification_status = "verified" # The Janitor Shield active
-                v.company_id = company.id
-                session.add(v)
-
-        await session.commit()
-        await session.refresh(lead)
-
-        # 4. DEFERRED JOURNEY MAPPING & NOTIFICATIONS
-        # Launch heavy intelligence analysis without blocking the UI response
-        background_tasks.add_task(
-            background_lead_analysis, 
-            lead_id=lead.id, 
-            aura_id=aura_id, 
-            payload=payload
-        )
-        
-        # PHASE 1: Schedule the Resend confirmation email dispatch asynchronously
-        background_tasks.add_task(
-            send_waitlist_success_email,
-            recipient_email=email,
-            recipient_name=recipient_name
-        )
-        
-        return {"status": "success", "message": "Lead promoted and forensic history shielded. Confirmation queued."}
-
-    except Exception as e:
-        await session.rollback()
-        logger.error(f"🚨 Promotion Failure: {e}")
-        raise HTTPException(status_code=500, detail="Industrial sync failed during promotion.")
-</file>
-
 <file path="backend/app/api/v1/track.py">
 # backend/app/api/v1/track.py
 from fastapi import APIRouter, BackgroundTasks, Request, Header, HTTPException
@@ -11917,6 +11733,247 @@ async def track_exit(payload: PageViewCreate, background_tasks: BackgroundTasks)
         background_tasks.add_task(process_exit_logic, target_aura_id, payload.client_id)
 
     return {"status": "recorded"}
+</file>
+
+<file path="backend/app/api/v1/waitlist.py">
+# backend/app/api/v1/waitlist.py
+import logging
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db import get_async_session, async_session_maker
+from app.models.waitlist import WaitlistLead 
+from app.models.company import Company
+from app.models.visit import Visit
+from app.services.intelligence import get_visitor_journey
+# PHASE 1: Import the new Resend notification engine
+from app.services.email import send_waitlist_success_email
+
+# GLOBALLY IMPORT THE VAULT BRIDGES TO FIX SCOPE ERRORS
+from app.services.vault import sync_to_airtable, sync_to_notion
+
+router = APIRouter()
+logger = logging.getLogger("uvicorn")
+
+# --- UTILS: Industrial Formatting ---
+def format_zar(value: str) -> str:
+    """Standardizes South African currency strings for industrial reporting."""
+    if not value: 
+        return "N/A"
+    
+    val_str = str(value).strip().lower()
+    if "m" in val_str: 
+        return "R1,000,000+"
+    if "-" in val_str:
+        parts = val_str.replace('k', '000').split('-')
+        try:
+            formatted_parts = [f"R{int(p.strip()):,}" for p in parts]
+            return " - ".join(formatted_parts)
+        except: 
+            return str(value)
+            
+    clean_value = "".join(filter(str.isdigit, val_str.replace('k', '000')))
+    return f"R{int(clean_value):,}" if clean_value else str(value)
+
+async def background_lead_analysis(lead_id: int, aura_id: str, payload: dict):
+    """
+    Sequential Forensic Orchestration Engine.
+    Holds back external system sinks (Slack, Airtable) until DeepSeek 
+    and firmographic intelligence have fully compiled their data.
+    """
+    if not async_session_maker:
+        logger.error("❌ background_lead_analysis: Aborted. Async Engine offline.")
+        return
+
+    async with async_session_maker() as session:
+        try:
+            logger.info(f"⏳ Ingesting Sequential Audit Pipeline for Lead ID: {lead_id}")
+
+            # 1. Pull the fresh lead record to get the linked company context
+            lead_stmt = select(WaitlistLead).where(WaitlistLead.id == lead_id)
+            lead_res = await session.execute(lead_stmt)
+            lead = lead_res.scalars().first()
+
+            if not lead:
+                logger.error(f"❌ Sequential Pipeline Error: Lead ID {lead_id} not found in DB.")
+                return
+
+            # 2. Compile Unified Journey & Ghost Enrichment (Awaits DeepSeek completely before proceeding)
+            journey = await get_visitor_journey(aura_id, session)
+
+            # 3. Pull resolved company context for notifications
+            company_name = "Anonymous Entity"
+            if lead.company_id:
+                company = await session.get(Company, lead.company_id)
+                if company:
+                    company_name = company.name
+            elif lead.company_name_raw:
+                company_name = lead.company_name_raw
+
+            # 4. Pack the complete, unified data dictionary
+            complete_lead_payload = {
+                "id": lead.id,
+                "aura_id": lead.aura_id,
+                "name": lead.name,
+                "email": lead.email,
+                "company_name_final": company_name,
+                "department": lead.department or "Undetermined",
+                "position": lead.position or "Evaluator",
+                "industry": lead.industry or "Industrial",
+                "website": lead.website or "N/A",
+                "capture_source": "waitlist_conversion",
+                "traffic": lead.traffic or "N/A",
+                "avg_price": lead.avg_price or "N/A",
+                "city": journey.get("city", "Unknown"),
+                "region": journey.get("region", "ZA")
+            }
+
+            logger.info(f"✨ DeepSeek Data compiled for Lead ID {lead_id}. Releasing external notification gates...")
+
+            # =================================================================
+            # 5. RELEASE GATES: Dispatch completed data packets sequentially
+            # =================================================================
+            
+            # Dispatch Premium Identity Promotion Alert to Slack with full data resolved
+            from app.services.notifications import post_to_slack
+            await post_to_slack(lead_data=complete_lead_payload, journey=journey)
+
+            # PHASE 3: The Airtable Bridge
+            await sync_to_airtable(complete_lead_payload, journey)
+            
+            # PHASE 4: The Notion Bridge
+            await sync_to_notion(complete_lead_payload, journey)
+
+            logger.info(f"✅ Full Synchronization Cycle Complete for Lead ID: {lead_id}")
+
+        except Exception as e:
+            logger.error(f"🚨 Sequential Lead Pipeline Failure for Lead ID {lead_id}: {e}")
+
+@router.post("/join")
+async def join_waitlist(
+    payload: dict, 
+    background_tasks: BackgroundTasks,
+    session: AsyncSession = Depends(get_async_session)
+):
+    """
+    The Promotion Engine: 
+    Converts anonymous traffic into a POPIA-consented 'Warm Lead'.
+    Synchronizes volunteered company data with backend forensic signatures.
+    """
+    logger.info(f"--- 📡 AURA SIGNAL: [PROMOTION INITIATED] ---")
+    
+    email = payload.get("email")
+    aura_id = payload.get("aura_id")
+    client_id = payload.get("client_id") # Anchor for multi-tenancy
+    raw_company_name = payload.get("company") or payload.get("company_name")
+    website = payload.get("website")
+    recipient_name = payload.get("name")
+
+    if not email or not client_id:
+        raise HTTPException(status_code=400, detail="Incomplete lead parameters (Email/Client ID missing).")
+
+    try:
+        # 1. Resolve Jurisdictive Entity (Company Anchor)
+        domain = None
+        if website:
+            domain = website.replace("https://", "").replace("http://", "").split("/")[0].lower()
+        
+        # Search for company by domain or name within the specific client's silo
+        company_stmt = select(Company).where(
+            (Company.client_id == client_id) & 
+            ((Company.domain == domain) if domain else (Company.name == raw_company_name))
+        )
+        res_company = await session.execute(company_stmt)
+        company = res_company.scalars().first()
+
+        if not company:
+            # Create a new Juristic record if this is a first-time encounter
+            company = Company(
+                client_id=client_id,
+                name=raw_company_name or "Unknown Industrial Entity", 
+                domain=domain,
+                industry=payload.get("industry"),
+                is_verified=True # Direct form submission serves as manual verification
+            )
+            session.add(company)
+            await session.commit()
+            await session.refresh(company)
+
+        # 2. Identity Promotion & Lead Deep-Merge
+        # Check if we already have a partial record for this person
+        lead_stmt = select(WaitlistLead).where(
+            WaitlistLead.email == email,
+            WaitlistLead.client_id == client_id
+        )
+        res_lead = await session.execute(lead_stmt)
+        lead = res_lead.scalars().first()
+        
+        if not lead and aura_id:
+            # Fallback: check if we have a record based on their browser ID
+            aura_lead_stmt = select(WaitlistLead).where(
+                WaitlistLead.aura_id == aura_id,
+                WaitlistLead.client_id == client_id
+            )
+            res_aura = await session.execute(aura_lead_stmt)
+            lead = res_aura.scalars().first()
+
+        if not lead:
+            lead = WaitlistLead(email=email, client_id=client_id, aura_id=aura_id)
+        
+        # Merge volunteered context into the Lead object
+        lead.name = recipient_name or lead.name
+        lead.email = email
+        lead.company_id = company.id
+        lead.company_name_raw = raw_company_name or lead.company_name_raw
+        lead.department = payload.get("department") or lead.department
+        lead.position = payload.get("position") or payload.get("job_title") or lead.position
+        lead.industry = payload.get("industry") or lead.industry
+        lead.website = website or lead.website
+        
+        # Industrial-specific metrics formatting normalization
+        lead.traffic = payload.get("traffic")
+        lead.avg_price = format_zar(payload.get("avg_price")) if payload.get("avg_price") else lead.avg_price
+        lead.aura_id = aura_id or lead.aura_id
+        
+        session.add(lead)
+
+        # 3. Forensic Stitching & The Janitor Shield
+        # Promote all historical visits to 'verified' to prevent 48h automated deletion
+        if aura_id:
+            visit_stmt = select(Visit).where(Visit.aura_id == aura_id)
+            res_visits = await session.execute(visit_stmt)
+            past_visits = res_visits.scalars().all()
+            for v in past_visits:
+                v.is_consented = True
+                v.verification_status = "verified" # The Janitor Shield active
+                v.company_id = company.id
+                session.add(v)
+
+        await session.commit()
+        await session.refresh(lead)
+
+        # 4. DEFERRED JOURNEY MAPPING & NOTIFICATIONS
+        # Launch heavy intelligence analysis without blocking the UI response
+        background_tasks.add_task(
+            background_lead_analysis, 
+            lead_id=lead.id, 
+            aura_id=aura_id, 
+            payload=payload
+        )
+        
+        # PHASE 1: Schedule the Resend confirmation email dispatch asynchronously
+        background_tasks.add_task(
+            send_waitlist_success_email,
+            recipient_email=email,
+            recipient_name=recipient_name
+        )
+        
+        return {"status": "success", "message": "Lead promoted and forensic history shielded. Confirmation queued."}
+
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"🚨 Promotion Failure: {e}")
+        raise HTTPException(status_code=500, detail="Industrial sync failed during promotion.")
 </file>
 
 </files>
