@@ -1,107 +1,94 @@
 # 🏭 Industrial Intelligence Engine (Master)
 
-⚠️ Proprietary Software Notice: This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited.
+> [!WARNING]
+> **Proprietary Software Notice:** This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited. All rights reserved.
 
-The **Industrial Intelligence Engine** is a specialized B2B intent-tracking SaaS. It deanonymizes website traffic for industrial firms in the East Rand (and beyond), turning anonymous IP addresses into actionable sales leads.
+The **Industrial Intelligence Engine** is a high-performance, privacy-first B2B intent-tracking SaaS. Engineered specifically for the South African industrial and manufacturing sectors, it unmasks anonymous B2B website traffic—transforming raw network packets and IP addresses into high-fidelity, boardroom-ready sales leads.
 
+---
 
-## 📂 Project Structure
+## 📂 Project Architecture
 
 ```text
 industrial-intelligence/
-├── backend/       # FastAPI + SQLModel + PostgreSQL (The Core)
-├── frontend/      # Next.js 16 + Tailwind (The Interface & Lead Funnel)
-├── tracker/       # Vanilla JS (The Edge Script)
-└── infra/         # Docker, Nginx, or CI/CD configs
-
+├── backend/       # FastAPI + SQLModel + PostgreSQL (The Core Intelligence Engine)
+├── frontend/      # Next.js 14+ App Router + Tailwind (The Interface & Lead Funnel)
+├── tracker/       # Vanilla JS (The Forensic Edge Script)
+└── infra/         # Docker Compose, Nginx, and Deployment Orchestration
 ```
 
 ---
 
-## ⚡ Quick Start (Development Mode)
+## 🛰️ How It Works (The Data Loop)
 
-### 1. Clone & Environment
-
-Ensure you are using **WSL 2** and have **Docker Desktop** running.
-
-```bash
-git clone https://github.com/Allen-Reiley/industrial-intelligence.git
-cd industrial-intelligence
-
+```mermaid
+graph TD
+    A[Visitor on Client Site] -->|aura.js loads| B[Capture Fingerprint & Metadata]
+    B -->|2-Second Dwell Threshold| C[POST /v1/track/entry]
+    C -->|IP Enrichment & ISP Filter| D[PostgreSQL Vault]
+    D -->|Slack Webhooks / Realtime| E[Client Dashboard]
+    D -->|Resend Cron Job| F[Weekly PDF Intelligence Report]
 ```
 
-### 2. Infrastructure (Postgres)
+1. **Capture:** The ultra-lightweight (`<1KB`) `aura.js` client-side script executes on a host site.
+2. **Qualify:** Behavioral gating ensures enrichment calls only fire after 2 seconds of verified human interaction (cursor trajectory and scroll velocity analysis).
+3. **Deanonymize:** The FastAPI backend receives the ping, performs deterministic GPU/clock-drift fingerprinting, queries **IPinfo**, and blacklists consumer ISPs (**MTN, Vodacom, Telkom, Rain, Afrihost**).
+4. **Persist & Encrypt:** Validated B2B sessions are encrypted at-rest using **AES-256** and saved to the PostgreSQL database.
+5. **Activate:** Real-time hot-leads are pushed to Slack (`#hot-leads`), while detailed summaries are delivered weekly via automated PDF reports.
 
-Spin up the local database using Docker:
+---
 
+## ⚡ Quick Start (Local Development)
+
+### 1. Prerequisites
+Ensure you are running **WSL 2** (Ubuntu recommended) with **Docker Desktop** active and integrated.
+
+### 2. Set Up Infrastructure
+Spin up the local PostgreSQL database:
 ```bash
 docker compose up -d
-
 ```
 
-### 3. Backend Setup (FastAPI)
-
-Using `uv` for high-speed dependency management:
-
+### 3. Spin Up the Core (Backend)
+Using `uv` for lightning-fast Python dependency management:
 ```bash
 cd backend
 uv venv
 source .venv/bin/activate
-uvicorn main:app --reload
-
+uv run uvicorn app.main:app --reload
 ```
+* **Interactive API Docs:** [http://localhost:8000/docs](http://localhost:8000/docs)
 
-### 4. Frontend Setup (Next.js)
-
+### 4. Run the Dashboard (Frontend)
 ```bash
-cd frontend
+cd frontend/src
 npm install
 npm run dev
-
 ```
+* **Dashboard Portal:** [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 🛰️ How it Works (The Data Loop)
+## 🛠️ The "Holy" Tech Stack
 
-1. **Capture:** The `tracker.min.js` fires on a client's site.
-2. **Identify:** The Backend receives the IP, queries **IPinfo**, and filters out residential ISPs.
-3. **Store:** Valid B2B visits are saved to **PostgreSQL**.
-4. **Report:** The Client Dashboard visualizes the traffic, and a weekly PDF is generated for the client's sales team.
-
----
-
-## 🛠️ Tech Stack Summary
-
-* **Backend:** FastAPI, Python 3.11, SQLModel, Uvicorn.
-* **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS, Shadcn/UI.
-* **Database:** PostgreSQL (Neon.tech for Production).
-* **Deployment:** Vercel (Frontend) + Render (Backend) + Cloudflare (CDN).
+* **Core Engine:** FastAPI (Python 3.12+), SQLModel (Pydantic + SQLAlchemy), Uvicorn.
+* **Interface Portal:** Next.js 14/15 (App Router, TypeScript, React Server Components), Tailwind CSS, Shadcn/UI.
+* **Identity Resolution:** Custom Vanilla ES6+ Tracking Script with canvas-unmasking and bot-traps.
+* **Storage Layer:** PostgreSQL (Neon.tech serverless in Production), local Docker instance, Redis cache.
+* **Compliance & Legal:** Engineered under strict POPIA (South Africa) and GDPR standards. Purges non-essential consumer ISP traffic; encrypts all PII (email, phone, precise GPS coords).
 
 ---
 
-## 🛡️ Business Logic & Compliance
+## 💼 Commercial Framework
 
-* **Targeting:** Specifically engineered for the Industrial/Manufacturing sector.
-* **Pricing:** R10,000/month managed service.
-* **Privacy:** Designed for POPIA compliance—identifying Juristic Persons (Companies), not natural individuals.
-
----
-
-## 📅 Roadmap (Phase 1)
-
-* [x] Technical Specification & Architecture.
-* [x] WSL 2 & Docker Environment Setup.
-* [ ] Database Schema Design (SQLModel).
-* [ ] API Ingestion Endpoints (`/entry`, `/exit`).
-* [ ] Lead Qualification Funnel build.
+* **Retainer:** Flat-rate **R10,000/month (R120,000/year)** base retainer.
+* **Usage Caps:** Includes up to **10,000 resolved B2B identities** per month.
+* **Service Level Guarantee:** Guaranteed minimum **30% Identity Resolution Rate** for unique B2B visitors, backed by pro-rata billing adjustments.
+* **Legal Officer:** Reitumetse Sethabela (Founder / Agency Owner).
 
 ---
 
-## ⚖️ License & Proprietary Notice
+## ⚖️ License
 
 **Copyright (c) 2026 AuraWorks Pty (ltd). All Rights Reserved.**
-
-This tracker script is proprietary software. Unauthorized copying, modification, or redistribution is strictly prohibited. Use is granted only to active subscribers of the Industrial Intelligence Engine managed service.
-
----
+Unauthorized copying, modification, or redistribution of this repository is strictly prohibited. Use is granted solely to active subscribers of the Industrial Intelligence Engine.

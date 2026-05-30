@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎨 Next.js Web Portal (Developer Guide)
 
-## Getting Started
+> [!WARNING]
+> **Proprietary Software Notice:** This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited. All rights reserved.
 
-First, run the development server:
+This is the developer setup and deployment guide for the **Industrial Intelligence Web Portal**, built using **Next.js 14+ (App Router)** and **TypeScript**.
 
+---
+
+## ⚡ Development Setup
+
+### 1. Prerequisites
+* **Node.js:** v18.17.0 or higher (v20+ recommended).
+* **Package Manager:** `npm` (configured with package-lock.json).
+
+### 2. Install Dependencies
+Navigate to the `frontend/src` directory and install the required modules:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd frontend/src
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Environment Variables Setup
+Create a `.env.local` file in `frontend/src` containing the local backend details:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000/v1
+NEXTAUTH_SECRET=your_nextauth_secret_here
+NEXTAUTH_URL=http://localhost:3000
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. Run the Development Server
+```bash
+npm run dev
+```
+* The portal will be available at **[http://localhost:3000](http://localhost:3000)**.
+* Open the browser and visit `/apply` to test the qualifying form flow or `/dashboard` to inspect the client dashboard.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🏗️ Build & Production Deployment
 
-To learn more about Next.js, take a look at the following resources:
+### 1. Production Build
+Verify typescript types and generate the highly optimized nextjs production build locally:
+```bash
+npm run build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 2. Local Preview
+Run the production build locally to test server-side rendering (SSR) and edge capabilities:
+```bash
+npm run start
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 3. Deploying to Vercel
+This repository is configured for direct **Vercel** integration. 
+* **CI/CD:** Pushing to the `main` branch automatically triggers a production deployment.
+* **Env Config:** Ensure you add `NEXT_PUBLIC_API_URL` (pointing to your live Render/Railway backend) in the Vercel dashboard variables.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🛠️ Interface Technology Stack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+* **Core Framework:** Next.js 14+ (App Router, React Server Components).
+* **Styling:** Tailwind CSS, PostCSS, and customized CSS variables matching the "Quiet Premium" design tokens.
+* **Component Library:** **Shadcn/UI** (primitives built on Radix UI and Tailwind CSS).
+* **Form Logic & Validation:** React Hook Form + **Zod** schema validations.
+* **Auth Layer:** NextAuth.js (Magic Link authentication for zero-friction client login).
+* **State Management:** Custom React context hooks paired with SWR for high-speed cache revalidation.
+
+---
+
+## 🔒 Security Best Practices
+
+* **Sensitive Data Gating:** Never expose client API keys or PII inside client-side bundles. Always leverage Next.js Server Components or custom backend API proxies for sensitive reads.
+* **CORS Policies:** Make sure the backend CORS configuration permits the specific Vercel deployment URL.
+
+---
+
+## ⚖️ License
+
+**Copyright (c) 2026 AuraWorks Pty (ltd). All Rights Reserved.**
+Unauthorized copying, modification, or redistribution of this software is strictly prohibited.
