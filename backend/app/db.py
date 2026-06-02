@@ -55,6 +55,14 @@ else:
     async_session_maker = None
 
 
+from typing import Optional
+from contextvars import ContextVar
+from fastapi import Request
+from sqlalchemy import text
+
+# Context variable to hold client_id for non-request contexts (like background tasks)
+current_client_id: ContextVar[Optional[str]] = ContextVar("current_client_id", default=None)
+
 # --- INITIALIZATION & DEPENDENCIES ---
 
 def init_db():
@@ -84,16 +92,47 @@ def init_db():
     except Exception as e:
         logger.error(f"❌ Database Ledger: Sync failure: {e}")
 
-async def get_async_session() -> AsyncSession:
+async def get_async_session(request: Request = None) -> AsyncSession:
     """
     FastAPI Dependency: Yields a transaction-scoped Asynchronous session.
     Automatically releases the connection back to the connection pool upon route completion
     or when the calling context exits.
+
+    This function acts as the RLS execution hook, setting the request-scoped
+    'app.current_client_id' session variable on the PostgreSQL connection.
     """
     if not async_session_maker:
         raise ConnectionError("Async Database Engine not initialized. Check asyncpg installation.")
     
+    # 1. Resolve client_id from request or ContextVar fallback
+    client_id = current_client_id.get()
+    
+    if not client_id and request:
+        # Check query parameters
+        client_id = request.query_params.get("client_id")
+        
+        # Check headers (e.g. X-Client-ID or X-Aura-Client-ID)
+        if not client_id:
+            client_id = request.headers.get("x-client-id")
+            
+        # Check JSON body if Content-Type is application/json
+        if not client_id and request.headers.get("content-type") == "application/json":
+            try:
+                body = await request.body()
+                if body:
+                    import json
+                    data = json.loads(body)
+                    client_id = data.get("client_id")
+            except Exception:
+                pass
+    
     async with async_session_maker() as session:
+        if client_id:
+            # Set the PostgreSQL session variable for RLS policies
+            # is_local=True ensures it is scoped strictly to the current transaction.
+            await session.execute(
+                text("SELECT set_config('app.current_client_id', :client_id, true)").bindparams(client_id=str(client_id))
+            )
         yield session
 
 def get_session():

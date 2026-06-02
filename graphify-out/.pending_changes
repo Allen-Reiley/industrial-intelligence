@@ -57,3 +57,11 @@ frontend/src/components/tracker/aura-tracker.tsx
 frontend/src/components/ui/animated-group.tsx
 frontend/src/lib/api.ts
 graphify-out/.pending_changes
+backend/app/__pycache__/db.cpython-312.pyc
+backend/app/core/__pycache__/security.cpython-312.pyc
+backend/app/core/security.py
+backend/app/db.py
+backend/app/services/intelligence.py
+backend/app/tasks/janitor.py
+graphify-out/.pending_changes
+tracker/src/public/aura.js
