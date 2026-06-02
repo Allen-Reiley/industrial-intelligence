@@ -10,8 +10,7 @@ from cachetools import TTLCache
 
 # Internal AuraWorks Imports
 from app.models.visit import Visit, VisitCreate, PageViewCreate
-from app.models.company import Company
-from app.models.waitlist import WaitlistLead
+from app.models import Company, WaitlistLead
 from app.services.enrichment import enrich_visitor_data
 from app.services.notifications import post_to_slack
 from app.services.intelligence import get_visitor_journey
