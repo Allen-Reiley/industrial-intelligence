@@ -10,16 +10,21 @@ logger = logging.getLogger("uvicorn")
 # --- ENGINE INITIALIZATION ---
 
 # 1. Synchronous Engine (For Migrations and Admin Dashboards)
-# Converts asyncpg URL to standard postgresql if necessary
+# Standardizes connection URL to standard postgresql protocol if it contains the asyncpg schema identifier.
 sync_url = settings.DATABASE_URL
 if sync_url and "postgresql+asyncpg://" in sync_url:
     sync_url = sync_url.replace("postgresql+asyncpg://", "postgresql://")
 
 if sync_url:
+    # pool_pre_ping=True: Issues a lightweight 'SELECT 1' test query on checkout to identify and discard 
+    # dead connections. Crucial for serverless environments (Railway/Neon) which silently drop idle sockets.
+    # pool_size=10: The permanent connection pool size.
+    # max_overflow=20: The maximum number of temporary connections that can be opened beyond pool_size 
+    # to handle high concurrent traffic spikes.
     engine = create_engine(
         sync_url,
         echo=False,
-        pool_pre_ping=True, # Critical for Railway idle connection recovery
+        pool_pre_ping=True,
         pool_size=10,
         max_overflow=20
     )
@@ -28,7 +33,8 @@ else:
     engine = None
 
 # 2. Asynchronous Engine (For Forensic Tracking, Janitor Cycles & Identity API)
-# Ensures the URL uses the required +asyncpg driver explicitly
+# Standardizes connection URL to use the required postgresql+asyncpg driver explicitly.
+# Asyncpg provides non-blocking networking socket support for high-concurrency ingestion routes.
 async_url = settings.DATABASE_URL
 if async_url and async_url.startswith("postgresql://"):
     async_url = async_url.replace("postgresql://", "postgresql+asyncpg://")
@@ -54,14 +60,16 @@ else:
 def init_db():
     """
     Schema Synchronization.
-    Note: Standardizes the ledger. Production uses Alembic for migrations.
+    Verifies that the database ledger tables are correctly defined.
+    Production architectures utilize Alembic migrations. This acts as a secondary failsafe.
     """
     if not engine:
         logger.error("❌ init_db: Operation aborted. No database linked.")
         return
 
     try:
-        # Explicit imports to register models with SQLModel.metadata
+        # Import all models explicitly to guarantee registration with SQLModel.metadata.
+        # If we skip these imports, SQLModel.metadata will be empty when we call create_all.
         from app.models.client import Client
         from app.models.company import Company
         from app.models.department import Department
@@ -78,7 +86,9 @@ def init_db():
 
 async def get_async_session() -> AsyncSession:
     """
-    Dependency generator for Async FastAPI routes (Tracking/Identity).
+    FastAPI Dependency: Yields a transaction-scoped Asynchronous session.
+    Automatically releases the connection back to the connection pool upon route completion
+    or when the calling context exits.
     """
     if not async_session_maker:
         raise ConnectionError("Async Database Engine not initialized. Check asyncpg installation.")
@@ -88,7 +98,8 @@ async def get_async_session() -> AsyncSession:
 
 def get_session():
     """
-    Dependency generator for Synchronous routes (Admin/Dashboard).
+    FastAPI Dependency: Yields a transaction-scoped Synchronous session.
+    Used for traditional admin dashboard endpoints and sync migrations.
     """
     if not engine:
         raise ConnectionError("Synchronous Database Engine not initialized.")

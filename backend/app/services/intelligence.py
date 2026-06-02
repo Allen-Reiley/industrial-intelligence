@@ -13,7 +13,8 @@ from app.core.config import settings
 logger = logging.getLogger("uvicorn")
 
 # --- INDUSTRIAL CACHE LAYER ---
-# Prevents redundant API calls to IPinfo/DeepSeek within a 24-hour window
+# TTLCache: Retains up to 2000 IP addresses with a 24-hour Time-To-Live (86400 seconds).
+# Prevents redundant, costly HTTP requests to IPinfo.io and avoids token exhaustion on repeat traffic.
 ip_cache = TTLCache(maxsize=2000, ttl=86400)
 
 # --- UTILS: Industrial Formatting ---
@@ -47,6 +48,7 @@ async def enrich_visitor_data(ip_address: str) -> Dict[str, Any]:
     domain = "unknown.com"
     
     # Simple extraction loop to strip typical ASN tags (e.g. "AS37054 AuraWorks (Pty) Ltd")
+    # Filters out residential internet service providers (ISPs) to preserve focus on actual enterprise traffic.
     if " " in asn_org:
         parts = asn_org.split(" ", 1)
         potential_name = parts[1]
@@ -63,7 +65,7 @@ async def enrich_visitor_data(ip_address: str) -> Dict[str, Any]:
     }
 
 async def enrich_ip_intel(ip_address: str) -> Dict[str, Any]:
-    """Retrieves corporate metadata for a specific IP."""
+    """Retrieves corporate metadata for a specific IP from the IPinfo.io service."""
     if not ip_address or ip_address in ["127.0.0.1", "0.0.0.0", "::1"]:
         return {}
     if ip_address in ip_cache:
@@ -119,7 +121,7 @@ async def analyze_corporate_intent(
 
     async with httpx.AsyncClient() as client:
         try:
-            # Corrected DeepSeek Base URL path mapping (Stripped out /v1/)
+            # Corrected DeepSeek Base URL path mapping (Stripped out /v1/ for standard API endpoints)
             response = await client.post(
                 "https://api.deepseek.com/chat/completions",
                 headers={
@@ -162,9 +164,10 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
     last_visit = history[-1]
 
     # 2. Timezone-Naive DB Parity Safe Guard Check
-    # Ensures database timestamp compatibility to avoid offset runtime crashes
+    # Evaluates visits sharing the same IP address over the last 72 hours.
+    # If 3 or more unique device IDs are detected, it signals a corporate site facility/Buying Committee cluster.
+    # Convert safety boundary check to a naive datetime since database field lacks timezone index metadata.
     time_offset = datetime.now(timezone.utc) - timedelta(hours=72)
-    # Convert safety boundary check to a naive datetime if database field lacks timezone indexing
     db_compatible_time = time_offset.replace(tzinfo=None)
 
     cluster_stmt = select(Visit).where(
@@ -176,7 +179,7 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
     unique_id_count = len({v.aura_id for v in cluster_records})
     is_buying_committee = unique_id_count >= 3
 
-    # 3. Pathway Mapping (Cleanup URL flow)
+    # 3. Pathway Mapping (Cleanup URL flow to show sequential pages visited)
     pages = [v.url.split('auraworks.co.za')[-1] if v.url else "/" for v in history]
     unique_pathway = []
     for p in pages:
@@ -201,6 +204,9 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
         company = await session.get(Company, lead.company_id)
 
     # 5. Ghost-Enrichment (IP-based Corporate Mapping)
+    # The Ghost Bridge: If visitor X is completely anonymous but is visiting from an IP address
+    # that visitor Y (who submitted waitlist/consent details) shares, we can propagate the identity
+    # match. This resolves corporate profiles for colleague groups accessing the site.
     cluster_info = f"📍 Facility Activity: {unique_id_count} device(s)"
     
     if not company and last_visit.ip_address:
