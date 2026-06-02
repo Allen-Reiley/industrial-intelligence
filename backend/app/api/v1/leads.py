@@ -5,9 +5,7 @@ from sqlmodel import select, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from app.db import get_async_session
-from app.models.waitlist import WaitlistLead
-from app.models.company import Company
-from app.models.visit import Visit
+from app.models import WaitlistLead, Company, Visit
 import logging
 
 router = APIRouter()

@@ -64,9 +64,12 @@ def init_db():
         # Explicit imports to register models with SQLModel.metadata
         from app.models.client import Client
         from app.models.company import Company
+        from app.models.department import Department
         from app.models.visit import Visit
-        from app.models.waitlist import WaitlistLead
         from app.models.pageview import PageView
+        from app.models.waitlist_lead import WaitlistLead
+        from app.models.enrichment_queue import EnrichmentQueue, FailedEnrichment
+        from app.models.notification_throttle import NotificationThrottle
         
         SQLModel.metadata.create_all(engine)
         logger.info("✅ Database Ledger: Connection established and tables verified.")

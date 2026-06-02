@@ -7,9 +7,7 @@ from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from cachetools import TTLCache
 
-from app.models.visit import Visit
-from app.models.company import Company
-from app.models.waitlist import WaitlistLead
+from app.models import Visit, Company, WaitlistLead
 from app.core.config import settings
 
 logger = logging.getLogger("uvicorn")

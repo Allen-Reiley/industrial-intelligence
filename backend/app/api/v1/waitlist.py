@@ -4,9 +4,7 @@ from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_async_session, async_session_maker
-from app.models.waitlist import WaitlistLead 
-from app.models.company import Company
-from app.models.visit import Visit
+from app.models import WaitlistLead, Company, Visit
 from app.services.intelligence import get_visitor_journey
 # PHASE 1: Import the new Resend notification engine
 from app.services.email import send_waitlist_success_email

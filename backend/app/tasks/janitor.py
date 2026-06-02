@@ -4,8 +4,7 @@ from datetime import datetime, timedelta, timezone
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import async_engine
-from app.models.visit import Visit
-from app.models.waitlist import WaitlistLead
+from app.models import Visit, WaitlistLead
 
 logger = logging.getLogger("uvicorn")
 

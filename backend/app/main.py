@@ -11,8 +11,7 @@ from datetime import datetime, timezone
 from app.core.config import settings
 from app.db import init_db, get_async_session
 from app.api.v1 import track, clients, identity, waitlist, leads
-from app.models.waitlist import WaitlistLead
-from app.models.company import Company 
+from app.models import WaitlistLead, Company
 from app.tasks.janitor import cleanup_unverified_visits
 from app.core.scheduler import start_scheduler
 

@@ -1,0 +1,38 @@
+# backend/app/models/enrichment_queue.py
+from enum import Enum
+from typing import Optional, Dict, Any
+from datetime import datetime, timezone
+from uuid import UUID, uuid4
+from sqlmodel import SQLModel, Field, Column
+from sqlalchemy.dialects.postgresql import JSONB
+
+class QueueType(str, Enum):
+    IPINFO = "ipinfo"
+    APOLLO = "apollo"
+
+class EnrichmentQueue(SQLModel, table=True):
+    __tablename__ = "enrichment_queue"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    client_id: UUID = Field(index=True)
+    visit_id: Optional[UUID] = Field(default=None, index=True, nullable=True)
+    aura_id: Optional[str] = Field(default=None, index=True)
+    queue_type: QueueType = Field(index=True)
+    payload: dict = Field(default_factory=dict, sa_column=Column(JSONB))
+    status: str = Field(default="pending", index=True)
+    retry_count: int = Field(default=0, index=True)
+    last_attempt_at: Optional[datetime] = Field(default=None, nullable=True)
+    next_attempt_at: Optional[datetime] = Field(default=None, nullable=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class FailedEnrichment(SQLModel, table=True):
+    __tablename__ = "failed_enrichment"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    client_id: UUID = Field(index=True)
+    visit_id: Optional[UUID] = Field(default=None, index=True, nullable=True)
+    aura_id: Optional[str] = Field(default=None, index=True)
+    queue_type: QueueType = Field(index=True)
+    payload: dict = Field(default_factory=dict, sa_column=Column(JSONB))
+    failed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    error_message: Optional[str] = Field(default=None, nullable=True)
