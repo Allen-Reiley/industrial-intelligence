@@ -245,6 +245,9 @@ frontend/
     tailwind.config.ts
     tsconfig.json
   README.md
+graphify-out/
+  .pending_changes
+  .rebuild.lock
 infra/
   README.md
 tracker/
@@ -299,64 +302,6 @@ def create_client(client_in: ClientCreate, session: Session = Depends(get_sessio
 
 <file path="backend/app/api/Documentation.md">
 
-</file>
-
-<file path="backend/app/core/security.py">
-import os
-import base64
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from app.core.config import settings
-
-def get_encryption_key() -> bytes:
-    """
-    Derives a 32-byte key from the SECRET_KEY for AES-256-GCM encryption.
-    If the SECRET_KEY is not exactly 32 bytes, we hash it using SHA-256 to guarantee size.
-    """
-    secret = settings.SECRET_KEY.encode('utf-8')
-    if len(secret) == 32:
-        return secret
-    
-    import hashlib
-    return hashlib.sha256(secret).digest()
-
-def encrypt_field(data: str) -> str:
-    """
-    Encrypts a plaintext string using AES-256-GCM.
-    Returns the nonce + ciphertext encoded in base64.
-    """
-    if not data:
-        return ""
-    
-    key = get_encryption_key()
-    aesgcm = AESGCM(key)
-    nonce = os.urandom(12) # Standard 96-bit nonce for GCM
-    
-    ciphertext = aesgcm.encrypt(nonce, data.encode('utf-8'), None)
-    
-    # Prepend nonce to the ciphertext so we can decrypt it later
-    encrypted_blob = nonce + ciphertext
-    return base64.b64encode(encrypted_blob).decode('utf-8')
-
-def decrypt_field(encrypted_data_b64: str) -> str:
-    """
-    Decrypts a base64 encoded AES-256-GCM string (nonce + ciphertext).
-    """
-    if not encrypted_data_b64:
-        return ""
-        
-    try:
-        encrypted_blob = base64.b64decode(encrypted_data_b64)
-        key = get_encryption_key()
-        aesgcm = AESGCM(key)
-        
-        # Extract the 12-byte nonce
-        nonce = encrypted_blob[:12]
-        ciphertext = encrypted_blob[12:]
-        
-        plaintext = aesgcm.decrypt(nonce, ciphertext, None)
-        return plaintext.decode('utf-8')
-    except Exception as e:
-        raise ValueError(f"Decryption failed: {str(e)}")
 </file>
 
 <file path="backend/app/services/reports.py">
@@ -5278,96 +5223,62 @@ No part of this software, including source code, assets, and documentation, may 
 Any unauthorized use will be prosecuted to the fullest extent of the law.
 </file>
 
-<file path="backend/app/models/enrichment_queue.py">
-# backend/app/models/enrichment_queue.py
-from enum import Enum
-from typing import Optional, Dict, Any
-from datetime import datetime, timezone
-from uuid import UUID, uuid4
-from sqlmodel import SQLModel, Field, Column
-from sqlalchemy.dialects.postgresql import JSONB
+<file path="backend/app/core/security.py">
+import os
+import base64
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from app.core.config import settings
 
-class QueueType(str, Enum):
-    IPINFO = "ipinfo"
-    APOLLO = "apollo"
-
-class EnrichmentQueue(SQLModel, table=True):
-    __tablename__ = "enrichment_queue"
+def get_encryption_key() -> bytes:
+    """
+    Derives a 32-byte key from the SECRET_KEY for AES-256-GCM encryption.
+    If the SECRET_KEY is not exactly 32 bytes, we hash it using SHA-256 to guarantee size.
+    """
+    secret = settings.SECRET_KEY.encode('utf-8')
+    if len(secret) == 32:
+        return secret
     
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    client_id: UUID = Field(index=True)
-    visit_id: Optional[UUID] = Field(default=None, index=True, nullable=True)
-    aura_id: Optional[str] = Field(default=None, index=True)
-    queue_type: QueueType = Field(index=True)
-    payload: dict = Field(default_factory=dict, sa_column=Column(JSONB))
-    status: str = Field(default="pending", index=True)
-    retry_count: int = Field(default=0, index=True)
-    last_attempt_at: Optional[datetime] = Field(default=None, nullable=True)
-    next_attempt_at: Optional[datetime] = Field(default=None, nullable=True)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    import hashlib
+    return hashlib.sha256(secret).digest()
 
-class FailedEnrichment(SQLModel, table=True):
-    __tablename__ = "failed_enrichment"
+def encrypt_field(data: str) -> str:
+    """
+    Encrypts a plaintext string using AES-256-GCM.
+    Returns the nonce + ciphertext encoded in base64.
+    """
+    if not data:
+        return ""
     
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    client_id: UUID = Field(index=True)
-    visit_id: Optional[UUID] = Field(default=None, index=True, nullable=True)
-    aura_id: Optional[str] = Field(default=None, index=True)
-    queue_type: QueueType = Field(index=True)
-    payload: dict = Field(default_factory=dict, sa_column=Column(JSONB))
-    failed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    error_message: Optional[str] = Field(default=None, nullable=True)
-</file>
-
-<file path="backend/app/models/notification_throttle.py">
-# backend/app/models/notification_throttle.py
-from datetime import datetime, timezone
-from uuid import UUID, uuid4
-from sqlmodel import SQLModel, Field
-
-class NotificationThrottle(SQLModel, table=True):
-    __tablename__ = "notification_throttle"
+    key = get_encryption_key()
+    aesgcm = AESGCM(key)
+    nonce = os.urandom(12) # Standard 96-bit nonce for GCM
     
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    client_id: UUID = Field(index=True)
-    company_id: UUID = Field(index=True)
-    last_notification_sent_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-</file>
-
-<file path="backend/app/models/waitlist_lead.py">
-# backend/app/models/waitlist_lead.py
-from typing import Optional, TYPE_CHECKING
-from datetime import datetime, timezone
-from uuid import UUID, uuid4
-from sqlmodel import SQLModel, Field, Relationship
-
-if TYPE_CHECKING:
-    from app.models.company import Company
-
-class WaitlistLead(SQLModel, table=True):
-    __tablename__ = "waitlist_lead"
+    ciphertext = aesgcm.encrypt(nonce, data.encode('utf-8'), None)
     
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    client_id: UUID = Field(index=True)
-    company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", index=True, nullable=True)
-    name: Optional[str] = Field(default=None)
-    email: str = Field(index=True)
-    phone_encrypted: Optional[str] = Field(default=None)
-    company_name_raw: Optional[str] = Field(default=None)
-    department: Optional[str] = Field(default=None)
-    position: Optional[str] = Field(default=None)
-    industry: Optional[str] = Field(default=None)
-    website: Optional[str] = Field(default=None)
-    traffic: Optional[str] = Field(default=None)
-    avg_price: Optional[str] = Field(default=None)
-    crm: Optional[str] = Field(default=None)
-    aura_id: Optional[str] = Field(default=None, index=True)
-    welcome_email_sent: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    # Prepend nonce to the ciphertext so we can decrypt it later
+    encrypted_blob = nonce + ciphertext
+    return base64.b64encode(encrypted_blob).decode('utf-8')
 
-    company: Optional["Company"] = Relationship(back_populates="leads")
+def decrypt_field(encrypted_data_b64: str) -> str:
+    """
+    Decrypts a base64 encoded AES-256-GCM string (nonce + ciphertext).
+    """
+    if not encrypted_data_b64:
+        return ""
+        
+    try:
+        encrypted_blob = base64.b64decode(encrypted_data_b64)
+        key = get_encryption_key()
+        aesgcm = AESGCM(key)
+        
+        # Extract the 12-byte nonce
+        nonce = encrypted_blob[:12]
+        ciphertext = encrypted_blob[12:]
+        
+        plaintext = aesgcm.decrypt(nonce, ciphertext, None)
+        return plaintext.decode('utf-8')
+    except Exception as e:
+        raise ValueError(f"Decryption failed: {str(e)}")
 </file>
 
 <file path="backend/app/services/notion.py">
@@ -8768,51 +8679,104 @@ npm run dev
 Unauthorized copying, modification, or redistribution of this repository is strictly prohibited. Use is granted solely to active subscribers of the Industrial Intelligence Engine.
 </file>
 
-<file path="task.md">
-# AuraWorks Industrial Intelligence Engine Progress Checklist
-
-- [ ] **PHASE 1: PERSISTENT DATABASE LAYER & SECURITY SHIELD**
-    - [x] Task 1.1: Initialize SQLModel Database Entities
-    - [ ] Task 1.2: Establish Fields Encryption Layer
-    - [ ] Task 1.3: Configure PostgreSQL Row-Level Security (RLS) Engine
-
-- [ ] **PHASE 2: INGESTION ENGINE & TRAFFIC ANALYSIS PIPELINE**
-    - [ ] Task 2.1: Refactor Exit Route & Discard Consent Gate
-    - [ ] Task 2.2: Implement Composite Multi-Tenant Cache Keys
-    - [ ] Task 2.3: Integrate Ingestion Fault Isolation & Reprocessing Queue
-
-- [ ] **PHASE 3: BACKGROUND MAINTENANCE & ADVANCED ENRICHMENT CASCADES**
-    - [ ] Task 3.1: Remodel Automated Janitor Deletion Routines
-    - [ ] Task 3.2: Accelerate & Prioritize Departmental Contact Mapping
-    - [ ] Task 3.3: Stabilize Analytics Mismatches & Date Operations
-
-- [ ] **PHASE 4: DEEPSEEK SYNTHESIS & WEB CONTENT EXTRACTION**
-    - [ ] Task 4.1: Build Automated Homepage Scraping Service
-    - [ ] Task 4.2: Deploy Daily Analytical Batch Engine
-
-- [ ] **PHASE 5: FINANCIAL WEBHOOKS & AUTOMATED CONTRACT ONBOARDING**
-    - [ ] Task 5.1: Build PayGenius Webhook Processing Endpoint
-    - [ ] Task 5.2: Automate PDF Contract Generation & Delivery
-    - [ ] Task 5.3: Build Automated Client Classification Scan
-
-- [ ] **PHASE 6: CLIENT SCRIPT DEPLOYMENT & FRONTEND VIEW REALIGNMENT**
-    - [ ] Task 6.1: Harden Client Tracking Script & IndexedDB Queue
-    - [ ] Task 6.2: Implement Layered Consent Components
-    - [ ] Task 6.3: Build Geolocation Consent Track Routers
-
-- [ ] **PHASE 7: INTELLIGENCE DELIVERY, OPERATIONAL REPORTING, & INTEGRATION FINISH LINE**
-    - [ ] Task 7.1: Create Programmatic Weekly PDF Reporting Service
-    - [ ] Task 7.2: Deploy Throttled Slack Notification Routing
-    - [ ] Task 7.3: Implement CRM Synchronization Outbox
-    - [ ] Task 7.4 [FINAL MOVE]: Notion Personal Vault Synchronization
-</file>
-
 <file path="backend/app/api/v1/__init__.py">
 # backend/app/api/v1/__init__.py
 """
 AuraWorks API v1 Namespace.
 Routes are explicitly registered in app/main.py to prevent circular dependency cycles.
 """
+</file>
+
+<file path="backend/app/models/enrichment_queue.py">
+# backend/app/models/enrichment_queue.py
+from enum import Enum
+from typing import Optional, Dict, Any
+from datetime import datetime, timezone
+from uuid import UUID, uuid4
+from sqlmodel import SQLModel, Field, Column
+from sqlalchemy.dialects.postgresql import JSONB
+
+class QueueType(str, Enum):
+    IPINFO = "ipinfo"
+    APOLLO = "apollo"
+
+class EnrichmentQueue(SQLModel, table=True):
+    __tablename__ = "enrichment_queue"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    client_id: UUID = Field(foreign_key="client.id", index=True)
+    visit_id: Optional[UUID] = Field(default=None, index=True, nullable=True)
+    aura_id: Optional[str] = Field(default=None, index=True)
+    queue_type: QueueType = Field(index=True)
+    payload: dict = Field(default_factory=dict, sa_column=Column(JSONB))
+    status: str = Field(default="pending", index=True)
+    retry_count: int = Field(default=0, index=True)
+    last_attempt_at: Optional[datetime] = Field(default=None, nullable=True)
+    next_attempt_at: Optional[datetime] = Field(default=None, nullable=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class FailedEnrichment(SQLModel, table=True):
+    __tablename__ = "failed_enrichment"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    client_id: UUID = Field(foreign_key="client.id", index=True)
+    visit_id: Optional[UUID] = Field(default=None, index=True, nullable=True)
+    aura_id: Optional[str] = Field(default=None, index=True)
+    queue_type: QueueType = Field(index=True)
+    payload: dict = Field(default_factory=dict, sa_column=Column(JSONB))
+    failed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    error_message: Optional[str] = Field(default=None, nullable=True)
+</file>
+
+<file path="backend/app/models/notification_throttle.py">
+# backend/app/models/notification_throttle.py
+from datetime import datetime, timezone
+from uuid import UUID, uuid4
+from sqlmodel import SQLModel, Field
+
+class NotificationThrottle(SQLModel, table=True):
+    __tablename__ = "notification_throttle"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    client_id: UUID = Field(foreign_key="client.id", index=True)
+    company_id: UUID = Field(index=True)
+    last_notification_sent_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+</file>
+
+<file path="backend/app/models/waitlist_lead.py">
+# backend/app/models/waitlist_lead.py
+from typing import Optional, TYPE_CHECKING
+from datetime import datetime, timezone
+from uuid import UUID, uuid4
+from sqlmodel import SQLModel, Field, Relationship
+
+if TYPE_CHECKING:
+    from app.models.company import Company
+
+class WaitlistLead(SQLModel, table=True):
+    __tablename__ = "waitlist_lead"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    client_id: UUID = Field(foreign_key="client.id", index=True)
+    company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", index=True, nullable=True)
+    name: Optional[str] = Field(default=None)
+    email: str = Field(index=True)
+    phone_encrypted: Optional[str] = Field(default=None)
+    company_name_raw: Optional[str] = Field(default=None)
+    department: Optional[str] = Field(default=None)
+    position: Optional[str] = Field(default=None)
+    industry: Optional[str] = Field(default=None)
+    website: Optional[str] = Field(default=None)
+    traffic: Optional[str] = Field(default=None)
+    avg_price: Optional[str] = Field(default=None)
+    crm: Optional[str] = Field(default=None)
+    aura_id: Optional[str] = Field(default=None, index=True)
+    welcome_email_sent: bool = Field(default=False)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    company: Optional["Company"] = Relationship(back_populates="leads")
 </file>
 
 <file path="backend/app/services/contacts.py">
@@ -8972,6 +8936,45 @@ export default function AuraTracker({
 
   return null;
 }
+</file>
+
+<file path="task.md">
+# AuraWorks Industrial Intelligence Engine Progress Checklist
+
+- [ ] **PHASE 1: PERSISTENT DATABASE LAYER & SECURITY SHIELD**
+    - [x] Task 1.1: Initialize SQLModel Database Entities
+    - [x] Task 1.2: Establish Fields Encryption Layer
+    - [ ] Task 1.3: Configure PostgreSQL Row-Level Security (RLS) Engine
+
+- [ ] **PHASE 2: INGESTION ENGINE & TRAFFIC ANALYSIS PIPELINE**
+    - [ ] Task 2.1: Refactor Exit Route & Discard Consent Gate
+    - [ ] Task 2.2: Implement Composite Multi-Tenant Cache Keys
+    - [ ] Task 2.3: Integrate Ingestion Fault Isolation & Reprocessing Queue
+
+- [ ] **PHASE 3: BACKGROUND MAINTENANCE & ADVANCED ENRICHMENT CASCADES**
+    - [ ] Task 3.1: Remodel Automated Janitor Deletion Routines
+    - [ ] Task 3.2: Accelerate & Prioritize Departmental Contact Mapping
+    - [ ] Task 3.3: Stabilize Analytics Mismatches & Date Operations
+
+- [ ] **PHASE 4: DEEPSEEK SYNTHESIS & WEB CONTENT EXTRACTION**
+    - [ ] Task 4.1: Build Automated Homepage Scraping Service
+    - [ ] Task 4.2: Deploy Daily Analytical Batch Engine
+
+- [ ] **PHASE 5: FINANCIAL WEBHOOKS & AUTOMATED CONTRACT ONBOARDING**
+    - [ ] Task 5.1: Build PayGenius Webhook Processing Endpoint
+    - [ ] Task 5.2: Automate PDF Contract Generation & Delivery
+    - [ ] Task 5.3: Build Automated Client Classification Scan
+
+- [ ] **PHASE 6: CLIENT SCRIPT DEPLOYMENT & FRONTEND VIEW REALIGNMENT**
+    - [ ] Task 6.1: Harden Client Tracking Script & IndexedDB Queue
+    - [ ] Task 6.2: Implement Layered Consent Components
+    - [ ] Task 6.3: Build Geolocation Consent Track Routers
+
+- [ ] **PHASE 7: INTELLIGENCE DELIVERY, OPERATIONAL REPORTING, & INTEGRATION FINISH LINE**
+    - [ ] Task 7.1: Create Programmatic Weekly PDF Reporting Service
+    - [ ] Task 7.2: Deploy Throttled Slack Notification Routing
+    - [ ] Task 7.3: Implement CRM Synchronization Outbox
+    - [ ] Task 7.4 [FINAL MOVE]: Notion Personal Vault Synchronization
 </file>
 
 <file path="backend/app/core/scheduler.py">
@@ -9677,6 +9680,30 @@ const AuraConsentBanner = () => {
 };
 
 export default AuraConsentBanner;
+</file>
+
+<file path="graphify-out/.pending_changes">
+backend/app/__pycache__/db.cpython-312.pyc
+backend/app/models/__pycache__/__init__.cpython-312.pyc
+backend/app/models/__pycache__/client.cpython-312.pyc
+backend/app/models/__pycache__/company.cpython-312.pyc
+backend/app/models/__pycache__/department.cpython-312.pyc
+backend/app/models/__pycache__/enrichment_queue.cpython-312.pyc
+backend/app/models/__pycache__/notification_throttle.cpython-312.pyc
+backend/app/models/__pycache__/pageview.cpython-312.pyc
+backend/app/models/__pycache__/visit.cpython-312.pyc
+backend/app/models/__pycache__/waitlist_lead.cpython-312.pyc
+backend/app/models/enrichment_queue.py
+backend/app/models/notification_throttle.py
+backend/app/models/pageview.py
+backend/app/models/visit.py
+backend/app/models/waitlist_lead.py
+backend/tests/__pycache__/test_models.cpython-312-pytest-9.0.3.pyc
+backend/tests/test_models.py
+</file>
+
+<file path="graphify-out/.rebuild.lock">
+51853
 </file>
 
 <file path="backend/app/api/v1/leads.py">
@@ -11386,30 +11413,6 @@ async def get_departmental_intelligence(domain: str) -> List[Dict]:
             return []
 </file>
 
-<file path="backend/app/models/pageview.py">
-# backend/app/models/pageview.py
-from typing import Optional, TYPE_CHECKING
-from datetime import datetime, timezone
-from uuid import UUID, uuid4
-from sqlmodel import SQLModel, Field, Relationship
-
-if TYPE_CHECKING:
-    from app.models.visit import Visit
-
-class PageView(SQLModel, table=True):
-    __tablename__ = "page_view"
-    
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    client_id: UUID = Field(index=True)
-    visit_id: UUID = Field(foreign_key="visit.id", index=True)
-    url_path: str = Field(index=True)
-    referrer: Optional[str] = Field(default=None)
-    duration: int = Field(default=0)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-    visit: Optional["Visit"] = Relationship(back_populates="page_views")
-</file>
-
 <file path="backend/pyproject.toml">
 [project]
 name = "backend"
@@ -11443,6 +11446,30 @@ dev = [
     "pytest>=9.0.3",
     "pytest-asyncio>=1.4.0",
 ]
+</file>
+
+<file path="backend/app/models/pageview.py">
+# backend/app/models/pageview.py
+from typing import Optional, TYPE_CHECKING
+from datetime import datetime, timezone
+from uuid import UUID, uuid4
+from sqlmodel import SQLModel, Field, Relationship
+
+if TYPE_CHECKING:
+    from app.models.visit import Visit
+
+class PageView(SQLModel, table=True):
+    __tablename__ = "page_view"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    client_id: UUID = Field(foreign_key="client.id", index=True)
+    visit_id: UUID = Field(foreign_key="visit.id", index=True)
+    url_path: str = Field(index=True)
+    referrer: Optional[str] = Field(default=None)
+    duration: int = Field(default=0)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    visit: Optional["Visit"] = Relationship(back_populates="page_views")
 </file>
 
 <file path="tracker/src/public/aura.js">
@@ -11719,7 +11746,7 @@ class Visit(SQLModel, table=True):
     __tablename__ = "visit"
     
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    client_id: UUID = Field(index=True)
+    client_id: UUID = Field(foreign_key="client.id", index=True)
     company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", index=True, nullable=True)
     aura_id: str = Field(index=True)
     ip_address: str = Field(index=True)
@@ -12208,245 +12235,6 @@ async def get_admin_summary(session: AsyncSession = Depends(get_async_session)):
     }
 </file>
 
-<file path="backend/app/api/v1/waitlist.py">
-# backend/app/api/v1/waitlist.py
-import logging
-from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
-from sqlmodel import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.db import get_async_session, async_session_maker
-from app.models import WaitlistLead, Company, Visit
-from app.services.intelligence import get_visitor_journey
-# PHASE 1: Import the new Resend notification engine
-from app.services.email import send_waitlist_success_email
-
-# GLOBALLY IMPORT THE VAULT BRIDGES TO FIX SCOPE ERRORS
-from app.services.vault import sync_to_airtable, sync_to_notion
-
-router = APIRouter()
-logger = logging.getLogger("uvicorn")
-
-# --- UTILS: Industrial Formatting ---
-def format_zar(value: str) -> str:
-    """Standardizes South African currency strings for industrial reporting."""
-    if not value: 
-        return "N/A"
-    
-    val_str = str(value).strip().lower()
-    if "m" in val_str: 
-        return "R1,000,000+"
-    if "-" in val_str:
-        parts = val_str.replace('k', '000').split('-')
-        try:
-            formatted_parts = [f"R{int(p.strip()):,}" for p in parts]
-            return " - ".join(formatted_parts)
-        except: 
-            return str(value)
-            
-    clean_value = "".join(filter(str.isdigit, val_str.replace('k', '000')))
-    return f"R{int(clean_value):,}" if clean_value else str(value)
-
-async def background_lead_analysis(lead_id: int, aura_id: str, payload: dict):
-    """
-    Sequential Forensic Orchestration Engine.
-    Holds back external system sinks (Slack, Airtable) until DeepSeek 
-    and firmographic intelligence have fully compiled their data.
-    """
-    if not async_session_maker:
-        logger.error("❌ background_lead_analysis: Aborted. Async Engine offline.")
-        return
-
-    async with async_session_maker() as session:
-        try:
-            logger.info(f"⏳ Ingesting Sequential Audit Pipeline for Lead ID: {lead_id}")
-
-            # 1. Pull the fresh lead record to get the linked company context
-            lead_stmt = select(WaitlistLead).where(WaitlistLead.id == lead_id)
-            lead_res = await session.execute(lead_stmt)
-            lead = lead_res.scalars().first()
-
-            if not lead:
-                logger.error(f"❌ Sequential Pipeline Error: Lead ID {lead_id} not found in DB.")
-                return
-
-            # 2. Compile Unified Journey & Ghost Enrichment (Awaits DeepSeek completely before proceeding)
-            journey = await get_visitor_journey(aura_id, session)
-
-            # 3. Pull resolved company context for notifications
-            company_name = "Anonymous Entity"
-            if lead.company_id:
-                company = await session.get(Company, lead.company_id)
-                if company:
-                    company_name = company.name
-            elif lead.company_name_raw:
-                company_name = lead.company_name_raw
-
-            # 4. Pack the complete, unified data dictionary
-            complete_lead_payload = {
-                "id": lead.id,
-                "aura_id": lead.aura_id,
-                "name": lead.name,
-                "email": lead.email,
-                "company_name_final": company_name,
-                "department": lead.department or "Undetermined",
-                "position": lead.position or "Evaluator",
-                "industry": lead.industry or "Industrial",
-                "website": lead.website or "N/A",
-                "capture_source": "waitlist_conversion",
-                "traffic": lead.traffic or "N/A",
-                "avg_price": lead.avg_price or "N/A",
-                "city": journey.get("city", "Unknown"),
-                "region": journey.get("region", "ZA")
-            }
-
-            logger.info(f"✨ DeepSeek Data compiled for Lead ID {lead_id}. Releasing external notification gates...")
-
-            # =================================================================
-            # 5. RELEASE GATES: Dispatch completed data packets sequentially
-            # =================================================================
-            
-            # Dispatch Premium Identity Promotion Alert to Slack with full data resolved
-            from app.services.notifications import post_to_slack
-            await post_to_slack(lead_data=complete_lead_payload, journey=journey)
-
-            # PHASE 3: The Airtable Bridge
-            await sync_to_airtable(complete_lead_payload, journey)
-            
-            # PHASE 4: The Notion Bridge
-            await sync_to_notion(complete_lead_payload, journey)
-
-            logger.info(f"✅ Full Synchronization Cycle Complete for Lead ID: {lead_id}")
-
-        except Exception as e:
-            logger.error(f"🚨 Sequential Lead Pipeline Failure for Lead ID {lead_id}: {e}")
-
-@router.post("/join")
-async def join_waitlist(
-    payload: dict, 
-    background_tasks: BackgroundTasks,
-    session: AsyncSession = Depends(get_async_session)
-):
-    """
-    The Promotion Engine: 
-    Converts anonymous traffic into a POPIA-consented 'Warm Lead'.
-    Synchronizes volunteered company data with backend forensic signatures.
-    """
-    logger.info(f"--- 📡 AURA SIGNAL: [PROMOTION INITIATED] ---")
-    
-    email = payload.get("email")
-    aura_id = payload.get("aura_id")
-    client_id = payload.get("client_id") # Anchor for multi-tenancy
-    raw_company_name = payload.get("company") or payload.get("company_name")
-    website = payload.get("website")
-    recipient_name = payload.get("name")
-
-    if not email or not client_id:
-        raise HTTPException(status_code=400, detail="Incomplete lead parameters (Email/Client ID missing).")
-
-    try:
-        # 1. Resolve Jurisdictive Entity (Company Anchor)
-        domain = None
-        if website:
-            domain = website.replace("https://", "").replace("http://", "").split("/")[0].lower()
-        
-        # Search for company by domain or name within the specific client's silo
-        company_stmt = select(Company).where(
-            (Company.client_id == client_id) & 
-            ((Company.domain == domain) if domain else (Company.name == raw_company_name))
-        )
-        res_company = await session.execute(company_stmt)
-        company = res_company.scalars().first()
-
-        if not company:
-            # Create a new Juristic record if this is a first-time encounter
-            company = Company(
-                client_id=client_id,
-                name=raw_company_name or "Unknown Industrial Entity", 
-                domain=domain,
-                industry=payload.get("industry"),
-                is_verified=True # Direct form submission serves as manual verification
-            )
-            session.add(company)
-            await session.commit()
-            await session.refresh(company)
-
-        # 2. Identity Promotion & Lead Deep-Merge
-        # Check if we already have a partial record for this person
-        lead_stmt = select(WaitlistLead).where(
-            WaitlistLead.email == email,
-            WaitlistLead.client_id == client_id
-        )
-        res_lead = await session.execute(lead_stmt)
-        lead = res_lead.scalars().first()
-        
-        if not lead and aura_id:
-            # Fallback: check if we have a record based on their browser ID
-            aura_lead_stmt = select(WaitlistLead).where(
-                WaitlistLead.aura_id == aura_id,
-                WaitlistLead.client_id == client_id
-            )
-            res_aura = await session.execute(aura_lead_stmt)
-            lead = res_aura.scalars().first()
-
-        if not lead:
-            lead = WaitlistLead(email=email, client_id=client_id, aura_id=aura_id)
-        
-        # Merge volunteered context into the Lead object
-        lead.name = recipient_name or lead.name
-        lead.email = email
-        lead.company_id = company.id
-        lead.company_name_raw = raw_company_name or lead.company_name_raw
-        lead.department = payload.get("department") or lead.department
-        lead.position = payload.get("position") or payload.get("job_title") or lead.position
-        lead.industry = payload.get("industry") or lead.industry
-        lead.website = website or lead.website
-        
-        # Industrial-specific metrics formatting normalization
-        lead.traffic = payload.get("traffic")
-        lead.avg_price = format_zar(payload.get("avg_price")) if payload.get("avg_price") else lead.avg_price
-        lead.aura_id = aura_id or lead.aura_id
-        
-        session.add(lead)
-
-        # 3. Forensic Stitching & The Janitor Shield
-        # Promote all historical visits to 'verified' to prevent 48h automated deletion
-        if aura_id:
-            visit_stmt = select(Visit).where(Visit.aura_id == aura_id)
-            res_visits = await session.execute(visit_stmt)
-            past_visits = res_visits.scalars().all()
-            for v in past_visits:
-                v.is_consented = True
-                v.verification_status = "verified" # The Janitor Shield active
-                v.company_id = company.id
-                session.add(v)
-
-        await session.commit()
-        await session.refresh(lead)
-
-        # 4. DEFERRED JOURNEY MAPPING & NOTIFICATIONS
-        # Launch heavy intelligence analysis without blocking the UI response
-        background_tasks.add_task(
-            background_lead_analysis, 
-            lead_id=lead.id, 
-            aura_id=aura_id, 
-            payload=payload
-        )
-        
-        # PHASE 1: Schedule the Resend confirmation email dispatch asynchronously
-        background_tasks.add_task(
-            send_waitlist_success_email,
-            recipient_email=email,
-            recipient_name=recipient_name
-        )
-        
-        return {"status": "success", "message": "Lead promoted and forensic history shielded. Confirmation queued."}
-
-    except Exception as e:
-        await session.rollback()
-        logger.error(f"🚨 Promotion Failure: {e}")
-        raise HTTPException(status_code=500, detail="Industrial sync failed during promotion.")
-</file>
-
 <file path="backend/app/api/v1/track.py">
 # backend/app/api/v1/track.py
 from fastapi import APIRouter, BackgroundTasks, Request, Header, HTTPException
@@ -12747,6 +12535,250 @@ async def track_exit(payload: PageViewCreate, background_tasks: BackgroundTasks)
         background_tasks.add_task(process_exit_logic, target_aura_id, payload.client_id)
 
     return {"status": "recorded"}
+</file>
+
+<file path="backend/app/api/v1/waitlist.py">
+# backend/app/api/v1/waitlist.py
+import logging
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db import get_async_session, async_session_maker
+from app.models import WaitlistLead, Company, Visit
+from app.services.intelligence import get_visitor_journey
+# PHASE 1: Import the new Resend notification engine
+from app.services.email import send_waitlist_success_email
+from app.core.security import encrypt_field
+
+# GLOBALLY IMPORT THE VAULT BRIDGES TO FIX SCOPE ERRORS
+from app.services.vault import sync_to_airtable, sync_to_notion
+
+router = APIRouter()
+logger = logging.getLogger("uvicorn")
+
+# --- UTILS: Industrial Formatting ---
+def format_zar(value: str) -> str:
+    """Standardizes South African currency strings for industrial reporting."""
+    if not value: 
+        return "N/A"
+    
+    val_str = str(value).strip().lower()
+    if "m" in val_str: 
+        return "R1,000,000+"
+    if "-" in val_str:
+        parts = val_str.replace('k', '000').split('-')
+        try:
+            formatted_parts = [f"R{int(p.strip()):,}" for p in parts]
+            return " - ".join(formatted_parts)
+        except: 
+            return str(value)
+            
+    clean_value = "".join(filter(str.isdigit, val_str.replace('k', '000')))
+    return f"R{int(clean_value):,}" if clean_value else str(value)
+
+async def background_lead_analysis(lead_id: int, aura_id: str, payload: dict):
+    """
+    Sequential Forensic Orchestration Engine.
+    Holds back external system sinks (Slack, Airtable) until DeepSeek 
+    and firmographic intelligence have fully compiled their data.
+    """
+    if not async_session_maker:
+        logger.error("❌ background_lead_analysis: Aborted. Async Engine offline.")
+        return
+
+    async with async_session_maker() as session:
+        try:
+            logger.info(f"⏳ Ingesting Sequential Audit Pipeline for Lead ID: {lead_id}")
+
+            # 1. Pull the fresh lead record to get the linked company context
+            lead_stmt = select(WaitlistLead).where(WaitlistLead.id == lead_id)
+            lead_res = await session.execute(lead_stmt)
+            lead = lead_res.scalars().first()
+
+            if not lead:
+                logger.error(f"❌ Sequential Pipeline Error: Lead ID {lead_id} not found in DB.")
+                return
+
+            # 2. Compile Unified Journey & Ghost Enrichment (Awaits DeepSeek completely before proceeding)
+            journey = await get_visitor_journey(aura_id, session)
+
+            # 3. Pull resolved company context for notifications
+            company_name = "Anonymous Entity"
+            if lead.company_id:
+                company = await session.get(Company, lead.company_id)
+                if company:
+                    company_name = company.name
+            elif lead.company_name_raw:
+                company_name = lead.company_name_raw
+
+            # 4. Pack the complete, unified data dictionary
+            complete_lead_payload = {
+                "id": lead.id,
+                "aura_id": lead.aura_id,
+                "name": lead.name,
+                "email": lead.email,
+                "company_name_final": company_name,
+                "department": lead.department or "Undetermined",
+                "position": lead.position or "Evaluator",
+                "industry": lead.industry or "Industrial",
+                "website": lead.website or "N/A",
+                "capture_source": "waitlist_conversion",
+                "traffic": lead.traffic or "N/A",
+                "avg_price": lead.avg_price or "N/A",
+                "city": journey.get("city", "Unknown"),
+                "region": journey.get("region", "ZA")
+            }
+
+            logger.info(f"✨ DeepSeek Data compiled for Lead ID {lead_id}. Releasing external notification gates...")
+
+            # =================================================================
+            # 5. RELEASE GATES: Dispatch completed data packets sequentially
+            # =================================================================
+            
+            # Dispatch Premium Identity Promotion Alert to Slack with full data resolved
+            from app.services.notifications import post_to_slack
+            await post_to_slack(lead_data=complete_lead_payload, journey=journey)
+
+            # PHASE 3: The Airtable Bridge
+            await sync_to_airtable(complete_lead_payload, journey)
+            
+            # PHASE 4: The Notion Bridge
+            await sync_to_notion(complete_lead_payload, journey)
+
+            logger.info(f"✅ Full Synchronization Cycle Complete for Lead ID: {lead_id}")
+
+        except Exception as e:
+            logger.error(f"🚨 Sequential Lead Pipeline Failure for Lead ID {lead_id}: {e}")
+
+@router.post("/join")
+async def join_waitlist(
+    payload: dict, 
+    background_tasks: BackgroundTasks,
+    session: AsyncSession = Depends(get_async_session)
+):
+    """
+    The Promotion Engine: 
+    Converts anonymous traffic into a POPIA-consented 'Warm Lead'.
+    Synchronizes volunteered company data with backend forensic signatures.
+    """
+    logger.info(f"--- 📡 AURA SIGNAL: [PROMOTION INITIATED] ---")
+    
+    email = payload.get("email")
+    aura_id = payload.get("aura_id")
+    client_id = payload.get("client_id") # Anchor for multi-tenancy
+    raw_company_name = payload.get("company") or payload.get("company_name")
+    website = payload.get("website")
+    recipient_name = payload.get("name")
+
+    if not email or not client_id:
+        raise HTTPException(status_code=400, detail="Incomplete lead parameters (Email/Client ID missing).")
+
+    try:
+        # 1. Resolve Jurisdictive Entity (Company Anchor)
+        domain = None
+        if website:
+            domain = website.replace("https://", "").replace("http://", "").split("/")[0].lower()
+        
+        # Search for company by domain or name within the specific client's silo
+        company_stmt = select(Company).where(
+            (Company.client_id == client_id) & 
+            ((Company.domain == domain) if domain else (Company.name == raw_company_name))
+        )
+        res_company = await session.execute(company_stmt)
+        company = res_company.scalars().first()
+
+        if not company:
+            # Create a new Juristic record if this is a first-time encounter
+            company = Company(
+                client_id=client_id,
+                name=raw_company_name or "Unknown Industrial Entity", 
+                domain=domain,
+                industry=payload.get("industry"),
+                is_verified=True # Direct form submission serves as manual verification
+            )
+            session.add(company)
+            await session.commit()
+            await session.refresh(company)
+
+        # 2. Identity Promotion & Lead Deep-Merge
+        # Check if we already have a partial record for this person
+        lead_stmt = select(WaitlistLead).where(
+            WaitlistLead.email == email,
+            WaitlistLead.client_id == client_id
+        )
+        res_lead = await session.execute(lead_stmt)
+        lead = res_lead.scalars().first()
+        
+        if not lead and aura_id:
+            # Fallback: check if we have a record based on their browser ID
+            aura_lead_stmt = select(WaitlistLead).where(
+                WaitlistLead.aura_id == aura_id,
+                WaitlistLead.client_id == client_id
+            )
+            res_aura = await session.execute(aura_lead_stmt)
+            lead = res_aura.scalars().first()
+
+        if not lead:
+            lead = WaitlistLead(email=email, client_id=client_id, aura_id=aura_id)
+        
+        # Merge volunteered context into the Lead object
+        lead.name = recipient_name or lead.name
+        lead.email = email
+        lead.company_id = company.id
+        lead.company_name_raw = raw_company_name or lead.company_name_raw
+        lead.department = payload.get("department") or lead.department
+        lead.position = payload.get("position") or payload.get("job_title") or lead.position
+        lead.industry = payload.get("industry") or lead.industry
+        lead.website = website or lead.website
+        
+        # Security Shield: AES-256-GCM
+        if payload.get("phone"):
+            lead.phone_encrypted = encrypt_field(payload.get("phone"))
+        
+        # Industrial-specific metrics formatting normalization
+        lead.traffic = payload.get("traffic")
+        lead.avg_price = format_zar(payload.get("avg_price")) if payload.get("avg_price") else lead.avg_price
+        lead.aura_id = aura_id or lead.aura_id
+        
+        session.add(lead)
+
+        # 3. Forensic Stitching & The Janitor Shield
+        # Promote all historical visits to 'verified' to prevent 48h automated deletion
+        if aura_id:
+            visit_stmt = select(Visit).where(Visit.aura_id == aura_id)
+            res_visits = await session.execute(visit_stmt)
+            past_visits = res_visits.scalars().all()
+            for v in past_visits:
+                v.is_consented = True
+                v.verification_status = "verified" # The Janitor Shield active
+                v.company_id = company.id
+                session.add(v)
+
+        await session.commit()
+        await session.refresh(lead)
+
+        # 4. DEFERRED JOURNEY MAPPING & NOTIFICATIONS
+        # Launch heavy intelligence analysis without blocking the UI response
+        background_tasks.add_task(
+            background_lead_analysis, 
+            lead_id=lead.id, 
+            aura_id=aura_id, 
+            payload=payload
+        )
+        
+        # PHASE 1: Schedule the Resend confirmation email dispatch asynchronously
+        background_tasks.add_task(
+            send_waitlist_success_email,
+            recipient_email=email,
+            recipient_name=recipient_name
+        )
+        
+        return {"status": "success", "message": "Lead promoted and forensic history shielded. Confirmation queued."}
+
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"🚨 Promotion Failure: {e}")
+        raise HTTPException(status_code=500, detail="Industrial sync failed during promotion.")
 </file>
 
 </files>
