@@ -24,8 +24,13 @@ def reset_database():
     engine = create_engine(database_url)
 
     try:
-        print("🧹 Dropping all existing tables...")
-        SQLModel.metadata.drop_all(engine)
+        print("🧹 Dropping all existing tables via nuclear CASCADE...")
+        from sqlalchemy import text
+        with engine.begin() as conn:
+            conn.execute(text("DROP SCHEMA public CASCADE;"))
+            conn.execute(text("CREATE SCHEMA public;"))
+            conn.execute(text("GRANT ALL ON SCHEMA public TO postgres;"))
+            conn.execute(text("GRANT ALL ON SCHEMA public TO public;"))
         print("✅ Tables dropped.")
         
         print("🏗️ Creating new tables with UUID schema...")

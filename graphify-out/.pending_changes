@@ -15,3 +15,5 @@ backend/app/models/visit.py
 backend/app/models/waitlist_lead.py
 backend/tests/__pycache__/test_models.cpython-312-pytest-9.0.3.pyc
 backend/tests/test_models.py
+graphify-out/.pending_changes
+repomix-output.xml
