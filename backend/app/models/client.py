@@ -14,10 +14,7 @@ class SubscriptionStatus(str, Enum):
     PAST_DUE = "past_due"
     SUSPENDED = "suspended"
 
-class Client(SQLModel, table=True):
-    __tablename__ = "client"
-    
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+class ClientBase(SQLModel):
     company_name: str = Field(index=True)
     domain: str = Field(unique=True, index=True)
     category: ClientCategory = Field(default=ClientCategory.COMMERCIAL)
@@ -28,5 +25,18 @@ class Client(SQLModel, table=True):
     contract_signed_at: Optional[datetime] = Field(default=None, nullable=True)
     payment_provider_id: Optional[str] = Field(default=None, nullable=True)
     is_active: bool = Field(default=False)
+
+class Client(ClientBase, table=True):
+    __tablename__ = "client"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     auto_classified_at: Optional[datetime] = Field(default=None, nullable=True)
+
+class ClientCreate(ClientBase):
+    pass
+
+class ClientPublic(ClientBase):
+    id: UUID
+    created_at: datetime
+    auto_classified_at: Optional[datetime] = None
