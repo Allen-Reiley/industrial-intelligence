@@ -8,6 +8,7 @@ from app.models import WaitlistLead, Company, Visit
 from app.services.intelligence import get_visitor_journey
 # PHASE 1: Import the new Resend notification engine
 from app.services.email import send_waitlist_success_email
+from app.core.security import encrypt_field
 
 # GLOBALLY IMPORT THE VAULT BRIDGES TO FIX SCOPE ERRORS
 from app.services.vault import sync_to_airtable, sync_to_notion
@@ -189,6 +190,10 @@ async def join_waitlist(
         lead.position = payload.get("position") or payload.get("job_title") or lead.position
         lead.industry = payload.get("industry") or lead.industry
         lead.website = website or lead.website
+        
+        # Security Shield: AES-256-GCM
+        if payload.get("phone"):
+            lead.phone_encrypted = encrypt_field(payload.get("phone"))
         
         # Industrial-specific metrics formatting normalization
         lead.traffic = payload.get("traffic")

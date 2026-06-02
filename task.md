@@ -2,7 +2,7 @@
 
 - [ ] **PHASE 1: PERSISTENT DATABASE LAYER & SECURITY SHIELD**
     - [x] Task 1.1: Initialize SQLModel Database Entities
-    - [ ] Task 1.2: Establish Fields Encryption Layer
+    - [x] Task 1.2: Establish Fields Encryption Layer
     - [ ] Task 1.3: Configure PostgreSQL Row-Level Security (RLS) Engine
 
 - [ ] **PHASE 2: INGESTION ENGINE & TRAFFIC ANALYSIS PIPELINE**
