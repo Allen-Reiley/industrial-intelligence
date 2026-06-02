@@ -5792,47 +5792,6 @@ The backend checks every inbound IP against a strict range index, automatically 
 Unauthorized copying, modification, or redistribution of this software is strictly prohibited.
 </file>
 
-<file path="backend/reset_db.py">
-import os
-from dotenv import load_dotenv
-from sqlmodel import SQLModel, create_engine
-
-# Explicitly import all models so they register with SQLModel.metadata
-from app.models.client import Client
-from app.models.company import Company
-from app.models.department import Department
-from app.models.visit import Visit
-from app.models.pageview import PageView
-from app.models.waitlist_lead import WaitlistLead
-from app.models.enrichment_queue import EnrichmentQueue, FailedEnrichment
-from app.models.notification_throttle import NotificationThrottle
-
-def reset_database():
-    load_dotenv()
-    database_url = os.getenv("DATABASE_URL")
-    
-    if not database_url:
-        print("❌ DATABASE_URL not found in .env file.")
-        return
-
-    print(f"Connecting to database...")
-    engine = create_engine(database_url)
-
-    try:
-        print("🧹 Dropping all existing tables...")
-        SQLModel.metadata.drop_all(engine)
-        print("✅ Tables dropped.")
-        
-        print("🏗️ Creating new tables with UUID schema...")
-        SQLModel.metadata.create_all(engine)
-        print("✅ Database schema successfully reset!")
-    except Exception as e:
-        print(f"❌ Failed to reset database: {e}")
-
-if __name__ == "__main__":
-    reset_database()
-</file>
-
 <file path="docs/DOCS.md">
 # List of offlline docs
 
@@ -8888,6 +8847,52 @@ def filter_business_contacts(contacts: List[Dict]) -> List[Dict]:
     ]
 </file>
 
+<file path="backend/reset_db.py">
+import os
+from dotenv import load_dotenv
+from sqlmodel import SQLModel, create_engine
+
+# Explicitly import all models so they register with SQLModel.metadata
+from app.models.client import Client
+from app.models.company import Company
+from app.models.department import Department
+from app.models.visit import Visit
+from app.models.pageview import PageView
+from app.models.waitlist_lead import WaitlistLead
+from app.models.enrichment_queue import EnrichmentQueue, FailedEnrichment
+from app.models.notification_throttle import NotificationThrottle
+
+def reset_database():
+    load_dotenv()
+    database_url = os.getenv("DATABASE_URL")
+    
+    if not database_url:
+        print("❌ DATABASE_URL not found in .env file.")
+        return
+
+    print(f"Connecting to database...")
+    engine = create_engine(database_url)
+
+    try:
+        print("🧹 Dropping all existing tables via nuclear CASCADE...")
+        from sqlalchemy import text
+        with engine.begin() as conn:
+            conn.execute(text("DROP SCHEMA public CASCADE;"))
+            conn.execute(text("CREATE SCHEMA public;"))
+            conn.execute(text("GRANT ALL ON SCHEMA public TO postgres;"))
+            conn.execute(text("GRANT ALL ON SCHEMA public TO public;"))
+        print("✅ Tables dropped.")
+        
+        print("🏗️ Creating new tables with UUID schema...")
+        SQLModel.metadata.create_all(engine)
+        print("✅ Database schema successfully reset!")
+    except Exception as e:
+        print(f"❌ Failed to reset database: {e}")
+
+if __name__ == "__main__":
+    reset_database()
+</file>
+
 <file path="frontend/src/components/tracker/aura-tracker.tsx">
 "use client";
 
@@ -9680,26 +9685,6 @@ const AuraConsentBanner = () => {
 };
 
 export default AuraConsentBanner;
-</file>
-
-<file path="graphify-out/.pending_changes">
-backend/app/__pycache__/db.cpython-312.pyc
-backend/app/models/__pycache__/__init__.cpython-312.pyc
-backend/app/models/__pycache__/client.cpython-312.pyc
-backend/app/models/__pycache__/company.cpython-312.pyc
-backend/app/models/__pycache__/department.cpython-312.pyc
-backend/app/models/__pycache__/enrichment_queue.cpython-312.pyc
-backend/app/models/__pycache__/notification_throttle.cpython-312.pyc
-backend/app/models/__pycache__/pageview.cpython-312.pyc
-backend/app/models/__pycache__/visit.cpython-312.pyc
-backend/app/models/__pycache__/waitlist_lead.cpython-312.pyc
-backend/app/models/enrichment_queue.py
-backend/app/models/notification_throttle.py
-backend/app/models/pageview.py
-backend/app/models/visit.py
-backend/app/models/waitlist_lead.py
-backend/tests/__pycache__/test_models.cpython-312-pytest-9.0.3.pyc
-backend/tests/test_models.py
 </file>
 
 <file path="graphify-out/.rebuild.lock">
@@ -10524,6 +10509,157 @@ from .notification_throttle import NotificationThrottle
 # Do NOT include router logic here
 </file>
 
+<file path="frontend/src/app/layout.jsx">
+import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
+import "./globals.css";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { GoogleAnalytics } from '@next/third-parties/google';
+import { Analytics } from "@vercel/analytics/next";
+import AuraConsentBanner from "@/components/consent-banner/consent-banner";
+import AuraTracker from "@/components/tracker/aura-tracker";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const viewport = {
+  themeColor: "#ffffff",
+  width: "device-width",
+  initialScale: 1,
+};
+
+export const metadata = {
+  metadataBase: new URL("https://auraworks.co.za"),
+  title: {
+    default: "AuraWorks | Industrial Sales Intelligence & Lead Generation",
+    template: "%s | AuraWorks",
+  },
+  description: "Identify companies visiting your website. AuraWorks turns anonymous industrial traffic into high-intent sales leads for B2B firms in South Africa.",
+  category: 'technology',
+  classification: 'Industrial Sales Intelligence',
+  keywords: [
+    "B2B Lead Generation South Africa",
+    "Industrial Sales Intelligence",
+    "Intent-Based Lead Generation",
+    "Identity Resolution",
+    "POPIA Compliant Lead Generation",
+    "Anonymous Visitor Identification",
+    "Sales Automation for Manufacturing",
+    "Mining Sector Leads",
+    "Engineering Sales Intelligence",
+    "Revenue Systems Architecture",
+    "Gauteng B2B Sales Tools",
+    "East Rand Industrial Marketing"
+  ],
+  icons: {
+    icon: [
+      { url: "/icon.png", type: "image/png", sizes: "32x32" },
+      { url: "/icon-48.png", type: "image/png", sizes: "48x48" },
+      { url: "/favicon.ico", sizes: "any" }, 
+    ],
+    apple: [
+      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" }
+    ],
+  },
+  manifest: "/manifest.json",
+  authors: [{ name: "Reitumetse Sethabela", url: "https://auraworks.co.za" }],
+  creator: "Reitumetse Sethabela",
+  publisher: "AuraWorks (Pty) Ltd",
+  openGraph: {
+    title: "AuraWorks | Industrial Sales Intelligence",
+    description: "Turn anonymous industrial traffic into high-intent sales leads. POPIA-compliant B2B identification.",
+    url: "https://auraworks.co.za",
+    siteName: "AuraWorks",
+    locale: "en_ZA",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "AuraWorks | Industrial Sales Intelligence Dashboard",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AuraWorks | B2B Intelligence",
+    description: "Industrial Lead Generation & Identity Resolution.",
+    images: ["/twitter-image.jpg"],
+  },
+  alternates: {
+    canonical: "https://auraworks.co.za",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+};
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body className="antialiased">
+        {children}
+
+        {/* AuraWorks Industrial Intelligence 
+          Silo: AuraWorks (Pty) Ltd Primary Ledger
+        */}
+        <AuraTracker 
+          clientId="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0" 
+        />
+
+        <AuraConsentBanner />
+        
+        {/* Third-party Analytics */}
+        <SpeedInsights />
+        <GoogleAnalytics gaId="G-2LE9FLFM12" />
+        <Analytics />
+      </body>
+    </html>
+  );
+}
+</file>
+
+<file path="graphify-out/.pending_changes">
+backend/app/__pycache__/db.cpython-312.pyc
+backend/app/models/__pycache__/__init__.cpython-312.pyc
+backend/app/models/__pycache__/client.cpython-312.pyc
+backend/app/models/__pycache__/company.cpython-312.pyc
+backend/app/models/__pycache__/department.cpython-312.pyc
+backend/app/models/__pycache__/enrichment_queue.cpython-312.pyc
+backend/app/models/__pycache__/notification_throttle.cpython-312.pyc
+backend/app/models/__pycache__/pageview.cpython-312.pyc
+backend/app/models/__pycache__/visit.cpython-312.pyc
+backend/app/models/__pycache__/waitlist_lead.cpython-312.pyc
+backend/app/models/enrichment_queue.py
+backend/app/models/notification_throttle.py
+backend/app/models/pageview.py
+backend/app/models/visit.py
+backend/app/models/waitlist_lead.py
+backend/tests/__pycache__/test_models.cpython-312-pytest-9.0.3.pyc
+backend/tests/test_models.py
+graphify-out/.pending_changes
+repomix-output.xml
+backend/reset_db.py
+graphify-out/.pending_changes
+</file>
+
 <file path="backend/app/services/notifications.py">
 # backend/app/services/notifications.py
 import logging
@@ -10838,133 +10974,6 @@ def get_session():
         
     with Session(engine) as session:
         yield session
-</file>
-
-<file path="frontend/src/app/layout.jsx">
-import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
-import "./globals.css";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { GoogleAnalytics } from '@next/third-parties/google';
-import { Analytics } from "@vercel/analytics/next";
-import AuraConsentBanner from "@/components/consent-banner/consent-banner";
-import AuraTracker from "@/components/tracker/aura-tracker";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export const viewport = {
-  themeColor: "#ffffff",
-  width: "device-width",
-  initialScale: 1,
-};
-
-export const metadata = {
-  metadataBase: new URL("https://auraworks.co.za"),
-  title: {
-    default: "AuraWorks | Industrial Sales Intelligence & Lead Generation",
-    template: "%s | AuraWorks",
-  },
-  description: "Identify companies visiting your website. AuraWorks turns anonymous industrial traffic into high-intent sales leads for B2B firms in South Africa.",
-  category: 'technology',
-  classification: 'Industrial Sales Intelligence',
-  keywords: [
-    "B2B Lead Generation South Africa",
-    "Industrial Sales Intelligence",
-    "Intent-Based Lead Generation",
-    "Identity Resolution",
-    "POPIA Compliant Lead Generation",
-    "Anonymous Visitor Identification",
-    "Sales Automation for Manufacturing",
-    "Mining Sector Leads",
-    "Engineering Sales Intelligence",
-    "Revenue Systems Architecture",
-    "Gauteng B2B Sales Tools",
-    "East Rand Industrial Marketing"
-  ],
-  icons: {
-    icon: [
-      { url: "/icon.png", type: "image/png", sizes: "32x32" },
-      { url: "/icon-48.png", type: "image/png", sizes: "48x48" },
-      { url: "/favicon.ico", sizes: "any" }, 
-    ],
-    apple: [
-      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" }
-    ],
-  },
-  manifest: "/manifest.json",
-  authors: [{ name: "Reitumetse Sethabela", url: "https://auraworks.co.za" }],
-  creator: "Reitumetse Sethabela",
-  publisher: "AuraWorks (Pty) Ltd",
-  openGraph: {
-    title: "AuraWorks | Industrial Sales Intelligence",
-    description: "Turn anonymous industrial traffic into high-intent sales leads. POPIA-compliant B2B identification.",
-    url: "https://auraworks.co.za",
-    siteName: "AuraWorks",
-    locale: "en_ZA",
-    type: "website",
-    images: [
-      {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "AuraWorks | Industrial Sales Intelligence Dashboard",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "AuraWorks | B2B Intelligence",
-    description: "Industrial Lead Generation & Identity Resolution.",
-    images: ["/twitter-image.jpg"],
-  },
-  alternates: {
-    canonical: "https://auraworks.co.za",
-  },
-  robots: {
-    index: true,
-    follow: true,
-    nocache: false,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
-  },
-};
-
-export default function RootLayout({ children }) {
-  return (
-    <html lang="en">
-      <body className="antialiased">
-        {children}
-
-        {/* AuraWorks Industrial Intelligence 
-          Silo: AuraWorks (Pty) Ltd Primary Ledger
-        */}
-        <AuraTracker 
-          clientId="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0" 
-        />
-
-        <AuraConsentBanner />
-        
-        {/* Third-party Analytics */}
-        <SpeedInsights />
-        <GoogleAnalytics gaId="G-2LE9FLFM12" />
-        <Analytics />
-      </body>
-    </html>
-  );
-}
 </file>
 
 <file path="frontend/src/components/sections/form/get-started.tsx">
@@ -11724,65 +11733,6 @@ class PageView(SQLModel, table=True):
 })();
 </file>
 
-<file path="backend/app/models/visit.py">
-# backend/app/models/visit.py
-from enum import Enum
-from typing import Optional, List, Dict, Any, TYPE_CHECKING
-from datetime import datetime, timezone
-from uuid import UUID, uuid4
-from sqlmodel import SQLModel, Field, Relationship
-from pydantic import BaseModel
-
-if TYPE_CHECKING:
-    from app.models.company import Company
-    from app.models.pageview import PageView
-
-class VerificationStatus(str, Enum):
-    VERIFYING = "verifying"
-    VERIFIED = "verified"
-    ANONYMIZED_CORPORATE = "anonymized_corporate"
-
-class Visit(SQLModel, table=True):
-    __tablename__ = "visit"
-    
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    client_id: UUID = Field(foreign_key="client.id", index=True)
-    company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", index=True, nullable=True)
-    aura_id: str = Field(index=True)
-    ip_address: str = Field(index=True)
-    connection_type: str = Field(default="corporate")
-    is_b2b: bool = Field(default=True, index=True)
-    high_intent: bool = Field(default=False, index=True)
-    verification_status: VerificationStatus = Field(default=VerificationStatus.VERIFYING, index=True)
-    is_consented: bool = Field(default=False, index=True)
-    fingerprint_hash: Optional[str] = Field(default=None, index=True, nullable=True)
-    duration: int = Field(default=0)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-    company: Optional["Company"] = Relationship(back_populates="visits")
-    page_views: List["PageView"] = Relationship(back_populates="visit")
-
-class VisitCreate(BaseModel):
-    client_id: UUID
-    aura_id: str
-    url: str
-    referrer: Optional[str] = "direct"
-    screen_resolution: Optional[str] = None
-    effective_connection_type: Optional[str] = None
-    downlink_speed: Optional[float] = None
-    rtt: Optional[int] = None
-
-class PageViewCreate(BaseModel):
-    client_id: UUID
-    aura_id: Optional[str] = None
-    url: str
-    duration: Optional[int] = 0
-    event_type: str = "exit"
-    intent_cluster: Optional[str] = None
-    signature: Optional[Dict[str, Any]] = None
-</file>
-
 <file path="backend/app/core/config.py">
 # backend/app/core/config.py
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -11852,6 +11802,65 @@ class Settings(BaseSettings):
     )
 
 settings = Settings()
+</file>
+
+<file path="backend/app/models/visit.py">
+# backend/app/models/visit.py
+from enum import Enum
+from typing import Optional, List, Dict, Any, TYPE_CHECKING
+from datetime import datetime, timezone
+from uuid import UUID, uuid4
+from sqlmodel import SQLModel, Field, Relationship
+from pydantic import BaseModel
+
+if TYPE_CHECKING:
+    from app.models.company import Company
+    from app.models.pageview import PageView
+
+class VerificationStatus(str, Enum):
+    VERIFYING = "verifying"
+    VERIFIED = "verified"
+    ANONYMIZED_CORPORATE = "anonymized_corporate"
+
+class Visit(SQLModel, table=True):
+    __tablename__ = "visit"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    client_id: UUID = Field(foreign_key="client.id", index=True)
+    company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", index=True, nullable=True)
+    aura_id: str = Field(index=True)
+    ip_address: str = Field(index=True)
+    connection_type: str = Field(default="corporate")
+    is_b2b: bool = Field(default=True, index=True)
+    high_intent: bool = Field(default=False, index=True)
+    verification_status: VerificationStatus = Field(default=VerificationStatus.VERIFYING, index=True)
+    is_consented: bool = Field(default=False, index=True)
+    fingerprint_hash: Optional[str] = Field(default=None, index=True, nullable=True)
+    duration: int = Field(default=0)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    company: Optional["Company"] = Relationship(back_populates="visits")
+    page_views: List["PageView"] = Relationship(back_populates="visit")
+
+class VisitCreate(BaseModel):
+    client_id: UUID
+    aura_id: str
+    url: str
+    referrer: Optional[str] = "direct"
+    screen_resolution: Optional[str] = None
+    effective_connection_type: Optional[str] = None
+    downlink_speed: Optional[float] = None
+    rtt: Optional[int] = None
+
+class PageViewCreate(BaseModel):
+    client_id: UUID
+    aura_id: Optional[str] = None
+    url: str
+    duration: Optional[int] = 0
+    event_type: str = "exit"
+    intent_cluster: Optional[str] = None
+    signature: Optional[Dict[str, Any]] = None
 </file>
 
 <file path="backend/app/services/intelligence.py">
