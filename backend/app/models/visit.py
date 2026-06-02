@@ -19,7 +19,7 @@ class Visit(SQLModel, table=True):
     __tablename__ = "visit"
     
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    client_id: UUID = Field(index=True)
+    client_id: UUID = Field(foreign_key="client.id", index=True)
     company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", index=True, nullable=True)
     aura_id: str = Field(index=True)
     ip_address: str = Field(index=True)
