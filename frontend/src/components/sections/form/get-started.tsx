@@ -50,7 +50,7 @@ export default function GetStartedPage() {
                 aura_id: aura_id
             });
             setIsSuccess(true);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Submission Error:", error);
             alert("System Update: We encountered a synchronization delay. Please try again in a moment.");
         } finally {
@@ -98,7 +98,7 @@ export default function GetStartedPage() {
                             </div>
                             <h2 className="text-3xl font-bold tracking-tight">Audit Initiated</h2>
                             <p className="text-muted-foreground mt-4 text-sm max-w-sm mx-auto">
-                                Thank you, {formData.name.split(' ')[0]}. We've added {formData.company} to the Phase 01 queue. 
+                                Thank you, {formData.name.split(' ')[0]}. We&apos;ve added {formData.company} to the Phase 01 queue. 
                             </p>
                             <Button asChild variant="outline" className="mt-8 rounded-xl">
                                 <Link href="/">Return to Home</Link>

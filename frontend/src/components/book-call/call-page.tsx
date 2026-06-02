@@ -5,7 +5,6 @@ import React from 'react'
 import Link from 'next/link'
 import { ArrowLeft, CheckCircle2, Clock, ShieldCheck, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { HeroHeader } from '@/components/header/header'
 
 const benefits = [
     {
@@ -46,7 +45,7 @@ export default function BookCallPage() {
                         Schedule a Strategy Session
                     </h1>
                     <p className="mt-6 text-lg text-muted-foreground">
-                        Let's discuss how AuraWorks can bridge the gap between your website visitors and your sales team's inbox.
+                        Let&apos;s discuss how AuraWorks can bridge the gap between your website visitors and your sales team&apos;s inbox.
                     </p>
 
                     <div className="mt-12 space-y-8">

@@ -21,14 +21,14 @@ export function FounderProfile() {
                             <p className="text-primary font-mono text-sm mt-1 uppercase tracking-widest">Founder & Systems Architect</p>
                         </div>
                         <p className="text-muted-foreground leading-relaxed">
-                            With a background in engineering and a relentless focus on specialized cognitive systems, I built AuraWorks to solve the "Expertise Paradox" in sales. 
+                            With a background in engineering and a relentless focus on specialized cognitive systems, I built AuraWorks to solve the &quot;Expertise Paradox&quot; in sales. 
                         </p>
                         <p className="text-muted-foreground leading-relaxed">
-                            We don't sell "marketing hype." We deploy stable, logic-driven infrastructure—built on high-performance technology like Python and PostgreSQL—to identify and enrich juristic leads for the SADC industrial sector.
+                            We don&apos;t sell &quot;marketing hype.&quot; We deploy stable, logic-driven infrastructure—built on high-performance technology like Python and PostgreSQL—to identify and enrich juristic leads for the SADC industrial sector.
                         </p>
                         <div className="pt-4">
                              <blockquote className="italic text-sm text-foreground/80 border-l-2 border-primary pl-4">
-                                "The goal isn't more traffic. The goal is unmasked revenue."
+                                &quot;The goal isn&apos;t more traffic. The goal is unmasked revenue.&quot;
                              </blockquote>
                         </div>
                     </div>

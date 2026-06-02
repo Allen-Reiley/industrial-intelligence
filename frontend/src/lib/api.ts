@@ -21,16 +21,15 @@ const getEndpoint = (path: string) => {
     return `${cleanBase}/${cleanPath}`;
 };
 
-export async function submitToWaitlist(formData: any) {
+export async function submitToWaitlist(formData: Record<string, unknown>) {
     /**
      * Targets the updated v1/waitlist/join endpoint.
      * Matches the backend route defined in app/api/v1/waitlist.py
      */
     const endpoint = getEndpoint('api/v1/waitlist/join');
 
-    // Fetch the client/tenant configuration key safely from environment bindings or window space
     const clientId = process.env.NEXT_PUBLIC_WAITLIST_API_KEY || 
-                     (typeof window !== 'undefined' ? (window as any).AURA_AGENCY_ID : null);
+                     (typeof window !== 'undefined' ? (window as unknown as Record<string, unknown>).AURA_AGENCY_ID : null);
 
     try {
         const response = await fetch(endpoint, {
@@ -69,7 +68,7 @@ export async function submitToWaitlist(formData: any) {
         }
 
         return await response.json();
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("🚨 API Dispatch Error:", error);
         throw error;
     }

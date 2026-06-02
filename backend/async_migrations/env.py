@@ -14,11 +14,28 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = None
+from sqlmodel import SQLModel
+from app.core.config import settings
+
+# Import all models to register them on SQLModel.metadata
+from app.models.client import Client
+from app.models.company import Company
+from app.models.department import Department
+from app.models.visit import Visit
+from app.models.pageview import PageView
+from app.models.waitlist_lead import WaitlistLead
+from app.models.enrichment_queue import EnrichmentQueue, FailedEnrichment
+from app.models.notification_throttle import NotificationThrottle
+
+target_metadata = SQLModel.metadata
+
+# Retrieve dynamic DB URL from settings, converting asyncpg to sync driver
+db_url = settings.DATABASE_URL
+if db_url and "postgresql+asyncpg://" in db_url:
+    db_url = db_url.replace("postgresql+asyncpg://", "postgresql://")
+if db_url:
+    config.set_main_option("sqlalchemy.url", db_url)
+
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

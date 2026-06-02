@@ -16,7 +16,7 @@ export default function FeaturesHero() {
                         </TextEffect>
                     </h1>
                     <p className="mt-8 text-lg text-muted-foreground md:text-xl">
-                        The AuraWorks Engine isn't just a tracker. It is a proprietary Identity Bridge that resolves anonymous IP strings into high-intent corporate entities within the South African industrial sector.
+                        The AuraWorks Engine isn&apos;t just a tracker. It is a proprietary Identity Bridge that resolves anonymous IP strings into high-intent corporate entities within the South African industrial sector.
                     </p>
                 </div>
 

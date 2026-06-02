@@ -9,7 +9,7 @@ export default function ContentSection2() {
                 <div className="relative">
                     <div className="relative z-10 space-y-4 md:w-1/2">
                         <p>
-                            Identifying the company is only half the battle. <span className="font-medium">We provide the "Action Layer" that turns a name into a conversation.</span> — from visit to sale.
+                            Identifying the company is only half the battle. <span className="font-medium">We provide the &quot;Action Layer&quot; that turns a name into a conversation.</span> — from visit to sale.
                         </p>
                         <p>Our weekly reports give your sales team the direct path to the decision-makers.</p>
 

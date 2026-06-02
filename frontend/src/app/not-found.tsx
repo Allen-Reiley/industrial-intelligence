@@ -3,7 +3,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Home, Search } from 'lucide-react'
+import { Home, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export default function NotFound() {
@@ -28,7 +28,7 @@ export default function NotFound() {
                 </h1>
                 
                 <p className="mx-auto mt-6 max-w-md text-balance text-muted-foreground">
-                    The intelligence report you're looking for doesn't exist or has been moved to a different sector.
+                    The intelligence report you&apos;re looking for doesn&apos;t exist or has been moved to a different sector.
                 </p>
 
                 <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">

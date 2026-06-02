@@ -1,5 +1,4 @@
 // @/components/sections/features/identity-bridge.tsx
-import Image from 'next/image'
 
 export function IdentityBridge() {
     return (
@@ -23,7 +22,7 @@ export function IdentityBridge() {
                                 <div className="mt-1 flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">02</div>
                                 <div>
                                     <h4 className="font-medium">Intent Scoring</h4>
-                                    <p className="text-sm text-muted-foreground">Our algorithms weigh visit duration and technical spec downloads to tier leads from "Curiosity" to "Procurement Ready."</p>
+                                    <p className="text-sm text-muted-foreground">Our algorithms weigh visit duration and technical spec downloads to tier leads from &quot;Curiosity&quot; to &quot;Procurement Ready.&quot;</p>
                                 </div>
                             </div>
                         </div>

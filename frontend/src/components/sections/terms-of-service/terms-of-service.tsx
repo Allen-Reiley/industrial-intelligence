@@ -53,7 +53,7 @@ export default function TermsOfServicePage() {
                                 AuraWorks (Pty) Ltd grants the Client a non-exclusive, non-transferable license to access the <strong>AuraWorks Identity Bridge</strong> for a period of one (1) year.
                             </p>
                             <p>
-                                <strong>Scope of Service:</strong> The "Engine" includes real-time identity resolution of website traffic, weekly lead enrichment reporting, and access to the proprietary B2B dashboard. Clients are strictly responsible for the security of their unique API keys and dashboard credentials.
+                                <strong>Scope of Service:</strong> The &quot;Engine&quot; includes real-time identity resolution of website traffic, weekly lead enrichment reporting, and access to the proprietary B2B dashboard. Clients are strictly responsible for the security of their unique API keys and dashboard credentials.
                             </p>
                         </div>
                     </section>
@@ -68,7 +68,7 @@ export default function TermsOfServicePage() {
                                 <strong>Annual Commitment:</strong> The Founding Member rate (R120,000/yr) is a full annual commitment. Failure to meet payment schedules will result in immediate suspension of the Identity Bridge within 14 days of the overdue date.
                             </p>
                             <p>
-                                <strong>Refund Policy:</strong> Due to the proprietary nature of the data and the intensive "Systems Architect" setup required for deployment, all fees are non-refundable once the bridge is integrated into the Client&apos;s digital infrastructure.
+                                <strong>Refund Policy:</strong> Due to the proprietary nature of the data and the intensive &quot;Systems Architect&quot; setup required for deployment, all fees are non-refundable once the bridge is integrated into the Client&apos;s digital infrastructure.
                             </p>
                         </div>
                     </section>
@@ -80,7 +80,7 @@ export default function TermsOfServicePage() {
                         </h2>
                         <div className="text-muted-foreground space-y-4 text-sm leading-relaxed border-l border-primary/20 pl-6">
                             <p>
-                                <strong>AuraWorks Property:</strong> All algorithms, FastAPI architecture, "Identity Bridge" logic, and UI designs remain the sole property of AuraWorks (Pty) Ltd.
+                                <strong>AuraWorks Property:</strong> All algorithms, FastAPI architecture, &quot;Identity Bridge&quot; logic, and UI designs remain the sole property of AuraWorks (Pty) Ltd.
                             </p>
                             <p>
                                 <strong>Data Ownership:</strong> Clients retain full ownership of all leads exported during an active subscription. Upon termination, access to the engine is revoked, but exported data remains with the Client.
@@ -125,7 +125,7 @@ export default function TermsOfServicePage() {
                         </h2>
                         <div className="text-muted-foreground space-y-4 text-sm leading-relaxed border-l border-primary/20 pl-6">
                             <p>
-                                <strong>Uptime:</strong> AuraWorks maintains a 99.9% uptime target. Scheduled maintenance for "Bridge Updates" will be performed during off-peak hours and does not constitute downtime.
+                                <strong>Uptime:</strong> AuraWorks maintains a 99.9% uptime target. Scheduled maintenance for &quot;Bridge Updates&quot; will be performed during off-peak hours and does not constitute downtime.
                             </p>
                             <p>
                                 <strong>Support:</strong> Founding members receive priority technical support via email with a guaranteed 24-hour response time during standard business hours (SAST).

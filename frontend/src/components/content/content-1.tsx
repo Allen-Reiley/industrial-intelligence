@@ -30,11 +30,11 @@ export default function ContentSection1({ className }: { className?: string }) {
                         <p className="text-muted-foreground">
                             We filter out the noise. Our engine ignores personal traffic to show you only <span className="text-accent-foreground font-bold">real business prospects.</span> — Know which industrial firms are studying your specs before they even issue a tender.
                         </p>
-                        <p className="text-muted-foreground">Our engine supports many business ecosystems — it's a plug and play system that delivers automated results for your sales team to close more deals.</p>
+                        <p className="text-muted-foreground">Our engine supports many business ecosystems — it&apos;s a plug and play system that delivers automated results for your sales team to close more deals.</p>
 
                         <div className="pt-6">
                             <blockquote className="border-l-4 pl-4 border-primary/20">
-                                <p className="italic text-muted-foreground">"Every day, procurement officers and engineers from major industrial firms are browsing your technical specs, but they leave without a trace. Capitalize on them before your competitors do."</p>
+                                <p className="italic text-muted-foreground">&quot;Every day, procurement officers and engineers from major industrial firms are browsing your technical specs, but they leave without a trace. Capitalize on them before your competitors do.&quot;</p>
 
                                 <div className="mt-6 space-y-4">
                                     <cite className="block font-medium text-foreground">Reitumetse Sethabela, Founder</cite>

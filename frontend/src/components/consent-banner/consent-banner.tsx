@@ -15,7 +15,7 @@ const AuraConsentBanner = () => {
     // Logic: Trigger enrichment only after consent is given and significant dwell time occurs
     if (hasConsent && !hasEnriched) {
       const enrichmentTimer = setTimeout(() => {
-        const id = localStorage.getItem('aura_uid') || (window as any).AURA_UID;
+        const id = localStorage.getItem('aura_uid') || (window as unknown as Record<string, unknown>).AURA_UID as string;
         setAuraId(id);
         setShowEnrichment(true);
       }, 10000); // 10s = Significant interest
@@ -31,8 +31,8 @@ const AuraConsentBanner = () => {
   }, []);
 
   const handleAccept = async () => {
-    const id = typeof window !== 'undefined' ? (localStorage.getItem('aura_uid') || (window as any).AURA_UID) : null;
-    const clientId = typeof window !== 'undefined' ? (window as any).AURA_ID : null;
+    const id = typeof window !== 'undefined' ? (localStorage.getItem('aura_uid') || (window as unknown as Record<string, unknown>).AURA_UID as string) : null;
+    const clientId = typeof window !== 'undefined' ? (window as unknown as Record<string, unknown>).AURA_ID as string : null;
     setAuraId(id);
 
     // 1. Mark consent in LocalStorage for UI persistence

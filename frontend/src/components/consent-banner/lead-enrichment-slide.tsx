@@ -17,7 +17,7 @@ const LeadEnrichmentSlide = ({ auraId, onComplete, onDismiss }: LeadEnrichmentPr
 
   // --- AURA WORKS IDENTITY BRIDGE ---
   // This helper dispatches a custom event that aura.js is specifically listening for.
-  const signalAuraWarmLead = (data: any) => {
+  const signalAuraWarmLead = (data: Record<string, string>) => {
     if (typeof window !== 'undefined') {
       const event = new CustomEvent('aura_warm_lead', {
         detail: {

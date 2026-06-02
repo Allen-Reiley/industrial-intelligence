@@ -6,7 +6,7 @@ export function ComplianceBridge() {
                 <div className="max-w-2xl">
                     <h2 className="text-3xl font-bold tracking-tight md:text-4xl">POPIA-Compliant Lead Capture</h2>
                     <p className="mt-6 text-muted-foreground leading-relaxed">
-                        Data privacy is not a hurdle; it's a structural requirement. AuraWorks operates on a "Juristic-First" model. We resolve business entities, not individual consumers, ensuring your sales team remains compliant with South African data protection laws while maintaining a high-performance outbound strategy.
+                        Data privacy is not a hurdle; it&apos;s a structural requirement. AuraWorks operates on a &quot;Juristic-First&quot; model. We resolve business entities, not individual consumers, ensuring your sales team remains compliant with South African data protection laws while maintaining a high-performance outbound strategy.
                     </p>
                     <div className="mt-8 grid grid-cols-2 gap-8 border-t pt-8">
                         <div>

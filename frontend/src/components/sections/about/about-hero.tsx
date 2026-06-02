@@ -14,7 +14,7 @@ export function AboutHero() {
                         </TextEffect>
                     </h1>
                     <p className="mt-10 text-xl text-muted-foreground leading-relaxed border-l-2 border-primary/20 pl-8">
-                        AuraWorks (Pty) Ltd was founded on a single premise: Industrial sales shouldn't be a guessing game. We build the systems that bridge the gap between anonymous interest and signed contracts.
+                        AuraWorks (Pty) Ltd was founded on a single premise: Industrial sales shouldn&apos;t be a guessing game. We build the systems that bridge the gap between anonymous interest and signed contracts.
                     </p>
                 </div>
             </div>

@@ -24,7 +24,8 @@ export default function Pricing() {
     const [hasMounted, setHasMounted] = useState(false);
 
     useEffect(() => {
-        setHasMounted(true);
+        const handle = requestAnimationFrame(() => setHasMounted(true));
+        return () => cancelAnimationFrame(handle);
     }, []);
 
     if (!hasMounted) {
@@ -114,7 +115,7 @@ export default function Pricing() {
                                             ))}
                                         </ul>
                                         <div className="text-muted-foreground text-xs md:text-sm leading-relaxed border-t pt-8 italic">
-                                            "Designed for firms that measure success in multi-million Rand contracts, not clicks."
+                                            &quot;Designed for firms that measure success in multi-million Rand contracts, not clicks.&quot;
                                         </div>
                                     </AnimatedGroup>
                                 </div>

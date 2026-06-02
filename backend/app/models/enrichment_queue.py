@@ -4,6 +4,7 @@ from typing import Optional, Dict, Any
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
 from sqlmodel import SQLModel, Field, Column
+from sqlalchemy import JSON
 from sqlalchemy.dialects.postgresql import JSONB
 
 class QueueType(str, Enum):
@@ -18,7 +19,7 @@ class EnrichmentQueue(SQLModel, table=True):
     visit_id: Optional[UUID] = Field(default=None, index=True, nullable=True)
     aura_id: Optional[str] = Field(default=None, index=True)
     queue_type: QueueType = Field(index=True)
-    payload: dict = Field(default_factory=dict, sa_column=Column(JSONB))
+    payload: dict = Field(default_factory=dict, sa_column=Column(JSONB().with_variant(JSON, "sqlite")))
     status: str = Field(default="pending", index=True)
     retry_count: int = Field(default=0, index=True)
     last_attempt_at: Optional[datetime] = Field(default=None, nullable=True)
@@ -33,6 +34,6 @@ class FailedEnrichment(SQLModel, table=True):
     visit_id: Optional[UUID] = Field(default=None, index=True, nullable=True)
     aura_id: Optional[str] = Field(default=None, index=True)
     queue_type: QueueType = Field(index=True)
-    payload: dict = Field(default_factory=dict, sa_column=Column(JSONB))
+    payload: dict = Field(default_factory=dict, sa_column=Column(JSONB().with_variant(JSON, "sqlite")))
     failed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     error_message: Optional[str] = Field(default=None, nullable=True)

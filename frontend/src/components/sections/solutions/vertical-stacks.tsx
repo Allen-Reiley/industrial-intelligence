@@ -32,7 +32,7 @@ export function VerticalStacks() {
                             <h2 className="text-3xl font-medium tracking-tight">{v.title}</h2>
                             <div className="space-y-4 border-l-2 border-primary/10 pl-6">
                                 <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground/60">The Challenge</p>
-                                <p className="text-muted-foreground italic">"{v.problem}"</p>
+                                <p className="text-muted-foreground italic">&quot;{v.problem}&quot;</p>
                             </div>
                             <div className="space-y-4">
                                 <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground/60">The AuraWorks Edge</p>

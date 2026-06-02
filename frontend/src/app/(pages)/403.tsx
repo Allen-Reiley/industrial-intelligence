@@ -1,10 +1,19 @@
 // @/pages/403.tsx
-import React from 'react'
-import { ShieldAlert, Lock, ArrowLeft, Home, Key } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { ShieldAlert, Lock, ArrowLeft, Key } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
 export default function Forbidden403() {
+    const [nodeId, setNodeId] = useState('')
+
+    useEffect(() => {
+        const handle = requestAnimationFrame(() => {
+            setNodeId(Math.random().toString(36).substring(7).toUpperCase())
+        })
+        return () => cancelAnimationFrame(handle)
+    }, [])
+
     return (
         <main className="relative min-h-screen flex items-center justify-center bg-background px-6 py-12 overflow-hidden font-sans">
             {/* Background Atmosphere - Subtly more "restricted" (slightly darker/redder hue if desired, or keep your primary) */}
@@ -63,7 +72,7 @@ export default function Forbidden403() {
                         <div>Level: Restricted</div>
                     </div>
                     <p className="text-[8px] font-mono text-muted-foreground uppercase tracking-widest">
-                        Node ID: {Math.random().toString(36).substring(7).toUpperCase()}
+                        Node ID: {nodeId || 'PENDING'}
                     </p>
                 </div>
             </div>
