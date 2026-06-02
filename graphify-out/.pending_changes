@@ -65,3 +65,13 @@ backend/app/services/intelligence.py
 backend/app/tasks/janitor.py
 graphify-out/.pending_changes
 tracker/src/public/aura.js
+backend/app/__pycache__/db.cpython-312.pyc
+backend/app/db.py
+backend/async_migrations/__pycache__/env.cpython-312.pyc
+backend/async_migrations/versions/43306783e22e_enable_rls.py
+backend/async_migrations/versions/__pycache__/43306783e22e_enable_rls.cpython-312.pyc
+backend/async_migrations/versions/__pycache__/ae0287cd9a1c_initial_schema.cpython-312.pyc
+backend/tests/__pycache__/test_rls.cpython-312-pytest-9.0.3.pyc
+backend/tests/test_rls.py
+graphify-out/.pending_changes
+task.md
