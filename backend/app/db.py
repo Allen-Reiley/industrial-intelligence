@@ -89,6 +89,32 @@ def init_db():
         
         SQLModel.metadata.create_all(engine)
         logger.info("✅ Database Ledger: Connection established and tables verified.")
+        
+        # Seed the default test client if it does not exist to avoid foreign key violations.
+        try:
+            from sqlmodel import select
+            from app.models.client import ClientCategory, SubscriptionStatus
+            with Session(engine) as session:
+                stmt = select(Client).where(Client.id == "c4a6c9b1-8355-4de2-985d-a04f4dcd63a0")
+                test_client = session.execute(stmt).scalars().first()
+                if not test_client:
+                    logger.info("🌱 Seeding default integration client (c4a6c9b1-8355-4de2-985d-a04f4dcd63a0)...")
+                    test_client = Client(
+                        id="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0",
+                        company_name="AuraWorks Test Client",
+                        domain="testclient.co.za",
+                        category=ClientCategory.COMMERCIAL,
+                        client_product_description="Default integration test client for telemetry ingestion",
+                        subscription_status=SubscriptionStatus.ACTIVE,
+                        payment_plan="monthly",
+                        setup_fee_paid=True,
+                        is_active=True
+                    )
+                    session.add(test_client)
+                    session.commit()
+                    logger.info("✅ Default integration client successfully seeded.")
+        except Exception as e:
+            logger.error(f"⚠️ Failed to seed default integration client: {e}")
     except Exception as e:
         logger.error(f"❌ Database Ledger: Sync failure: {e}")
 
