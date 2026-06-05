@@ -177,6 +177,79 @@ async def get_departmental_intelligence(domain: str) -> List[Dict]:
             logger.error(f"🚨 Apollo Unexpected Failure: {e}")
             raise EnrichmentError(f"Apollo unexpected failure: {e}", status_code=500)
 
+async def enrich_company_departments(company_id: Any, domain: str):
+    """
+    Fires instantly inside an asynchronous background task right after IPinfo
+    validates a valid non-consumer domain profile.
+    """
+    if not settings.APOLLO_API_KEY or not domain or domain in ["unknown.com", "n/a"]:
+        return
+
+    from app.db import async_session_maker
+    from app.models.department import Department
+    from sqlmodel import select
+
+    if not async_session_maker:
+        return
+
+    try:
+        logger.info(f"🔍 Immediate Apollo Enrichment: Resolving departments for {domain}")
+        depts_data = await get_departmental_intelligence(domain)
+        if not depts_data:
+            logger.info(f"ℹ️ Immediate Apollo Enrichment: No departments found for {domain}")
+            return
+
+        async with async_session_maker() as session:
+            for dept in depts_data:
+                email = dept.get("email")
+                if not email:
+                    continue
+
+                # Check if contact already exists for this company
+                stmt = select(Department).where(
+                    Department.company_id == company_id,
+                    Department.email == email
+                )
+                existing_res = await session.execute(stmt)
+                existing = existing_res.scalars().first()
+
+                if not existing:
+                    # Scale priority score from 1 to 5 based on keywords
+                    priority_score = 1
+                    role = dept.get("role", "Lead").lower()
+                    
+                    # Keywords priority map:
+                    # "chief engineer" -> 5
+                    # "director" -> 4
+                    # "supply chain" -> 3
+                    # "procurement" -> 2
+                    # default -> 1
+                    keywords_map = {
+                        "chief engineer": 5,
+                        "director": 4,
+                        "supply chain": 3,
+                        "procurement": 2
+                    }
+                    for kw, score in keywords_map.items():
+                        if kw in role:
+                            priority_score = score
+                            break
+
+                    new_dept = Department(
+                        company_id=company_id,
+                        contact_name=dept.get("name", "Unknown Contact"),
+                        role_title=dept.get("role", "Lead"),
+                        email=email,
+                        phone=dept.get("phone"),
+                        linkedin_url=dept.get("linkedin_url"),
+                        priority_score=priority_score
+                    )
+                    session.add(new_dept)
+            await session.commit()
+            logger.info(f"✅ Immediate Apollo Enrichment: Saved contacts for {domain}")
+    except Exception as e:
+        logger.error(f"❌ Immediate Apollo Enrichment Failed for {domain}: {e}")
+
 async def process_enrichment_queue():
     """
     Background Task Runner: Processes queued items across a strict 3-stage exponential backoff pattern.
@@ -278,6 +351,11 @@ async def process_enrichment_queue():
                                 visit.verification_status = "verified" if (company and company.cipc_verified) else "verifying"
                                 session.add(visit)
                                 await session.commit()
+
+                        # Trigger immediate Apollo enrichment
+                        if company and company.domain and info.get("is_b2b", False):
+                            import asyncio
+                            asyncio.create_task(enrich_company_departments(company.id, company.domain))
 
                     elif item.queue_type == QueueType.APOLLO:
                         domain = item.payload.get("domain")

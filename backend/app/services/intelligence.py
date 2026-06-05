@@ -6,8 +6,10 @@ from typing import List, Optional, Dict, Any
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from cachetools import TTLCache
+import redis.asyncio as aioredis
+from bs4 import BeautifulSoup
 
-from app.models import Visit, Company, WaitlistLead, PageView
+from app.models import Visit, Company, WaitlistLead, PageView, Client, VerificationStatus
 from app.core.config import settings
 
 logger = logging.getLogger("uvicorn")
@@ -163,16 +165,14 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
 
     last_visit = history[-1]
 
-    # 2. Timezone-Naive DB Parity Safe Guard Check
+    # 2. Timezone-Aware DB Parity Safe Guard Check
     # Evaluates visits sharing the same IP address over the last 72 hours.
     # If 3 or more unique device IDs are detected, it signals a corporate site facility/Buying Committee cluster.
-    # Convert safety boundary check to a naive datetime since database field lacks timezone index metadata.
     time_offset = datetime.now(timezone.utc) - timedelta(hours=72)
-    db_compatible_time = time_offset.replace(tzinfo=None)
 
     cluster_stmt = select(Visit).where(
         Visit.ip_address == last_visit.ip_address,
-        Visit.created_at >= db_compatible_time
+        Visit.created_at >= time_offset
     )
     cluster_res = await session.execute(cluster_stmt)
     cluster_records = cluster_res.scalars().all()
@@ -244,3 +244,253 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
         "is_warm_lead": lead is not None,
         "is_high_intent": is_buying_committee or lead is not None or any(kw in pathway_str.lower() for kw in ["pricing", "audit", "waitlist"])
     }
+
+# --- PHASE 4: DEEPSEEK SYNTHESIS & WEB CONTENT EXTRACTION ---
+
+scrape_fallback_cache = TTLCache(maxsize=1000, ttl=604800)  # 7-day TTL fallback cache
+
+async def get_cached_scrape(domain: str) -> Optional[str]:
+    """Retrieves cached scrape content from Redis or local cache."""
+    cache_key = f"scrape:{domain}"
+    if settings.REDIS_URL:
+        try:
+            client = aioredis.from_url(settings.REDIS_URL, decode_responses=True)
+            async with client:
+                return await client.get(cache_key)
+        except Exception as e:
+            logger.warning(f"Redis get failed for {cache_key}, falling back to memory: {e}")
+    return scrape_fallback_cache.get(domain)
+
+async def set_cached_scrape(domain: str, text: str):
+    """Caches scrape content in Redis or local cache with 7-day expiry."""
+    cache_key = f"scrape:{domain}"
+    if settings.REDIS_URL:
+        try:
+            client = aioredis.from_url(settings.REDIS_URL, decode_responses=True)
+            async with client:
+                await client.set(cache_key, text, ex=604800)  # 7-day TTL (604800 seconds)
+                return
+        except Exception as e:
+            logger.warning(f"Redis set failed for {cache_key}, falling back to memory: {e}")
+    scrape_fallback_cache[domain] = text
+
+async def scrape_homepage(domain: str) -> str:
+    """
+    Constructs an asynchronous utility handler powered by httpx and BeautifulSoup
+    to extract external company profile markers dynamically from a domain path.
+    Enforces a strict 5.0-second timeout drop boundary, parses retrieved HTML streams,
+    strips out all scripting, style, and HTML tags, extracts clean text, and restricts
+    final outputs strictly to the first 500 readable words.
+    Uses Redis caching with a 7-day TTL (or an in-memory fallback).
+    """
+    if not domain:
+        return ""
+        
+    clean_domain = domain.strip().lower()
+    if not clean_domain.startswith(("http://", "https://")):
+        url = f"https://{clean_domain}"
+    else:
+        url = clean_domain
+        # Extract clean domain name for cache key
+        clean_domain = clean_domain.replace("https://", "").replace("http://", "").split("/")[0]
+
+    # Check cache first
+    cached_text = await get_cached_scrape(clean_domain)
+    if cached_text:
+        return cached_text
+
+    headers = {
+        "User-Agent": "AuraWorks Industrial Intelligence Bot/1.0"
+    }
+
+    html_content = ""
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, headers=headers, timeout=5.0, follow_redirects=True)
+            if response.status_code == 200:
+                html_content = response.text
+            elif url.startswith("https://"):
+                # Fallback to http
+                fallback_url = url.replace("https://", "http://")
+                response = await client.get(fallback_url, headers=headers, timeout=5.0, follow_redirects=True)
+                if response.status_code == 200:
+                    html_content = response.text
+    except Exception as e:
+        logger.warning(f"Scrape attempt failed for {url}: {e}")
+        if url.startswith("https://"):
+            try:
+                async with httpx.AsyncClient() as client:
+                    fallback_url = url.replace("https://", "http://")
+                    response = await client.get(fallback_url, headers=headers, timeout=5.0, follow_redirects=True)
+                    if response.status_code == 200:
+                        html_content = response.text
+            except Exception as fallback_err:
+                logger.warning(f"Scrape fallback attempt failed for {fallback_url}: {fallback_err}")
+
+    if not html_content:
+        return "Scrape failed: Unable to fetch page content."
+
+    # Parse and clean HTML using BeautifulSoup
+    soup = BeautifulSoup(html_content, "html.parser")
+    
+    # Remove script, style, nav, footer, and other noise tags
+    for tag in soup(["script", "style", "nav", "footer", "header", "noscript", "iframe", "svg"]):
+        tag.decompose()
+
+    # Extract clean text strings
+    raw_text = soup.get_text(separator=" ")
+    
+    # Clean whitespace and split into words
+    words = [w for w in raw_text.split() if w]
+    
+    # Truncate strictly to the first 500 readable words
+    truncated_words = words[:500]
+    cleaned_text = " ".join(truncated_words)
+
+    # Save to cache
+    await set_cached_scrape(clean_domain, cleaned_text)
+    
+    return cleaned_text
+
+def estimate_tokens(text: str) -> int:
+    """Estimates the number of tokens in a string based on standard word/character metrics."""
+    return int(len(text.split()) * 1.33)
+
+async def run_daily_intent_batch(session: AsyncSession):
+    """
+    Consolidated daily batch processing execution background function to completely
+    replace per-session analytical requests. Sweeps verified interactions in the
+    preceding 24 hours, aggregates tracking details by enterprise domain, and constructs
+    structured prompt strings compiling client descriptors, scraped prospect copy, and page
+    navigation sequences. Commit results to persistent Company.intent_summary table field.
+    """
+    time_threshold = datetime.now(timezone.utc) - timedelta(hours=24)
+    
+    # Sweep verified B2B visits in the last 24 hours
+    stmt = select(Visit).where(
+        Visit.company_id is not None,
+        Visit.verification_status == VerificationStatus.VERIFIED,
+        Visit.created_at >= time_threshold
+    )
+    res = await session.execute(stmt)
+    visits = res.scalars().all()
+    
+    if not visits:
+        logger.info("Daily Intent Batch: No verified visits found in the last 24 hours.")
+        return
+        
+    # Group visits by company_id
+    company_visits = {}
+    for v in visits:
+        if v.company_id not in company_visits:
+            company_visits[v.company_id] = []
+        company_visits[v.company_id].append(v)
+        
+    for company_id, v_list in company_visits.items():
+        company = await session.get(Company, company_id)
+        if not company:
+            continue
+            
+        # Get unique clients visited
+        client_ids = {v.client_id for v in v_list}
+        client_descriptors = []
+        for cid in client_ids:
+            client = await session.get(Client, cid)
+            if client:
+                desc_text = f"Client {client.company_name} offering: {client.client_product_description}"
+                client_descriptors.append(desc_text)
+                
+        client_descriptors_str = "\n".join(client_descriptors)
+        
+        # Scrape company website homepage
+        scraped_copy = ""
+        if company.domain:
+            scraped_copy = await scrape_homepage(company.domain)
+            
+        # Get page views sequence
+        visit_ids = [v.id for v in v_list]
+        pv_stmt = select(PageView).where(PageView.visit_id.in_(visit_ids)).order_by(PageView.created_at.desc())
+        pv_res = await session.execute(pv_stmt)
+        all_page_views = pv_res.scalars().all()
+        
+        # Limit historical page tracking arrays strictly to the last 10 entries
+        recent_page_views = all_page_views[:10]
+        recent_page_views.reverse()
+        
+        page_sequence = [pv.url_path for pv in recent_page_views]
+        page_sequence_str = " -> ".join(page_sequence)
+        
+        # Absolute 4,000-token restriction boundary drops historical page tracking arrays if exceeded
+        if estimate_tokens(page_sequence_str) > 4000:
+            while page_sequence and estimate_tokens(page_sequence_str) > 4000:
+                page_sequence.pop(0)  # Drop oldest page view path
+                page_sequence_str = " -> ".join(page_sequence)
+                
+        # Construct structured prompt
+        prompt = f"""
+Analyze B2B industrial traffic profile and corporate intent.
+
+Client Context:
+{client_descriptors_str}
+
+Prospect Scraped Homepage Copy:
+{scraped_copy}
+
+Prospect Navigation Journey:
+{page_sequence_str}
+
+Task: Synthesize a concise 2-sentence 'Executive Intent Summary' identifying if this company is currently evaluating client solutions, what specific areas they are looking at, and their intent level ('Discovery', 'Technical Evaluation', or 'Procurement'). Do not add preambles or filler text.
+"""
+        # Prompts are capped at 2,000 tokens per evaluation
+        if estimate_tokens(prompt) > 2000:
+            # Dynamically reduce scraped copy size to fit prompt within token budget
+            while estimate_tokens(prompt) > 2000 and len(scraped_copy) > 50:
+                words = scraped_copy.split()
+                scraped_copy = " ".join(words[:-10])
+                prompt = f"""
+Analyze B2B industrial traffic profile and corporate intent.
+
+Client Context:
+{client_descriptors_str}
+
+Prospect Scraped Homepage Copy:
+{scraped_copy}
+
+Prospect Navigation Journey:
+{page_sequence_str}
+
+Task: Synthesize a concise 2-sentence 'Executive Intent Summary' identifying if this company is currently evaluating client solutions, what specific areas they are looking at, and their intent level ('Discovery', 'Technical Evaluation', or 'Procurement'). Do not add preambles or filler text.
+"""
+            if estimate_tokens(prompt) > 2000:
+                # Direct truncation if still too long
+                prompt_words = prompt.split()
+                prompt = " ".join(prompt_words[:1500])
+
+        intent_summary = "Intelligence engine temporarily offline."
+        if settings.DEEPSEEK_API_KEY:
+            async with httpx.AsyncClient() as client:
+                try:
+                    response = await client.post(
+                        "https://api.deepseek.com/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "model": "deepseek-chat",
+                            "messages": [{"role": "user", "content": prompt}],
+                            "temperature": 0.2
+                        },
+                        timeout=15.0
+                    )
+                    if response.status_code == 200:
+                        intent_summary = response.json()['choices'][0]['message']['content'].strip()
+                    else:
+                        logger.error(f"🤖 Daily Batch DeepSeek API returned code {response.status_code}: {response.text}")
+                except Exception as e:
+                    logger.error(f"🤖 Daily Batch DeepSeek Failure: {e}")
+                    
+        company.intent_summary = intent_summary
+        session.add(company)
+        
+    await session.commit()

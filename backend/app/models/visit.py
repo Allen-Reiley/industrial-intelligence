@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Optional, List, Dict, Any, TYPE_CHECKING
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
 from pydantic import BaseModel
 
 if TYPE_CHECKING:
@@ -28,10 +28,21 @@ class Visit(SQLModel, table=True):
     high_intent: bool = Field(default=False, index=True)
     verification_status: VerificationStatus = Field(default=VerificationStatus.VERIFYING, index=True)
     is_consented: bool = Field(default=False, index=True)
+    email: Optional[str] = Field(default=None, index=True, nullable=True)
+    visitor_name: Optional[str] = Field(default=None, nullable=True)
+    canvas_hash: Optional[str] = Field(default=None, nullable=True)
+    webgl_renderer: Optional[str] = Field(default=None, nullable=True)
+    clock_drift: Optional[str] = Field(default=None, nullable=True)
     fingerprint_hash: Optional[str] = Field(default=None, index=True, nullable=True)
     duration: int = Field(default=0)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
+    updated_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
 
     company: Optional["Company"] = Relationship(back_populates="visits")
     page_views: List["PageView"] = Relationship(back_populates="visit")

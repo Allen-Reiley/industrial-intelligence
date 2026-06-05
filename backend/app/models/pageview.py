@@ -2,7 +2,7 @@
 from typing import Optional, TYPE_CHECKING
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
 
 if TYPE_CHECKING:
     from app.models.visit import Visit
@@ -16,6 +16,9 @@ class PageView(SQLModel, table=True):
     url_path: str = Field(index=True)
     referrer: Optional[str] = Field(default=None)
     duration: int = Field(default=0)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
 
     visit: Optional["Visit"] = Relationship(back_populates="page_views")

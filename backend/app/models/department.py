@@ -2,7 +2,7 @@
 from typing import Optional, TYPE_CHECKING
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
 
 if TYPE_CHECKING:
     from app.models.company import Company
@@ -18,6 +18,9 @@ class Department(SQLModel, table=True):
     phone: Optional[str] = Field(default=None)
     linkedin_url: Optional[str] = Field(default=None)
     priority_score: int = Field(default=1, ge=1, le=5, index=True)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
 
     company: Optional["Company"] = Relationship(back_populates="departments")

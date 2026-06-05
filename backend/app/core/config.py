@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     # --- DATABASE ---
     # Set to Optional to prevent build-time crashes on platforms like Railway
     DATABASE_URL: Optional[str] = None 
+    REDIS_URL: Optional[str] = None
+    PAYGENIUS_WEBHOOK_SECRET: Optional[str] = None
     
     # --- ENRICHMENT TRIAD (National Scaling) ---
     IPINFO_TOKEN: Optional[str] = None 

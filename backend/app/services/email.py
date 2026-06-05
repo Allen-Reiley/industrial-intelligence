@@ -6,7 +6,15 @@ from app.core.config import settings
 
 logger = logging.getLogger("auraworks.email")
 
-async def send_resend_email(to_email: str, subject: str, html_content: str) -> bool:
+import base64
+
+async def send_resend_email(
+    to_email: str, 
+    subject: str, 
+    html_content: str,
+    attachment_bytes: Optional[bytes] = None,
+    filename: Optional[str] = None
+) -> bool:
     """
     Dispatches outbound email notifications using Resend's REST API.
     Asynchronous implementation ensures waitlist route submission stays fast.
@@ -27,6 +35,13 @@ async def send_resend_email(to_email: str, subject: str, html_content: str) -> b
         "subject": subject,
         "html": html_content
     }
+    if attachment_bytes and filename:
+        payload["attachments"] = [
+            {
+                "content": base64.b64encode(attachment_bytes).decode("utf-8"),
+                "filename": filename
+            }
+        ]
 
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:

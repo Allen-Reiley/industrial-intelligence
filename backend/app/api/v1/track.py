@@ -88,6 +88,12 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
             if company: 
                 await session.refresh(company)
 
+            # Fire immediate departmental enrichment if the company domain is verified and it's a B2B visitor
+            if company and company.domain and enriched_info.get("is_b2b", False):
+                from app.services.enrichment import enrich_company_departments
+                import asyncio
+                asyncio.create_task(enrich_company_departments(company.id, company.domain))
+
             # 3. Persistence of the Forensic Trail
             db_visit = Visit(
                 company_id=company.id if company else None,
