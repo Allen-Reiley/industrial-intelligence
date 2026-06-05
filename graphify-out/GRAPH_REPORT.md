@@ -1,16 +1,16 @@
 # Graph Report - industrial-intelligence  (2026-06-05)
 
 ## Corpus Check
-- 152 files · ~127,428 words
+- 152 files · ~127,488 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 228 nodes · 475 edges · 13 communities (10 shown, 3 thin omitted)
+- 228 nodes · 476 edges · 13 communities (10 shown, 3 thin omitted)
 - Extraction: 66% EXTRACTED · 34% INFERRED · 0% AMBIGUOUS · INFERRED: 160 edges (avg confidence: 0.58)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a26db0a7`
+- Built from commit: `318258ae`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -55,6 +55,7 @@
 
 ## Import Cycles
 - 1-file cycle: `backend/app/main.py -> backend/app/main.py`
+- 2-file cycle: `backend/app/db.py -> backend/app/main.py -> backend/app/db.py`
 
 ## Communities (13 total, 3 thin omitted)
 
@@ -99,7 +100,7 @@ Cohesion: 0.38
 Nodes (5): get_test_client(), Pass a mock customer domain homepage containing text indicators like "Chrome Ore, Dispatch an unauthenticated or invalid payload signature token to POST /api/v1/w, test_client_semantic_classification(), test_paygenius_webhook_signature_security()
 
 ## Knowledge Gaps
-- **14 isolated node(s):** `str`, `AsyncSession`, `bytes`, `bool`, `int` (+9 more)
+- **14 isolated node(s):** `AsyncSession`, `str`, `AsyncSession`, `bytes`, `bool` (+9 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -109,7 +110,7 @@ _Questions this graph is uniquely positioned to answer:_
 - **Why does `test_automated_contract_pdf_generation()` connect `Community 6` to `Community 10`?**
   _High betweenness centrality (0.136) - this node is a cross-community bridge._
 - **Why does `Company` connect `Community 0` to `Community 1`, `Community 2`, `Community 4`, `Community 5`, `Community 7`?**
-  _High betweenness centrality (0.082) - this node is a cross-community bridge._
+  _High betweenness centrality (0.081) - this node is a cross-community bridge._
 - **Are the 21 inferred relationships involving `Visit` (e.g. with `BackgroundTasks` and `bool`) actually correct?**
   _`Visit` has 21 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 16 inferred relationships involving `EnrichmentError` (e.g. with `BackgroundTasks` and `bool`) actually correct?**
@@ -118,5 +119,5 @@ _Questions this graph is uniquely positioned to answer:_
   _`Company` has 17 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 15 inferred relationships involving `QueueType` (e.g. with `BackgroundTasks` and `bool`) actually correct?**
   _`QueueType` has 15 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `Registers a new client and automatically evaluates its category (INDUSTRIAL vs C`, `SILENT INGESTION ENGINE:     Records raw traffic trails and resolves firmographi`, `THE BATCH PROCESSOR:     Fires exclusively upon departure. Evaluates identity da` to the rest of the system?**
+- **What connects `AsyncSession`, `Schema Synchronization.     Verifies that the database ledger tables are correct`, `FastAPI Dependency: Yields a transaction-scoped Asynchronous session.     Automa` to the rest of the system?**
   _69 weakly-connected nodes found - possible documentation gaps or missing edges._

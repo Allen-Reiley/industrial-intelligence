@@ -1,14 +1,14 @@
-import os
 import logging
 from notion_client import Client
 from datetime import datetime
+from app.core.config import settings
 
 logger = logging.getLogger("uvicorn")
 
 class NotionVault:
     def __init__(self):
-        self.token = os.getenv("NOTION_TOKEN")
-        self.database_id = os.getenv("NOTION_DATABASE_ID")
+        self.token = settings.NOTION_TOKEN
+        self.database_id = settings.NOTION_DATABASE_ID
         
         if not self.token or not self.database_id:
             logger.warning("⚠️ Notion credentials missing. Vault on standby.")

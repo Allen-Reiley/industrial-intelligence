@@ -28,6 +28,8 @@ class ClientBase(SQLModel):
     )
     payment_provider_id: Optional[str] = Field(default=None, nullable=True)
     is_active: bool = Field(default=False)
+    collect_personal_data: bool = Field(default=False)
+    require_consent_banner: bool = Field(default=False)
 
 class Client(ClientBase, table=True):
     __tablename__ = "client"
