@@ -88,9 +88,6 @@ def init_db():
         from app.models.notification_throttle import NotificationThrottle
         from app.models.crm_dead_letter import CrmDeadLetter
         
-        SQLModel.metadata.create_all(engine)
-        logger.info("✅ Database Ledger: Connection established and tables verified.")
-        
         # Run Alembic migrations programmatically to ensure the schema is fully updated with new columns
         import os
         from alembic.config import Config
@@ -106,6 +103,9 @@ def init_db():
             logger.info("✅ Database migrations completed successfully.")
         else:
             logger.warning(f"⚠️ alembic.ini not found at {alembic_ini_path}, skipping migrations.")
+        
+        SQLModel.metadata.create_all(engine)
+        logger.info("✅ Database Ledger: Connection established and tables verified.")
         
         # Seed the default test client if it does not exist to avoid foreign key violations.
         try:

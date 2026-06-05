@@ -33,9 +33,20 @@ def reset_database():
             conn.execute(text("GRANT ALL ON SCHEMA public TO public;"))
         print("✅ Tables dropped.")
         
-        print("🏗️ Creating new tables with UUID schema...")
-        SQLModel.metadata.create_all(engine)
-        print("✅ Database schema successfully reset!")
+        # Run Alembic migrations programmatically to create tables and RLS
+        print("🏗️ Creating tables and applying migrations via Alembic...")
+        from alembic.config import Config
+        from alembic import command
+        
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        alembic_ini_path = os.path.abspath(os.path.join(current_dir, "alembic.ini"))
+        if os.path.exists(alembic_ini_path):
+            alembic_cfg = Config(alembic_ini_path)
+            command.upgrade(alembic_cfg, "head")
+            print("✅ Database successfully reset and migrated to head!")
+        else:
+            print(f"❌ alembic.ini not found at {alembic_ini_path}, cannot reset database.")
+            raise FileNotFoundError("alembic.ini missing")
     except Exception as e:
         print(f"❌ Failed to reset database: {e}")
 
