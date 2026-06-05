@@ -11,6 +11,7 @@ from app.models.pageview import PageView
 from app.models.waitlist_lead import WaitlistLead
 from app.models.enrichment_queue import EnrichmentQueue, FailedEnrichment
 from app.models.notification_throttle import NotificationThrottle
+from app.models.crm_dead_letter import CrmDeadLetter
 
 def test_database_schema_initialization():
     """
@@ -29,7 +30,7 @@ def test_database_schema_initialization():
     expected_tables = [
         "client", "company", "department", "visit", 
         "page_view", "waitlist_lead", "enrichment_queue", 
-        "failed_enrichment", "notification_throttle"
+        "failed_enrichment", "notification_throttle", "crm_dead_letter"
     ]
     
     for t in expected_tables:

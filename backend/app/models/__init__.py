@@ -7,5 +7,6 @@ from .pageview import PageView
 from .waitlist_lead import WaitlistLead
 from .enrichment_queue import EnrichmentQueue, FailedEnrichment, QueueType
 from .notification_throttle import NotificationThrottle
+from .crm_dead_letter import CrmDeadLetter
 
 # Do NOT include router logic here

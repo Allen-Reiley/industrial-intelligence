@@ -100,5 +100,50 @@ def start_scheduler():
         replace_existing=True
     )
     
+    # Weekly reporting service scheduled every Monday at 06:00 SAST (04:00 UTC)
+    scheduler.add_job(
+        run_weekly_reporting_cycle,
+        'cron',
+        day_of_week='mon',
+        hour=4,
+        minute=0,
+        id='weekly_pdf_reports',
+        replace_existing=True
+    )
+    
     scheduler.start()
-    logger.info("🚀 AuraWorks Async Scheduler: Online. Structural enrichment loop active.")
+    logger.info("🚀 AuraWorks Async Scheduler: Online. Structural enrichment and weekly report loops active.")
+
+# --- TASK 7.1 WEEKLY REPORTING CYCLE ---
+from app.services.reports import compile_weekly_report, upload_report_to_r2, generate_signed_cdn_link, send_weekly_report_email
+from app.models.client import Client
+
+async def run_weekly_reporting_cycle():
+    """
+    Weekly Reporting cron task: compiles the report for each active client,
+    uploads to R2, and dispatches an email with a 24-hour expiration token.
+    """
+    if not async_session_maker:
+        return
+        
+    async with async_session_maker() as session:
+        try:
+            stmt = select(Client).where(Client.is_active == True)
+            res = await session.execute(stmt)
+            clients = res.scalars().all()
+            
+            for client in clients:
+                try:
+                    pdf_bytes = await compile_weekly_report(client.id, session)
+                    filename = f"weekly_report_{client.id}_{datetime.now(timezone.utc).strftime('%Y%m%d')}.pdf"
+                    
+                    upload_success = await upload_report_to_r2(pdf_bytes, filename)
+                    if upload_success:
+                        download_link = generate_signed_cdn_link(filename)
+                        recipient = f"reports@{client.domain}"
+                        await send_weekly_report_email(recipient, download_link)
+                        logger.info(f"📊 Weekly report successfully sent to {recipient}")
+                except Exception as inner_e:
+                    logger.error(f"❌ Failed compiling weekly report for client {client.id}: {inner_e}")
+        except Exception as e:
+            logger.error(f"❌ Weekly report global cycle failure: {e}")

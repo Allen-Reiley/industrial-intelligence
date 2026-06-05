@@ -78,6 +78,8 @@ async def background_lead_analysis(lead_id: int, aura_id: str, payload: dict):
                 "name": lead.name,
                 "email": lead.email,
                 "company_name_final": company_name,
+                "company_id": lead.company_id,
+                "client_id": lead.client_id,
                 "department": lead.department or "Undetermined",
                 "position": lead.position or "Evaluator",
                 "industry": lead.industry or "Industrial",
@@ -138,6 +140,8 @@ async def join_waitlist(
         domain = None
         if website:
             domain = website.replace("https://", "").replace("http://", "").split("/")[0].lower()
+        if not domain and email and "@" in email:
+            domain = email.split("@")[1].lower()
         
         # Search for company by domain or name globally (since Company is a shared table)
         company_stmt = select(Company).where(

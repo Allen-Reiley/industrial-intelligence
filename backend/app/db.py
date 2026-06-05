@@ -86,6 +86,7 @@ def init_db():
         from app.models.waitlist_lead import WaitlistLead
         from app.models.enrichment_queue import EnrichmentQueue, FailedEnrichment
         from app.models.notification_throttle import NotificationThrottle
+        from app.models.crm_dead_letter import CrmDeadLetter
         
         SQLModel.metadata.create_all(engine)
         logger.info("✅ Database Ledger: Connection established and tables verified.")
