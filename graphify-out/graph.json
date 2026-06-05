@@ -1,0 +1,4223 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "leads.py",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/leads.py",
+      "source_location": "L1",
+      "id": "v1_leads",
+      "community": 8,
+      "norm_label": "leads.py"
+    },
+    {
+      "label": "get_leads()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/leads.py",
+      "source_location": "L15",
+      "id": "v1_leads_get_leads",
+      "community": 8,
+      "norm_label": "get_leads()"
+    },
+    {
+      "label": "str",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/leads.py",
+      "source_location": "L15",
+      "id": "backend_app_api_v1_leads_py_str",
+      "community": 8,
+      "norm_label": "str"
+    },
+    {
+      "label": "int",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/leads.py",
+      "source_location": "L15",
+      "id": "backend_app_api_v1_leads_py_int",
+      "community": 8,
+      "norm_label": "int"
+    },
+    {
+      "label": "AsyncSession",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/leads.py",
+      "source_location": "L15",
+      "id": "backend_app_api_v1_leads_py_asyncsession",
+      "community": 8,
+      "norm_label": "asyncsession"
+    },
+    {
+      "label": "get_lead_intelligence()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/leads.py",
+      "source_location": "L67",
+      "id": "v1_leads_get_lead_intelligence",
+      "community": 8,
+      "norm_label": "get_lead_intelligence()"
+    },
+    {
+      "label": "Industrial Ledger: Retrieves leads and prioritizes 'Warm Leads' (those with volu",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/leads.py",
+      "source_location": "L20",
+      "id": "v1_leads_rationale_20",
+      "community": 8,
+      "norm_label": "industrial ledger: retrieves leads and prioritizes 'warm leads' (those with volu"
+    },
+    {
+      "label": "Provides the forensic audit for a specific lead, including their      behavioral",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/leads.py",
+      "source_location": "L71",
+      "id": "v1_leads_rationale_71",
+      "community": 8,
+      "norm_label": "provides the forensic audit for a specific lead, including their      behavioral"
+    },
+    {
+      "label": "track.py",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L1",
+      "id": "v1_track",
+      "community": 0,
+      "norm_label": "track.py"
+    },
+    {
+      "label": "ConsentPayload",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L28",
+      "id": "v1_track_consentpayload",
+      "community": 0,
+      "norm_label": "consentpayload"
+    },
+    {
+      "label": "BaseModel",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "basemodel",
+      "community": 0,
+      "norm_label": "basemodel"
+    },
+    {
+      "label": "IdentityPayload",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L33",
+      "id": "v1_track_identitypayload",
+      "community": 0,
+      "norm_label": "identitypayload"
+    },
+    {
+      "label": "process_entry_logic()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L43",
+      "id": "v1_track_process_entry_logic",
+      "community": 0,
+      "norm_label": "process_entry_logic()"
+    },
+    {
+      "label": "VisitCreate",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L43",
+      "id": "visitcreate",
+      "community": 0,
+      "norm_label": "visitcreate"
+    },
+    {
+      "label": "str",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L43",
+      "id": "backend_app_api_v1_track_py_str",
+      "community": 0,
+      "norm_label": "str"
+    },
+    {
+      "label": "process_exit_logic()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L131",
+      "id": "v1_track_process_exit_logic",
+      "community": 6,
+      "norm_label": "process_exit_logic()"
+    },
+    {
+      "label": "int",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L131",
+      "id": "backend_app_api_v1_track_py_int",
+      "community": 0,
+      "norm_label": "int"
+    },
+    {
+      "label": "bool",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L131",
+      "id": "backend_app_api_v1_track_py_bool",
+      "community": 0,
+      "norm_label": "bool"
+    },
+    {
+      "label": "track_entry()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L240",
+      "id": "v1_track_track_entry",
+      "community": 0,
+      "norm_label": "track_entry()"
+    },
+    {
+      "label": "Request",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L240",
+      "id": "request",
+      "community": 0,
+      "norm_label": "request"
+    },
+    {
+      "label": "BackgroundTasks",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L240",
+      "id": "backend_app_api_v1_track_py_backgroundtasks",
+      "community": 0,
+      "norm_label": "backgroundtasks"
+    },
+    {
+      "label": "track_identity()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L246",
+      "id": "v1_track_track_identity",
+      "community": 2,
+      "norm_label": "track_identity()"
+    },
+    {
+      "label": "track_event()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L302",
+      "id": "v1_track_track_event",
+      "community": 0,
+      "norm_label": "track_event()"
+    },
+    {
+      "label": "PageViewCreate",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L302",
+      "id": "pageviewcreate",
+      "community": 0,
+      "norm_label": "pageviewcreate"
+    },
+    {
+      "label": "track_consent()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L319",
+      "id": "v1_track_track_consent",
+      "community": 0,
+      "norm_label": "track_consent()"
+    },
+    {
+      "label": "track_exit()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L335",
+      "id": "v1_track_track_exit",
+      "community": 0,
+      "norm_label": "track_exit()"
+    },
+    {
+      "label": "SILENT INGESTION ENGINE:     Records raw traffic trails and resolves firmographi",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L44",
+      "id": "v1_track_rationale_44",
+      "community": 0,
+      "norm_label": "silent ingestion engine:     records raw traffic trails and resolves firmographi"
+    },
+    {
+      "label": "THE BATCH PROCESSOR:     Fires exclusively upon departure. Evaluates identity da",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L132",
+      "id": "v1_track_rationale_132",
+      "community": 6,
+      "norm_label": "the batch processor:     fires exclusively upon departure. evaluates identity da"
+    },
+    {
+      "label": "Upgrades anonymous forensic profiles using volunteered banner form data.",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L247",
+      "id": "v1_track_rationale_247",
+      "community": 2,
+      "norm_label": "upgrades anonymous forensic profiles using volunteered banner form data."
+    },
+    {
+      "label": "Records session metrics upon departure and coordinates the batch analytical thre",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L336",
+      "id": "v1_track_rationale_336",
+      "community": 0,
+      "norm_label": "records session metrics upon departure and coordinates the batch analytical thre"
+    },
+    {
+      "label": "waitlist.py",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L1",
+      "id": "v1_waitlist",
+      "community": 5,
+      "norm_label": "waitlist.py"
+    },
+    {
+      "label": "format_zar()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L20",
+      "id": "v1_waitlist_format_zar",
+      "community": 5,
+      "norm_label": "format_zar()"
+    },
+    {
+      "label": "str",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L20",
+      "id": "backend_app_api_v1_waitlist_py_str",
+      "community": 5,
+      "norm_label": "str"
+    },
+    {
+      "label": "background_lead_analysis()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L39",
+      "id": "v1_waitlist_background_lead_analysis",
+      "community": 5,
+      "norm_label": "background_lead_analysis()"
+    },
+    {
+      "label": "int",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L39",
+      "id": "backend_app_api_v1_waitlist_py_int",
+      "community": 5,
+      "norm_label": "int"
+    },
+    {
+      "label": "join_waitlist()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L114",
+      "id": "v1_waitlist_join_waitlist",
+      "community": 5,
+      "norm_label": "join_waitlist()"
+    },
+    {
+      "label": "BackgroundTasks",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L114",
+      "id": "backend_app_api_v1_waitlist_py_backgroundtasks",
+      "community": 5,
+      "norm_label": "backgroundtasks"
+    },
+    {
+      "label": "AsyncSession",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L114",
+      "id": "backend_app_api_v1_waitlist_py_asyncsession",
+      "community": 5,
+      "norm_label": "asyncsession"
+    },
+    {
+      "label": "Standardizes South African currency strings for industrial reporting.",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L21",
+      "id": "v1_waitlist_rationale_21",
+      "community": 5,
+      "norm_label": "standardizes south african currency strings for industrial reporting."
+    },
+    {
+      "label": "Sequential Forensic Orchestration Engine.     Holds back external system sinks (",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L40",
+      "id": "v1_waitlist_rationale_40",
+      "community": 5,
+      "norm_label": "sequential forensic orchestration engine.     holds back external system sinks ("
+    },
+    {
+      "label": "The Promotion Engine:      Converts anonymous traffic into a POPIA-consented 'Wa",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L119",
+      "id": "v1_waitlist_rationale_119",
+      "community": 5,
+      "norm_label": "the promotion engine:      converts anonymous traffic into a popia-consented 'wa"
+    },
+    {
+      "label": "scheduler.py",
+      "file_type": "code",
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L1",
+      "id": "core_scheduler",
+      "community": 2,
+      "norm_label": "scheduler.py"
+    },
+    {
+      "label": "run_enrichment_cycle()",
+      "file_type": "code",
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L13",
+      "id": "core_scheduler_run_enrichment_cycle",
+      "community": 1,
+      "norm_label": "run_enrichment_cycle()"
+    },
+    {
+      "label": "start_scheduler()",
+      "file_type": "code",
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L79",
+      "id": "core_scheduler_start_scheduler",
+      "community": 2,
+      "norm_label": "start_scheduler()"
+    },
+    {
+      "label": "Industrial Async Enrichment Task:     Maps corporate departments for captured Ju",
+      "file_type": "rationale",
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L14",
+      "id": "core_scheduler_rationale_14",
+      "community": 1,
+      "norm_label": "industrial async enrichment task:     maps corporate departments for captured ju"
+    },
+    {
+      "label": "Initializes the Asynchronous AuraWorks Background Engine Pipeline.",
+      "file_type": "rationale",
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L80",
+      "id": "core_scheduler_rationale_80",
+      "community": 2,
+      "norm_label": "initializes the asynchronous auraworks background engine pipeline."
+    },
+    {
+      "label": "client.py",
+      "file_type": "code",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L1",
+      "id": "models_client",
+      "community": 4,
+      "norm_label": "client.py"
+    },
+    {
+      "label": "ClientCategory",
+      "file_type": "code",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L8",
+      "id": "models_client_clientcategory",
+      "community": 4,
+      "norm_label": "clientcategory"
+    },
+    {
+      "label": "str",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "str",
+      "community": 4,
+      "norm_label": "str"
+    },
+    {
+      "label": "Enum",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "enum",
+      "community": 4,
+      "norm_label": "enum"
+    },
+    {
+      "label": "SubscriptionStatus",
+      "file_type": "code",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L12",
+      "id": "models_client_subscriptionstatus",
+      "community": 4,
+      "norm_label": "subscriptionstatus"
+    },
+    {
+      "label": "ClientBase",
+      "file_type": "code",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L17",
+      "id": "models_client_clientbase",
+      "community": 4,
+      "norm_label": "clientbase"
+    },
+    {
+      "label": "SQLModel",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "sqlmodel",
+      "community": 2,
+      "norm_label": "sqlmodel"
+    },
+    {
+      "label": "Client",
+      "file_type": "code",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L29",
+      "id": "models_client_client",
+      "community": 4,
+      "norm_label": "client"
+    },
+    {
+      "label": "ClientCreate",
+      "file_type": "code",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L36",
+      "id": "models_client_clientcreate",
+      "community": 4,
+      "norm_label": "clientcreate"
+    },
+    {
+      "label": "ClientPublic",
+      "file_type": "code",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L39",
+      "id": "models_client_clientpublic",
+      "community": 4,
+      "norm_label": "clientpublic"
+    },
+    {
+      "label": "company.py",
+      "file_type": "code",
+      "source_file": "backend/app/models/company.py",
+      "source_location": "L1",
+      "id": "models_company",
+      "community": 2,
+      "norm_label": "company.py"
+    },
+    {
+      "label": "Company",
+      "file_type": "code",
+      "source_file": "backend/app/models/company.py",
+      "source_location": "L12",
+      "id": "models_company_company",
+      "community": 1,
+      "norm_label": "company"
+    },
+    {
+      "label": "department.py",
+      "file_type": "code",
+      "source_file": "backend/app/models/department.py",
+      "source_location": "L1",
+      "id": "models_department",
+      "community": 2,
+      "norm_label": "department.py"
+    },
+    {
+      "label": "Department",
+      "file_type": "code",
+      "source_file": "backend/app/models/department.py",
+      "source_location": "L10",
+      "id": "models_department_department",
+      "community": 1,
+      "norm_label": "department"
+    },
+    {
+      "label": "enrichment_queue.py",
+      "file_type": "code",
+      "source_file": "backend/app/models/enrichment_queue.py",
+      "source_location": "L1",
+      "id": "models_enrichment_queue",
+      "community": 4,
+      "norm_label": "enrichment_queue.py"
+    },
+    {
+      "label": "QueueType",
+      "file_type": "code",
+      "source_file": "backend/app/models/enrichment_queue.py",
+      "source_location": "L10",
+      "id": "models_enrichment_queue_queuetype",
+      "community": 0,
+      "norm_label": "queuetype"
+    },
+    {
+      "label": "EnrichmentQueue",
+      "file_type": "code",
+      "source_file": "backend/app/models/enrichment_queue.py",
+      "source_location": "L14",
+      "id": "models_enrichment_queue_enrichmentqueue",
+      "community": 0,
+      "norm_label": "enrichmentqueue"
+    },
+    {
+      "label": "FailedEnrichment",
+      "file_type": "code",
+      "source_file": "backend/app/models/enrichment_queue.py",
+      "source_location": "L29",
+      "id": "models_enrichment_queue_failedenrichment",
+      "community": 1,
+      "norm_label": "failedenrichment"
+    },
+    {
+      "label": "notification_throttle.py",
+      "file_type": "code",
+      "source_file": "backend/app/models/notification_throttle.py",
+      "source_location": "L1",
+      "id": "models_notification_throttle",
+      "community": 2,
+      "norm_label": "notification_throttle.py"
+    },
+    {
+      "label": "NotificationThrottle",
+      "file_type": "code",
+      "source_file": "backend/app/models/notification_throttle.py",
+      "source_location": "L6",
+      "id": "models_notification_throttle_notificationthrottle",
+      "community": 2,
+      "norm_label": "notificationthrottle"
+    },
+    {
+      "label": "pageview.py",
+      "file_type": "code",
+      "source_file": "backend/app/models/pageview.py",
+      "source_location": "L1",
+      "id": "models_pageview",
+      "community": 2,
+      "norm_label": "pageview.py"
+    },
+    {
+      "label": "PageView",
+      "file_type": "code",
+      "source_file": "backend/app/models/pageview.py",
+      "source_location": "L10",
+      "id": "models_pageview_pageview",
+      "community": 2,
+      "norm_label": "pageview"
+    },
+    {
+      "label": "visit.py",
+      "file_type": "code",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L1",
+      "id": "models_visit",
+      "community": 4,
+      "norm_label": "visit.py"
+    },
+    {
+      "label": "VerificationStatus",
+      "file_type": "code",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L13",
+      "id": "models_visit_verificationstatus",
+      "community": 4,
+      "norm_label": "verificationstatus"
+    },
+    {
+      "label": "Visit",
+      "file_type": "code",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L18",
+      "id": "models_visit_visit",
+      "community": 0,
+      "norm_label": "visit"
+    },
+    {
+      "label": "VisitCreate",
+      "file_type": "code",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L39",
+      "id": "models_visit_visitcreate",
+      "community": 0,
+      "norm_label": "visitcreate"
+    },
+    {
+      "label": "PageViewCreate",
+      "file_type": "code",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L49",
+      "id": "models_visit_pageviewcreate",
+      "community": 0,
+      "norm_label": "pageviewcreate"
+    },
+    {
+      "label": "waitlist_lead.py",
+      "file_type": "code",
+      "source_file": "backend/app/models/waitlist_lead.py",
+      "source_location": "L1",
+      "id": "models_waitlist_lead",
+      "community": 2,
+      "norm_label": "waitlist_lead.py"
+    },
+    {
+      "label": "WaitlistLead",
+      "file_type": "code",
+      "source_file": "backend/app/models/waitlist_lead.py",
+      "source_location": "L10",
+      "id": "models_waitlist_lead_waitlistlead",
+      "community": 2,
+      "norm_label": "waitlistlead"
+    },
+    {
+      "label": "enrichment.py",
+      "file_type": "code",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L1",
+      "id": "services_enrichment",
+      "community": 1,
+      "norm_label": "enrichment.py"
+    },
+    {
+      "label": "EnrichmentError",
+      "file_type": "code",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L10",
+      "id": "services_enrichment_enrichmenterror",
+      "community": 0,
+      "norm_label": "enrichmenterror"
+    },
+    {
+      "label": "Exception",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "exception",
+      "community": 0,
+      "norm_label": "exception"
+    },
+    {
+      "label": ".__init__()",
+      "file_type": "code",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L11",
+      "id": "services_enrichment_enrichmenterror_init",
+      "community": 1,
+      "norm_label": ".__init__()"
+    },
+    {
+      "label": "str",
+      "file_type": "code",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L11",
+      "id": "backend_app_services_enrichment_py_str",
+      "community": 1,
+      "norm_label": "str"
+    },
+    {
+      "label": "int",
+      "file_type": "code",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L11",
+      "id": "backend_app_services_enrichment_py_int",
+      "community": 1,
+      "norm_label": "int"
+    },
+    {
+      "label": "is_consumer_traffic()",
+      "file_type": "code",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L23",
+      "id": "services_enrichment_is_consumer_traffic",
+      "community": 1,
+      "norm_label": "is_consumer_traffic()"
+    },
+    {
+      "label": "bool",
+      "file_type": "code",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L23",
+      "id": "backend_app_services_enrichment_py_bool",
+      "community": 1,
+      "norm_label": "bool"
+    },
+    {
+      "label": "perform_local_reverse_dns()",
+      "file_type": "code",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L30",
+      "id": "services_enrichment_perform_local_reverse_dns",
+      "community": 1,
+      "norm_label": "perform_local_reverse_dns()"
+    },
+    {
+      "label": "Any",
+      "file_type": "code",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L30",
+      "id": "backend_app_services_enrichment_py_any",
+      "community": 1,
+      "norm_label": "any"
+    },
+    {
+      "label": "enrich_visitor_data()",
+      "file_type": "code",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L51",
+      "id": "services_enrichment_enrich_visitor_data",
+      "community": 1,
+      "norm_label": "enrich_visitor_data()"
+    },
+    {
+      "label": "get_departmental_intelligence()",
+      "file_type": "code",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L133",
+      "id": "services_enrichment_get_departmental_intelligence",
+      "community": 1,
+      "norm_label": "get_departmental_intelligence()"
+    },
+    {
+      "label": "process_enrichment_queue()",
+      "file_type": "code",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L180",
+      "id": "services_enrichment_process_enrichment_queue",
+      "community": 1,
+      "norm_label": "process_enrichment_queue()"
+    },
+    {
+      "label": "Detects if a visit originates from a known consumer ISP.",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L24",
+      "id": "services_enrichment_rationale_24",
+      "community": 1,
+      "norm_label": "detects if a visit originates from a known consumer isp."
+    },
+    {
+      "label": "Layer 1: Zero-Cost Classification.     Identifies cloud providers and obvious IS",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L31",
+      "id": "services_enrichment_rationale_31",
+      "community": 1,
+      "norm_label": "layer 1: zero-cost classification.     identifies cloud providers and obvious is"
+    },
+    {
+      "label": "Phase 01: Forensic IP Resolution with Warm Lead Overrides.     If 'volunteered_c",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L52",
+      "id": "services_enrichment_rationale_52",
+      "community": 1,
+      "norm_label": "phase 01: forensic ip resolution with warm lead overrides.     if 'volunteered_c"
+    },
+    {
+      "label": "Phase 02: Industrial Cluster Mapping (Apollo.io).     Identifies departmental de",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L134",
+      "id": "services_enrichment_rationale_134",
+      "community": 1,
+      "norm_label": "phase 02: industrial cluster mapping (apollo.io).     identifies departmental de"
+    },
+    {
+      "label": "Background Task Runner: Processes queued items across a strict 3-stage exponenti",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L181",
+      "id": "services_enrichment_rationale_181",
+      "community": 1,
+      "norm_label": "background task runner: processes queued items across a strict 3-stage exponenti"
+    },
+    {
+      "label": "intelligence.py",
+      "file_type": "code",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L1",
+      "id": "services_intelligence",
+      "community": 3,
+      "norm_label": "intelligence.py"
+    },
+    {
+      "label": "format_zar()",
+      "file_type": "code",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L21",
+      "id": "services_intelligence_format_zar",
+      "community": 3,
+      "norm_label": "format_zar()"
+    },
+    {
+      "label": "str",
+      "file_type": "code",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L21",
+      "id": "backend_app_services_intelligence_py_str",
+      "community": 3,
+      "norm_label": "str"
+    },
+    {
+      "label": "enrich_visitor_data()",
+      "file_type": "code",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L36",
+      "id": "services_intelligence_enrich_visitor_data",
+      "community": 3,
+      "norm_label": "enrich_visitor_data()"
+    },
+    {
+      "label": "Any",
+      "file_type": "code",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L36",
+      "id": "backend_app_services_intelligence_py_any",
+      "community": 3,
+      "norm_label": "any"
+    },
+    {
+      "label": "enrich_ip_intel()",
+      "file_type": "code",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L67",
+      "id": "services_intelligence_enrich_ip_intel",
+      "community": 3,
+      "norm_label": "enrich_ip_intel()"
+    },
+    {
+      "label": "analyze_corporate_intent()",
+      "file_type": "code",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L92",
+      "id": "services_intelligence_analyze_corporate_intent",
+      "community": 3,
+      "norm_label": "analyze_corporate_intent()"
+    },
+    {
+      "label": "bool",
+      "file_type": "code",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L92",
+      "id": "backend_app_services_intelligence_py_bool",
+      "community": 3,
+      "norm_label": "bool"
+    },
+    {
+      "label": "get_visitor_journey()",
+      "file_type": "code",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L148",
+      "id": "services_intelligence_get_visitor_journey",
+      "community": 3,
+      "norm_label": "get_visitor_journey()"
+    },
+    {
+      "label": "AsyncSession",
+      "file_type": "code",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L148",
+      "id": "backend_app_services_intelligence_py_asyncsession",
+      "community": 3,
+      "norm_label": "asyncsession"
+    },
+    {
+      "label": "Formats raw numerical strings into clinical ZAR currency representation.",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L22",
+      "id": "services_intelligence_rationale_22",
+      "community": 3,
+      "norm_label": "formats raw numerical strings into clinical zar currency representation."
+    },
+    {
+      "label": "Standardized entry wrapper expected by app/api/v1/track.py.     Retrieves and pa",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L37",
+      "id": "services_intelligence_rationale_37",
+      "community": 3,
+      "norm_label": "standardized entry wrapper expected by app/api/v1/track.py.     retrieves and pa"
+    },
+    {
+      "label": "Retrieves corporate metadata for a specific IP from the IPinfo.io service.",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L68",
+      "id": "services_intelligence_rationale_68",
+      "community": 3,
+      "norm_label": "retrieves corporate metadata for a specific ip from the ipinfo.io service."
+    },
+    {
+      "label": "Executes clinical B2B intent analysis via verified DeepSeek endpoints.     Ident",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L99",
+      "id": "services_intelligence_rationale_99",
+      "community": 3,
+      "norm_label": "executes clinical b2b intent analysis via verified deepseek endpoints.     ident"
+    },
+    {
+      "label": "The Behavioral Ledger: Maps touchpoints and executes IP correlation.     Identif",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L149",
+      "id": "services_intelligence_rationale_149",
+      "community": 3,
+      "norm_label": "the behavioral ledger: maps touchpoints and executes ip correlation.     identif"
+    },
+    {
+      "label": "notifications.py",
+      "file_type": "code",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L1",
+      "id": "services_notifications",
+      "community": 6,
+      "norm_label": "notifications.py"
+    },
+    {
+      "label": "post_to_visit_channel()",
+      "file_type": "code",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L10",
+      "id": "services_notifications_post_to_visit_channel",
+      "community": 6,
+      "norm_label": "post_to_visit_channel()"
+    },
+    {
+      "label": "post_to_slack()",
+      "file_type": "code",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L88",
+      "id": "services_notifications_post_to_slack",
+      "community": 6,
+      "norm_label": "post_to_slack()"
+    },
+    {
+      "label": "handle_juristic_only_alert()",
+      "file_type": "code",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L138",
+      "id": "services_notifications_handle_juristic_only_alert",
+      "community": 6,
+      "norm_label": "handle_juristic_only_alert()"
+    },
+    {
+      "label": "str",
+      "file_type": "code",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L138",
+      "id": "backend_app_services_notifications_py_str",
+      "community": 6,
+      "norm_label": "str"
+    },
+    {
+      "label": "High-speed Signal for the #visit channel.     Only triggers for High-Confidence",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L11",
+      "id": "services_notifications_rationale_11",
+      "community": 6,
+      "norm_label": "high-speed signal for the #visit channel.     only triggers for high-confidence"
+    },
+    {
+      "label": "Standard lead notification for identified conversions (Promotion).",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L89",
+      "id": "services_notifications_rationale_89",
+      "community": 6,
+      "norm_label": "standard lead notification for identified conversions (promotion)."
+    },
+    {
+      "label": "Alerts Slack when high-intent juristic visitor leaves the site (no personal data",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L139",
+      "id": "services_notifications_rationale_139",
+      "community": 6,
+      "norm_label": "alerts slack when high-intent juristic visitor leaves the site (no personal data"
+    },
+    {
+      "label": "ae0287cd9a1c_initial_schema.py",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/ae0287cd9a1c_initial_schema.py",
+      "source_location": "L1",
+      "id": "versions_ae0287cd9a1c_initial_schema",
+      "community": 2,
+      "norm_label": "ae0287cd9a1c_initial_schema.py"
+    },
+    {
+      "label": "upgrade()",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/ae0287cd9a1c_initial_schema.py",
+      "source_location": "L22",
+      "id": "versions_ae0287cd9a1c_initial_schema_upgrade",
+      "community": 2,
+      "norm_label": "upgrade()"
+    },
+    {
+      "label": "downgrade()",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/ae0287cd9a1c_initial_schema.py",
+      "source_location": "L209",
+      "id": "versions_ae0287cd9a1c_initial_schema_downgrade",
+      "community": 2,
+      "norm_label": "downgrade()"
+    },
+    {
+      "label": "test_phase2.py",
+      "file_type": "code",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L1",
+      "id": "tests_test_phase2",
+      "community": 7,
+      "norm_label": "test_phase2.py"
+    },
+    {
+      "label": "dispose_engine_fixture()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L23",
+      "id": "tests_test_phase2_dispose_engine_fixture",
+      "community": 7,
+      "norm_label": "dispose_engine_fixture()"
+    },
+    {
+      "label": "get_test_client()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L30",
+      "id": "tests_test_phase2_get_test_client",
+      "community": 7,
+      "norm_label": "get_test_client()"
+    },
+    {
+      "label": "test_composite_cache_key_isolation()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L37",
+      "id": "tests_test_phase2_test_composite_cache_key_isolation",
+      "community": 7,
+      "norm_label": "test_composite_cache_key_isolation()"
+    },
+    {
+      "label": "test_exit_endpoint_without_lead()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L57",
+      "id": "tests_test_phase2_test_exit_endpoint_without_lead",
+      "community": 7,
+      "norm_label": "test_exit_endpoint_without_lead()"
+    },
+    {
+      "label": "test_enrichment_queue_failover()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L150",
+      "id": "tests_test_phase2_test_enrichment_queue_failover",
+      "community": 7,
+      "norm_label": "test_enrichment_queue_failover()"
+    },
+    {
+      "label": "Assert that modifications, updates, or expirations applied to key 1     leave ke",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L38",
+      "id": "tests_test_phase2_rationale_38",
+      "community": 7,
+      "norm_label": "assert that modifications, updates, or expirations applied to key 1     leave ke"
+    },
+    {
+      "label": "Send a mock transaction payload to POST /v1/track/exit passing a valid aura_id",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L58",
+      "id": "tests_test_phase2_rationale_58",
+      "community": 7,
+      "norm_label": "send a mock transaction payload to post /v1/track/exit passing a valid aura_id"
+    },
+    {
+      "label": "Mock external API network dependencies to simulate outage.     Send payload to /",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L151",
+      "id": "tests_test_phase2_rationale_151",
+      "community": 7,
+      "norm_label": "mock external api network dependencies to simulate outage.     send payload to /"
+    },
+    {
+      "label": "task.md",
+      "file_type": "document",
+      "source_file": "task.md",
+      "source_location": "L1",
+      "id": "task",
+      "community": 9,
+      "norm_label": "task.md"
+    },
+    {
+      "label": "AuraWorks Industrial Intelligence Engine Progress Checklist",
+      "file_type": "document",
+      "source_file": "task.md",
+      "source_location": "L1",
+      "id": "task_auraworks_industrial_intelligence_engine_progress_checklist",
+      "community": 9,
+      "norm_label": "auraworks industrial intelligence engine progress checklist"
+    }
+  ],
+  "links": [
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/leads.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "v1_leads",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/leads.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "v1_leads",
+      "target": "v1_leads_get_lead_intelligence",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/leads.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "v1_leads",
+      "target": "v1_leads_get_leads",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/leads.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "v1_leads_get_leads",
+      "target": "backend_app_api_v1_leads_py_asyncsession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/leads.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "v1_leads_get_leads",
+      "target": "backend_app_api_v1_leads_py_int",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/leads.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "v1_leads_get_leads",
+      "target": "backend_app_api_v1_leads_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/leads.py",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "v1_leads_rationale_20",
+      "target": "v1_leads_get_leads",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/leads.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "v1_leads_get_lead_intelligence",
+      "target": "backend_app_api_v1_leads_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/leads.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "v1_leads_get_lead_intelligence",
+      "target": "backend_app_api_v1_leads_py_asyncsession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/leads.py",
+      "source_location": "L71",
+      "weight": 1.0,
+      "source": "v1_leads_rationale_71",
+      "target": "v1_leads_get_lead_intelligence",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_consentpayload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_identitypayload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_process_entry_logic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L131",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_process_exit_logic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L319",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_track_consent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L240",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_track_entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L302",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_track_event",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L335",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_track_exit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L246",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_track_identity",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "v1_track_consentpayload",
+      "target": "basemodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L14",
+      "weight": 0.8,
+      "source": "v1_track_consentpayload",
+      "target": "models_enrichment_queue_enrichmentqueue",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L14",
+      "weight": 0.8,
+      "source": "v1_track_consentpayload",
+      "target": "models_enrichment_queue_queuetype",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "v1_track_consentpayload",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "v1_track_consentpayload",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "v1_track_consentpayload",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L15",
+      "weight": 0.8,
+      "source": "v1_track_consentpayload",
+      "target": "services_enrichment_enrichmenterror",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L319",
+      "weight": 1.0,
+      "source": "v1_track_track_consent",
+      "target": "v1_track_consentpayload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L49",
+      "weight": 1.0,
+      "source": "models_visit_pageviewcreate",
+      "target": "basemodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "models_visit_visitcreate",
+      "target": "basemodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "v1_track_identitypayload",
+      "target": "basemodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L14",
+      "weight": 0.8,
+      "source": "v1_track_identitypayload",
+      "target": "models_enrichment_queue_enrichmentqueue",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L14",
+      "weight": 0.8,
+      "source": "v1_track_identitypayload",
+      "target": "models_enrichment_queue_queuetype",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "v1_track_identitypayload",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "v1_track_identitypayload",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "v1_track_identitypayload",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L15",
+      "weight": 0.8,
+      "source": "v1_track_identitypayload",
+      "target": "services_enrichment_enrichmenterror",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L246",
+      "weight": 1.0,
+      "source": "v1_track_track_identity",
+      "target": "v1_track_identitypayload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "v1_track_process_entry_logic",
+      "target": "backend_app_api_v1_track_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L79",
+      "weight": 1.0,
+      "source": "v1_track_process_entry_logic",
+      "target": "models_company_company"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L115",
+      "weight": 1.0,
+      "source": "v1_track_process_entry_logic",
+      "target": "models_enrichment_queue_enrichmentqueue"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L104",
+      "weight": 1.0,
+      "source": "v1_track_process_entry_logic",
+      "target": "models_pageview_pageview"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L92",
+      "weight": 1.0,
+      "source": "v1_track_process_entry_logic",
+      "target": "models_visit_visit"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "v1_track_process_entry_logic",
+      "target": "visitcreate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L44",
+      "weight": 1.0,
+      "source": "v1_track_rationale_44",
+      "target": "v1_track_process_entry_logic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L240",
+      "weight": 1.0,
+      "source": "v1_track_track_entry",
+      "target": "visitcreate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L14",
+      "weight": 0.8,
+      "source": "visitcreate",
+      "target": "models_enrichment_queue_enrichmentqueue",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L14",
+      "weight": 0.8,
+      "source": "visitcreate",
+      "target": "models_enrichment_queue_queuetype",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "visitcreate",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "visitcreate",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "visitcreate",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L15",
+      "weight": 0.8,
+      "source": "visitcreate",
+      "target": "services_enrichment_enrichmenterror",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L14",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_str",
+      "target": "models_enrichment_queue_enrichmentqueue",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L14",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_str",
+      "target": "models_enrichment_queue_queuetype",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_str",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_str",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_str",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L15",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_str",
+      "target": "services_enrichment_enrichmenterror",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L131",
+      "weight": 1.0,
+      "source": "v1_track_process_exit_logic",
+      "target": "backend_app_api_v1_track_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L131",
+      "weight": 1.0,
+      "source": "v1_track_process_exit_logic",
+      "target": "backend_app_api_v1_track_py_bool",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L131",
+      "weight": 1.0,
+      "source": "v1_track_process_exit_logic",
+      "target": "backend_app_api_v1_track_py_int",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L171",
+      "weight": 1.0,
+      "source": "v1_track_process_exit_logic",
+      "target": "services_intelligence_get_visitor_journey"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L185",
+      "weight": 1.0,
+      "source": "v1_track_process_exit_logic",
+      "target": "services_notifications_handle_juristic_only_alert"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L223",
+      "weight": 1.0,
+      "source": "v1_track_process_exit_logic",
+      "target": "services_notifications_post_to_slack"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L132",
+      "weight": 1.0,
+      "source": "v1_track_rationale_132",
+      "target": "v1_track_process_exit_logic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L14",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_int",
+      "target": "models_enrichment_queue_enrichmentqueue",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L14",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_int",
+      "target": "models_enrichment_queue_queuetype",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_int",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_int",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_int",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L15",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_int",
+      "target": "services_enrichment_enrichmenterror",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L14",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_bool",
+      "target": "models_enrichment_queue_enrichmentqueue",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L14",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_bool",
+      "target": "models_enrichment_queue_queuetype",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_bool",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_bool",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_bool",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L15",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_bool",
+      "target": "services_enrichment_enrichmenterror",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L240",
+      "weight": 1.0,
+      "source": "v1_track_track_entry",
+      "target": "backend_app_api_v1_track_py_backgroundtasks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L240",
+      "weight": 1.0,
+      "source": "v1_track_track_entry",
+      "target": "request",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L14",
+      "weight": 0.8,
+      "source": "request",
+      "target": "models_enrichment_queue_enrichmentqueue",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L14",
+      "weight": 0.8,
+      "source": "request",
+      "target": "models_enrichment_queue_queuetype",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "request",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "request",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "request",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L15",
+      "weight": 0.8,
+      "source": "request",
+      "target": "services_enrichment_enrichmenterror",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L14",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_backgroundtasks",
+      "target": "models_enrichment_queue_enrichmentqueue",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L14",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_backgroundtasks",
+      "target": "models_enrichment_queue_queuetype",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_backgroundtasks",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_backgroundtasks",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_backgroundtasks",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L15",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_backgroundtasks",
+      "target": "services_enrichment_enrichmenterror",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L335",
+      "weight": 1.0,
+      "source": "v1_track_track_exit",
+      "target": "backend_app_api_v1_track_py_backgroundtasks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L247",
+      "weight": 1.0,
+      "source": "v1_track_rationale_247",
+      "target": "v1_track_track_identity",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L285",
+      "weight": 1.0,
+      "source": "v1_track_track_identity",
+      "target": "models_waitlist_lead_waitlistlead"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L302",
+      "weight": 1.0,
+      "source": "v1_track_track_event",
+      "target": "pageviewcreate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L14",
+      "weight": 0.8,
+      "source": "pageviewcreate",
+      "target": "models_enrichment_queue_enrichmentqueue",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L14",
+      "weight": 0.8,
+      "source": "pageviewcreate",
+      "target": "models_enrichment_queue_queuetype",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "pageviewcreate",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "pageviewcreate",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "source": "pageviewcreate",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L15",
+      "weight": 0.8,
+      "source": "pageviewcreate",
+      "target": "services_enrichment_enrichmenterror",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L335",
+      "weight": 1.0,
+      "source": "v1_track_track_exit",
+      "target": "pageviewcreate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L336",
+      "weight": 1.0,
+      "source": "v1_track_rationale_336",
+      "target": "v1_track_track_exit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "v1_waitlist",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "v1_waitlist",
+      "target": "v1_waitlist_background_lead_analysis",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "v1_waitlist",
+      "target": "v1_waitlist_format_zar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L114",
+      "weight": 1.0,
+      "source": "v1_waitlist",
+      "target": "v1_waitlist_join_waitlist",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "v1_waitlist_format_zar",
+      "target": "backend_app_api_v1_waitlist_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L198",
+      "weight": 1.0,
+      "source": "v1_waitlist_join_waitlist",
+      "target": "v1_waitlist_format_zar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "v1_waitlist_rationale_21",
+      "target": "v1_waitlist_format_zar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "v1_waitlist_background_lead_analysis",
+      "target": "backend_app_api_v1_waitlist_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "v1_waitlist_background_lead_analysis",
+      "target": "backend_app_api_v1_waitlist_py_int",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L63",
+      "weight": 1.0,
+      "source": "v1_waitlist_background_lead_analysis",
+      "target": "services_intelligence_get_visitor_journey"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L100",
+      "weight": 1.0,
+      "source": "v1_waitlist_background_lead_analysis",
+      "target": "services_notifications_post_to_slack"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "v1_waitlist_rationale_40",
+      "target": "v1_waitlist_background_lead_analysis",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L114",
+      "weight": 1.0,
+      "source": "v1_waitlist_join_waitlist",
+      "target": "backend_app_api_v1_waitlist_py_asyncsession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L114",
+      "weight": 1.0,
+      "source": "v1_waitlist_join_waitlist",
+      "target": "backend_app_api_v1_waitlist_py_backgroundtasks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L151",
+      "weight": 1.0,
+      "source": "v1_waitlist_join_waitlist",
+      "target": "models_company_company"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L180",
+      "weight": 1.0,
+      "source": "v1_waitlist_join_waitlist",
+      "target": "models_waitlist_lead_waitlistlead"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L119",
+      "weight": 1.0,
+      "source": "v1_waitlist_rationale_119",
+      "target": "v1_waitlist_join_waitlist",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "core_scheduler",
+      "target": "core_scheduler_run_enrichment_cycle",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L79",
+      "weight": 1.0,
+      "source": "core_scheduler",
+      "target": "core_scheduler_start_scheduler",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "core_scheduler",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "core_scheduler_rationale_14",
+      "target": "core_scheduler_run_enrichment_cycle",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L57",
+      "weight": 1.0,
+      "source": "core_scheduler_run_enrichment_cycle",
+      "target": "models_department_department"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L44",
+      "weight": 1.0,
+      "source": "core_scheduler_run_enrichment_cycle",
+      "target": "services_enrichment_get_departmental_intelligence"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L80",
+      "weight": 1.0,
+      "source": "core_scheduler_rationale_80",
+      "target": "core_scheduler_start_scheduler",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "models_client",
+      "target": "enum",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "models_client",
+      "target": "models_client_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "models_client",
+      "target": "models_client_clientbase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "models_client",
+      "target": "models_client_clientcategory",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "models_client",
+      "target": "models_client_clientcreate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "models_client",
+      "target": "models_client_clientpublic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "models_client",
+      "target": "models_client_subscriptionstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "models_client",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "models_client_clientcategory",
+      "target": "enum",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "models_client_clientcategory",
+      "target": "str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "models_client_subscriptionstatus",
+      "target": "str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/enrichment_queue.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "models_enrichment_queue_queuetype",
+      "target": "str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "models_visit_verificationstatus",
+      "target": "str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "models_client_subscriptionstatus",
+      "target": "enum",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/enrichment_queue.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "models_enrichment_queue",
+      "target": "enum",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/enrichment_queue.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "models_enrichment_queue_queuetype",
+      "target": "enum",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "models_visit",
+      "target": "enum",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "models_visit_verificationstatus",
+      "target": "enum",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "models_client_client",
+      "target": "models_client_clientbase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "models_client_clientbase",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "models_client_clientcreate",
+      "target": "models_client_clientbase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "models_client_clientpublic",
+      "target": "models_client_clientbase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/company.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "models_company",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/company.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "models_company_company",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/department.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "models_department",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/department.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "models_department_department",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/enrichment_queue.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "models_enrichment_queue",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/enrichment_queue.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "models_enrichment_queue_enrichmentqueue",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/enrichment_queue.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "models_enrichment_queue_failedenrichment",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/notification_throttle.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "models_notification_throttle",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/notification_throttle.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "models_notification_throttle_notificationthrottle",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/pageview.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "models_pageview",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/pageview.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "models_pageview_pageview",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "models_visit",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "models_visit_visit",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/waitlist_lead.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "models_waitlist_lead",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/waitlist_lead.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "models_waitlist_lead_waitlistlead",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "services_intelligence",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "tests_test_phase2",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/ae0287cd9a1c_initial_schema.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "versions_ae0287cd9a1c_initial_schema",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L162",
+      "weight": 1.0,
+      "source": "tests_test_phase2_test_enrichment_queue_failover",
+      "target": "models_client_client"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L72",
+      "weight": 1.0,
+      "source": "tests_test_phase2_test_exit_endpoint_without_lead",
+      "target": "models_client_client"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/company.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "models_company",
+      "target": "models_company_company",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L188",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_any",
+      "target": "models_company_company",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L188",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_bool",
+      "target": "models_company_company",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L188",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_int",
+      "target": "models_company_company",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L188",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_str",
+      "target": "models_company_company",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/models/company.py",
+      "source_location": "L8",
+      "weight": 0.8,
+      "source": "models_company_company",
+      "target": "models_department_department",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/models/company.py",
+      "source_location": "L9",
+      "weight": 0.8,
+      "source": "models_company_company",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/models/company.py",
+      "source_location": "L10",
+      "weight": 0.8,
+      "source": "models_company_company",
+      "target": "models_waitlist_lead_waitlistlead",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L10",
+      "weight": 0.8,
+      "source": "models_visit_pageviewcreate",
+      "target": "models_company_company",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L10",
+      "weight": 0.8,
+      "source": "models_visit_verificationstatus",
+      "target": "models_company_company",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L10",
+      "weight": 0.8,
+      "source": "models_visit_visitcreate",
+      "target": "models_company_company",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L188",
+      "weight": 0.8,
+      "source": "services_enrichment_enrichmenterror",
+      "target": "models_company_company",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L258",
+      "weight": 1.0,
+      "source": "services_enrichment_process_enrichment_queue",
+      "target": "models_company_company"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L86",
+      "weight": 1.0,
+      "source": "tests_test_phase2_test_exit_endpoint_without_lead",
+      "target": "models_company_company"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/department.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "models_department",
+      "target": "models_department_department",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L189",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_any",
+      "target": "models_department_department",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L189",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_bool",
+      "target": "models_department_department",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L189",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_int",
+      "target": "models_department_department",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L189",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_str",
+      "target": "models_department_department",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L189",
+      "weight": 0.8,
+      "source": "services_enrichment_enrichmenterror",
+      "target": "models_department_department",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L316",
+      "weight": 1.0,
+      "source": "services_enrichment_process_enrichment_queue",
+      "target": "models_department_department"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/enrichment_queue.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "models_enrichment_queue",
+      "target": "models_enrichment_queue_enrichmentqueue",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/enrichment_queue.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "models_enrichment_queue",
+      "target": "models_enrichment_queue_failedenrichment",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/enrichment_queue.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "models_enrichment_queue",
+      "target": "models_enrichment_queue_queuetype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L186",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_any",
+      "target": "models_enrichment_queue_queuetype",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L186",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_bool",
+      "target": "models_enrichment_queue_queuetype",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L186",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_int",
+      "target": "models_enrichment_queue_queuetype",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L186",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_str",
+      "target": "models_enrichment_queue_queuetype",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L186",
+      "weight": 0.8,
+      "source": "services_enrichment_enrichmenterror",
+      "target": "models_enrichment_queue_queuetype",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L186",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_any",
+      "target": "models_enrichment_queue_enrichmentqueue",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L186",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_bool",
+      "target": "models_enrichment_queue_enrichmentqueue",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L186",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_int",
+      "target": "models_enrichment_queue_enrichmentqueue",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L186",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_str",
+      "target": "models_enrichment_queue_enrichmentqueue",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L186",
+      "weight": 0.8,
+      "source": "services_enrichment_enrichmenterror",
+      "target": "models_enrichment_queue_enrichmentqueue",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L186",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_any",
+      "target": "models_enrichment_queue_failedenrichment",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L186",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_bool",
+      "target": "models_enrichment_queue_failedenrichment",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L186",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_int",
+      "target": "models_enrichment_queue_failedenrichment",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L186",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_str",
+      "target": "models_enrichment_queue_failedenrichment",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L186",
+      "weight": 0.8,
+      "source": "services_enrichment_enrichmenterror",
+      "target": "models_enrichment_queue_failedenrichment",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L210",
+      "weight": 1.0,
+      "source": "services_enrichment_process_enrichment_queue",
+      "target": "models_enrichment_queue_failedenrichment"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/notification_throttle.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "models_notification_throttle",
+      "target": "models_notification_throttle_notificationthrottle",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/pageview.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "models_pageview",
+      "target": "models_pageview_pageview",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/models/pageview.py",
+      "source_location": "L8",
+      "weight": 0.8,
+      "source": "models_pageview_pageview",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "models_visit_pageviewcreate",
+      "target": "models_pageview_pageview",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "models_visit_verificationstatus",
+      "target": "models_pageview_pageview",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "models_visit_visitcreate",
+      "target": "models_pageview_pageview",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L49",
+      "weight": 1.0,
+      "source": "models_visit",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "models_visit",
+      "target": "models_visit_verificationstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "models_visit",
+      "target": "models_visit_visit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "models_visit",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L187",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_any",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L187",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_bool",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L187",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_int",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L187",
+      "weight": 0.8,
+      "source": "backend_app_services_enrichment_py_str",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L187",
+      "weight": 0.8,
+      "source": "services_enrichment_enrichmenterror",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L96",
+      "weight": 1.0,
+      "source": "tests_test_phase2_test_exit_endpoint_without_lead",
+      "target": "models_visit_visit"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/waitlist_lead.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "models_waitlist_lead",
+      "target": "models_waitlist_lead_waitlistlead",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "services_enrichment",
+      "target": "services_enrichment_enrich_visitor_data",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "services_enrichment",
+      "target": "services_enrichment_enrichmenterror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L133",
+      "weight": 1.0,
+      "source": "services_enrichment",
+      "target": "services_enrichment_get_departmental_intelligence",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "services_enrichment",
+      "target": "services_enrichment_is_consumer_traffic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "services_enrichment",
+      "target": "services_enrichment_perform_local_reverse_dns",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L180",
+      "weight": 1.0,
+      "source": "services_enrichment",
+      "target": "services_enrichment_process_enrichment_queue",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L85",
+      "weight": 1.0,
+      "source": "services_enrichment_enrich_visitor_data",
+      "target": "services_enrichment_enrichmenterror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "services_enrichment_enrichmenterror",
+      "target": "exception",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "services_enrichment_enrichmenterror",
+      "target": "services_enrichment_enrichmenterror_init",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L158",
+      "weight": 1.0,
+      "source": "services_enrichment_get_departmental_intelligence",
+      "target": "services_enrichment_enrichmenterror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "services_enrichment_enrichmenterror_init",
+      "target": "backend_app_services_enrichment_py_int",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "services_enrichment_enrichmenterror_init",
+      "target": "backend_app_services_enrichment_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "services_enrichment_enrich_visitor_data",
+      "target": "backend_app_services_enrichment_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L133",
+      "weight": 1.0,
+      "source": "services_enrichment_get_departmental_intelligence",
+      "target": "backend_app_services_enrichment_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "services_enrichment_is_consumer_traffic",
+      "target": "backend_app_services_enrichment_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "services_enrichment_perform_local_reverse_dns",
+      "target": "backend_app_services_enrichment_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L61",
+      "weight": 1.0,
+      "source": "services_enrichment_enrich_visitor_data",
+      "target": "services_enrichment_is_consumer_traffic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "services_enrichment_is_consumer_traffic",
+      "target": "backend_app_services_enrichment_py_bool",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L44",
+      "weight": 1.0,
+      "source": "services_enrichment_perform_local_reverse_dns",
+      "target": "services_enrichment_is_consumer_traffic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "services_enrichment_rationale_24",
+      "target": "services_enrichment_is_consumer_traffic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L72",
+      "weight": 1.0,
+      "source": "services_enrichment_enrich_visitor_data",
+      "target": "services_enrichment_perform_local_reverse_dns",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "services_enrichment_perform_local_reverse_dns",
+      "target": "backend_app_services_enrichment_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "services_enrichment_rationale_31",
+      "target": "services_enrichment_perform_local_reverse_dns",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L248",
+      "weight": 1.0,
+      "source": "services_enrichment_process_enrichment_queue",
+      "target": "services_enrichment_enrich_visitor_data",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "services_enrichment_rationale_52",
+      "target": "services_enrichment_enrich_visitor_data",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L291",
+      "weight": 1.0,
+      "source": "services_enrichment_process_enrichment_queue",
+      "target": "services_enrichment_get_departmental_intelligence",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L134",
+      "weight": 1.0,
+      "source": "services_enrichment_rationale_134",
+      "target": "services_enrichment_get_departmental_intelligence",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/enrichment.py",
+      "source_location": "L181",
+      "weight": 1.0,
+      "source": "services_enrichment_rationale_181",
+      "target": "services_enrichment_process_enrichment_queue",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L92",
+      "weight": 1.0,
+      "source": "services_intelligence",
+      "target": "services_intelligence_analyze_corporate_intent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "services_intelligence",
+      "target": "services_intelligence_enrich_ip_intel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "services_intelligence",
+      "target": "services_intelligence_enrich_visitor_data",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "services_intelligence",
+      "target": "services_intelligence_format_zar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L148",
+      "weight": 1.0,
+      "source": "services_intelligence",
+      "target": "services_intelligence_get_visitor_journey",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "services_intelligence_format_zar",
+      "target": "backend_app_services_intelligence_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "services_intelligence_rationale_22",
+      "target": "services_intelligence_format_zar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L92",
+      "weight": 1.0,
+      "source": "services_intelligence_analyze_corporate_intent",
+      "target": "backend_app_services_intelligence_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "services_intelligence_enrich_ip_intel",
+      "target": "backend_app_services_intelligence_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "services_intelligence_enrich_visitor_data",
+      "target": "backend_app_services_intelligence_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L148",
+      "weight": 1.0,
+      "source": "services_intelligence_get_visitor_journey",
+      "target": "backend_app_services_intelligence_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "services_intelligence_enrich_visitor_data",
+      "target": "backend_app_services_intelligence_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L41",
+      "weight": 1.0,
+      "source": "services_intelligence_enrich_visitor_data",
+      "target": "services_intelligence_enrich_ip_intel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L37",
+      "weight": 1.0,
+      "source": "services_intelligence_rationale_37",
+      "target": "services_intelligence_enrich_visitor_data",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "services_intelligence_enrich_ip_intel",
+      "target": "backend_app_services_intelligence_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "services_intelligence_rationale_68",
+      "target": "services_intelligence_enrich_ip_intel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L92",
+      "weight": 1.0,
+      "source": "services_intelligence_analyze_corporate_intent",
+      "target": "backend_app_services_intelligence_py_bool",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L231",
+      "weight": 1.0,
+      "source": "services_intelligence_get_visitor_journey",
+      "target": "services_intelligence_analyze_corporate_intent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L99",
+      "weight": 1.0,
+      "source": "services_intelligence_rationale_99",
+      "target": "services_intelligence_analyze_corporate_intent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L148",
+      "weight": 1.0,
+      "source": "services_intelligence_get_visitor_journey",
+      "target": "backend_app_services_intelligence_py_asyncsession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L149",
+      "weight": 1.0,
+      "source": "services_intelligence_rationale_149",
+      "target": "services_intelligence_get_visitor_journey",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L138",
+      "weight": 1.0,
+      "source": "services_notifications",
+      "target": "services_notifications_handle_juristic_only_alert",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L88",
+      "weight": 1.0,
+      "source": "services_notifications",
+      "target": "services_notifications_post_to_slack",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "services_notifications",
+      "target": "services_notifications_post_to_visit_channel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "services_notifications_rationale_11",
+      "target": "services_notifications_post_to_visit_channel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L89",
+      "weight": 1.0,
+      "source": "services_notifications_rationale_89",
+      "target": "services_notifications_post_to_slack",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L138",
+      "weight": 1.0,
+      "source": "services_notifications_handle_juristic_only_alert",
+      "target": "backend_app_services_notifications_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L139",
+      "weight": 1.0,
+      "source": "services_notifications_rationale_139",
+      "target": "services_notifications_handle_juristic_only_alert",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/ae0287cd9a1c_initial_schema.py",
+      "source_location": "L209",
+      "weight": 1.0,
+      "source": "versions_ae0287cd9a1c_initial_schema",
+      "target": "versions_ae0287cd9a1c_initial_schema_downgrade",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/ae0287cd9a1c_initial_schema.py",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "versions_ae0287cd9a1c_initial_schema",
+      "target": "versions_ae0287cd9a1c_initial_schema_upgrade",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "tests_test_phase2",
+      "target": "tests_test_phase2_dispose_engine_fixture",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "tests_test_phase2",
+      "target": "tests_test_phase2_get_test_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L37",
+      "weight": 1.0,
+      "source": "tests_test_phase2",
+      "target": "tests_test_phase2_test_composite_cache_key_isolation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L150",
+      "weight": 1.0,
+      "source": "tests_test_phase2",
+      "target": "tests_test_phase2_test_enrichment_queue_failover",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L57",
+      "weight": 1.0,
+      "source": "tests_test_phase2",
+      "target": "tests_test_phase2_test_exit_endpoint_without_lead",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L176",
+      "weight": 1.0,
+      "source": "tests_test_phase2_test_enrichment_queue_failover",
+      "target": "tests_test_phase2_get_test_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L112",
+      "weight": 1.0,
+      "source": "tests_test_phase2_test_exit_endpoint_without_lead",
+      "target": "tests_test_phase2_get_test_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "tests_test_phase2_rationale_38",
+      "target": "tests_test_phase2_test_composite_cache_key_isolation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L58",
+      "weight": 1.0,
+      "source": "tests_test_phase2_rationale_58",
+      "target": "tests_test_phase2_test_exit_endpoint_without_lead",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L151",
+      "weight": 1.0,
+      "source": "tests_test_phase2_rationale_151",
+      "target": "tests_test_phase2_test_enrichment_queue_failover",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "task.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "task",
+      "target": "task_auraworks_industrial_intelligence_engine_progress_checklist",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "built_at_commit": "a2e10219e6504d0f7d4f4bb62af3ac5c6f7235c8"
+}
