@@ -1,16 +1,16 @@
 # Graph Report - industrial-intelligence  (2026-06-05)
 
 ## Corpus Check
-- 147 files · ~122,066 words
+- 152 files · ~127,428 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 138 nodes · 304 edges · 10 communities (9 shown, 1 thin omitted)
-- Extraction: 62% EXTRACTED · 38% INFERRED · 0% AMBIGUOUS · INFERRED: 115 edges (avg confidence: 0.55)
+- 228 nodes · 475 edges · 13 communities (10 shown, 3 thin omitted)
+- Extraction: 66% EXTRACTED · 34% INFERRED · 0% AMBIGUOUS · INFERRED: 160 edges (avg confidence: 0.58)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `afadc5da`
+- Built from commit: `a26db0a7`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -25,63 +25,66 @@
 - [[_COMMUNITY_Community 7|Community 7]]
 - [[_COMMUNITY_Community 8|Community 8]]
 - [[_COMMUNITY_Community 9|Community 9]]
+- [[_COMMUNITY_Community 10|Community 10]]
+- [[_COMMUNITY_Community 11|Community 11]]
+- [[_COMMUNITY_Community 12|Community 12]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `Visit` - 20 edges
-2. `EnrichmentError` - 20 edges
-3. `Company` - 17 edges
-4. `QueueType` - 17 edges
-5. `EnrichmentQueue` - 17 edges
-6. `VisitCreate` - 13 edges
-7. `PageViewCreate` - 13 edges
-8. `str` - 11 edges
-9. `Department` - 10 edges
-10. `ConsentPayload` - 9 edges
+1. `Visit` - 23 edges
+2. `EnrichmentError` - 21 edges
+3. `Company` - 19 edges
+4. `QueueType` - 18 edges
+5. `EnrichmentQueue` - 18 edges
+6. `Client` - 15 edges
+7. `VisitCreate` - 14 edges
+8. `PageViewCreate` - 14 edges
+9. `str` - 12 edges
+10. `Department` - 11 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `process_entry_logic()` --calls--> `Company`  [INFERRED]
-  backend/app/api/v1/track.py → backend/app/models/company.py
-- `process_entry_logic()` --calls--> `PageView`  [INFERRED]
-  backend/app/api/v1/track.py → backend/app/models/pageview.py
+- `create_client()` --calls--> `scrape_homepage()`  [INFERRED]
+  backend/app/api/v1/clients.py → backend/app/services/intelligence.py
+- `test_immediate_departmental_contact_mapping()` --calls--> `process_entry_logic()`  [INFERRED]
+  backend/tests/test_phase3.py → backend/app/api/v1/track.py
+- `process_entry_logic()` --calls--> `enrich_company_departments()`  [INFERRED]
+  backend/app/api/v1/track.py → backend/app/services/enrichment.py
 - `process_exit_logic()` --calls--> `get_visitor_journey()`  [INFERRED]
   backend/app/api/v1/track.py → backend/app/services/intelligence.py
-- `process_exit_logic()` --calls--> `handle_juristic_only_alert()`  [INFERRED]
-  backend/app/api/v1/track.py → backend/app/services/notifications.py
-- `process_exit_logic()` --calls--> `post_to_slack()`  [INFERRED]
-  backend/app/api/v1/track.py → backend/app/services/notifications.py
+- `test_enrichment_queue_failover()` --calls--> `Client`  [INFERRED]
+  backend/tests/test_phase2.py → backend/app/models/client.py
 
 ## Import Cycles
-- None detected.
+- 1-file cycle: `backend/app/main.py -> backend/app/main.py`
 
-## Communities (10 total, 1 thin omitted)
+## Communities (13 total, 3 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.25
-Nodes (26): BackgroundTasks, bool, int, str, BaseModel, Exception, EnrichmentQueue, QueueType (+18 more)
+Cohesion: 0.22
+Nodes (30): BackgroundTasks, bool, int, Request, str, int, BaseModel, Exception (+22 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.20
-Nodes (19): Any, bool, int, str, Industrial Async Enrichment Task:     Maps corporate departments for captured Ju, run_enrichment_cycle(), Company, Department (+11 more)
+Cohesion: 0.16
+Nodes (21): Any, bool, str, Industrial Async Enrichment Task:     Maps corporate departments for captured Ju, Initializes the Asynchronous AuraWorks Background Engine Pipeline., run_enrichment_cycle(), start_scheduler(), Department (+13 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.14
-Nodes (8): Initializes the Asynchronous AuraWorks Background Engine Pipeline., start_scheduler(), NotificationThrottle, PageView, WaitlistLead, SQLModel, Upgrades anonymous forensic profiles using volunteered banner form data., track_identity()
+Cohesion: 0.06
+Nodes (30): get_async_session(), get_session(), init_db(), FastAPI Dependency: Yields a transaction-scoped Asynchronous session.     Automa, FastAPI Dependency: Yields a transaction-scoped Synchronous session.     Used fo, Schema Synchronization.     Verifies that the database ledger tables are correct, get_admin_summary(), lifespan() (+22 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.20
-Nodes (14): Any, AsyncSession, bool, str, analyze_corporate_intent(), enrich_ip_intel(), enrich_visitor_data(), format_zar() (+6 more)
+Cohesion: 0.11
+Nodes (27): Any, AsyncSession, bool, int, str, analyze_corporate_intent(), enrich_ip_intel(), enrich_visitor_data() (+19 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.29
-Nodes (9): Enum, Client, ClientBase, ClientCategory, ClientCreate, ClientPublic, SubscriptionStatus, VerificationStatus (+1 more)
+Cohesion: 0.16
+Nodes (22): AsyncSession, AsyncSession, BackgroundTasks, Request, str, ClientCreate, Enum, Client (+14 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.12
-Nodes (17): AsyncSession, BackgroundTasks, int, str, str, handle_juristic_only_alert(), post_to_slack(), post_to_visit_channel() (+9 more)
+Cohesion: 0.11
+Nodes (19): AsyncSession, BackgroundTasks, int, str, str, handle_juristic_only_alert(), post_to_slack(), post_to_visit_channel() (+11 more)
 
 ### Community 6 - "Community 6"
-Cohesion: 0.25
-Nodes (7): get_async_session(), get_session(), init_db(), FastAPI Dependency: Yields a transaction-scoped Asynchronous session.     Automa, FastAPI Dependency: Yields a transaction-scoped Synchronous session.     Used fo, Schema Synchronization.     Verifies that the database ledger tables are correct, AsyncSession
+Cohesion: 0.15
+Nodes (16): bool, bytes, str, bool, bytes, str, Dispatches outbound email notifications using Resend's REST API.     Asynchronou, Sends a premium confirmation message to users who join the waitlist. (+8 more)
 
 ### Community 7 - "Community 7"
 Cohesion: 0.28
@@ -91,25 +94,29 @@ Nodes (7): get_test_client(), Mock external API network dependencies to simulate
 Cohesion: 0.32
 Nodes (7): AsyncSession, int, str, get_lead_intelligence(), get_leads(), Industrial Ledger: Retrieves leads and prioritizes 'Warm Leads' (those with volu, Provides the forensic audit for a specific lead, including their      behavioral
 
+### Community 10 - "Community 10"
+Cohesion: 0.38
+Nodes (5): get_test_client(), Pass a mock customer domain homepage containing text indicators like "Chrome Ore, Dispatch an unauthenticated or invalid payload signature token to POST /api/v1/w, test_client_semantic_classification(), test_paygenius_webhook_signature_security()
+
 ## Knowledge Gaps
-- **9 isolated node(s):** `AsyncSession`, `int`, `int`, `BackgroundTasks`, `AsyncSession` (+4 more)
+- **14 isolated node(s):** `str`, `AsyncSession`, `bytes`, `bool`, `int` (+9 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **1 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `process_exit_logic()` connect `Community 0` to `Community 3`, `Community 5`?**
-  _High betweenness centrality (0.132) - this node is a cross-community bridge._
-- **Why does `Company` connect `Community 1` to `Community 0`, `Community 2`, `Community 4`, `Community 5`, `Community 7`?**
-  _High betweenness centrality (0.112) - this node is a cross-community bridge._
-- **Why does `EnrichmentError` connect `Community 0` to `Community 1`?**
-  _High betweenness centrality (0.085) - this node is a cross-community bridge._
-- **Are the 18 inferred relationships involving `Visit` (e.g. with `BackgroundTasks` and `bool`) actually correct?**
-  _`Visit` has 18 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 15 inferred relationships involving `EnrichmentError` (e.g. with `BackgroundTasks` and `bool`) actually correct?**
-  _`EnrichmentError` has 15 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 15 inferred relationships involving `Company` (e.g. with `Any` and `bool`) actually correct?**
-  _`Company` has 15 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 14 inferred relationships involving `QueueType` (e.g. with `BackgroundTasks` and `bool`) actually correct?**
-  _`QueueType` has 14 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `test_automated_contract_pdf_generation()` connect `Community 6` to `Community 10`?**
+  _High betweenness centrality (0.136) - this node is a cross-community bridge._
+- **Why does `Company` connect `Community 0` to `Community 1`, `Community 2`, `Community 4`, `Community 5`, `Community 7`?**
+  _High betweenness centrality (0.082) - this node is a cross-community bridge._
+- **Are the 21 inferred relationships involving `Visit` (e.g. with `BackgroundTasks` and `bool`) actually correct?**
+  _`Visit` has 21 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 16 inferred relationships involving `EnrichmentError` (e.g. with `BackgroundTasks` and `bool`) actually correct?**
+  _`EnrichmentError` has 16 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 17 inferred relationships involving `Company` (e.g. with `Any` and `bool`) actually correct?**
+  _`Company` has 17 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 15 inferred relationships involving `QueueType` (e.g. with `BackgroundTasks` and `bool`) actually correct?**
+  _`QueueType` has 15 INFERRED edges - model-reasoned connections that need verification._
+- **What connects `Registers a new client and automatically evaluates its category (INDUSTRIAL vs C`, `SILENT INGESTION ENGINE:     Records raw traffic trails and resolves firmographi`, `THE BATCH PROCESSOR:     Fires exclusively upon departure. Evaluates identity da` to the rest of the system?**
+  _69 weakly-connected nodes found - possible documentation gaps or missing edges._

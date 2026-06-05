@@ -90,6 +90,22 @@ def init_db():
         SQLModel.metadata.create_all(engine)
         logger.info("✅ Database Ledger: Connection established and tables verified.")
         
+        # Run Alembic migrations programmatically to ensure the schema is fully updated with new columns
+        import os
+        from alembic.config import Config
+        from alembic import command
+        
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        alembic_ini_path = os.path.abspath(os.path.join(current_dir, "..", "alembic.ini"))
+        
+        if os.path.exists(alembic_ini_path):
+            logger.info("🔄 Running database migrations via Alembic...")
+            alembic_cfg = Config(alembic_ini_path)
+            command.upgrade(alembic_cfg, "head")
+            logger.info("✅ Database migrations completed successfully.")
+        else:
+            logger.warning(f"⚠️ alembic.ini not found at {alembic_ini_path}, skipping migrations.")
+        
         # Seed the default test client if it does not exist to avoid foreign key violations.
         try:
             from sqlmodel import select
