@@ -4,137 +4,758 @@
   "graph": {},
   "nodes": [
     {
+      "label": "clients.py",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L1",
+      "id": "v1_clients",
+      "community": 4,
+      "norm_label": "clients.py"
+    },
+    {
+      "label": "create_client()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L30",
+      "id": "v1_clients_create_client",
+      "community": 4,
+      "norm_label": "create_client()"
+    },
+    {
+      "label": "ClientCreate",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L30",
+      "id": "clientcreate",
+      "community": 4,
+      "norm_label": "clientcreate"
+    },
+    {
+      "label": "AsyncSession",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L30",
+      "id": "asyncsession",
+      "community": 4,
+      "norm_label": "asyncsession"
+    },
+    {
+      "label": "get_client_config()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L79",
+      "id": "v1_clients_get_client_config",
+      "community": 4,
+      "norm_label": "get_client_config()"
+    },
+    {
+      "label": "UUID",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L79",
+      "id": "uuid",
+      "community": 4,
+      "norm_label": "uuid"
+    },
+    {
+      "label": "str",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L79",
+      "id": "backend_app_api_v1_clients_py_str",
+      "community": 4,
+      "norm_label": "str"
+    },
+    {
+      "label": "Request",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L79",
+      "id": "request",
+      "community": 0,
+      "norm_label": "request"
+    },
+    {
+      "label": "Registers a new client and automatically evaluates its category (INDUSTRIAL vs C",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L31",
+      "id": "v1_clients_rationale_31",
+      "community": 4,
+      "norm_label": "registers a new client and automatically evaluates its category (industrial vs c"
+    },
+    {
+      "label": "Returns remote configuration parameters for the embedded tracking tag.     Perfo",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L85",
+      "id": "v1_clients_rationale_85",
+      "community": 4,
+      "norm_label": "returns remote configuration parameters for the embedded tracking tag.     perfo"
+    },
+    {
+      "label": "client.py",
+      "file_type": "code",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L1",
+      "id": "models_client",
+      "community": 4,
+      "norm_label": "client.py"
+    },
+    {
+      "label": "ClientCategory",
+      "file_type": "code",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L8",
+      "id": "models_client_clientcategory",
+      "community": 4,
+      "norm_label": "clientcategory"
+    },
+    {
+      "label": "Enum",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "enum",
+      "community": 4,
+      "norm_label": "enum"
+    },
+    {
+      "label": "SubscriptionStatus",
+      "file_type": "code",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L12",
+      "id": "models_client_subscriptionstatus",
+      "community": 4,
+      "norm_label": "subscriptionstatus"
+    },
+    {
+      "label": "ClientBase",
+      "file_type": "code",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L17",
+      "id": "models_client_clientbase",
+      "community": 4,
+      "norm_label": "clientbase"
+    },
+    {
+      "label": "SQLModel",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "sqlmodel",
+      "community": 1,
+      "norm_label": "sqlmodel"
+    },
+    {
+      "label": "Client",
+      "file_type": "code",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L34",
+      "id": "models_client_client",
+      "community": 4,
+      "norm_label": "client"
+    },
+    {
+      "label": "ClientCreate",
+      "file_type": "code",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L47",
+      "id": "models_client_clientcreate",
+      "community": 4,
+      "norm_label": "clientcreate"
+    },
+    {
+      "label": "ClientPublic",
+      "file_type": "code",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L50",
+      "id": "models_client_clientpublic",
+      "community": 4,
+      "norm_label": "clientpublic"
+    },
+    {
+      "label": "notion.py",
+      "file_type": "code",
+      "source_file": "backend/app/services/notion.py",
+      "source_location": "L1",
+      "id": "services_notion",
+      "community": 16,
+      "norm_label": "notion.py"
+    },
+    {
+      "label": "NotionVault",
+      "file_type": "code",
+      "source_file": "backend/app/services/notion.py",
+      "source_location": "L8",
+      "id": "services_notion_notionvault",
+      "community": 16,
+      "norm_label": "notionvault"
+    },
+    {
+      "label": ".__init__()",
+      "file_type": "code",
+      "source_file": "backend/app/services/notion.py",
+      "source_location": "L9",
+      "id": "services_notion_notionvault_init",
+      "community": 16,
+      "norm_label": ".__init__()"
+    },
+    {
+      "label": ".archive_corporate_visit()",
+      "file_type": "code",
+      "source_file": "backend/app/services/notion.py",
+      "source_location": "L19",
+      "id": "services_notion_notionvault_archive_corporate_visit",
+      "community": 16,
+      "norm_label": ".archive_corporate_visit()"
+    },
+    {
+      "label": "Creates a clinical audit page in the Notion Vault.",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/notion.py",
+      "source_location": "L20",
+      "id": "services_notion_rationale_20",
+      "community": 16,
+      "norm_label": "creates a clinical audit page in the notion vault."
+    },
+    {
+      "label": "c2710675c8d5_add_client_config_fields.py",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/c2710675c8d5_add_client_config_fields.py",
+      "source_location": "L1",
+      "id": "versions_c2710675c8d5_add_client_config_fields",
+      "community": 1,
+      "norm_label": "c2710675c8d5_add_client_config_fields.py"
+    },
+    {
+      "label": "upgrade()",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/c2710675c8d5_add_client_config_fields.py",
+      "source_location": "L22",
+      "id": "versions_c2710675c8d5_add_client_config_fields_upgrade",
+      "community": 1,
+      "norm_label": "upgrade()"
+    },
+    {
+      "label": "downgrade()",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/c2710675c8d5_add_client_config_fields.py",
+      "source_location": "L30",
+      "id": "versions_c2710675c8d5_add_client_config_fields_downgrade",
+      "community": 1,
+      "norm_label": "downgrade()"
+    },
+    {
+      "label": "README.md",
+      "file_type": "document",
+      "source_file": "tracker/README.md",
+      "source_location": "L1",
+      "id": "tracker_readme",
+      "community": 13,
+      "norm_label": "readme.md"
+    },
+    {
+      "label": "\ud83d\udef0\ufe0f AuraWorks Industrial Tracker \u2014 Client Implementation Guide",
+      "file_type": "document",
+      "source_file": "tracker/README.md",
+      "source_location": "L1",
+      "id": "tracker_readme_auraworks_industrial_tracker_client_implementation_guide",
+      "community": 13,
+      "norm_label": "\ud83d\udef0\ufe0f auraworks industrial tracker \u2014 client implementation guide"
+    },
+    {
+      "label": "\ud83c\udfd7\ufe0f Architecture & Remote Lifecycle",
+      "file_type": "document",
+      "source_file": "tracker/README.md",
+      "source_location": "L10",
+      "id": "tracker_readme_architecture_remote_lifecycle",
+      "community": 13,
+      "norm_label": "\ud83c\udfd7\ufe0f architecture & remote lifecycle"
+    },
+    {
+      "label": "\ud83d\ude80 Client Integration Script",
+      "file_type": "document",
+      "source_file": "tracker/README.md",
+      "source_location": "L41",
+      "id": "tracker_readme_client_integration_script",
+      "community": 13,
+      "norm_label": "\ud83d\ude80 client integration script"
+    },
+    {
+      "label": "\ud83d\udd12 Security & Strict Domain Verification",
+      "file_type": "document",
+      "source_file": "tracker/README.md",
+      "source_location": "L57",
+      "id": "tracker_readme_security_strict_domain_verification",
+      "community": 13,
+      "norm_label": "\ud83d\udd12 security & strict domain verification"
+    },
+    {
+      "label": "\u2696\ufe0f Timezone-Based Compliance Routing",
+      "file_type": "document",
+      "source_file": "tracker/README.md",
+      "source_location": "L68",
+      "id": "tracker_readme_timezone_based_compliance_routing",
+      "community": 13,
+      "norm_label": "\u2696\ufe0f timezone-based compliance routing"
+    },
+    {
+      "label": "\ud83c\udfa8 Encapsulated Consent Banner & Shadow DOM",
+      "file_type": "document",
+      "source_file": "tracker/README.md",
+      "source_location": "L81",
+      "id": "tracker_readme_encapsulated_consent_banner_shadow_dom",
+      "community": 13,
+      "norm_label": "\ud83c\udfa8 encapsulated consent banner & shadow dom"
+    },
+    {
+      "label": "The 4 Interactive Capture Phases",
+      "file_type": "document",
+      "source_file": "tracker/README.md",
+      "source_location": "L88",
+      "id": "tracker_readme_the_4_interactive_capture_phases",
+      "community": 13,
+      "norm_label": "the 4 interactive capture phases"
+    },
+    {
+      "label": "\ud83d\udcbe Offline Robustness (`AuraOfflineQueue`)",
+      "file_type": "document",
+      "source_file": "tracker/README.md",
+      "source_location": "L97",
+      "id": "tracker_readme_offline_robustness_auraofflinequeue",
+      "community": 13,
+      "norm_label": "\ud83d\udcbe offline robustness (`auraofflinequeue`)"
+    },
+    {
+      "label": "\ud83d\udee0\ufe0f Build & Minification Pipeline",
+      "file_type": "document",
+      "source_file": "tracker/README.md",
+      "source_location": "L106",
+      "id": "tracker_readme_build_minification_pipeline",
+      "community": 13,
+      "norm_label": "\ud83d\udee0\ufe0f build & minification pipeline"
+    },
+    {
+      "label": "package.json",
+      "file_type": "code",
+      "source_file": "tracker/package.json",
+      "source_location": "L1",
+      "id": "tracker_package",
+      "community": 15,
+      "norm_label": "package.json"
+    },
+    {
+      "label": "name",
+      "file_type": "code",
+      "source_file": "tracker/package.json",
+      "source_location": "L2",
+      "id": "tracker_package_name",
+      "community": 15,
+      "norm_label": "name"
+    },
+    {
+      "label": "version",
+      "file_type": "code",
+      "source_file": "tracker/package.json",
+      "source_location": "L3",
+      "id": "tracker_package_version",
+      "community": 15,
+      "norm_label": "version"
+    },
+    {
+      "label": "scripts",
+      "file_type": "code",
+      "source_file": "tracker/package.json",
+      "source_location": "L4",
+      "id": "tracker_package_scripts",
+      "community": 15,
+      "norm_label": "scripts"
+    },
+    {
+      "label": "build",
+      "file_type": "code",
+      "source_file": "tracker/package.json",
+      "source_location": "L5",
+      "id": "tracker_package_scripts_build",
+      "community": 15,
+      "norm_label": "build"
+    },
+    {
+      "label": "devDependencies",
+      "file_type": "code",
+      "source_file": "tracker/package.json",
+      "source_location": "L7",
+      "id": "tracker_package_devdependencies",
+      "community": 15,
+      "norm_label": "devdependencies"
+    },
+    {
+      "label": "terser",
+      "file_type": "code",
+      "source_file": "tracker/package.json",
+      "source_location": "L8",
+      "id": "tracker_package_devdependencies_terser",
+      "community": 15,
+      "norm_label": "terser"
+    },
+    {
+      "label": "api.js",
+      "file_type": "code",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L1",
+      "id": "api_api",
+      "community": 14,
+      "norm_label": "api.js"
+    },
+    {
+      "label": "AuraApiClient",
+      "file_type": "code",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L9",
+      "id": "api_api_auraapiclient",
+      "community": 14,
+      "norm_label": "auraapiclient"
+    },
+    {
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L10",
+      "id": "api_api_auraapiclient_constructor",
+      "community": 14,
+      "norm_label": ".constructor()"
+    },
+    {
+      "label": ".getClientConfig()",
+      "file_type": "code",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L18",
+      "id": "api_api_auraapiclient_getclientconfig",
+      "community": 14,
+      "norm_label": ".getclientconfig()"
+    },
+    {
+      "label": ".postEntry()",
+      "file_type": "code",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L34",
+      "id": "api_api_auraapiclient_postentry",
+      "community": 14,
+      "norm_label": ".postentry()"
+    },
+    {
+      "label": ".postExit()",
+      "file_type": "code",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L43",
+      "id": "api_api_auraapiclient_postexit",
+      "community": 14,
+      "norm_label": ".postexit()"
+    },
+    {
+      "label": ".postEvent()",
+      "file_type": "code",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L51",
+      "id": "api_api_auraapiclient_postevent",
+      "community": 14,
+      "norm_label": ".postevent()"
+    },
+    {
+      "label": ".postIdentity()",
+      "file_type": "code",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L59",
+      "id": "api_api_auraapiclient_postidentity",
+      "community": 14,
+      "norm_label": ".postidentity()"
+    },
+    {
+      "label": "._post()",
+      "file_type": "code",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L67",
+      "id": "api_api_auraapiclient_post",
+      "community": 14,
+      "norm_label": "._post()"
+    },
+    {
+      "label": "aura.js",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L1",
+      "id": "public_aura",
+      "community": 10,
+      "norm_label": "aura.js"
+    },
+    {
+      "label": "init()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L39",
+      "id": "public_aura_init",
+      "community": 10,
+      "norm_label": "init()"
+    },
+    {
+      "label": "captureUTMs()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L47",
+      "id": "public_aura_captureutms",
+      "community": 10,
+      "norm_label": "captureutms()"
+    },
+    {
+      "label": "getStoredUTMs()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L58",
+      "id": "public_aura_getstoredutms",
+      "community": 10,
+      "norm_label": "getstoredutms()"
+    },
+    {
+      "label": "getStoredID()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L62",
+      "id": "public_aura_getstoredid",
+      "community": 10,
+      "norm_label": "getstoredid()"
+    },
+    {
+      "label": "syncStorage()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L68",
+      "id": "public_aura_syncstorage",
+      "community": 10,
+      "norm_label": "syncstorage()"
+    },
+    {
+      "label": "generateUUID()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L75",
+      "id": "public_aura_generateuuid",
+      "community": 10,
+      "norm_label": "generateuuid()"
+    },
+    {
+      "label": "getFullSignature()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L88",
+      "id": "public_aura_getfullsignature",
+      "community": 10,
+      "norm_label": "getfullsignature()"
+    },
+    {
+      "label": "getNetworkInfo()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L100",
+      "id": "public_aura_getnetworkinfo",
+      "community": 10,
+      "norm_label": "getnetworkinfo()"
+    },
+    {
+      "label": "getCanvas()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L113",
+      "id": "public_aura_getcanvas",
+      "community": 10,
+      "norm_label": "getcanvas()"
+    },
+    {
+      "label": "getWebGL()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L125",
+      "id": "public_aura_getwebgl",
+      "community": 10,
+      "norm_label": "getwebgl()"
+    },
+    {
+      "label": "measureDrift()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L137",
+      "id": "public_aura_measuredrift",
+      "community": 10,
+      "norm_label": "measuredrift()"
+    },
+    {
+      "label": "isIncognito()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L144",
+      "id": "public_aura_isincognito",
+      "community": 10,
+      "norm_label": "isincognito()"
+    },
+    {
+      "label": "dispatch()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L181",
+      "id": "public_aura_dispatch",
+      "community": 10,
+      "norm_label": "dispatch()"
+    },
+    {
+      "label": "sendRaw()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L229",
+      "id": "public_aura_sendraw",
+      "community": 10,
+      "norm_label": "sendraw()"
+    },
+    {
+      "label": "setupSensors()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L245",
+      "id": "public_aura_setupsensors",
+      "community": 10,
+      "norm_label": "setupsensors()"
+    },
+    {
+      "label": "trackEntry()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L307",
+      "id": "public_aura_trackentry",
+      "community": 10,
+      "norm_label": "trackentry()"
+    },
+    {
+      "label": "trackExit()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L318",
+      "id": "public_aura_trackexit",
+      "community": 10,
+      "norm_label": "trackexit()"
+    },
+    {
+      "label": "patchSPA()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L331",
+      "id": "public_aura_patchspa",
+      "community": 10,
+      "norm_label": "patchspa()"
+    },
+    {
+      "label": "enqueue()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L378",
+      "id": "public_aura_enqueue",
+      "community": 10,
+      "norm_label": "enqueue()"
+    },
+    {
+      "label": "getQueuedEvents()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L396",
+      "id": "public_aura_getqueuedevents",
+      "community": 10,
+      "norm_label": "getqueuedevents()"
+    },
+    {
+      "label": "removeEvent()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L414",
+      "id": "public_aura_removeevent",
+      "community": 10,
+      "norm_label": "removeevent()"
+    },
+    {
+      "label": "flush()",
+      "file_type": "code",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L434",
+      "id": "public_aura_flush",
+      "community": 10,
+      "norm_label": "flush()"
+    },
+    {
       "label": "db.py",
       "file_type": "code",
       "source_file": "backend/app/db.py",
       "source_location": "L1",
-      "id": "app_db",
       "community": 2,
-      "norm_label": "db.py"
+      "norm_label": "db.py",
+      "id": "app_db"
     },
     {
       "label": "init_db()",
       "file_type": "code",
       "source_file": "backend/app/db.py",
       "source_location": "L68",
-      "id": "app_db_init_db",
       "community": 2,
-      "norm_label": "init_db()"
+      "norm_label": "init_db()",
+      "id": "app_db_init_db"
     },
     {
       "label": "get_async_session()",
       "file_type": "code",
       "source_file": "backend/app/db.py",
       "source_location": "L137",
-      "id": "app_db_get_async_session",
       "community": 2,
-      "norm_label": "get_async_session()"
-    },
-    {
-      "label": "Request",
-      "file_type": "code",
-      "source_file": "backend/app/db.py",
-      "source_location": "L137",
-      "id": "request",
-      "community": 0,
-      "norm_label": "request"
-    },
-    {
-      "label": "AsyncSession",
-      "file_type": "code",
-      "source_file": "backend/app/db.py",
-      "source_location": "L137",
-      "id": "asyncsession",
-      "community": 2,
-      "norm_label": "asyncsession"
+      "norm_label": "get_async_session()",
+      "id": "app_db_get_async_session"
     },
     {
       "label": "get_session()",
       "file_type": "code",
       "source_file": "backend/app/db.py",
       "source_location": "L180",
-      "id": "app_db_get_session",
       "community": 2,
-      "norm_label": "get_session()"
+      "norm_label": "get_session()",
+      "id": "app_db_get_session"
     },
     {
       "label": "Schema Synchronization.     Verifies that the database ledger tables are correct",
       "file_type": "rationale",
       "source_file": "backend/app/db.py",
       "source_location": "L69",
-      "id": "app_db_rationale_69",
       "community": 2,
-      "norm_label": "schema synchronization.     verifies that the database ledger tables are correct"
+      "norm_label": "schema synchronization.     verifies that the database ledger tables are correct",
+      "id": "app_db_rationale_69"
     },
     {
       "label": "FastAPI Dependency: Yields a transaction-scoped Asynchronous session.     Automa",
       "file_type": "rationale",
       "source_file": "backend/app/db.py",
       "source_location": "L138",
-      "id": "app_db_rationale_138",
       "community": 2,
-      "norm_label": "fastapi dependency: yields a transaction-scoped asynchronous session.     automa"
+      "norm_label": "fastapi dependency: yields a transaction-scoped asynchronous session.     automa",
+      "id": "app_db_rationale_138"
     },
     {
       "label": "FastAPI Dependency: Yields a transaction-scoped Synchronous session.     Used fo",
       "file_type": "rationale",
       "source_file": "backend/app/db.py",
       "source_location": "L181",
-      "id": "app_db_rationale_181",
       "community": 2,
-      "norm_label": "fastapi dependency: yields a transaction-scoped synchronous session.     used fo"
-    },
-    {
-      "label": "clients.py",
-      "file_type": "code",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L1",
-      "community": 2,
-      "norm_label": "clients.py",
-      "id": "v1_clients"
-    },
-    {
-      "label": "create_client()",
-      "file_type": "code",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L28",
-      "community": 4,
-      "norm_label": "create_client()",
-      "id": "v1_clients_create_client"
-    },
-    {
-      "label": "ClientCreate",
-      "file_type": "code",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L28",
-      "community": 4,
-      "norm_label": "clientcreate",
-      "id": "clientcreate"
-    },
-    {
-      "label": "AsyncSession",
-      "file_type": "code",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L28",
-      "community": 4,
-      "norm_label": "asyncsession",
-      "id": "backend_app_api_v1_clients_py_asyncsession"
-    },
-    {
-      "label": "Registers a new client and automatically evaluates its category (INDUSTRIAL vs C",
-      "file_type": "rationale",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L29",
-      "community": 4,
-      "norm_label": "registers a new client and automatically evaluates its category (industrial vs c",
-      "id": "v1_clients_rationale_29"
+      "norm_label": "fastapi dependency: yields a transaction-scoped synchronous session.     used fo",
+      "id": "app_db_rationale_181"
     },
     {
       "label": "track.py",
       "file_type": "code",
       "source_file": "backend/app/api/v1/track.py",
       "source_location": "L1",
-      "community": 2,
+      "community": 0,
       "norm_label": "track.py",
       "id": "v1_track"
     },
@@ -197,7 +818,7 @@
       "file_type": "code",
       "source_file": "backend/app/api/v1/track.py",
       "source_location": "L137",
-      "community": 5,
+      "community": 0,
       "norm_label": "process_exit_logic()",
       "id": "v1_track_process_exit_logic"
     },
@@ -251,7 +872,7 @@
       "file_type": "code",
       "source_file": "backend/app/api/v1/track.py",
       "source_location": "L252",
-      "community": 2,
+      "community": 0,
       "norm_label": "track_identity()",
       "id": "v1_track_track_identity"
     },
@@ -260,7 +881,7 @@
       "file_type": "code",
       "source_file": "backend/app/api/v1/track.py",
       "source_location": "L308",
-      "community": 2,
+      "community": 0,
       "norm_label": "track_event()",
       "id": "v1_track_track_event"
     },
@@ -278,7 +899,7 @@
       "file_type": "code",
       "source_file": "backend/app/api/v1/track.py",
       "source_location": "L325",
-      "community": 2,
+      "community": 0,
       "norm_label": "track_consent()",
       "id": "v1_track_track_consent"
     },
@@ -305,7 +926,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/api/v1/track.py",
       "source_location": "L138",
-      "community": 5,
+      "community": 0,
       "norm_label": "the batch processor:     fires exclusively upon departure. evaluates identity da",
       "id": "v1_track_rationale_138"
     },
@@ -314,7 +935,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/api/v1/track.py",
       "source_location": "L253",
-      "community": 2,
+      "community": 0,
       "norm_label": "upgrades anonymous forensic profiles using volunteered banner form data.",
       "id": "v1_track_rationale_253"
     },
@@ -332,7 +953,7 @@
       "file_type": "code",
       "source_file": "backend/app/api/v1/webhook.py",
       "source_location": "L1",
-      "community": 2,
+      "community": 4,
       "norm_label": "webhook.py",
       "id": "v1_webhook"
     },
@@ -544,24 +1165,6 @@
       "id": "app_main_rationale_117"
     },
     {
-      "label": "client.py",
-      "file_type": "code",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L1",
-      "community": 4,
-      "norm_label": "client.py",
-      "id": "models_client"
-    },
-    {
-      "label": "ClientCategory",
-      "file_type": "code",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L8",
-      "community": 4,
-      "norm_label": "clientcategory",
-      "id": "models_client_clientcategory"
-    },
-    {
       "label": "str",
       "file_type": "code",
       "source_file": "",
@@ -571,74 +1174,11 @@
       "id": "str"
     },
     {
-      "label": "Enum",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "community": 4,
-      "norm_label": "enum",
-      "id": "enum"
-    },
-    {
-      "label": "SubscriptionStatus",
-      "file_type": "code",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L12",
-      "community": 4,
-      "norm_label": "subscriptionstatus",
-      "id": "models_client_subscriptionstatus"
-    },
-    {
-      "label": "ClientBase",
-      "file_type": "code",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L17",
-      "community": 4,
-      "norm_label": "clientbase",
-      "id": "models_client_clientbase"
-    },
-    {
-      "label": "SQLModel",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "community": 2,
-      "norm_label": "sqlmodel",
-      "id": "sqlmodel"
-    },
-    {
-      "label": "Client",
-      "file_type": "code",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L32",
-      "community": 4,
-      "norm_label": "client",
-      "id": "models_client_client"
-    },
-    {
-      "label": "ClientCreate",
-      "file_type": "code",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L45",
-      "community": 4,
-      "norm_label": "clientcreate",
-      "id": "models_client_clientcreate"
-    },
-    {
-      "label": "ClientPublic",
-      "file_type": "code",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L48",
-      "community": 4,
-      "norm_label": "clientpublic",
-      "id": "models_client_clientpublic"
-    },
-    {
       "label": "company.py",
       "file_type": "code",
       "source_file": "backend/app/models/company.py",
       "source_location": "L1",
-      "community": 2,
+      "community": 1,
       "norm_label": "company.py",
       "id": "models_company"
     },
@@ -647,7 +1187,7 @@
       "file_type": "code",
       "source_file": "backend/app/models/company.py",
       "source_location": "L12",
-      "community": 0,
+      "community": 1,
       "norm_label": "company",
       "id": "models_company_company"
     },
@@ -674,7 +1214,7 @@
       "file_type": "code",
       "source_file": "backend/app/models/enrichment_queue.py",
       "source_location": "L1",
-      "community": 4,
+      "community": 1,
       "norm_label": "enrichment_queue.py",
       "id": "models_enrichment_queue"
     },
@@ -710,7 +1250,7 @@
       "file_type": "code",
       "source_file": "backend/app/models/notification_throttle.py",
       "source_location": "L1",
-      "community": 2,
+      "community": 1,
       "norm_label": "notification_throttle.py",
       "id": "models_notification_throttle"
     },
@@ -719,7 +1259,7 @@
       "file_type": "code",
       "source_file": "backend/app/models/notification_throttle.py",
       "source_location": "L6",
-      "community": 2,
+      "community": 1,
       "norm_label": "notificationthrottle",
       "id": "models_notification_throttle_notificationthrottle"
     },
@@ -728,7 +1268,7 @@
       "file_type": "code",
       "source_file": "backend/app/models/pageview.py",
       "source_location": "L1",
-      "community": 2,
+      "community": 1,
       "norm_label": "pageview.py",
       "id": "models_pageview"
     },
@@ -791,7 +1331,7 @@
       "file_type": "code",
       "source_file": "backend/app/models/waitlist_lead.py",
       "source_location": "L1",
-      "community": 2,
+      "community": 1,
       "norm_label": "waitlist_lead.py",
       "id": "models_waitlist_lead"
     },
@@ -800,7 +1340,7 @@
       "file_type": "code",
       "source_file": "backend/app/models/waitlist_lead.py",
       "source_location": "L10",
-      "community": 2,
+      "community": 1,
       "norm_label": "waitlistlead",
       "id": "models_waitlist_lead_waitlistlead"
     },
@@ -1475,7 +2015,7 @@
       "file_type": "code",
       "source_file": "backend/tests/test_phase3.py",
       "source_location": "L24",
-      "community": 0,
+      "community": 2,
       "norm_label": "test_janitor_anonymization_cascade()",
       "id": "tests_test_phase3_test_janitor_anonymization_cascade"
     },
@@ -1484,7 +2024,7 @@
       "file_type": "code",
       "source_file": "backend/tests/test_phase3.py",
       "source_location": "L151",
-      "community": 4,
+      "community": 2,
       "norm_label": "test_immediate_departmental_contact_mapping()",
       "id": "tests_test_phase3_test_immediate_departmental_contact_mapping"
     },
@@ -1493,7 +2033,7 @@
       "file_type": "rationale",
       "source_file": "backend/tests/test_phase3.py",
       "source_location": "L25",
-      "community": 0,
+      "community": 2,
       "norm_label": "seed the database with a test fixture containing an unconsented visit marked as",
       "id": "tests_test_phase3_rationale_25"
     },
@@ -1502,7 +2042,7 @@
       "file_type": "rationale",
       "source_file": "backend/tests/test_phase3.py",
       "source_location": "L152",
-      "community": 4,
+      "community": 2,
       "norm_label": "configure apollo mapping to fire instantly right after ipinfo validates a b2b pr",
       "id": "tests_test_phase3_rationale_152"
     },
@@ -1511,7 +2051,7 @@
       "file_type": "code",
       "source_file": "backend/tests/test_phase4.py",
       "source_location": "L1",
-      "community": 2,
+      "community": 3,
       "norm_label": "test_phase4.py",
       "id": "tests_test_phase4"
     },
@@ -1520,7 +2060,7 @@
       "file_type": "code",
       "source_file": "backend/tests/test_phase4.py",
       "source_location": "L25",
-      "community": 2,
+      "community": 3,
       "norm_label": "dispose_engine_fixture()",
       "id": "tests_test_phase4_dispose_engine_fixture"
     },
@@ -1538,7 +2078,7 @@
       "file_type": "code",
       "source_file": "backend/tests/test_phase4.py",
       "source_location": "L116",
-      "community": 0,
+      "community": 3,
       "norm_label": "test_daily_deepseek_batch_aggregation()",
       "id": "tests_test_phase4_test_daily_deepseek_batch_aggregation"
     },
@@ -1556,7 +2096,7 @@
       "file_type": "rationale",
       "source_file": "backend/tests/test_phase4.py",
       "source_location": "L117",
-      "community": 0,
+      "community": 3,
       "norm_label": "populate the database with 5 distinct tracking sessions from the same company do",
       "id": "tests_test_phase4_rationale_117"
     },
@@ -1565,7 +2105,7 @@
       "file_type": "code",
       "source_file": "backend/tests/test_phase5.py",
       "source_location": "L1",
-      "community": 10,
+      "community": 2,
       "norm_label": "test_phase5.py",
       "id": "tests_test_phase5"
     },
@@ -1574,7 +2114,7 @@
       "file_type": "code",
       "source_file": "backend/tests/test_phase5.py",
       "source_location": "L19",
-      "community": 10,
+      "community": 2,
       "norm_label": "dispose_engine_fixture()",
       "id": "tests_test_phase5_dispose_engine_fixture"
     },
@@ -1583,7 +2123,7 @@
       "file_type": "code",
       "source_file": "backend/tests/test_phase5.py",
       "source_location": "L23",
-      "community": 10,
+      "community": 2,
       "norm_label": "get_test_client()",
       "id": "tests_test_phase5_get_test_client"
     },
@@ -1592,7 +2132,7 @@
       "file_type": "code",
       "source_file": "backend/tests/test_phase5.py",
       "source_location": "L30",
-      "community": 10,
+      "community": 2,
       "norm_label": "test_paygenius_webhook_signature_security()",
       "id": "tests_test_phase5_test_paygenius_webhook_signature_security"
     },
@@ -1610,7 +2150,7 @@
       "file_type": "code",
       "source_file": "backend/tests/test_phase5.py",
       "source_location": "L120",
-      "community": 10,
+      "community": 2,
       "norm_label": "test_client_semantic_classification()",
       "id": "tests_test_phase5_test_client_semantic_classification"
     },
@@ -1619,7 +2159,7 @@
       "file_type": "rationale",
       "source_file": "backend/tests/test_phase5.py",
       "source_location": "L31",
-      "community": 10,
+      "community": 2,
       "norm_label": "dispatch an unauthenticated or invalid payload signature token to post /api/v1/w",
       "id": "tests_test_phase5_rationale_31"
     },
@@ -1637,7 +2177,7 @@
       "file_type": "rationale",
       "source_file": "backend/tests/test_phase5.py",
       "source_location": "L121",
-      "community": 10,
+      "community": 2,
       "norm_label": "pass a mock customer domain homepage containing text indicators like \"chrome ore",
       "id": "tests_test_phase5_rationale_121"
     },
@@ -1952,7 +2492,7 @@
       "file_type": "code",
       "source_file": "backend/async_migrations/versions/ae0287cd9a1c_initial_schema.py",
       "source_location": "L1",
-      "community": 2,
+      "community": 1,
       "norm_label": "ae0287cd9a1c_initial_schema.py",
       "id": "versions_ae0287cd9a1c_initial_schema"
     },
@@ -1961,7 +2501,7 @@
       "file_type": "code",
       "source_file": "backend/async_migrations/versions/ae0287cd9a1c_initial_schema.py",
       "source_location": "L22",
-      "community": 2,
+      "community": 1,
       "norm_label": "upgrade()",
       "id": "versions_ae0287cd9a1c_initial_schema_upgrade"
     },
@@ -1970,7 +2510,7 @@
       "file_type": "code",
       "source_file": "backend/async_migrations/versions/ae0287cd9a1c_initial_schema.py",
       "source_location": "L209",
-      "community": 2,
+      "community": 1,
       "norm_label": "downgrade()",
       "id": "versions_ae0287cd9a1c_initial_schema_downgrade"
     },
@@ -2058,113 +2598,6 @@
   ],
   "links": [
     {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L121",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_db",
-      "target": "app_db_get_async_session"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L164",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_db",
-      "target": "app_db_get_session"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L68",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_db",
-      "target": "app_db_init_db"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L60",
-      "weight": 1.0,
-      "source": "app_db",
-      "target": "fastapi",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_db",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/main.py",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_main",
-      "target": "app_db"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/tasks/janitor.py",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tasks_janitor",
-      "target": "app_db"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/tests/test_phase3.py",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_phase3",
-      "target": "app_db"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/tests/test_phase4.py",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_phase4",
-      "target": "app_db"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/tests/test_phase5.py",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_phase5",
-      "target": "app_db"
-    },
-    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -2179,33 +2612,137 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "backend/app/api/v1/track.py",
-      "source_location": "L18",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L4",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "v1_track",
-      "target": "app_db"
+      "source": "v1_clients",
+      "target": "fastapi"
     },
     {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "backend/app/api/v1/webhook.py",
-      "source_location": "L12",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L5",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "v1_webhook",
-      "target": "app_db"
+      "source": "v1_clients",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "v1_clients",
+      "target": "uuid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L28",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "v1_clients",
+      "target": "v1_clients_create_client"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L79",
+      "weight": 1.0,
+      "source": "v1_clients",
+      "target": "v1_clients_get_client_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "v1_clients_create_client",
+      "target": "asyncsession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L28",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "v1_clients_create_client",
+      "target": "clientcreate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "v1_clients_create_client",
+      "target": "services_intelligence_scrape_homepage"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L69",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L31",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_db_rationale_69",
-      "target": "app_db_init_db"
+      "source": "v1_clients_rationale_31",
+      "target": "v1_clients_create_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L9",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "clientcreate",
+      "target": "models_client_client"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L9",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "clientcreate",
+      "target": "models_client_clientcategory"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L9",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "clientcreate",
+      "target": "models_client_clientcreate"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L9",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "clientcreate",
+      "target": "models_client_clientpublic"
     },
     {
       "relation": "references",
@@ -2219,6 +2756,201 @@
       "target": "asyncsession"
     },
     {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "asyncsession",
+      "target": "models_client_client",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "asyncsession",
+      "target": "models_client_clientcategory",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "asyncsession",
+      "target": "models_client_clientcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "asyncsession",
+      "target": "models_client_clientpublic",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L79",
+      "weight": 1.0,
+      "source": "v1_clients_get_client_config",
+      "target": "asyncsession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L79",
+      "weight": 1.0,
+      "source": "v1_clients_get_client_config",
+      "target": "backend_app_api_v1_clients_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L79",
+      "weight": 1.0,
+      "source": "v1_clients_get_client_config",
+      "target": "request",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L79",
+      "weight": 1.0,
+      "source": "v1_clients_get_client_config",
+      "target": "uuid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L85",
+      "weight": 1.0,
+      "source": "v1_clients_rationale_85",
+      "target": "v1_clients_get_client_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "models_client",
+      "target": "uuid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "uuid",
+      "target": "models_client_client",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "uuid",
+      "target": "models_client_clientcategory",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "uuid",
+      "target": "models_client_clientcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "uuid",
+      "target": "models_client_clientpublic",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_clients_py_str",
+      "target": "models_client_client",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "models_client_clientcategory",
+      "target": "backend_app_api_v1_clients_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_clients_py_str",
+      "target": "models_client_clientcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_clients_py_str",
+      "target": "models_client_clientpublic",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "models_client_subscriptionstatus",
+      "target": "backend_app_api_v1_clients_py_str",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "references",
       "context": "parameter_type",
       "confidence": "EXTRACTED",
@@ -2230,14 +2962,44 @@
       "target": "request"
     },
     {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L138",
-      "weight": 1.0,
-      "source": "app_db_rationale_138",
-      "target": "app_db_get_async_session",
-      "confidence_score": 1.0
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "request",
+      "target": "models_client_client",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "request",
+      "target": "models_client_clientcategory",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "request",
+      "target": "models_client_clientcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "request",
+      "target": "models_client_clientpublic",
+      "confidence_score": 0.5
     },
     {
       "relation": "uses",
@@ -2311,169 +3073,1640 @@
       "target": "request"
     },
     {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L181",
-      "weight": 1.0,
-      "source": "app_db_rationale_181",
-      "target": "app_db_get_session",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L4",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L2",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "v1_clients",
-      "target": "fastapi"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "v1_clients",
-      "target": "sqlmodel"
+      "source": "models_client",
+      "target": "enum"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L28",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L29",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "v1_clients",
-      "target": "v1_clients_create_client"
+      "source": "models_client",
+      "target": "models_client_client"
     },
     {
-      "relation": "references",
-      "context": "parameter_type",
+      "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L28",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L17",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "v1_clients_create_client",
-      "target": "backend_app_api_v1_clients_py_asyncsession"
+      "source": "models_client",
+      "target": "models_client_clientbase"
     },
     {
-      "relation": "references",
-      "context": "parameter_type",
+      "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L28",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L8",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "v1_clients_create_client",
-      "target": "clientcreate"
+      "source": "models_client",
+      "target": "models_client_clientcategory"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L36",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_client",
+      "target": "models_client_clientcreate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L39",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_client",
+      "target": "models_client_clientpublic"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_client",
+      "target": "models_client_subscriptionstatus"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_client",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_client_clientcategory",
+      "target": "enum"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_client_clientcategory",
+      "target": "str"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_client_subscriptionstatus",
+      "target": "enum"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/enrichment_queue.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_enrichment_queue",
+      "target": "enum"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/enrichment_queue.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_enrichment_queue_queuetype",
+      "target": "enum"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_visit",
+      "target": "enum"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_visit_verificationstatus",
+      "target": "enum"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/webhook.py",
+      "source_location": "L13",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "backend_app_api_v1_webhook_py_asyncsession",
+      "target": "models_client_subscriptionstatus"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/webhook.py",
+      "source_location": "L13",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "backend_app_api_v1_webhook_py_backgroundtasks",
+      "target": "models_client_subscriptionstatus"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/webhook.py",
+      "source_location": "L13",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "backend_app_api_v1_webhook_py_request",
+      "target": "models_client_subscriptionstatus"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/webhook.py",
+      "source_location": "L13",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "backend_app_api_v1_webhook_py_str",
+      "target": "models_client_subscriptionstatus"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_client_subscriptionstatus",
+      "target": "str"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/webhook.py",
+      "source_location": "L13",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "v1_webhook_paygeniuswebhookpayload",
+      "target": "models_client_subscriptionstatus"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_client_client",
+      "target": "models_client_clientbase"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_client_clientbase",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L36",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_client_clientcreate",
+      "target": "models_client_clientbase"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/client.py",
+      "source_location": "L39",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_client_clientpublic",
+      "target": "models_client_clientbase"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/db.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_db",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_main",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "core_scheduler",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/company.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_company",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/company.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_company_company",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/department.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_department",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/department.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_department_department",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/enrichment_queue.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_enrichment_queue",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/enrichment_queue.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_enrichment_queue_enrichmentqueue",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/enrichment_queue.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_enrichment_queue_failedenrichment",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/notification_throttle.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_notification_throttle",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/notification_throttle.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_notification_throttle_notificationthrottle",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/pageview.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_pageview",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/pageview.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_pageview_pageview",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_visit",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_visit_visit",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/waitlist_lead.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_waitlist_lead",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/waitlist_lead.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "models_waitlist_lead_waitlistlead",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/intelligence.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "services_intelligence",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/tasks/janitor.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tasks_janitor",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_phase2",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase3.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_phase3",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase4.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_phase4",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase5.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_phase5",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/leads.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "v1_leads",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "v1_track",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "v1_waitlist",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/webhook.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "v1_webhook",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/55806783e22f_make_datetimes_timezone_aware.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "versions_55806783e22f_make_datetimes_timezone_aware",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/ae0287cd9a1c_initial_schema.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "versions_ae0287cd9a1c_initial_schema",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/c2710675c8d5_add_client_config_fields.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "versions_c2710675c8d5_add_client_config_fields",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/webhook.py",
+      "source_location": "L13",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "backend_app_api_v1_webhook_py_asyncsession",
+      "target": "models_client_client"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/webhook.py",
+      "source_location": "L13",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "backend_app_api_v1_webhook_py_backgroundtasks",
+      "target": "models_client_client"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/webhook.py",
+      "source_location": "L13",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "backend_app_api_v1_webhook_py_request",
+      "target": "models_client_client"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/webhook.py",
+      "source_location": "L13",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "backend_app_api_v1_webhook_py_str",
+      "target": "models_client_client"
     },
     {
       "relation": "calls",
       "context": "call",
       "confidence": "INFERRED",
       "confidence_score": 0.8,
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L40",
+      "source_file": "backend/app/services/notion.py",
+      "source_location": "L17",
       "weight": 1.0,
-      "source": "v1_clients_create_client",
-      "target": "services_intelligence_scrape_homepage"
+      "source": "services_notion_notionvault_init",
+      "target": "models_client_client"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L162",
+      "weight": 1.0,
+      "source": "tests_test_phase2_test_enrichment_queue_failover",
+      "target": "models_client_client"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/tests/test_phase2.py",
+      "source_location": "L72",
+      "weight": 1.0,
+      "source": "tests_test_phase2_test_exit_endpoint_without_lead",
+      "target": "models_client_client"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/tests/test_phase3.py",
+      "source_location": "L173",
+      "weight": 1.0,
+      "source": "tests_test_phase3_test_immediate_departmental_contact_mapping",
+      "target": "models_client_client"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/tests/test_phase3.py",
+      "source_location": "L41",
+      "weight": 1.0,
+      "source": "tests_test_phase3_test_janitor_anonymization_cascade",
+      "target": "models_client_client"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/tests/test_phase4.py",
+      "source_location": "L135",
+      "weight": 1.0,
+      "source": "tests_test_phase4_test_daily_deepseek_batch_aggregation",
+      "target": "models_client_client"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/tests/test_phase5.py",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "tests_test_phase5_test_paygenius_webhook_signature_security",
+      "target": "models_client_client"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/webhook.py",
+      "source_location": "L13",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "v1_webhook_paygeniuswebhookpayload",
+      "target": "models_client_client"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notion.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "services_notion",
+      "target": "services_notion_notionvault",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notion.py",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "services_notion_notionvault",
+      "target": "services_notion_notionvault_archive_corporate_visit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notion.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "services_notion_notionvault",
+      "target": "services_notion_notionvault_init",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L29",
+      "source_file": "backend/app/services/notion.py",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "services_notion_rationale_20",
+      "target": "services_notion_notionvault_archive_corporate_visit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/c2710675c8d5_add_client_config_fields.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "versions_c2710675c8d5_add_client_config_fields",
+      "target": "versions_c2710675c8d5_add_client_config_fields_downgrade",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/c2710675c8d5_add_client_config_fields.py",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "versions_c2710675c8d5_add_client_config_fields",
+      "target": "versions_c2710675c8d5_add_client_config_fields_upgrade",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/README.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "tracker_readme",
+      "target": "tracker_readme_auraworks_industrial_tracker_client_implementation_guide",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/README.md",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "tracker_readme_auraworks_industrial_tracker_client_implementation_guide",
+      "target": "tracker_readme_architecture_remote_lifecycle",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/README.md",
+      "source_location": "L106",
+      "weight": 1.0,
+      "source": "tracker_readme_auraworks_industrial_tracker_client_implementation_guide",
+      "target": "tracker_readme_build_minification_pipeline",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/README.md",
+      "source_location": "L41",
+      "weight": 1.0,
+      "source": "tracker_readme_auraworks_industrial_tracker_client_implementation_guide",
+      "target": "tracker_readme_client_integration_script",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/README.md",
+      "source_location": "L81",
+      "weight": 1.0,
+      "source": "tracker_readme_auraworks_industrial_tracker_client_implementation_guide",
+      "target": "tracker_readme_encapsulated_consent_banner_shadow_dom",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/README.md",
+      "source_location": "L97",
+      "weight": 1.0,
+      "source": "tracker_readme_auraworks_industrial_tracker_client_implementation_guide",
+      "target": "tracker_readme_offline_robustness_auraofflinequeue",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/README.md",
+      "source_location": "L57",
+      "weight": 1.0,
+      "source": "tracker_readme_auraworks_industrial_tracker_client_implementation_guide",
+      "target": "tracker_readme_security_strict_domain_verification",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/README.md",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "tracker_readme_auraworks_industrial_tracker_client_implementation_guide",
+      "target": "tracker_readme_timezone_based_compliance_routing",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/README.md",
+      "source_location": "L88",
+      "weight": 1.0,
+      "source": "tracker_readme_encapsulated_consent_banner_shadow_dom",
+      "target": "tracker_readme_the_4_interactive_capture_phases",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/package.json",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "tracker_package",
+      "target": "tracker_package_devdependencies",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/package.json",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "tracker_package",
+      "target": "tracker_package_name",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/package.json",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "tracker_package",
+      "target": "tracker_package_scripts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/package.json",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "tracker_package",
+      "target": "tracker_package_version",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/package.json",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "tracker_package_scripts",
+      "target": "tracker_package_scripts_build",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/package.json",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "tracker_package_devdependencies",
+      "target": "tracker_package_devdependencies_terser",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "api_api",
+      "target": "api_api_auraapiclient",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "api_api_auraapiclient",
+      "target": "api_api_auraapiclient_constructor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "api_api_auraapiclient",
+      "target": "api_api_auraapiclient_getclientconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "api_api_auraapiclient",
+      "target": "api_api_auraapiclient_post",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "api_api_auraapiclient",
+      "target": "api_api_auraapiclient_postentry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "api_api_auraapiclient",
+      "target": "api_api_auraapiclient_postevent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "api_api_auraapiclient",
+      "target": "api_api_auraapiclient_postexit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L59",
+      "weight": 1.0,
+      "source": "api_api_auraapiclient",
+      "target": "api_api_auraapiclient_postidentity",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "api_api_auraapiclient_postentry",
+      "target": "api_api_auraapiclient_post",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "api_api_auraapiclient_postexit",
+      "target": "api_api_auraapiclient_post",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "api_api_auraapiclient_postevent",
+      "target": "api_api_auraapiclient_post",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/api/api.js",
+      "source_location": "L61",
+      "weight": 1.0,
+      "source": "api_api_auraapiclient_postidentity",
+      "target": "api_api_auraapiclient_post",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L47",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_captureutms",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L181",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_dispatch",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L378",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_enqueue",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L434",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_flush",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L75",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_generateuuid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L113",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_getcanvas",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L88",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_getfullsignature",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L100",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_getnetworkinfo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L396",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_getqueuedevents",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L62",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_getstoredid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L58",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_getstoredutms",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L125",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_getwebgl",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L354",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_init",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L144",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_isincognito",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L137",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_measuredrift",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L331",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_patchspa",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L414",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_removeevent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L229",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_sendraw",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L245",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_setupsensors",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_syncstorage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L307",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_trackentry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L318",
+      "weight": 1.0,
+      "source": "public_aura",
+      "target": "public_aura_trackexit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L41",
+      "weight": 1.0,
+      "source": "public_aura_init",
+      "target": "public_aura_captureutms",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "public_aura_init",
+      "target": "public_aura_generateuuid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "public_aura_init",
+      "target": "public_aura_getstoredid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L165",
+      "weight": 1.0,
+      "source": "public_aura_init",
+      "target": "public_aura_patchspa",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L164",
+      "weight": 1.0,
+      "source": "public_aura_init",
+      "target": "public_aura_setupsensors",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "public_aura_init",
+      "target": "public_aura_syncstorage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L163",
+      "weight": 1.0,
+      "source": "public_aura_init",
+      "target": "public_aura_trackentry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L182",
+      "weight": 1.0,
+      "source": "public_aura_dispatch",
+      "target": "public_aura_getstoredutms",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L90",
+      "weight": 1.0,
+      "source": "public_aura_getfullsignature",
+      "target": "public_aura_getcanvas",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L92",
+      "weight": 1.0,
+      "source": "public_aura_getfullsignature",
+      "target": "public_aura_getnetworkinfo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L91",
+      "weight": 1.0,
+      "source": "public_aura_getfullsignature",
+      "target": "public_aura_getwebgl",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L95",
+      "weight": 1.0,
+      "source": "public_aura_getfullsignature",
+      "target": "public_aura_isincognito",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L93",
+      "weight": 1.0,
+      "source": "public_aura_getfullsignature",
+      "target": "public_aura_measuredrift",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L308",
+      "weight": 1.0,
+      "source": "public_aura_trackentry",
+      "target": "public_aura_getnetworkinfo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L204",
+      "weight": 1.0,
+      "source": "public_aura_dispatch",
+      "target": "public_aura_enqueue",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L309",
+      "weight": 1.0,
+      "source": "public_aura_trackentry",
+      "target": "public_aura_dispatch",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L322",
+      "weight": 1.0,
+      "source": "public_aura_trackexit",
+      "target": "public_aura_dispatch",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L448",
+      "weight": 1.0,
+      "source": "public_aura_flush",
+      "target": "public_aura_sendraw",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L439",
+      "weight": 1.0,
+      "source": "public_aura_flush",
+      "target": "public_aura_getqueuedevents",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tracker/src/public/aura.js",
+      "source_location": "L450",
+      "weight": 1.0,
+      "source": "public_aura_flush",
+      "target": "public_aura_removeevent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/db.py",
+      "source_location": "L121",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "v1_clients_rationale_29",
-      "target": "v1_clients_create_client"
+      "source": "app_db",
+      "target": "app_db_get_async_session"
     },
     {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L9",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "clientcreate",
-      "target": "models_client_client"
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/db.py",
+      "source_location": "L164",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_db",
+      "target": "app_db_get_session"
     },
     {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L9",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "clientcreate",
-      "target": "models_client_clientcategory"
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/db.py",
+      "source_location": "L68",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_db",
+      "target": "app_db_init_db"
     },
     {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L9",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "clientcreate",
-      "target": "models_client_clientcreate"
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/db.py",
+      "source_location": "L60",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_db",
+      "target": "fastapi"
     },
     {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L9",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "clientcreate",
-      "target": "models_client_clientpublic"
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_main",
+      "target": "app_db"
     },
     {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L9",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "backend_app_api_v1_clients_py_asyncsession",
-      "target": "models_client_client"
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/tasks/janitor.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tasks_janitor",
+      "target": "app_db"
     },
     {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L9",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "backend_app_api_v1_clients_py_asyncsession",
-      "target": "models_client_clientcategory"
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase3.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_phase3",
+      "target": "app_db"
     },
     {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L9",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "backend_app_api_v1_clients_py_asyncsession",
-      "target": "models_client_clientcreate"
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase4.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_phase4",
+      "target": "app_db"
     },
     {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L9",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "backend_app_api_v1_clients_py_asyncsession",
-      "target": "models_client_clientpublic"
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase5.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_phase5",
+      "target": "app_db"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "v1_track",
+      "target": "app_db"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/webhook.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "v1_webhook",
+      "target": "app_db"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/db.py",
+      "source_location": "L69",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_db_rationale_69",
+      "target": "app_db_init_db"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/db.py",
+      "source_location": "L138",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_db_rationale_138",
+      "target": "app_db_get_async_session"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/db.py",
+      "source_location": "L181",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_db_rationale_181",
+      "target": "app_db_get_session"
     },
     {
       "relation": "imports_from",
@@ -2485,17 +4718,6 @@
       "confidence_score": 1.0,
       "source": "v1_track",
       "target": "fastapi"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/api/v1/track.py",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "v1_track",
-      "target": "sqlmodel"
     },
     {
       "relation": "contains",
@@ -3482,17 +5704,6 @@
       "target": "fastapi"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/api/v1/webhook.py",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "v1_webhook",
-      "target": "sqlmodel"
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/app/api/v1/webhook.py",
@@ -3522,26 +5733,6 @@
       "confidence_score": 1.0,
       "source": "v1_webhook_paygenius_webhook",
       "target": "v1_webhook_paygeniuswebhookpayload"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/webhook.py",
-      "source_location": "L13",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "v1_webhook_paygeniuswebhookpayload",
-      "target": "models_client_client"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/webhook.py",
-      "source_location": "L13",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "v1_webhook_paygeniuswebhookpayload",
-      "target": "models_client_subscriptionstatus"
     },
     {
       "relation": "references",
@@ -3596,86 +5787,6 @@
       "confidence_score": 1.0,
       "source": "v1_webhook_rationale_36",
       "target": "v1_webhook_paygenius_webhook"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/webhook.py",
-      "source_location": "L13",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "backend_app_api_v1_webhook_py_request",
-      "target": "models_client_client"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/webhook.py",
-      "source_location": "L13",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "backend_app_api_v1_webhook_py_request",
-      "target": "models_client_subscriptionstatus"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/webhook.py",
-      "source_location": "L13",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "backend_app_api_v1_webhook_py_backgroundtasks",
-      "target": "models_client_client"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/webhook.py",
-      "source_location": "L13",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "backend_app_api_v1_webhook_py_backgroundtasks",
-      "target": "models_client_subscriptionstatus"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/webhook.py",
-      "source_location": "L13",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "backend_app_api_v1_webhook_py_str",
-      "target": "models_client_client"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/webhook.py",
-      "source_location": "L13",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "backend_app_api_v1_webhook_py_str",
-      "target": "models_client_subscriptionstatus"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/webhook.py",
-      "source_location": "L13",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "backend_app_api_v1_webhook_py_asyncsession",
-      "target": "models_client_client"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/webhook.py",
-      "source_location": "L13",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "backend_app_api_v1_webhook_py_asyncsession",
-      "target": "models_client_subscriptionstatus"
     },
     {
       "relation": "contains",
@@ -3757,17 +5868,6 @@
       "confidence_score": 1.0,
       "source": "app_main",
       "target": "fastapi"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/main.py",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_main",
-      "target": "sqlmodel"
     },
     {
       "relation": "imports_from",
@@ -3876,118 +5976,6 @@
       "target": "app_main_get_admin_summary"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_client",
-      "target": "enum"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L29",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_client",
-      "target": "models_client_client"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_client",
-      "target": "models_client_clientbase"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_client",
-      "target": "models_client_clientcategory"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L36",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_client",
-      "target": "models_client_clientcreate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L39",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_client",
-      "target": "models_client_clientpublic"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_client",
-      "target": "models_client_subscriptionstatus"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_client",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_client_clientcategory",
-      "target": "enum"
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_client_clientcategory",
-      "target": "str"
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_client_subscriptionstatus",
-      "target": "str"
-    },
-    {
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "backend/app/models/enrichment_queue.py",
@@ -4006,442 +5994,6 @@
       "confidence_score": 1.0,
       "source": "models_visit_verificationstatus",
       "target": "str"
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_client_subscriptionstatus",
-      "target": "enum"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/enrichment_queue.py",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_enrichment_queue",
-      "target": "enum"
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/enrichment_queue.py",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_enrichment_queue_queuetype",
-      "target": "enum"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/visit.py",
-      "source_location": "L2",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_visit",
-      "target": "enum"
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/visit.py",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_visit_verificationstatus",
-      "target": "enum"
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L29",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_client_client",
-      "target": "models_client_clientbase"
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L17",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_client_clientbase",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L36",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_client_clientcreate",
-      "target": "models_client_clientbase"
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/client.py",
-      "source_location": "L39",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_client_clientpublic",
-      "target": "models_client_clientbase"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/core/scheduler.py",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "core_scheduler",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/company.py",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_company",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/company.py",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_company_company",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/department.py",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_department",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/department.py",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_department_department",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/enrichment_queue.py",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_enrichment_queue",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/enrichment_queue.py",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_enrichment_queue_enrichmentqueue",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/enrichment_queue.py",
-      "source_location": "L29",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_enrichment_queue_failedenrichment",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/notification_throttle.py",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_notification_throttle",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/notification_throttle.py",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_notification_throttle_notificationthrottle",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/pageview.py",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_pageview",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/pageview.py",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_pageview_pageview",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/visit.py",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_visit",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/visit.py",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_visit_visit",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/waitlist_lead.py",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_waitlist_lead",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "inherits",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/models/waitlist_lead.py",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_waitlist_lead_waitlistlead",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/services/intelligence.py",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "services_intelligence",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/tasks/janitor.py",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tasks_janitor",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/tests/test_phase2.py",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_phase2",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/tests/test_phase3.py",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_phase3",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/tests/test_phase4.py",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_phase4",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/tests/test_phase5.py",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_phase5",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/api/v1/leads.py",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "v1_leads",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/api/v1/waitlist.py",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "v1_waitlist",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/async_migrations/versions/55806783e22f_make_datetimes_timezone_aware.py",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "versions_55806783e22f_make_datetimes_timezone_aware",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/async_migrations/versions/ae0287cd9a1c_initial_schema.py",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "versions_ae0287cd9a1c_initial_schema",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "backend/tests/test_phase2.py",
-      "source_location": "L162",
-      "weight": 1.0,
-      "source": "tests_test_phase2_test_enrichment_queue_failover",
-      "target": "models_client_client"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "backend/tests/test_phase2.py",
-      "source_location": "L72",
-      "weight": 1.0,
-      "source": "tests_test_phase2_test_exit_endpoint_without_lead",
-      "target": "models_client_client"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "backend/tests/test_phase3.py",
-      "source_location": "L173",
-      "weight": 1.0,
-      "source": "tests_test_phase3_test_immediate_departmental_contact_mapping",
-      "target": "models_client_client"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "backend/tests/test_phase3.py",
-      "source_location": "L41",
-      "weight": 1.0,
-      "source": "tests_test_phase3_test_janitor_anonymization_cascade",
-      "target": "models_client_client"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "backend/tests/test_phase4.py",
-      "source_location": "L135",
-      "weight": 1.0,
-      "source": "tests_test_phase4_test_daily_deepseek_batch_aggregation",
-      "target": "models_client_client"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "backend/tests/test_phase5.py",
-      "source_location": "L42",
-      "weight": 1.0,
-      "source": "tests_test_phase5_test_paygenius_webhook_signature_security",
-      "target": "models_client_client"
     },
     {
       "relation": "contains",
@@ -6999,5 +8551,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "318258aee61a9e2a6b1f0280c89b4064108c253f"
+  "built_at_commit": "a57f794864197a4a8ebcf17ec1f21ea635126e12"
 }

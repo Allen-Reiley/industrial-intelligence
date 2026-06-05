@@ -26,12 +26,12 @@ sequenceDiagram
     API->>DB: Query client configuration & domains
     DB-->>API: Return client policy
     API-->>Browser: Return tracking parameters & consent mode
-    alt GDPR Mode (EU Timezone)
+    alt [GDPR Mode (EU Timezone)]
         Browser->>Browser: Lock tracking; Inject Shadow DOM Banner immediately
-    else POPIA Mode (SADC Timezone)
+    else [POPIA Mode (SADC Timezone)]
         Browser->>API: POST /v1/track/entry (Quiet B2B Telemetry)
         Browser->>Browser: Inject Layered Consent UI on scroll/interaction
-    else Default Mode
+    else [Default Mode]
         Browser->>API: POST /v1/track/entry (Standard Ingestion)
     end
 ```
