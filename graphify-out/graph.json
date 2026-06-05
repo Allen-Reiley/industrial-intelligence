@@ -4,168 +4,6 @@
   "graph": {},
   "nodes": [
     {
-      "label": "waitlist.py",
-      "file_type": "code",
-      "source_file": "backend/app/api/v1/waitlist.py",
-      "source_location": "L1",
-      "id": "v1_waitlist",
-      "community": 2,
-      "norm_label": "waitlist.py"
-    },
-    {
-      "label": "format_zar()",
-      "file_type": "code",
-      "source_file": "backend/app/api/v1/waitlist.py",
-      "source_location": "L20",
-      "id": "v1_waitlist_format_zar",
-      "community": 5,
-      "norm_label": "format_zar()"
-    },
-    {
-      "label": "str",
-      "file_type": "code",
-      "source_file": "backend/app/api/v1/waitlist.py",
-      "source_location": "L20",
-      "id": "backend_app_api_v1_waitlist_py_str",
-      "community": 5,
-      "norm_label": "str"
-    },
-    {
-      "label": "background_lead_analysis()",
-      "file_type": "code",
-      "source_file": "backend/app/api/v1/waitlist.py",
-      "source_location": "L39",
-      "id": "v1_waitlist_background_lead_analysis",
-      "community": 5,
-      "norm_label": "background_lead_analysis()"
-    },
-    {
-      "label": "int",
-      "file_type": "code",
-      "source_file": "backend/app/api/v1/waitlist.py",
-      "source_location": "L39",
-      "id": "int",
-      "community": 5,
-      "norm_label": "int"
-    },
-    {
-      "label": "join_waitlist()",
-      "file_type": "code",
-      "source_file": "backend/app/api/v1/waitlist.py",
-      "source_location": "L116",
-      "id": "v1_waitlist_join_waitlist",
-      "community": 1,
-      "norm_label": "join_waitlist()"
-    },
-    {
-      "label": "BackgroundTasks",
-      "file_type": "code",
-      "source_file": "backend/app/api/v1/waitlist.py",
-      "source_location": "L116",
-      "id": "backgroundtasks",
-      "community": 1,
-      "norm_label": "backgroundtasks"
-    },
-    {
-      "label": "AsyncSession",
-      "file_type": "code",
-      "source_file": "backend/app/api/v1/waitlist.py",
-      "source_location": "L116",
-      "id": "backend_app_api_v1_waitlist_py_asyncsession",
-      "community": 1,
-      "norm_label": "asyncsession"
-    },
-    {
-      "label": "Standardizes South African currency strings for industrial reporting.",
-      "file_type": "rationale",
-      "source_file": "backend/app/api/v1/waitlist.py",
-      "source_location": "L21",
-      "id": "v1_waitlist_rationale_21",
-      "community": 5,
-      "norm_label": "standardizes south african currency strings for industrial reporting."
-    },
-    {
-      "label": "Sequential Forensic Orchestration Engine.     Holds back external system sinks (",
-      "file_type": "rationale",
-      "source_file": "backend/app/api/v1/waitlist.py",
-      "source_location": "L40",
-      "id": "v1_waitlist_rationale_40",
-      "community": 5,
-      "norm_label": "sequential forensic orchestration engine.     holds back external system sinks ("
-    },
-    {
-      "label": "The Promotion Engine:      Converts anonymous traffic into a POPIA-consented 'Wa",
-      "file_type": "rationale",
-      "source_file": "backend/app/api/v1/waitlist.py",
-      "source_location": "L121",
-      "id": "v1_waitlist_rationale_121",
-      "community": 1,
-      "norm_label": "the promotion engine:      converts anonymous traffic into a popia-consented 'wa"
-    },
-    {
-      "label": "scheduler.py",
-      "file_type": "code",
-      "source_file": "backend/app/core/scheduler.py",
-      "source_location": "L1",
-      "id": "core_scheduler",
-      "community": 8,
-      "norm_label": "scheduler.py"
-    },
-    {
-      "label": "run_enrichment_cycle()",
-      "file_type": "code",
-      "source_file": "backend/app/core/scheduler.py",
-      "source_location": "L13",
-      "id": "core_scheduler_run_enrichment_cycle",
-      "community": 8,
-      "norm_label": "run_enrichment_cycle()"
-    },
-    {
-      "label": "start_scheduler()",
-      "file_type": "code",
-      "source_file": "backend/app/core/scheduler.py",
-      "source_location": "L79",
-      "id": "core_scheduler_start_scheduler",
-      "community": 8,
-      "norm_label": "start_scheduler()"
-    },
-    {
-      "label": "run_weekly_reporting_cycle()",
-      "file_type": "code",
-      "source_file": "backend/app/core/scheduler.py",
-      "source_location": "L121",
-      "id": "core_scheduler_run_weekly_reporting_cycle",
-      "community": 8,
-      "norm_label": "run_weekly_reporting_cycle()"
-    },
-    {
-      "label": "Industrial Async Enrichment Task:     Maps corporate departments for captured Ju",
-      "file_type": "rationale",
-      "source_file": "backend/app/core/scheduler.py",
-      "source_location": "L14",
-      "id": "core_scheduler_rationale_14",
-      "community": 8,
-      "norm_label": "industrial async enrichment task:     maps corporate departments for captured ju"
-    },
-    {
-      "label": "Initializes the Asynchronous AuraWorks Background Engine Pipeline.",
-      "file_type": "rationale",
-      "source_file": "backend/app/core/scheduler.py",
-      "source_location": "L80",
-      "id": "core_scheduler_rationale_80",
-      "community": 8,
-      "norm_label": "initializes the asynchronous auraworks background engine pipeline."
-    },
-    {
-      "label": "Weekly Reporting cron task: compiles the report for each active client,     uplo",
-      "file_type": "rationale",
-      "source_file": "backend/app/core/scheduler.py",
-      "source_location": "L122",
-      "id": "core_scheduler_rationale_122",
-      "community": 8,
-      "norm_label": "weekly reporting cron task: compiles the report for each active client,     uplo"
-    },
-    {
       "label": "db.py",
       "file_type": "code",
       "source_file": "backend/app/db.py",
@@ -206,7 +44,7 @@
       "file_type": "code",
       "source_file": "backend/app/db.py",
       "source_location": "L138",
-      "id": "backend_app_db_py_asyncsession",
+      "id": "asyncsession",
       "community": 4,
       "norm_label": "asyncsession"
     },
@@ -247,616 +85,859 @@
       "norm_label": "fastapi dependency: yields a transaction-scoped synchronous session.     used fo"
     },
     {
+      "label": "1ac2f9ae2341_fix_schema_drift.py",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
+      "source_location": "L1",
+      "id": "versions_1ac2f9ae2341_fix_schema_drift",
+      "community": 1,
+      "norm_label": "1ac2f9ae2341_fix_schema_drift.py"
+    },
+    {
+      "label": "table_exists()",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
+      "source_location": "L22",
+      "id": "versions_1ac2f9ae2341_fix_schema_drift_table_exists",
+      "community": 1,
+      "norm_label": "table_exists()"
+    },
+    {
+      "label": "column_exists()",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
+      "source_location": "L29",
+      "id": "versions_1ac2f9ae2341_fix_schema_drift_column_exists",
+      "community": 1,
+      "norm_label": "column_exists()"
+    },
+    {
+      "label": "get_column_type()",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
+      "source_location": "L36",
+      "id": "versions_1ac2f9ae2341_fix_schema_drift_get_column_type",
+      "community": 1,
+      "norm_label": "get_column_type()"
+    },
+    {
+      "label": "upgrade()",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
+      "source_location": "L42",
+      "id": "versions_1ac2f9ae2341_fix_schema_drift_upgrade",
+      "community": 1,
+      "norm_label": "upgrade()"
+    },
+    {
+      "label": "downgrade()",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
+      "source_location": "L166",
+      "id": "versions_1ac2f9ae2341_fix_schema_drift_downgrade",
+      "community": 1,
+      "norm_label": "downgrade()"
+    },
+    {
+      "label": "Upgrade schema to resolve legacy drift.",
+      "file_type": "rationale",
+      "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
+      "source_location": "L43",
+      "id": "versions_1ac2f9ae2341_fix_schema_drift_rationale_43",
+      "community": 1,
+      "norm_label": "upgrade schema to resolve legacy drift."
+    },
+    {
+      "label": "reset_db.py",
+      "file_type": "code",
+      "source_file": "backend/reset_db.py",
+      "source_location": "L1",
+      "id": "backend_reset_db",
+      "community": 1,
+      "norm_label": "reset_db.py"
+    },
+    {
+      "label": "reset_database()",
+      "file_type": "code",
+      "source_file": "backend/reset_db.py",
+      "source_location": "L15",
+      "id": "backend_reset_db_reset_database",
+      "community": 1,
+      "norm_label": "reset_database()"
+    },
+    {
+      "label": "waitlist.py",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L1",
+      "community": 2,
+      "norm_label": "waitlist.py",
+      "id": "v1_waitlist"
+    },
+    {
+      "label": "format_zar()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L20",
+      "community": 2,
+      "norm_label": "format_zar()",
+      "id": "v1_waitlist_format_zar"
+    },
+    {
+      "label": "str",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L20",
+      "community": 2,
+      "norm_label": "str",
+      "id": "backend_app_api_v1_waitlist_py_str"
+    },
+    {
+      "label": "background_lead_analysis()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L39",
+      "community": 2,
+      "norm_label": "background_lead_analysis()",
+      "id": "v1_waitlist_background_lead_analysis"
+    },
+    {
+      "label": "int",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L39",
+      "community": 2,
+      "norm_label": "int",
+      "id": "int"
+    },
+    {
+      "label": "join_waitlist()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L116",
+      "community": 2,
+      "norm_label": "join_waitlist()",
+      "id": "v1_waitlist_join_waitlist"
+    },
+    {
+      "label": "BackgroundTasks",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L116",
+      "community": 2,
+      "norm_label": "backgroundtasks",
+      "id": "backgroundtasks"
+    },
+    {
+      "label": "AsyncSession",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L116",
+      "community": 2,
+      "norm_label": "asyncsession",
+      "id": "backend_app_api_v1_waitlist_py_asyncsession"
+    },
+    {
+      "label": "Standardizes South African currency strings for industrial reporting.",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L21",
+      "community": 2,
+      "norm_label": "standardizes south african currency strings for industrial reporting.",
+      "id": "v1_waitlist_rationale_21"
+    },
+    {
+      "label": "Sequential Forensic Orchestration Engine.     Holds back external system sinks (",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L40",
+      "community": 2,
+      "norm_label": "sequential forensic orchestration engine.     holds back external system sinks (",
+      "id": "v1_waitlist_rationale_40"
+    },
+    {
+      "label": "The Promotion Engine:      Converts anonymous traffic into a POPIA-consented 'Wa",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/waitlist.py",
+      "source_location": "L121",
+      "community": 2,
+      "norm_label": "the promotion engine:      converts anonymous traffic into a popia-consented 'wa",
+      "id": "v1_waitlist_rationale_121"
+    },
+    {
+      "label": "scheduler.py",
+      "file_type": "code",
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L1",
+      "community": 8,
+      "norm_label": "scheduler.py",
+      "id": "core_scheduler"
+    },
+    {
+      "label": "run_enrichment_cycle()",
+      "file_type": "code",
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L13",
+      "community": 18,
+      "norm_label": "run_enrichment_cycle()",
+      "id": "core_scheduler_run_enrichment_cycle"
+    },
+    {
+      "label": "start_scheduler()",
+      "file_type": "code",
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L79",
+      "community": 8,
+      "norm_label": "start_scheduler()",
+      "id": "core_scheduler_start_scheduler"
+    },
+    {
+      "label": "run_weekly_reporting_cycle()",
+      "file_type": "code",
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L121",
+      "community": 8,
+      "norm_label": "run_weekly_reporting_cycle()",
+      "id": "core_scheduler_run_weekly_reporting_cycle"
+    },
+    {
+      "label": "Industrial Async Enrichment Task:     Maps corporate departments for captured Ju",
+      "file_type": "rationale",
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L14",
+      "community": 18,
+      "norm_label": "industrial async enrichment task:     maps corporate departments for captured ju",
+      "id": "core_scheduler_rationale_14"
+    },
+    {
+      "label": "Initializes the Asynchronous AuraWorks Background Engine Pipeline.",
+      "file_type": "rationale",
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L80",
+      "community": 8,
+      "norm_label": "initializes the asynchronous auraworks background engine pipeline.",
+      "id": "core_scheduler_rationale_80"
+    },
+    {
+      "label": "Weekly Reporting cron task: compiles the report for each active client,     uplo",
+      "file_type": "rationale",
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L122",
+      "community": 8,
+      "norm_label": "weekly reporting cron task: compiles the report for each active client,     uplo",
+      "id": "core_scheduler_rationale_122"
+    },
+    {
       "label": "__init__.py",
       "file_type": "code",
       "source_file": "backend/app/models/__init__.py",
       "source_location": "L1",
-      "id": "models_init",
       "community": 11,
-      "norm_label": "__init__.py"
+      "norm_label": "__init__.py",
+      "id": "models_init"
     },
     {
       "label": "crm_dead_letter.py",
       "file_type": "code",
       "source_file": "backend/app/models/crm_dead_letter.py",
       "source_location": "L1",
-      "id": "models_crm_dead_letter",
       "community": 11,
-      "norm_label": "crm_dead_letter.py"
+      "norm_label": "crm_dead_letter.py",
+      "id": "models_crm_dead_letter"
     },
     {
       "label": "CrmDeadLetter",
       "file_type": "code",
       "source_file": "backend/app/models/crm_dead_letter.py",
       "source_location": "L9",
-      "id": "models_crm_dead_letter_crmdeadletter",
       "community": 11,
-      "norm_label": "crmdeadletter"
+      "norm_label": "crmdeadletter",
+      "id": "models_crm_dead_letter_crmdeadletter"
     },
     {
       "label": "SQLModel",
       "file_type": "code",
       "source_file": "",
       "source_location": "",
-      "id": "sqlmodel",
       "community": 1,
-      "norm_label": "sqlmodel"
+      "norm_label": "sqlmodel",
+      "id": "sqlmodel"
     },
     {
       "label": "crm.py",
       "file_type": "code",
       "source_file": "backend/app/services/crm.py",
       "source_location": "L1",
-      "id": "services_crm",
       "community": 11,
-      "norm_label": "crm.py"
+      "norm_label": "crm.py",
+      "id": "services_crm"
     },
     {
       "label": "sync_lead_to_crm()",
       "file_type": "code",
       "source_file": "backend/app/services/crm.py",
       "source_location": "L12",
-      "id": "services_crm_sync_lead_to_crm",
       "community": 11,
-      "norm_label": "sync_lead_to_crm()"
+      "norm_label": "sync_lead_to_crm()",
+      "id": "services_crm_sync_lead_to_crm"
     },
     {
       "label": "UUID",
       "file_type": "code",
       "source_file": "backend/app/services/crm.py",
       "source_location": "L12",
-      "id": "backend_app_services_crm_py_uuid",
       "community": 11,
-      "norm_label": "uuid"
+      "norm_label": "uuid",
+      "id": "backend_app_services_crm_py_uuid"
     },
     {
       "label": "str",
       "file_type": "code",
       "source_file": "backend/app/services/crm.py",
       "source_location": "L12",
-      "id": "backend_app_services_crm_py_str",
       "community": 11,
-      "norm_label": "str"
+      "norm_label": "str",
+      "id": "backend_app_services_crm_py_str"
     },
     {
       "label": "float",
       "file_type": "code",
       "source_file": "backend/app/services/crm.py",
       "source_location": "L12",
-      "id": "float",
       "community": 11,
-      "norm_label": "float"
+      "norm_label": "float",
+      "id": "float"
     },
     {
       "label": "bool",
       "file_type": "code",
       "source_file": "backend/app/services/crm.py",
       "source_location": "L12",
-      "id": "backend_app_services_crm_py_bool",
       "community": 11,
-      "norm_label": "bool"
+      "norm_label": "bool",
+      "id": "backend_app_services_crm_py_bool"
     },
     {
       "label": "Asynchronously synchronizes a promoted lead matrix to an outbound CRM webhook en",
       "file_type": "rationale",
       "source_file": "backend/app/services/crm.py",
       "source_location": "L13",
-      "id": "services_crm_rationale_13",
       "community": 11,
-      "norm_label": "asynchronously synchronizes a promoted lead matrix to an outbound crm webhook en"
+      "norm_label": "asynchronously synchronizes a promoted lead matrix to an outbound crm webhook en",
+      "id": "services_crm_rationale_13"
     },
     {
       "label": "notifications.py",
       "file_type": "code",
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L1",
-      "id": "services_notifications",
       "community": 5,
-      "norm_label": "notifications.py"
+      "norm_label": "notifications.py",
+      "id": "services_notifications"
     },
     {
       "label": "is_slack_notification_throttled()",
       "file_type": "code",
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L15",
-      "id": "services_notifications_is_slack_notification_throttled",
       "community": 5,
-      "norm_label": "is_slack_notification_throttled()"
+      "norm_label": "is_slack_notification_throttled()",
+      "id": "services_notifications_is_slack_notification_throttled"
     },
     {
       "label": "UUID",
       "file_type": "code",
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L15",
-      "id": "backend_app_services_notifications_py_uuid",
       "community": 5,
-      "norm_label": "uuid"
+      "norm_label": "uuid",
+      "id": "backend_app_services_notifications_py_uuid"
     },
     {
       "label": "bool",
       "file_type": "code",
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L15",
-      "id": "backend_app_services_notifications_py_bool",
       "community": 5,
-      "norm_label": "bool"
+      "norm_label": "bool",
+      "id": "backend_app_services_notifications_py_bool"
     },
     {
       "label": "post_to_visit_channel()",
       "file_type": "code",
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L66",
-      "id": "services_notifications_post_to_visit_channel",
       "community": 5,
-      "norm_label": "post_to_visit_channel()"
+      "norm_label": "post_to_visit_channel()",
+      "id": "services_notifications_post_to_visit_channel"
     },
     {
       "label": "post_to_slack()",
       "file_type": "code",
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L159",
-      "id": "services_notifications_post_to_slack",
       "community": 5,
-      "norm_label": "post_to_slack()"
+      "norm_label": "post_to_slack()",
+      "id": "services_notifications_post_to_slack"
     },
     {
       "label": "handle_juristic_only_alert()",
       "file_type": "code",
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L226",
-      "id": "services_notifications_handle_juristic_only_alert",
       "community": 5,
-      "norm_label": "handle_juristic_only_alert()"
+      "norm_label": "handle_juristic_only_alert()",
+      "id": "services_notifications_handle_juristic_only_alert"
     },
     {
       "label": "str",
       "file_type": "code",
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L226",
-      "id": "backend_app_services_notifications_py_str",
       "community": 5,
-      "norm_label": "str"
+      "norm_label": "str",
+      "id": "backend_app_services_notifications_py_str"
     },
     {
       "label": "Checks if a Slack alert was already sent for the given client_id and company_id",
       "file_type": "rationale",
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L16",
-      "id": "services_notifications_rationale_16",
       "community": 5,
-      "norm_label": "checks if a slack alert was already sent for the given client_id and company_id"
+      "norm_label": "checks if a slack alert was already sent for the given client_id and company_id",
+      "id": "services_notifications_rationale_16"
     },
     {
       "label": "High-speed Signal for the #visit channel.     Only triggers for High-Confidence",
       "file_type": "rationale",
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L67",
-      "id": "services_notifications_rationale_67",
       "community": 5,
-      "norm_label": "high-speed signal for the #visit channel.     only triggers for high-confidence"
+      "norm_label": "high-speed signal for the #visit channel.     only triggers for high-confidence",
+      "id": "services_notifications_rationale_67"
     },
     {
       "label": "Standard lead notification for identified conversions (Promotion).",
       "file_type": "rationale",
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L160",
-      "id": "services_notifications_rationale_160",
       "community": 5,
-      "norm_label": "standard lead notification for identified conversions (promotion)."
+      "norm_label": "standard lead notification for identified conversions (promotion).",
+      "id": "services_notifications_rationale_160"
     },
     {
       "label": "Alerts Slack when high-intent juristic visitor leaves the site (no personal data",
       "file_type": "rationale",
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L227",
-      "id": "services_notifications_rationale_227",
       "community": 5,
-      "norm_label": "alerts slack when high-intent juristic visitor leaves the site (no personal data"
+      "norm_label": "alerts slack when high-intent juristic visitor leaves the site (no personal data",
+      "id": "services_notifications_rationale_227"
     },
     {
       "label": "reports.py",
       "file_type": "code",
       "source_file": "backend/app/services/reports.py",
       "source_location": "L1",
-      "id": "services_reports",
       "community": 8,
-      "norm_label": "reports.py"
+      "norm_label": "reports.py",
+      "id": "services_reports"
     },
     {
       "label": "generate_signed_contract_pdf()",
       "file_type": "code",
       "source_file": "backend/app/services/reports.py",
       "source_location": "L20",
-      "id": "services_reports_generate_signed_contract_pdf",
       "community": 8,
-      "norm_label": "generate_signed_contract_pdf()"
+      "norm_label": "generate_signed_contract_pdf()",
+      "id": "services_reports_generate_signed_contract_pdf"
     },
     {
       "label": "str",
       "file_type": "code",
       "source_file": "backend/app/services/reports.py",
       "source_location": "L20",
-      "id": "backend_app_services_reports_py_str",
       "community": 8,
-      "norm_label": "str"
+      "norm_label": "str",
+      "id": "backend_app_services_reports_py_str"
     },
     {
       "label": "bytes",
       "file_type": "code",
       "source_file": "backend/app/services/reports.py",
       "source_location": "L20",
-      "id": "bytes",
       "community": 8,
-      "norm_label": "bytes"
+      "norm_label": "bytes",
+      "id": "bytes"
     },
     {
       "label": "compile_and_send_contract()",
       "file_type": "code",
       "source_file": "backend/app/services/reports.py",
       "source_location": "L94",
-      "id": "services_reports_compile_and_send_contract",
       "community": 8,
-      "norm_label": "compile_and_send_contract()"
+      "norm_label": "compile_and_send_contract()",
+      "id": "services_reports_compile_and_send_contract"
     },
     {
       "label": "bool",
       "file_type": "code",
       "source_file": "backend/app/services/reports.py",
       "source_location": "L94",
-      "id": "backend_app_services_reports_py_bool",
       "community": 8,
-      "norm_label": "bool"
+      "norm_label": "bool",
+      "id": "backend_app_services_reports_py_bool"
     },
     {
       "label": "compile_weekly_report()",
       "file_type": "code",
       "source_file": "backend/app/services/reports.py",
       "source_location": "L143",
-      "id": "services_reports_compile_weekly_report",
       "community": 8,
-      "norm_label": "compile_weekly_report()"
+      "norm_label": "compile_weekly_report()",
+      "id": "services_reports_compile_weekly_report"
     },
     {
       "label": "UUID",
       "file_type": "code",
       "source_file": "backend/app/services/reports.py",
       "source_location": "L143",
-      "id": "backend_app_services_reports_py_uuid",
       "community": 8,
-      "norm_label": "uuid"
+      "norm_label": "uuid",
+      "id": "backend_app_services_reports_py_uuid"
     },
     {
       "label": "AsyncSession",
       "file_type": "code",
       "source_file": "backend/app/services/reports.py",
       "source_location": "L143",
-      "id": "backend_app_services_reports_py_asyncsession",
       "community": 8,
-      "norm_label": "asyncsession"
+      "norm_label": "asyncsession",
+      "id": "backend_app_services_reports_py_asyncsession"
     },
     {
       "label": "upload_report_to_r2()",
       "file_type": "code",
       "source_file": "backend/app/services/reports.py",
       "source_location": "L219",
-      "id": "services_reports_upload_report_to_r2",
       "community": 8,
-      "norm_label": "upload_report_to_r2()"
+      "norm_label": "upload_report_to_r2()",
+      "id": "services_reports_upload_report_to_r2"
     },
     {
       "label": "generate_signed_cdn_link()",
       "file_type": "code",
       "source_file": "backend/app/services/reports.py",
       "source_location": "L227",
-      "id": "services_reports_generate_signed_cdn_link",
       "community": 8,
-      "norm_label": "generate_signed_cdn_link()"
+      "norm_label": "generate_signed_cdn_link()",
+      "id": "services_reports_generate_signed_cdn_link"
     },
     {
       "label": "send_weekly_report_email()",
       "file_type": "code",
       "source_file": "backend/app/services/reports.py",
       "source_location": "L237",
-      "id": "services_reports_send_weekly_report_email",
       "community": 8,
-      "norm_label": "send_weekly_report_email()"
+      "norm_label": "send_weekly_report_email()",
+      "id": "services_reports_send_weekly_report_email"
     },
     {
       "label": "Generates a professional formal service agreement PDF using reportlab,     inclu",
       "file_type": "rationale",
       "source_file": "backend/app/services/reports.py",
       "source_location": "L21",
-      "id": "services_reports_rationale_21",
       "community": 8,
-      "norm_label": "generates a professional formal service agreement pdf using reportlab,     inclu"
+      "norm_label": "generates a professional formal service agreement pdf using reportlab,     inclu",
+      "id": "services_reports_rationale_21"
     },
     {
       "label": "Asynchronous background task to compile the formal digital service agreement PDF",
       "file_type": "rationale",
       "source_file": "backend/app/services/reports.py",
       "source_location": "L95",
-      "id": "services_reports_rationale_95",
       "community": 8,
-      "norm_label": "asynchronous background task to compile the formal digital service agreement pdf"
+      "norm_label": "asynchronous background task to compile the formal digital service agreement pdf",
+      "id": "services_reports_rationale_95"
     },
     {
       "label": "Weekly Analytics Aggregator.     Gathers last 7 days of B2B telemetry hits, warm",
       "file_type": "rationale",
       "source_file": "backend/app/services/reports.py",
       "source_location": "L144",
-      "id": "services_reports_rationale_144",
       "community": 8,
-      "norm_label": "weekly analytics aggregator.     gathers last 7 days of b2b telemetry hits, warm"
+      "norm_label": "weekly analytics aggregator.     gathers last 7 days of b2b telemetry hits, warm",
+      "id": "services_reports_rationale_144"
     },
     {
       "label": "Simulates or executes R2 bucket upload.     For local development and testing, l",
       "file_type": "rationale",
       "source_file": "backend/app/services/reports.py",
       "source_location": "L220",
-      "id": "services_reports_rationale_220",
       "community": 8,
-      "norm_label": "simulates or executes r2 bucket upload.     for local development and testing, l"
+      "norm_label": "simulates or executes r2 bucket upload.     for local development and testing, l",
+      "id": "services_reports_rationale_220"
     },
     {
       "label": "Generates a secure tokenized CDN download hyperlink restricted to a strict 24-ho",
       "file_type": "rationale",
       "source_file": "backend/app/services/reports.py",
       "source_location": "L228",
-      "id": "services_reports_rationale_228",
       "community": 8,
-      "norm_label": "generates a secure tokenized cdn download hyperlink restricted to a strict 24-ho"
+      "norm_label": "generates a secure tokenized cdn download hyperlink restricted to a strict 24-ho",
+      "id": "services_reports_rationale_228"
     },
     {
       "label": "Dispatches the weekly PDF report link via Resend.",
       "file_type": "rationale",
       "source_file": "backend/app/services/reports.py",
       "source_location": "L238",
-      "id": "services_reports_rationale_238",
       "community": 8,
-      "norm_label": "dispatches the weekly pdf report link via resend."
+      "norm_label": "dispatches the weekly pdf report link via resend.",
+      "id": "services_reports_rationale_238"
     },
     {
       "label": "test_models.py",
       "file_type": "code",
       "source_file": "backend/tests/test_models.py",
       "source_location": "L1",
-      "id": "tests_test_models",
       "community": 1,
-      "norm_label": "test_models.py"
+      "norm_label": "test_models.py",
+      "id": "tests_test_models"
     },
     {
       "label": "test_database_schema_initialization()",
       "file_type": "code",
       "source_file": "backend/tests/test_models.py",
       "source_location": "L16",
-      "id": "tests_test_models_test_database_schema_initialization",
       "community": 1,
-      "norm_label": "test_database_schema_initialization()"
+      "norm_label": "test_database_schema_initialization()",
+      "id": "tests_test_models_test_database_schema_initialization"
     },
     {
       "label": "Spins up an in-memory SQLite database to verify all tables, UUIDs,      and fore",
       "file_type": "rationale",
       "source_file": "backend/tests/test_models.py",
       "source_location": "L17",
-      "id": "tests_test_models_rationale_17",
       "community": 1,
-      "norm_label": "spins up an in-memory sqlite database to verify all tables, uuids,      and fore"
+      "norm_label": "spins up an in-memory sqlite database to verify all tables, uuids,      and fore",
+      "id": "tests_test_models_rationale_17"
     },
     {
       "label": "test_phase6.py",
       "file_type": "code",
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L1",
-      "id": "tests_test_phase6",
       "community": 2,
-      "norm_label": "test_phase6.py"
+      "norm_label": "test_phase6.py",
+      "id": "tests_test_phase6"
     },
     {
       "label": "dispose_engine_fixture()",
       "file_type": "code",
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L16",
-      "id": "tests_test_phase6_dispose_engine_fixture",
       "community": 2,
-      "norm_label": "dispose_engine_fixture()"
+      "norm_label": "dispose_engine_fixture()",
+      "id": "tests_test_phase6_dispose_engine_fixture"
     },
     {
       "label": "get_test_client()",
       "file_type": "code",
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L21",
-      "id": "tests_test_phase6_get_test_client",
       "community": 2,
-      "norm_label": "get_test_client()"
+      "norm_label": "get_test_client()",
+      "id": "tests_test_phase6_get_test_client"
     },
     {
       "label": "test_tracker_indexeddb_offline_queue()",
       "file_type": "code",
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L28",
-      "id": "tests_test_phase6_test_tracker_indexeddb_offline_queue",
       "community": 2,
-      "norm_label": "test_tracker_indexeddb_offline_queue()"
+      "norm_label": "test_tracker_indexeddb_offline_queue()",
+      "id": "tests_test_phase6_test_tracker_indexeddb_offline_queue"
     },
     {
       "label": "test_layered_consent_phases()",
       "file_type": "code",
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L62",
-      "id": "tests_test_phase6_test_layered_consent_phases",
       "community": 2,
-      "norm_label": "test_layered_consent_phases()"
+      "norm_label": "test_layered_consent_phases()",
+      "id": "tests_test_phase6_test_layered_consent_phases"
     },
     {
       "label": "test_geolocation_consent_routing()",
       "file_type": "code",
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L102",
-      "id": "tests_test_phase6_test_geolocation_consent_routing",
       "community": 2,
-      "norm_label": "test_geolocation_consent_routing()"
+      "norm_label": "test_geolocation_consent_routing()",
+      "id": "tests_test_phase6_test_geolocation_consent_routing"
     },
     {
       "label": "Mock the offline state (navigator.onLine = false) and verify the event buffering",
       "file_type": "rationale",
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L29",
-      "id": "tests_test_phase6_rationale_29",
       "community": 2,
-      "norm_label": "mock the offline state (navigator.online = false) and verify the event buffering"
+      "norm_label": "mock the offline state (navigator.online = false) and verify the event buffering",
+      "id": "tests_test_phase6_rationale_29"
     },
     {
       "label": "Mock the transition of the consent banner through the 4 capture phases,     ensu",
       "file_type": "rationale",
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L63",
-      "id": "tests_test_phase6_rationale_63",
       "community": 2,
-      "norm_label": "mock the transition of the consent banner through the 4 capture phases,     ensu"
+      "norm_label": "mock the transition of the consent banner through the 4 capture phases,     ensu",
+      "id": "tests_test_phase6_rationale_63"
     },
     {
       "label": "Test timezone-based geolocation consent routing.     Mock EU timezone (\"Europe/B",
       "file_type": "rationale",
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L103",
-      "id": "tests_test_phase6_rationale_103",
       "community": 2,
-      "norm_label": "test timezone-based geolocation consent routing.     mock eu timezone (\"europe/b"
+      "norm_label": "test timezone-based geolocation consent routing.     mock eu timezone (\"europe/b",
+      "id": "tests_test_phase6_rationale_103"
     },
     {
       "label": "test_phase7.py",
       "file_type": "code",
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L1",
-      "id": "tests_test_phase7",
       "community": 2,
-      "norm_label": "test_phase7.py"
+      "norm_label": "test_phase7.py",
+      "id": "tests_test_phase7"
     },
     {
       "label": "dispose_engine_fixture()",
       "file_type": "code",
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L25",
-      "id": "tests_test_phase7_dispose_engine_fixture",
       "community": 2,
-      "norm_label": "dispose_engine_fixture()"
+      "norm_label": "dispose_engine_fixture()",
+      "id": "tests_test_phase7_dispose_engine_fixture"
     },
     {
       "label": "get_test_client()",
       "file_type": "code",
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L30",
-      "id": "tests_test_phase7_get_test_client",
       "community": 2,
-      "norm_label": "get_test_client()"
+      "norm_label": "get_test_client()",
+      "id": "tests_test_phase7_get_test_client"
     },
     {
       "label": "test_weekly_pdf_report_r2_upload()",
       "file_type": "code",
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L37",
-      "id": "tests_test_phase7_test_weekly_pdf_report_r2_upload",
       "community": 8,
-      "norm_label": "test_weekly_pdf_report_r2_upload()"
+      "norm_label": "test_weekly_pdf_report_r2_upload()",
+      "id": "tests_test_phase7_test_weekly_pdf_report_r2_upload"
     },
     {
       "label": "test_slack_notification_throttling()",
       "file_type": "code",
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L82",
-      "id": "tests_test_phase7_test_slack_notification_throttling",
       "community": 5,
-      "norm_label": "test_slack_notification_throttling()"
+      "norm_label": "test_slack_notification_throttling()",
+      "id": "tests_test_phase7_test_slack_notification_throttling"
     },
     {
       "label": "test_crm_synchronization_dead_letter_queue()",
       "file_type": "code",
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L113",
-      "id": "tests_test_phase7_test_crm_synchronization_dead_letter_queue",
       "community": 11,
-      "norm_label": "test_crm_synchronization_dead_letter_queue()"
+      "norm_label": "test_crm_synchronization_dead_letter_queue()",
+      "id": "tests_test_phase7_test_crm_synchronization_dead_letter_queue"
     },
     {
       "label": "test_notion_vault_synchronization_isolation()",
       "file_type": "code",
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L157",
-      "id": "tests_test_phase7_test_notion_vault_synchronization_isolation",
       "community": 2,
-      "norm_label": "test_notion_vault_synchronization_isolation()"
+      "norm_label": "test_notion_vault_synchronization_isolation()",
+      "id": "tests_test_phase7_test_notion_vault_synchronization_isolation"
     },
     {
       "label": "Trigger the programmatic weekly report compiler on a test client.     Assert tha",
       "file_type": "rationale",
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L38",
-      "id": "tests_test_phase7_rationale_38",
       "community": 8,
-      "norm_label": "trigger the programmatic weekly report compiler on a test client.     assert tha"
+      "norm_label": "trigger the programmatic weekly report compiler on a test client.     assert tha",
+      "id": "tests_test_phase7_rationale_38"
     },
     {
       "label": "Fire 5 consecutive alerts/throttling checks for the same client and company.",
       "file_type": "rationale",
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L83",
-      "id": "tests_test_phase7_rationale_83",
       "community": 5,
-      "norm_label": "fire 5 consecutive alerts/throttling checks for the same client and company."
+      "norm_label": "fire 5 consecutive alerts/throttling checks for the same client and company.",
+      "id": "tests_test_phase7_rationale_83"
     },
     {
       "label": "Force a continuous connection timeout on the CRM outbound webhook endpoint.",
       "file_type": "rationale",
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L114",
-      "id": "tests_test_phase7_rationale_114",
       "community": 11,
-      "norm_label": "force a continuous connection timeout on the crm outbound webhook endpoint."
+      "norm_label": "force a continuous connection timeout on the crm outbound webhook endpoint.",
+      "id": "tests_test_phase7_rationale_114"
     },
     {
       "label": "Execute the sync_to_notion() workflow.     Mock a transport error to assert the",
       "file_type": "rationale",
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L158",
-      "id": "tests_test_phase7_rationale_158",
       "community": 2,
-      "norm_label": "execute the sync_to_notion() workflow.     mock a transport error to assert the"
+      "norm_label": "execute the sync_to_notion() workflow.     mock a transport error to assert the",
+      "id": "tests_test_phase7_rationale_158"
     },
     {
       "label": "consent-banner.tsx",
       "file_type": "code",
       "source_file": "frontend/src/components/consent-banner/consent-banner.tsx",
       "source_location": "L1",
-      "id": "consent_banner_consent_banner",
       "community": 17,
-      "norm_label": "consent-banner.tsx"
+      "norm_label": "consent-banner.tsx",
+      "id": "consent_banner_consent_banner"
     },
     {
       "label": "AuraConsentBanner()",
       "file_type": "code",
       "source_file": "frontend/src/components/consent-banner/consent-banner.tsx",
       "source_location": "L6",
-      "id": "consent_banner_consent_banner_auraconsentbanner",
       "community": 17,
-      "norm_label": "auraconsentbanner()"
+      "norm_label": "auraconsentbanner()",
+      "id": "consent_banner_consent_banner_auraconsentbanner"
     },
     {
       "label": "task.md",
       "file_type": "document",
       "source_file": "task.md",
       "source_location": "L1",
-      "id": "task",
       "community": 9,
-      "norm_label": "task.md"
+      "norm_label": "task.md",
+      "id": "task"
     },
     {
       "label": "AuraWorks Industrial Intelligence Engine Progress Checklist",
       "file_type": "document",
       "source_file": "task.md",
       "source_location": "L1",
-      "id": "task_auraworks_industrial_intelligence_engine_progress_checklist",
       "community": 9,
-      "norm_label": "auraworks industrial intelligence engine progress checklist"
+      "norm_label": "auraworks industrial intelligence engine progress checklist",
+      "id": "task_auraworks_industrial_intelligence_engine_progress_checklist"
     },
     {
       "label": "clients.py",
@@ -884,15 +965,6 @@
       "community": 4,
       "norm_label": "clientcreate",
       "id": "clientcreate"
-    },
-    {
-      "label": "AsyncSession",
-      "file_type": "code",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L30",
-      "community": 4,
-      "norm_label": "asyncsession",
-      "id": "asyncsession"
     },
     {
       "label": "get_client_config()",
@@ -1646,7 +1718,7 @@
       "file_type": "code",
       "source_file": "backend/app/api/v1/track.py",
       "source_location": "L252",
-      "community": 1,
+      "community": 0,
       "norm_label": "track_identity()",
       "id": "v1_track_track_identity"
     },
@@ -1709,7 +1781,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/api/v1/track.py",
       "source_location": "L253",
-      "community": 1,
+      "community": 0,
       "norm_label": "upgrades anonymous forensic profiles using volunteered banner form data.",
       "id": "v1_track_rationale_253"
     },
@@ -1961,7 +2033,7 @@
       "file_type": "code",
       "source_file": "backend/app/models/company.py",
       "source_location": "L12",
-      "community": 0,
+      "community": 18,
       "norm_label": "company",
       "id": "models_company_company"
     },
@@ -1979,7 +2051,7 @@
       "file_type": "code",
       "source_file": "backend/app/models/department.py",
       "source_location": "L10",
-      "community": 0,
+      "community": 18,
       "norm_label": "department",
       "id": "models_department_department"
     },
@@ -2015,7 +2087,7 @@
       "file_type": "code",
       "source_file": "backend/app/models/enrichment_queue.py",
       "source_location": "L38",
-      "community": 0,
+      "community": 18,
       "norm_label": "failedenrichment",
       "id": "models_enrichment_queue_failedenrichment"
     },
@@ -2195,7 +2267,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L1",
-      "community": 0,
+      "community": 18,
       "norm_label": "enrichment.py",
       "id": "services_enrichment"
     },
@@ -2222,7 +2294,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L11",
-      "community": 0,
+      "community": 18,
       "norm_label": ".__init__()",
       "id": "services_enrichment_enrichmenterror_init"
     },
@@ -2231,7 +2303,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L11",
-      "community": 0,
+      "community": 18,
       "norm_label": "str",
       "id": "backend_app_services_enrichment_py_str"
     },
@@ -2240,7 +2312,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L11",
-      "community": 0,
+      "community": 18,
       "norm_label": "int",
       "id": "backend_app_services_enrichment_py_int"
     },
@@ -2249,7 +2321,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L23",
-      "community": 0,
+      "community": 18,
       "norm_label": "is_consumer_traffic()",
       "id": "services_enrichment_is_consumer_traffic"
     },
@@ -2258,7 +2330,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L23",
-      "community": 0,
+      "community": 18,
       "norm_label": "bool",
       "id": "backend_app_services_enrichment_py_bool"
     },
@@ -2267,7 +2339,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L30",
-      "community": 0,
+      "community": 18,
       "norm_label": "perform_local_reverse_dns()",
       "id": "services_enrichment_perform_local_reverse_dns"
     },
@@ -2276,7 +2348,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L30",
-      "community": 0,
+      "community": 18,
       "norm_label": "any",
       "id": "backend_app_services_enrichment_py_any"
     },
@@ -2285,7 +2357,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L51",
-      "community": 0,
+      "community": 18,
       "norm_label": "enrich_visitor_data()",
       "id": "services_enrichment_enrich_visitor_data"
     },
@@ -2294,7 +2366,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L133",
-      "community": 0,
+      "community": 18,
       "norm_label": "get_departmental_intelligence()",
       "id": "services_enrichment_get_departmental_intelligence"
     },
@@ -2303,7 +2375,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L180",
-      "community": 0,
+      "community": 18,
       "norm_label": "enrich_company_departments()",
       "id": "services_enrichment_enrich_company_departments"
     },
@@ -2312,7 +2384,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L253",
-      "community": 0,
+      "community": 18,
       "norm_label": "process_enrichment_queue()",
       "id": "services_enrichment_process_enrichment_queue"
     },
@@ -2321,7 +2393,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L24",
-      "community": 0,
+      "community": 18,
       "norm_label": "detects if a visit originates from a known consumer isp.",
       "id": "services_enrichment_rationale_24"
     },
@@ -2330,7 +2402,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L31",
-      "community": 0,
+      "community": 18,
       "norm_label": "layer 1: zero-cost classification.     identifies cloud providers and obvious is",
       "id": "services_enrichment_rationale_31"
     },
@@ -2339,7 +2411,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L52",
-      "community": 0,
+      "community": 18,
       "norm_label": "phase 01: forensic ip resolution with warm lead overrides.     if 'volunteered_c",
       "id": "services_enrichment_rationale_52"
     },
@@ -2348,7 +2420,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L134",
-      "community": 0,
+      "community": 18,
       "norm_label": "phase 02: industrial cluster mapping (apollo.io).     identifies departmental de",
       "id": "services_enrichment_rationale_134"
     },
@@ -2357,7 +2429,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L181",
-      "community": 0,
+      "community": 18,
       "norm_label": "fires instantly inside an asynchronous background task right after ipinfo     va",
       "id": "services_enrichment_rationale_181"
     },
@@ -2366,7 +2438,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L254",
-      "community": 0,
+      "community": 18,
       "norm_label": "background task runner: processes queued items across a strict 3-stage exponenti",
       "id": "services_enrichment_rationale_254"
     },
@@ -2609,7 +2681,7 @@
       "file_type": "code",
       "source_file": "backend/app/tasks/janitor.py",
       "source_location": "L1",
-      "community": 2,
+      "community": 19,
       "norm_label": "janitor.py",
       "id": "tasks_janitor"
     },
@@ -2618,7 +2690,7 @@
       "file_type": "code",
       "source_file": "backend/app/tasks/janitor.py",
       "source_location": "L11",
-      "community": 2,
+      "community": 19,
       "norm_label": "execute_janitor_scrub_cascade()",
       "id": "tasks_janitor_execute_janitor_scrub_cascade"
     },
@@ -2627,7 +2699,7 @@
       "file_type": "code",
       "source_file": "backend/app/tasks/janitor.py",
       "source_location": "L11",
-      "community": 2,
+      "community": 19,
       "norm_label": "asyncsession",
       "id": "backend_app_tasks_janitor_py_asyncsession"
     },
@@ -2636,7 +2708,7 @@
       "file_type": "code",
       "source_file": "backend/app/tasks/janitor.py",
       "source_location": "L82",
-      "community": 2,
+      "community": 19,
       "norm_label": "cleanup_unverified_visits()",
       "id": "tasks_janitor_cleanup_unverified_visits"
     },
@@ -2645,7 +2717,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/tasks/janitor.py",
       "source_location": "L12",
-      "community": 2,
+      "community": 19,
       "norm_label": "executes a precise column anonymization cascade matching popia parameters.     i",
       "id": "tasks_janitor_rationale_12"
     },
@@ -2654,7 +2726,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/tasks/janitor.py",
       "source_location": "L83",
-      "community": 2,
+      "community": 19,
       "norm_label": "fastapi background task entry point for the periodic janitor sweep.",
       "id": "tasks_janitor_rationale_83"
     },
@@ -2699,7 +2771,7 @@
       "file_type": "code",
       "source_file": "backend/tests/test_phase3.py",
       "source_location": "L1",
-      "community": 1,
+      "community": 19,
       "norm_label": "test_phase3.py",
       "id": "tests_test_phase3"
     },
@@ -2708,7 +2780,7 @@
       "file_type": "code",
       "source_file": "backend/tests/test_phase3.py",
       "source_location": "L20",
-      "community": 1,
+      "community": 19,
       "norm_label": "dispose_engine_fixture()",
       "id": "tests_test_phase3_dispose_engine_fixture"
     },
@@ -2717,7 +2789,7 @@
       "file_type": "code",
       "source_file": "backend/tests/test_phase3.py",
       "source_location": "L24",
-      "community": 0,
+      "community": 19,
       "norm_label": "test_janitor_anonymization_cascade()",
       "id": "tests_test_phase3_test_janitor_anonymization_cascade"
     },
@@ -2726,7 +2798,7 @@
       "file_type": "code",
       "source_file": "backend/tests/test_phase3.py",
       "source_location": "L151",
-      "community": 1,
+      "community": 19,
       "norm_label": "test_immediate_departmental_contact_mapping()",
       "id": "tests_test_phase3_test_immediate_departmental_contact_mapping"
     },
@@ -2735,7 +2807,7 @@
       "file_type": "rationale",
       "source_file": "backend/tests/test_phase3.py",
       "source_location": "L25",
-      "community": 0,
+      "community": 19,
       "norm_label": "seed the database with a test fixture containing an unconsented visit marked as",
       "id": "tests_test_phase3_rationale_25"
     },
@@ -2744,7 +2816,7 @@
       "file_type": "rationale",
       "source_file": "backend/tests/test_phase3.py",
       "source_location": "L152",
-      "community": 1,
+      "community": 19,
       "norm_label": "configure apollo mapping to fire instantly right after ipinfo validates a b2b pr",
       "id": "tests_test_phase3_rationale_152"
     },
@@ -2780,7 +2852,7 @@
       "file_type": "code",
       "source_file": "backend/tests/test_phase4.py",
       "source_location": "L116",
-      "community": 0,
+      "community": 3,
       "norm_label": "test_daily_deepseek_batch_aggregation()",
       "id": "tests_test_phase4_test_daily_deepseek_batch_aggregation"
     },
@@ -2798,7 +2870,7 @@
       "file_type": "rationale",
       "source_file": "backend/tests/test_phase4.py",
       "source_location": "L117",
-      "community": 0,
+      "community": 3,
       "norm_label": "populate the database with 5 distinct tracking sessions from the same company do",
       "id": "tests_test_phase4_rationale_117"
     },
@@ -2888,7 +2960,7 @@
       "file_type": "code",
       "source_file": "backend/app/api/v1/leads.py",
       "source_location": "L1",
-      "community": 1,
+      "community": 20,
       "norm_label": "leads.py",
       "id": "v1_leads"
     },
@@ -2897,7 +2969,7 @@
       "file_type": "code",
       "source_file": "backend/app/api/v1/leads.py",
       "source_location": "L15",
-      "community": 1,
+      "community": 20,
       "norm_label": "get_leads()",
       "id": "v1_leads_get_leads"
     },
@@ -2906,7 +2978,7 @@
       "file_type": "code",
       "source_file": "backend/app/api/v1/leads.py",
       "source_location": "L15",
-      "community": 1,
+      "community": 20,
       "norm_label": "str",
       "id": "backend_app_api_v1_leads_py_str"
     },
@@ -2915,7 +2987,7 @@
       "file_type": "code",
       "source_file": "backend/app/api/v1/leads.py",
       "source_location": "L15",
-      "community": 1,
+      "community": 20,
       "norm_label": "int",
       "id": "backend_app_api_v1_leads_py_int"
     },
@@ -2924,7 +2996,7 @@
       "file_type": "code",
       "source_file": "backend/app/api/v1/leads.py",
       "source_location": "L15",
-      "community": 1,
+      "community": 20,
       "norm_label": "asyncsession",
       "id": "backend_app_api_v1_leads_py_asyncsession"
     },
@@ -2933,7 +3005,7 @@
       "file_type": "code",
       "source_file": "backend/app/api/v1/leads.py",
       "source_location": "L67",
-      "community": 1,
+      "community": 20,
       "norm_label": "get_lead_intelligence()",
       "id": "v1_leads_get_lead_intelligence"
     },
@@ -2942,7 +3014,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/api/v1/leads.py",
       "source_location": "L20",
-      "community": 1,
+      "community": 20,
       "norm_label": "industrial ledger: retrieves leads and prioritizes 'warm leads' (those with volu",
       "id": "v1_leads_rationale_20"
     },
@@ -2951,7 +3023,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/api/v1/leads.py",
       "source_location": "L71",
-      "community": 1,
+      "community": 20,
       "norm_label": "provides the forensic audit for a specific lead, including their      behavioral",
       "id": "v1_leads_rationale_71"
     },
@@ -3066,14 +3138,613 @@
   ],
   "links": [
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/db.py",
+      "source_location": "L121",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_db",
+      "target": "app_db_get_async_session"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/db.py",
+      "source_location": "L164",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_db",
+      "target": "app_db_get_session"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/db.py",
+      "source_location": "L68",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_db",
+      "target": "app_db_init_db"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/db.py",
+      "source_location": "L60",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_db",
+      "target": "fastapi"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/db.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_db",
+      "target": "sqlmodel"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_main",
+      "target": "app_db"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/scheduler.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "core_scheduler",
+      "target": "app_db"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/crm.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "services_crm",
+      "target": "app_db"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "services_notifications",
+      "target": "app_db"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/tasks/janitor.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tasks_janitor",
+      "target": "app_db"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_models.py",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_models",
+      "target": "app_db"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase3.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_phase3",
+      "target": "app_db"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase4.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_phase4",
+      "target": "app_db"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase5.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_phase5",
+      "target": "app_db"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase6.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_phase6",
+      "target": "app_db"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase7.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_phase7",
+      "target": "app_db"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "v1_clients",
+      "target": "app_db"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "v1_track",
+      "target": "app_db"
+    },
+    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/app/api/v1/waitlist.py",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "v1_waitlist",
-      "target": "app_db",
+      "target": "app_db"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/webhook.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "v1_webhook",
+      "target": "app_db"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/db.py",
+      "source_location": "L69",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_db_rationale_69",
+      "target": "app_db_init_db"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_phase6.py",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "tests_test_phase6_dispose_engine_fixture",
+      "target": "app_db_init_db"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_phase7.py",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "tests_test_phase7_dispose_engine_fixture",
+      "target": "app_db_init_db"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/db.py",
+      "source_location": "L121",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_db_get_async_session",
+      "target": "asyncsession"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/db.py",
+      "source_location": "L121",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_db_get_async_session",
+      "target": "request"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/db.py",
+      "source_location": "L139",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_db_rationale_139",
+      "target": "app_db_get_async_session"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "request",
+      "target": "models_client_client"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "request",
+      "target": "models_client_clientcategory"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "request",
+      "target": "models_client_clientcreate"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "request",
+      "target": "models_client_clientpublic"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/db.py",
+      "source_location": "L89",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "request",
+      "target": "models_crm_dead_letter_crmdeadletter"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L14",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "request",
+      "target": "models_enrichment_queue_enrichmentqueue"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L14",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "request",
+      "target": "models_enrichment_queue_queuetype"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "request",
+      "target": "models_visit_pageviewcreate"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "request",
+      "target": "models_visit_visit"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L12",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "request",
+      "target": "models_visit_visitcreate"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L15",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "request",
+      "target": "services_enrichment_enrichmenterror"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L79",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "v1_clients_get_client_config",
+      "target": "request"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L240",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "v1_track_track_entry",
+      "target": "request"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "asyncsession",
+      "target": "models_client_client"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "asyncsession",
+      "target": "models_client_clientcategory"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "asyncsession",
+      "target": "models_client_clientcreate"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "asyncsession",
+      "target": "models_client_clientpublic"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "v1_clients_create_client",
+      "target": "asyncsession"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/clients.py",
+      "source_location": "L79",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "v1_clients_get_client_config",
+      "target": "asyncsession"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/db.py",
+      "source_location": "L182",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_db_rationale_182",
+      "target": "app_db_get_session"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "versions_1ac2f9ae2341_fix_schema_drift",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "versions_1ac2f9ae2341_fix_schema_drift",
+      "target": "versions_1ac2f9ae2341_fix_schema_drift_column_exists",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
+      "source_location": "L166",
+      "weight": 1.0,
+      "source": "versions_1ac2f9ae2341_fix_schema_drift",
+      "target": "versions_1ac2f9ae2341_fix_schema_drift_downgrade",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "versions_1ac2f9ae2341_fix_schema_drift",
+      "target": "versions_1ac2f9ae2341_fix_schema_drift_get_column_type",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "versions_1ac2f9ae2341_fix_schema_drift",
+      "target": "versions_1ac2f9ae2341_fix_schema_drift_table_exists",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "versions_1ac2f9ae2341_fix_schema_drift",
+      "target": "versions_1ac2f9ae2341_fix_schema_drift_upgrade",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "versions_1ac2f9ae2341_fix_schema_drift_upgrade",
+      "target": "versions_1ac2f9ae2341_fix_schema_drift_table_exists",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
+      "source_location": "L74",
+      "weight": 1.0,
+      "source": "versions_1ac2f9ae2341_fix_schema_drift_upgrade",
+      "target": "versions_1ac2f9ae2341_fix_schema_drift_column_exists",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "versions_1ac2f9ae2341_fix_schema_drift_upgrade",
+      "target": "versions_1ac2f9ae2341_fix_schema_drift_get_column_type",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "versions_1ac2f9ae2341_fix_schema_drift_rationale_43",
+      "target": "versions_1ac2f9ae2341_fix_schema_drift_upgrade",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/reset_db.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "backend_reset_db",
+      "target": "backend_reset_db_reset_database",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/reset_db.py",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "backend_reset_db",
+      "target": "sqlmodel",
       "confidence_score": 1.0
     },
     {
@@ -3083,9 +3754,9 @@
       "source_file": "backend/app/api/v1/waitlist.py",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "v1_waitlist",
-      "target": "fastapi",
-      "confidence_score": 1.0
+      "target": "fastapi"
     },
     {
       "relation": "imports_from",
@@ -3178,9 +3849,9 @@
       "source_file": "backend/app/api/v1/waitlist.py",
       "source_location": "L39",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "v1_waitlist_background_lead_analysis",
-      "target": "int",
-      "confidence_score": 1.0
+      "target": "int"
     },
     {
       "relation": "calls",
@@ -3232,9 +3903,9 @@
       "source_file": "backend/app/api/v1/waitlist.py",
       "source_location": "L116",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "v1_waitlist_join_waitlist",
-      "target": "backgroundtasks",
-      "confidence_score": 1.0
+      "target": "backgroundtasks"
     },
     {
       "relation": "calls",
@@ -3264,20 +3935,9 @@
       "source_file": "backend/app/api/v1/waitlist.py",
       "source_location": "L121",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "v1_waitlist_rationale_121",
-      "target": "v1_waitlist_join_waitlist",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/core/scheduler.py",
-      "source_location": "L6",
-      "weight": 1.0,
-      "source": "core_scheduler",
-      "target": "app_db",
-      "confidence_score": 1.0
+      "target": "v1_waitlist_join_waitlist"
     },
     {
       "relation": "contains",
@@ -3295,9 +3955,9 @@
       "source_file": "backend/app/core/scheduler.py",
       "source_location": "L121",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "core_scheduler",
-      "target": "core_scheduler_run_weekly_reporting_cycle",
-      "confidence_score": 1.0
+      "target": "core_scheduler_run_weekly_reporting_cycle"
     },
     {
       "relation": "contains",
@@ -3368,9 +4028,9 @@
       "source_file": "backend/app/core/scheduler.py",
       "source_location": "L122",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "core_scheduler_rationale_122",
-      "target": "core_scheduler_run_weekly_reporting_cycle",
-      "confidence_score": 1.0
+      "target": "core_scheduler_run_weekly_reporting_cycle"
     },
     {
       "relation": "calls",
@@ -3417,437 +4077,15 @@
       "target": "services_reports_upload_report_to_r2"
     },
     {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L121",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_db",
-      "target": "app_db_get_async_session"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L164",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_db",
-      "target": "app_db_get_session"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L68",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_db",
-      "target": "app_db_init_db"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L60",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_db",
-      "target": "fastapi"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_db",
-      "target": "sqlmodel"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/main.py",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_main",
-      "target": "app_db"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/services/crm.py",
-      "source_location": "L7",
-      "weight": 1.0,
-      "source": "services_crm",
-      "target": "app_db",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/services/notifications.py",
-      "source_location": "L10",
-      "weight": 1.0,
-      "source": "services_notifications",
-      "target": "app_db",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/tasks/janitor.py",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tasks_janitor",
-      "target": "app_db"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/tests/test_models.py",
-      "source_location": "L3",
-      "weight": 1.0,
-      "source": "tests_test_models",
-      "target": "app_db",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/tests/test_phase3.py",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_phase3",
-      "target": "app_db"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/tests/test_phase4.py",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_phase4",
-      "target": "app_db"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/tests/test_phase5.py",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_phase5",
-      "target": "app_db"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/tests/test_phase6.py",
-      "source_location": "L10",
-      "weight": 1.0,
-      "source": "tests_test_phase6",
-      "target": "app_db",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/tests/test_phase7.py",
-      "source_location": "L11",
-      "weight": 1.0,
-      "source": "tests_test_phase7",
-      "target": "app_db",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "v1_clients",
-      "target": "app_db"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/api/v1/track.py",
-      "source_location": "L18",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "v1_track",
-      "target": "app_db"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/api/v1/webhook.py",
-      "source_location": "L12",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "v1_webhook",
-      "target": "app_db"
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L69",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_db_rationale_69",
-      "target": "app_db_init_db"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "backend/tests/test_phase6.py",
-      "source_location": "L17",
-      "weight": 1.0,
-      "source": "tests_test_phase6_dispose_engine_fixture",
-      "target": "app_db_init_db"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "backend/tests/test_phase7.py",
-      "source_location": "L26",
-      "weight": 1.0,
-      "source": "tests_test_phase7_dispose_engine_fixture",
-      "target": "app_db_init_db"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L121",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_db_get_async_session",
-      "target": "asyncsession"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L138",
-      "weight": 1.0,
-      "source": "app_db_get_async_session",
-      "target": "backend_app_db_py_asyncsession",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L121",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_db_get_async_session",
-      "target": "request"
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L139",
-      "weight": 1.0,
-      "source": "app_db_rationale_139",
-      "target": "app_db_get_async_session",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L11",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "request",
-      "target": "models_client_client"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L11",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "request",
-      "target": "models_client_clientcategory"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L11",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "request",
-      "target": "models_client_clientcreate"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L11",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "request",
-      "target": "models_client_clientpublic"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L89",
-      "weight": 0.8,
-      "source": "request",
-      "target": "models_crm_dead_letter_crmdeadletter",
-      "confidence_score": 0.5
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/track.py",
-      "source_location": "L14",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "request",
-      "target": "models_enrichment_queue_enrichmentqueue"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/track.py",
-      "source_location": "L14",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "request",
-      "target": "models_enrichment_queue_queuetype"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/track.py",
-      "source_location": "L12",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "request",
-      "target": "models_visit_pageviewcreate"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/track.py",
-      "source_location": "L12",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "request",
-      "target": "models_visit_visit"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/track.py",
-      "source_location": "L12",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "request",
-      "target": "models_visit_visitcreate"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/track.py",
-      "source_location": "L15",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "request",
-      "target": "services_enrichment_enrichmenterror"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L79",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "v1_clients_get_client_config",
-      "target": "request"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/api/v1/track.py",
-      "source_location": "L240",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "v1_track_track_entry",
-      "target": "request"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L89",
-      "weight": 0.8,
-      "source": "backend_app_db_py_asyncsession",
-      "target": "models_crm_dead_letter_crmdeadletter",
-      "confidence_score": 0.5
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/db.py",
-      "source_location": "L182",
-      "weight": 1.0,
-      "source": "app_db_rationale_182",
-      "target": "app_db_get_session",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "re_exports",
       "context": "export",
       "confidence": "EXTRACTED",
       "source_file": "backend/app/models/__init__.py",
       "source_location": "L10",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "models_init",
-      "target": "models_crm_dead_letter",
-      "confidence_score": 1.0
+      "target": "models_crm_dead_letter"
     },
     {
       "relation": "imports",
@@ -3856,9 +4094,9 @@
       "source_file": "backend/app/models/__init__.py",
       "source_location": "L10",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "models_init",
-      "target": "models_crm_dead_letter_crmdeadletter",
-      "confidence_score": 1.0
+      "target": "models_crm_dead_letter_crmdeadletter"
     },
     {
       "relation": "contains",
@@ -3866,9 +4104,9 @@
       "source_file": "backend/app/models/crm_dead_letter.py",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "models_crm_dead_letter",
-      "target": "models_crm_dead_letter_crmdeadletter",
-      "confidence_score": 1.0
+      "target": "models_crm_dead_letter_crmdeadletter"
     },
     {
       "relation": "imports_from",
@@ -3877,9 +4115,9 @@
       "source_file": "backend/app/models/crm_dead_letter.py",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "models_crm_dead_letter",
-      "target": "sqlmodel",
-      "confidence_score": 1.0
+      "target": "sqlmodel"
     },
     {
       "relation": "imports_from",
@@ -3888,9 +4126,9 @@
       "source_file": "backend/app/models/crm_dead_letter.py",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "models_crm_dead_letter",
-      "target": "uuid",
-      "confidence_score": 1.0
+      "target": "uuid"
     },
     {
       "relation": "uses",
@@ -3898,9 +4136,9 @@
       "source_file": "backend/app/services/crm.py",
       "source_location": "L8",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "backend_app_services_crm_py_bool",
-      "target": "models_crm_dead_letter_crmdeadletter",
-      "confidence_score": 0.5
+      "target": "models_crm_dead_letter_crmdeadletter"
     },
     {
       "relation": "uses",
@@ -3908,9 +4146,9 @@
       "source_file": "backend/app/services/crm.py",
       "source_location": "L8",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "backend_app_services_crm_py_str",
-      "target": "models_crm_dead_letter_crmdeadletter",
-      "confidence_score": 0.5
+      "target": "models_crm_dead_letter_crmdeadletter"
     },
     {
       "relation": "uses",
@@ -3918,9 +4156,9 @@
       "source_file": "backend/app/services/crm.py",
       "source_location": "L8",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "backend_app_services_crm_py_uuid",
-      "target": "models_crm_dead_letter_crmdeadletter",
-      "confidence_score": 0.5
+      "target": "models_crm_dead_letter_crmdeadletter"
     },
     {
       "relation": "uses",
@@ -3928,9 +4166,9 @@
       "source_file": "backend/app/services/crm.py",
       "source_location": "L8",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "float",
-      "target": "models_crm_dead_letter_crmdeadletter",
-      "confidence_score": 0.5
+      "target": "models_crm_dead_letter_crmdeadletter"
     },
     {
       "relation": "inherits",
@@ -3938,9 +4176,9 @@
       "source_file": "backend/app/models/crm_dead_letter.py",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "models_crm_dead_letter_crmdeadletter",
-      "target": "sqlmodel",
-      "confidence_score": 1.0
+      "target": "sqlmodel"
     },
     {
       "relation": "calls",
@@ -4160,9 +4398,9 @@
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_notifications",
-      "target": "sqlmodel",
-      "confidence_score": 1.0
+      "target": "sqlmodel"
     },
     {
       "relation": "imports_from",
@@ -4171,9 +4409,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L134",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports",
-      "target": "sqlmodel",
-      "confidence_score": 1.0
+      "target": "sqlmodel"
     },
     {
       "relation": "imports_from",
@@ -4193,9 +4431,9 @@
       "source_file": "backend/tests/test_models.py",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_models",
-      "target": "sqlmodel",
-      "confidence_score": 1.0
+      "target": "sqlmodel"
     },
     {
       "relation": "imports_from",
@@ -4248,9 +4486,9 @@
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase6",
-      "target": "sqlmodel",
-      "confidence_score": 1.0
+      "target": "sqlmodel"
     },
     {
       "relation": "imports_from",
@@ -4259,9 +4497,9 @@
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase7",
-      "target": "sqlmodel",
-      "confidence_score": 1.0
+      "target": "sqlmodel"
     },
     {
       "relation": "imports_from",
@@ -4347,9 +4585,9 @@
       "source_file": "backend/app/services/crm.py",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_crm",
-      "target": "backend_app_services_crm_py_uuid",
-      "confidence_score": 1.0
+      "target": "backend_app_services_crm_py_uuid"
     },
     {
       "relation": "contains",
@@ -4357,9 +4595,9 @@
       "source_file": "backend/app/services/crm.py",
       "source_location": "L12",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_crm",
-      "target": "services_crm_sync_lead_to_crm",
-      "confidence_score": 1.0
+      "target": "services_crm_sync_lead_to_crm"
     },
     {
       "relation": "rationale_for",
@@ -4367,9 +4605,9 @@
       "source_file": "backend/app/services/crm.py",
       "source_location": "L13",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_crm_rationale_13",
-      "target": "services_crm_sync_lead_to_crm",
-      "confidence_score": 1.0
+      "target": "services_crm_sync_lead_to_crm"
     },
     {
       "relation": "references",
@@ -4378,9 +4616,9 @@
       "source_file": "backend/app/services/crm.py",
       "source_location": "L12",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_crm_sync_lead_to_crm",
-      "target": "backend_app_services_crm_py_bool",
-      "confidence_score": 1.0
+      "target": "backend_app_services_crm_py_bool"
     },
     {
       "relation": "references",
@@ -4389,9 +4627,9 @@
       "source_file": "backend/app/services/crm.py",
       "source_location": "L12",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_crm_sync_lead_to_crm",
-      "target": "backend_app_services_crm_py_str",
-      "confidence_score": 1.0
+      "target": "backend_app_services_crm_py_str"
     },
     {
       "relation": "references",
@@ -4400,9 +4638,9 @@
       "source_file": "backend/app/services/crm.py",
       "source_location": "L12",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_crm_sync_lead_to_crm",
-      "target": "backend_app_services_crm_py_uuid",
-      "confidence_score": 1.0
+      "target": "backend_app_services_crm_py_uuid"
     },
     {
       "relation": "references",
@@ -4411,9 +4649,9 @@
       "source_file": "backend/app/services/crm.py",
       "source_location": "L12",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_crm_sync_lead_to_crm",
-      "target": "float",
-      "confidence_score": 1.0
+      "target": "float"
     },
     {
       "relation": "calls",
@@ -4433,9 +4671,9 @@
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_notifications",
-      "target": "backend_app_services_notifications_py_uuid",
-      "confidence_score": 1.0
+      "target": "backend_app_services_notifications_py_uuid"
     },
     {
       "relation": "contains",
@@ -4453,9 +4691,9 @@
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L15",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_notifications",
-      "target": "services_notifications_is_slack_notification_throttled",
-      "confidence_score": 1.0
+      "target": "services_notifications_is_slack_notification_throttled"
     },
     {
       "relation": "contains",
@@ -4484,9 +4722,9 @@
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L235",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_notifications_handle_juristic_only_alert",
-      "target": "services_notifications_is_slack_notification_throttled",
-      "confidence_score": 1.0
+      "target": "services_notifications_is_slack_notification_throttled"
     },
     {
       "relation": "references",
@@ -4495,9 +4733,9 @@
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L15",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_notifications_is_slack_notification_throttled",
-      "target": "backend_app_services_notifications_py_bool",
-      "confidence_score": 1.0
+      "target": "backend_app_services_notifications_py_bool"
     },
     {
       "relation": "references",
@@ -4506,9 +4744,9 @@
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L15",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_notifications_is_slack_notification_throttled",
-      "target": "backend_app_services_notifications_py_uuid",
-      "confidence_score": 1.0
+      "target": "backend_app_services_notifications_py_uuid"
     },
     {
       "relation": "calls",
@@ -4517,9 +4755,9 @@
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L170",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_notifications_post_to_slack",
-      "target": "services_notifications_is_slack_notification_throttled",
-      "confidence_score": 1.0
+      "target": "services_notifications_is_slack_notification_throttled"
     },
     {
       "relation": "calls",
@@ -4528,9 +4766,9 @@
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L83",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_notifications_post_to_visit_channel",
-      "target": "services_notifications_is_slack_notification_throttled",
-      "confidence_score": 1.0
+      "target": "services_notifications_is_slack_notification_throttled"
     },
     {
       "relation": "rationale_for",
@@ -4538,9 +4776,9 @@
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L16",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_notifications_rationale_16",
-      "target": "services_notifications_is_slack_notification_throttled",
-      "confidence_score": 1.0
+      "target": "services_notifications_is_slack_notification_throttled"
     },
     {
       "relation": "calls",
@@ -4560,9 +4798,9 @@
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L235",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_notifications_handle_juristic_only_alert",
-      "target": "backend_app_services_notifications_py_uuid",
-      "confidence_score": 1.0
+      "target": "backend_app_services_notifications_py_uuid"
     },
     {
       "relation": "calls",
@@ -4571,9 +4809,9 @@
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L170",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_notifications_post_to_slack",
-      "target": "backend_app_services_notifications_py_uuid",
-      "confidence_score": 1.0
+      "target": "backend_app_services_notifications_py_uuid"
     },
     {
       "relation": "calls",
@@ -4582,9 +4820,9 @@
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L83",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_notifications_post_to_visit_channel",
-      "target": "backend_app_services_notifications_py_uuid",
-      "confidence_score": 1.0
+      "target": "backend_app_services_notifications_py_uuid"
     },
     {
       "relation": "rationale_for",
@@ -4592,9 +4830,9 @@
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L67",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_notifications_rationale_67",
-      "target": "services_notifications_post_to_visit_channel",
-      "confidence_score": 1.0
+      "target": "services_notifications_post_to_visit_channel"
     },
     {
       "relation": "rationale_for",
@@ -4602,9 +4840,9 @@
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L160",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_notifications_rationale_160",
-      "target": "services_notifications_post_to_slack",
-      "confidence_score": 1.0
+      "target": "services_notifications_post_to_slack"
     },
     {
       "relation": "calls",
@@ -4634,9 +4872,9 @@
       "source_file": "backend/app/services/notifications.py",
       "source_location": "L227",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_notifications_rationale_227",
-      "target": "services_notifications_handle_juristic_only_alert",
-      "confidence_score": 1.0
+      "target": "services_notifications_handle_juristic_only_alert"
     },
     {
       "relation": "calls",
@@ -4656,9 +4894,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports",
-      "target": "backend_app_services_reports_py_uuid",
-      "confidence_score": 1.0
+      "target": "backend_app_services_reports_py_uuid"
     },
     {
       "relation": "contains",
@@ -4676,9 +4914,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L143",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports",
-      "target": "services_reports_compile_weekly_report",
-      "confidence_score": 1.0
+      "target": "services_reports_compile_weekly_report"
     },
     {
       "relation": "contains",
@@ -4686,9 +4924,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L227",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports",
-      "target": "services_reports_generate_signed_cdn_link",
-      "confidence_score": 1.0
+      "target": "services_reports_generate_signed_cdn_link"
     },
     {
       "relation": "contains",
@@ -4706,9 +4944,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L237",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports",
-      "target": "services_reports_send_weekly_report_email",
-      "confidence_score": 1.0
+      "target": "services_reports_send_weekly_report_email"
     },
     {
       "relation": "contains",
@@ -4716,9 +4954,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L219",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports",
-      "target": "services_reports_upload_report_to_r2",
-      "confidence_score": 1.0
+      "target": "services_reports_upload_report_to_r2"
     },
     {
       "relation": "calls",
@@ -4749,9 +4987,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L20",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports_generate_signed_contract_pdf",
-      "target": "bytes",
-      "confidence_score": 1.0
+      "target": "bytes"
     },
     {
       "relation": "rationale_for",
@@ -4759,9 +4997,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L21",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports_rationale_21",
-      "target": "services_reports_generate_signed_contract_pdf",
-      "confidence_score": 1.0
+      "target": "services_reports_generate_signed_contract_pdf"
     },
     {
       "relation": "calls",
@@ -4792,9 +5030,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L227",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports_generate_signed_cdn_link",
-      "target": "backend_app_services_reports_py_str",
-      "confidence_score": 1.0
+      "target": "backend_app_services_reports_py_str"
     },
     {
       "relation": "references",
@@ -4803,9 +5041,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L237",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports_send_weekly_report_email",
-      "target": "backend_app_services_reports_py_str",
-      "confidence_score": 1.0
+      "target": "backend_app_services_reports_py_str"
     },
     {
       "relation": "references",
@@ -4814,9 +5052,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L219",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports_upload_report_to_r2",
-      "target": "backend_app_services_reports_py_str",
-      "confidence_score": 1.0
+      "target": "backend_app_services_reports_py_str"
     },
     {
       "relation": "references",
@@ -4825,9 +5063,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L143",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports_compile_weekly_report",
-      "target": "bytes",
-      "confidence_score": 1.0
+      "target": "bytes"
     },
     {
       "relation": "references",
@@ -4836,9 +5074,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L219",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports_upload_report_to_r2",
-      "target": "bytes",
-      "confidence_score": 1.0
+      "target": "bytes"
     },
     {
       "relation": "references",
@@ -4868,9 +5106,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L95",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports_rationale_95",
-      "target": "services_reports_compile_and_send_contract",
-      "confidence_score": 1.0
+      "target": "services_reports_compile_and_send_contract"
     },
     {
       "relation": "calls",
@@ -4890,9 +5128,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L237",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports_send_weekly_report_email",
-      "target": "backend_app_services_reports_py_bool",
-      "confidence_score": 1.0
+      "target": "backend_app_services_reports_py_bool"
     },
     {
       "relation": "references",
@@ -4901,9 +5139,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L219",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports_upload_report_to_r2",
-      "target": "backend_app_services_reports_py_bool",
-      "confidence_score": 1.0
+      "target": "backend_app_services_reports_py_bool"
     },
     {
       "relation": "references",
@@ -4912,9 +5150,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L143",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports_compile_weekly_report",
-      "target": "backend_app_services_reports_py_asyncsession",
-      "confidence_score": 1.0
+      "target": "backend_app_services_reports_py_asyncsession"
     },
     {
       "relation": "references",
@@ -4923,9 +5161,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L143",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports_compile_weekly_report",
-      "target": "backend_app_services_reports_py_uuid",
-      "confidence_score": 1.0
+      "target": "backend_app_services_reports_py_uuid"
     },
     {
       "relation": "rationale_for",
@@ -4933,9 +5171,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L144",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports_rationale_144",
-      "target": "services_reports_compile_weekly_report",
-      "confidence_score": 1.0
+      "target": "services_reports_compile_weekly_report"
     },
     {
       "relation": "calls",
@@ -4954,9 +5192,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L220",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports_rationale_220",
-      "target": "services_reports_upload_report_to_r2",
-      "confidence_score": 1.0
+      "target": "services_reports_upload_report_to_r2"
     },
     {
       "relation": "rationale_for",
@@ -4964,9 +5202,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L228",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports_rationale_228",
-      "target": "services_reports_generate_signed_cdn_link",
-      "confidence_score": 1.0
+      "target": "services_reports_generate_signed_cdn_link"
     },
     {
       "relation": "calls",
@@ -4985,9 +5223,9 @@
       "source_file": "backend/app/services/reports.py",
       "source_location": "L238",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_reports_rationale_238",
-      "target": "services_reports_send_weekly_report_email",
-      "confidence_score": 1.0
+      "target": "services_reports_send_weekly_report_email"
     },
     {
       "relation": "contains",
@@ -4995,9 +5233,9 @@
       "source_file": "backend/tests/test_models.py",
       "source_location": "L16",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_models",
-      "target": "tests_test_models_test_database_schema_initialization",
-      "confidence_score": 1.0
+      "target": "tests_test_models_test_database_schema_initialization"
     },
     {
       "relation": "rationale_for",
@@ -5005,9 +5243,9 @@
       "source_file": "backend/tests/test_models.py",
       "source_location": "L17",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_models_rationale_17",
-      "target": "tests_test_models_test_database_schema_initialization",
-      "confidence_score": 1.0
+      "target": "tests_test_models_test_database_schema_initialization"
     },
     {
       "relation": "imports_from",
@@ -5016,9 +5254,9 @@
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase6",
-      "target": "app_main",
-      "confidence_score": 1.0
+      "target": "app_main"
     },
     {
       "relation": "contains",
@@ -5026,9 +5264,9 @@
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L16",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase6",
-      "target": "tests_test_phase6_dispose_engine_fixture",
-      "confidence_score": 1.0
+      "target": "tests_test_phase6_dispose_engine_fixture"
     },
     {
       "relation": "contains",
@@ -5036,9 +5274,9 @@
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L21",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase6",
-      "target": "tests_test_phase6_get_test_client",
-      "confidence_score": 1.0
+      "target": "tests_test_phase6_get_test_client"
     },
     {
       "relation": "contains",
@@ -5046,9 +5284,9 @@
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L102",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase6",
-      "target": "tests_test_phase6_test_geolocation_consent_routing",
-      "confidence_score": 1.0
+      "target": "tests_test_phase6_test_geolocation_consent_routing"
     },
     {
       "relation": "contains",
@@ -5056,9 +5294,9 @@
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L62",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase6",
-      "target": "tests_test_phase6_test_layered_consent_phases",
-      "confidence_score": 1.0
+      "target": "tests_test_phase6_test_layered_consent_phases"
     },
     {
       "relation": "contains",
@@ -5066,9 +5304,9 @@
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L28",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase6",
-      "target": "tests_test_phase6_test_tracker_indexeddb_offline_queue",
-      "confidence_score": 1.0
+      "target": "tests_test_phase6_test_tracker_indexeddb_offline_queue"
     },
     {
       "relation": "imports_from",
@@ -5077,9 +5315,9 @@
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase6",
-      "target": "uuid",
-      "confidence_score": 1.0
+      "target": "uuid"
     },
     {
       "relation": "calls",
@@ -5088,9 +5326,9 @@
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L125",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase6_test_geolocation_consent_routing",
-      "target": "tests_test_phase6_get_test_client",
-      "confidence_score": 1.0
+      "target": "tests_test_phase6_get_test_client"
     },
     {
       "relation": "calls",
@@ -5099,9 +5337,9 @@
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L84",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase6_test_layered_consent_phases",
-      "target": "tests_test_phase6_get_test_client",
-      "confidence_score": 1.0
+      "target": "tests_test_phase6_get_test_client"
     },
     {
       "relation": "calls",
@@ -5110,9 +5348,9 @@
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L49",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase6_test_tracker_indexeddb_offline_queue",
-      "target": "tests_test_phase6_get_test_client",
-      "confidence_score": 1.0
+      "target": "tests_test_phase6_get_test_client"
     },
     {
       "relation": "rationale_for",
@@ -5120,9 +5358,9 @@
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L29",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase6_rationale_29",
-      "target": "tests_test_phase6_test_tracker_indexeddb_offline_queue",
-      "confidence_score": 1.0
+      "target": "tests_test_phase6_test_tracker_indexeddb_offline_queue"
     },
     {
       "relation": "rationale_for",
@@ -5130,9 +5368,9 @@
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L63",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase6_rationale_63",
-      "target": "tests_test_phase6_test_layered_consent_phases",
-      "confidence_score": 1.0
+      "target": "tests_test_phase6_test_layered_consent_phases"
     },
     {
       "relation": "rationale_for",
@@ -5140,9 +5378,9 @@
       "source_file": "backend/tests/test_phase6.py",
       "source_location": "L103",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase6_rationale_103",
-      "target": "tests_test_phase6_test_geolocation_consent_routing",
-      "confidence_score": 1.0
+      "target": "tests_test_phase6_test_geolocation_consent_routing"
     },
     {
       "relation": "imports_from",
@@ -5151,9 +5389,9 @@
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L10",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase7",
-      "target": "app_main",
-      "confidence_score": 1.0
+      "target": "app_main"
     },
     {
       "relation": "contains",
@@ -5161,9 +5399,9 @@
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L25",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase7",
-      "target": "tests_test_phase7_dispose_engine_fixture",
-      "confidence_score": 1.0
+      "target": "tests_test_phase7_dispose_engine_fixture"
     },
     {
       "relation": "contains",
@@ -5171,9 +5409,9 @@
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L30",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase7",
-      "target": "tests_test_phase7_get_test_client",
-      "confidence_score": 1.0
+      "target": "tests_test_phase7_get_test_client"
     },
     {
       "relation": "contains",
@@ -5181,9 +5419,9 @@
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L113",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase7",
-      "target": "tests_test_phase7_test_crm_synchronization_dead_letter_queue",
-      "confidence_score": 1.0
+      "target": "tests_test_phase7_test_crm_synchronization_dead_letter_queue"
     },
     {
       "relation": "contains",
@@ -5191,9 +5429,9 @@
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L157",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase7",
-      "target": "tests_test_phase7_test_notion_vault_synchronization_isolation",
-      "confidence_score": 1.0
+      "target": "tests_test_phase7_test_notion_vault_synchronization_isolation"
     },
     {
       "relation": "contains",
@@ -5201,9 +5439,9 @@
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L82",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase7",
-      "target": "tests_test_phase7_test_slack_notification_throttling",
-      "confidence_score": 1.0
+      "target": "tests_test_phase7_test_slack_notification_throttling"
     },
     {
       "relation": "contains",
@@ -5211,9 +5449,9 @@
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase7",
-      "target": "tests_test_phase7_test_weekly_pdf_report_r2_upload",
-      "confidence_score": 1.0
+      "target": "tests_test_phase7_test_weekly_pdf_report_r2_upload"
     },
     {
       "relation": "imports_from",
@@ -5222,9 +5460,9 @@
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase7",
-      "target": "uuid",
-      "confidence_score": 1.0
+      "target": "uuid"
     },
     {
       "relation": "rationale_for",
@@ -5232,9 +5470,9 @@
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L38",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase7_rationale_38",
-      "target": "tests_test_phase7_test_weekly_pdf_report_r2_upload",
-      "confidence_score": 1.0
+      "target": "tests_test_phase7_test_weekly_pdf_report_r2_upload"
     },
     {
       "relation": "rationale_for",
@@ -5242,9 +5480,9 @@
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L83",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase7_rationale_83",
-      "target": "tests_test_phase7_test_slack_notification_throttling",
-      "confidence_score": 1.0
+      "target": "tests_test_phase7_test_slack_notification_throttling"
     },
     {
       "relation": "rationale_for",
@@ -5252,9 +5490,9 @@
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L114",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase7_rationale_114",
-      "target": "tests_test_phase7_test_crm_synchronization_dead_letter_queue",
-      "confidence_score": 1.0
+      "target": "tests_test_phase7_test_crm_synchronization_dead_letter_queue"
     },
     {
       "relation": "rationale_for",
@@ -5262,9 +5500,9 @@
       "source_file": "backend/tests/test_phase7.py",
       "source_location": "L158",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_phase7_rationale_158",
-      "target": "tests_test_phase7_test_notion_vault_synchronization_isolation",
-      "confidence_score": 1.0
+      "target": "tests_test_phase7_test_notion_vault_synchronization_isolation"
     },
     {
       "relation": "contains",
@@ -5272,9 +5510,9 @@
       "source_file": "frontend/src/components/consent-banner/consent-banner.tsx",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "consent_banner_consent_banner",
-      "target": "consent_banner_consent_banner_auraconsentbanner",
-      "confidence_score": 1.0
+      "target": "consent_banner_consent_banner_auraconsentbanner"
     },
     {
       "relation": "contains",
@@ -5327,17 +5565,6 @@
       "confidence_score": 1.0,
       "source": "v1_clients",
       "target": "v1_clients_get_client_config"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L30",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "v1_clients_create_client",
-      "target": "asyncsession"
     },
     {
       "relation": "references",
@@ -5410,57 +5637,6 @@
       "confidence_score": 0.5,
       "source": "clientcreate",
       "target": "models_client_clientpublic"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L11",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "asyncsession",
-      "target": "models_client_client"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L11",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "asyncsession",
-      "target": "models_client_clientcategory"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L11",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "asyncsession",
-      "target": "models_client_clientcreate"
-    },
-    {
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L11",
-      "weight": 0.8,
-      "confidence_score": 0.5,
-      "source": "asyncsession",
-      "target": "models_client_clientpublic"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/app/api/v1/clients.py",
-      "source_location": "L79",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "v1_clients_get_client_config",
-      "target": "asyncsession"
     },
     {
       "relation": "references",
@@ -10109,5 +10285,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "c72a18003f70a2b4a9f12448009eb9ef840b4877"
+  "built_at_commit": "ad96cbd0c01c7b8a0aad68a92b566f1097d97284"
 }

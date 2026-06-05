@@ -50,8 +50,8 @@
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/app/db.py": {
-    "mtime": 1780668723.3411183,
-    "ast_hash": "d5f005269dcd1f21c9c7387f53a6faea",
+    "mtime": 1780669539.767525,
+    "ast_hash": "c5b23807a7581f314408536c865a3a4b",
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/app/main.py": {
@@ -180,8 +180,8 @@
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/reset_db.py": {
-    "mtime": 1780433683.6730506,
-    "ast_hash": "4bcb143531da3b1b87fd2fb1ce8853c0",
+    "mtime": 1780669646.611469,
+    "ast_hash": "c3f1de5c5c076b7e8074b038632d9742",
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/tests/test_models.py": {
@@ -862,6 +862,11 @@
   "/home/allenreiley7/projects/industrial-intelligence/backend/tests/test_phase7.py": {
     "mtime": 1780668918.9535592,
     "ast_hash": "b8afdfd535f0152a99ab156a30c99f2f",
+    "semantic_hash": ""
+  },
+  "/home/allenreiley7/projects/industrial-intelligence/backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py": {
+    "mtime": 1780669548.1574812,
+    "ast_hash": "d1cfacf0212e25f0df30e54ffc6dacc6",
     "semantic_hash": ""
   }
 }
