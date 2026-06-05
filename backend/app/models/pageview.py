@@ -16,6 +16,6 @@ class PageView(SQLModel, table=True):
     url_path: str = Field(index=True)
     referrer: Optional[str] = Field(default=None)
     duration: int = Field(default=0)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
     visit: Optional["Visit"] = Relationship(back_populates="page_views")

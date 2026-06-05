@@ -7,7 +7,7 @@ from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from cachetools import TTLCache
 
-from app.models import Visit, Company, WaitlistLead
+from app.models import Visit, Company, WaitlistLead, PageView
 from app.core.config import settings
 
 logger = logging.getLogger("uvicorn")
@@ -180,7 +180,10 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
     is_buying_committee = unique_id_count >= 3
 
     # 3. Pathway Mapping (Cleanup URL flow to show sequential pages visited)
-    pages = [v.url.split('auraworks.co.za')[-1] if v.url else "/" for v in history]
+    pv_stmt = select(PageView).join(Visit, PageView.visit_id == Visit.id).where(Visit.aura_id == aura_id).order_by(PageView.created_at)
+    pv_res = await session.execute(pv_stmt)
+    page_views = pv_res.scalars().all()
+    pages = [pv.url_path.split('auraworks.co.za')[-1] if pv.url_path else "/" for pv in page_views]
     unique_pathway = []
     for p in pages:
         if not unique_pathway or p != unique_pathway[-1]:
@@ -222,11 +225,11 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
         if past_lead:
             company = await session.get(Company, past_lead.company_id)
             if company:
-                cluster_info += f" | 🔗 Ghost-Linked: {company.name} (Identity via colleague)"
+                cluster_info += f" | 🔗 Ghost-Linked: {company.company_name} (Identity via colleague)"
 
     # 6. DeepSeek Synthesis
     intent = await analyze_corporate_intent(
-        company_name=company.name if company else (lead.company_name_raw if lead else "Anonymous Entity"),
+        company_name=company.company_name if company else (lead.company_name_raw if lead else "Anonymous Entity"),
         industry=company.industry if company else "Industrial",
         pathway=pathway_str,
         position=lead.position if lead else None,

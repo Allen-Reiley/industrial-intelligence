@@ -52,6 +52,7 @@ def upgrade() -> None:
     sa.Column('last_enrichment_attempt', sa.DateTime(), nullable=True),
     sa.Column('cipc_verified', sa.Boolean(), nullable=False),
     sa.Column('cipc_registration_number', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+    sa.Column('total_visits', sa.Integer(), nullable=False, server_default='0'),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['parent_company_id'], ['company.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -60,6 +61,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix_company_domain'), 'company', ['domain'], unique=False)
     op.create_index(op.f('ix_company_id'), 'company', ['id'], unique=False)
     op.create_index(op.f('ix_company_industry'), 'company', ['industry'], unique=False)
+    op.create_index(op.f('ix_company_total_visits'), 'company', ['total_visits'], unique=False)
     op.create_table('department',
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('company_id', sa.Uuid(), nullable=False),

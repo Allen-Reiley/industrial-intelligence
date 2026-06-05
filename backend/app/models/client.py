@@ -30,7 +30,7 @@ class Client(ClientBase, table=True):
     __tablename__ = "client"
     
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
     auto_classified_at: Optional[datetime] = Field(default=None, nullable=True)
 
 class ClientCreate(ClientBase):

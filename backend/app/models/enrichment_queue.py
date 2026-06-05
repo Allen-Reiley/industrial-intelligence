@@ -24,7 +24,7 @@ class EnrichmentQueue(SQLModel, table=True):
     retry_count: int = Field(default=0, index=True)
     last_attempt_at: Optional[datetime] = Field(default=None, nullable=True)
     next_attempt_at: Optional[datetime] = Field(default=None, nullable=True)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 class FailedEnrichment(SQLModel, table=True):
     __tablename__ = "failed_enrichment"
@@ -35,5 +35,5 @@ class FailedEnrichment(SQLModel, table=True):
     aura_id: Optional[str] = Field(default=None, index=True)
     queue_type: QueueType = Field(index=True)
     payload: dict = Field(default_factory=dict, sa_column=Column(JSONB().with_variant(JSON, "sqlite")))
-    failed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    failed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
     error_message: Optional[str] = Field(default=None, nullable=True)

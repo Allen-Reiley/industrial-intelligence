@@ -67,7 +67,7 @@ async def background_lead_analysis(lead_id: int, aura_id: str, payload: dict):
             if lead.company_id:
                 company = await session.get(Company, lead.company_id)
                 if company:
-                    company_name = company.name
+                    company_name = company.company_name
             elif lead.company_name_raw:
                 company_name = lead.company_name_raw
 
@@ -139,10 +139,9 @@ async def join_waitlist(
         if website:
             domain = website.replace("https://", "").replace("http://", "").split("/")[0].lower()
         
-        # Search for company by domain or name within the specific client's silo
+        # Search for company by domain or name globally (since Company is a shared table)
         company_stmt = select(Company).where(
-            (Company.client_id == client_id) & 
-            ((Company.domain == domain) if domain else (Company.name == raw_company_name))
+            (Company.domain == domain) if domain else (Company.company_name == raw_company_name)
         )
         res_company = await session.execute(company_stmt)
         company = res_company.scalars().first()
@@ -150,11 +149,10 @@ async def join_waitlist(
         if not company:
             # Create a new Juristic record if this is a first-time encounter
             company = Company(
-                client_id=client_id,
-                name=raw_company_name or "Unknown Industrial Entity", 
+                company_name=raw_company_name or "Unknown Industrial Entity", 
                 domain=domain,
                 industry=payload.get("industry"),
-                is_verified=True # Direct form submission serves as manual verification
+                cipc_verified=True # Direct form submission serves as manual verification
             )
             session.add(company)
             await session.commit()

@@ -49,11 +49,11 @@ async def get_leads(
                 "aura_id": lead.aura_id,
                 "is_warm": is_warm,
                 "company": {
-                    "name": company.name if company else lead.company_name_raw or "Unknown Entity",
+                    "name": company.company_name if company else lead.company_name_raw or "Unknown Entity",
                     "domain": company.domain if company else None,
                     "industry": company.industry if company else lead.industry,
                     "total_visits": company.total_visits if company else 1,
-                    "is_verified": company.is_verified if company else False
+                    "is_verified": company.cipc_verified if company else False
                 }
             })
             

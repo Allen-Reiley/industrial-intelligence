@@ -26,7 +26,7 @@ class WaitlistLead(SQLModel, table=True):
     crm: Optional[str] = Field(default=None)
     aura_id: Optional[str] = Field(default=None, index=True)
     welcome_email_sent: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
     company: Optional["Company"] = Relationship(back_populates="leads")

@@ -7,6 +7,11 @@ from typing import Optional, List, Dict, Any
 
 logger = logging.getLogger("uvicorn")
 
+class EnrichmentError(Exception):
+    def __init__(self, message: str, status_code: Optional[int] = None):
+        super().__init__(message)
+        self.status_code = status_code
+
 # --- AuraWorks Identity Bridge: Consumer ISP & Infrastructure Blacklist ---
 # Tailored for the South African Market (National Expansion)
 CONSUMER_ISP_KEYWORDS = [
@@ -76,8 +81,10 @@ async def enrich_visitor_data(ip_address: str, volunteered_company: Optional[str
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(url, timeout=5.0)
-            if response.status_code != 200:
-                return {"company_name": "Unknown", "is_b2b": False, "confidence_score": 0.0}
+            if response.status_code in (429, 503, 504):
+                raise EnrichmentError(f"IPinfo gateway error: {response.status_code}", status_code=response.status_code)
+            elif response.status_code != 200:
+                raise EnrichmentError(f"IPinfo request error: {response.status_code}", status_code=response.status_code)
 
             data = response.json()
             company_data = data.get("company", {})
@@ -114,9 +121,14 @@ async def enrich_visitor_data(ip_address: str, volunteered_company: Optional[str
                 "region": data.get("region"),
                 "provider_type": local_intel["type"]
             }
+        except (httpx.RequestError, socket.timeout) as e:
+            logger.error(f"🚨 IPinfo Network Failure: {e}")
+            raise EnrichmentError(f"IPinfo network failure: {e}", status_code=504)
+        except EnrichmentError:
+            raise
         except Exception as e:
-            logger.error(f"🚨 IPinfo Failure: {e}")
-            return {"company_name": "Error", "is_b2b": False, "confidence_score": 0.0}
+            logger.error(f"🚨 IPinfo Unexpected Failure: {e}")
+            raise EnrichmentError(f"IPinfo unexpected failure: {e}", status_code=500)
 
 async def get_departmental_intelligence(domain: str) -> List[Dict]:
     """
@@ -142,17 +154,200 @@ async def get_departmental_intelligence(domain: str) -> List[Dict]:
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(url, json=payload, timeout=12.0)
-            if response.status_code == 200:
-                data = response.json()
-                people = data.get("people", [])
-                
-                return [{
-                    "role": person.get("title", "Lead"),
-                    "name": person.get("name"),
-                    "email": person.get("email"),
-                    "linkedin_url": person.get("linkedin_url")
-                } for person in people]
-            return []
+            if response.status_code in (429, 503, 504):
+                raise EnrichmentError(f"Apollo gateway error: {response.status_code}", status_code=response.status_code)
+            elif response.status_code != 200:
+                raise EnrichmentError(f"Apollo request error: {response.status_code}", status_code=response.status_code)
+
+            data = response.json()
+            people = data.get("people", [])
+            
+            return [{
+                "role": person.get("title", "Lead"),
+                "name": person.get("name"),
+                "email": person.get("email"),
+                "linkedin_url": person.get("linkedin_url")
+            } for person in people]
+        except (httpx.RequestError, socket.timeout) as e:
+            logger.error(f"🚨 Apollo Network Failure: {e}")
+            raise EnrichmentError(f"Apollo network failure: {e}", status_code=504)
+        except EnrichmentError:
+            raise
         except Exception as e:
-            logger.error(f"🚨 Apollo Enrichment Failure: {e}")
-            return []
+            logger.error(f"🚨 Apollo Unexpected Failure: {e}")
+            raise EnrichmentError(f"Apollo unexpected failure: {e}", status_code=500)
+
+async def process_enrichment_queue():
+    """
+    Background Task Runner: Processes queued items across a strict 3-stage exponential backoff pattern.
+    Runs on a 15-minute cron loop (orchestrated via APScheduler).
+    """
+    from app.db import async_session_maker
+    from app.models.enrichment_queue import EnrichmentQueue, QueueType, FailedEnrichment
+    from app.models.visit import Visit
+    from app.models.company import Company
+    from app.models.department import Department
+    from sqlmodel import select
+    from datetime import datetime, timezone, timedelta
+    from uuid import UUID
+
+    if not async_session_maker:
+        return
+
+    current_time = datetime.now(timezone.utc).replace(tzinfo=None)
+    cutoff_time = current_time - timedelta(days=7)
+
+    async with async_session_maker() as session:
+        # 1. Purge expired entries (> 7 days continuous failure) to FailedEnrichment
+        try:
+            expired_stmt = select(EnrichmentQueue).where(
+                EnrichmentQueue.created_at <= cutoff_time
+            )
+            expired_res = await session.execute(expired_stmt)
+            expired_items = expired_res.scalars().all()
+
+            for item in expired_items:
+                failed = FailedEnrichment(
+                    client_id=item.client_id,
+                    visit_id=item.visit_id,
+                    aura_id=item.aura_id,
+                    queue_type=item.queue_type,
+                    payload=item.payload,
+                    failed_at=current_time,
+                    error_message="Enrichment failures persisted beyond 7 days cutoff"
+                )
+                session.add(failed)
+                logger.error(f"🚨 Telemetry Alert: Enrichment task {item.id} (type: {item.queue_type}) failed for > 7 days. Relocated to FailedEnrichment.")
+                await session.delete(item)
+            
+            await session.commit()
+        except Exception as e:
+            await session.rollback()
+            logger.error(f"🚨 Enrichment Queue Janitor Error: {e}")
+
+        # 2. Process active queued entries (pending or scheduled for retry)
+        try:
+            active_stmt = select(EnrichmentQueue).where(
+                EnrichmentQueue.status != "completed",
+                (EnrichmentQueue.next_attempt_at == None) | (EnrichmentQueue.next_attempt_at <= current_time)
+            )
+            active_res = await session.execute(active_stmt)
+            active_items = active_res.scalars().all()
+
+            for item in active_items:
+                try:
+                    if item.queue_type == QueueType.IPINFO:
+                        ip_address = item.payload.get("ip_address")
+                        if not ip_address:
+                            item.status = "completed" # Invalid payload
+                            session.add(item)
+                            await session.commit()
+                            continue
+                            
+                        # Perform IPinfo lookup
+                        info = await enrich_visitor_data(ip_address)
+                        
+                        # Resolve Company
+                        domain = info.get("domain")
+                        company = None
+                        if domain and domain not in ["unknown.com", "n/a"]:
+                            comp_stmt = select(Company).where(Company.domain == domain)
+                            company_res = await session.execute(comp_stmt)
+                            company = company_res.scalars().first()
+                            if not company:
+                                company = Company(
+                                    company_name=info.get("company_name", "Unknown"),
+                                    domain=domain,
+                                    cipc_verified=False,
+                                    total_visits=1
+                                )
+                                session.add(company)
+                                await session.commit()
+                                await session.refresh(company)
+                            else:
+                                company.total_visits += 1
+                                session.add(company)
+                                await session.commit()
+
+                        # Update corresponding Visit row
+                        if item.visit_id:
+                            visit = await session.get(Visit, item.visit_id)
+                            if visit:
+                                if company:
+                                    visit.company_id = company.id
+                                visit.verification_status = "verified" if (company and company.cipc_verified) else "verifying"
+                                session.add(visit)
+                                await session.commit()
+
+                    elif item.queue_type == QueueType.APOLLO:
+                        domain = item.payload.get("domain")
+                        if not domain:
+                            item.status = "completed"
+                            session.add(item)
+                            await session.commit()
+                            continue
+                            
+                        # Perform Apollo lookup
+                        depts_data = await get_departmental_intelligence(domain)
+                        
+                        # Resolve Company
+                        comp_stmt = select(Company).where(Company.domain == domain)
+                        company_res = await session.execute(comp_stmt)
+                        company = company_res.scalars().first()
+
+                        if company and depts_data:
+                            # Map departments and contacts
+                            for dept in depts_data:
+                                # Avoid duplicate contacts
+                                dept_exist_stmt = select(Department).where(
+                                    Department.company_id == company.id,
+                                    Department.email == dept.get("email")
+                                )
+                                existing_dept_res = await session.execute(dept_exist_stmt)
+                                existing_dept = existing_dept_res.scalars().first()
+                                if not existing_dept:
+                                    # Priority score mapping (1 to 5)
+                                    priority_score = 1
+                                    role = dept.get("role", "Lead").lower()
+                                    for kw in ["procurement", "supply chain", "chief engineer", "director"]:
+                                        if kw in role:
+                                            priority_score = 5
+                                            break
+                                    new_dept = Department(
+                                        company_id=company.id,
+                                        contact_name=dept.get("name", "Unknown Contact"),
+                                        role_title=dept.get("role", "Lead"),
+                                        email=dept.get("email"),
+                                        phone=dept.get("phone"),
+                                        linkedin_url=dept.get("linkedin_url"),
+                                        priority_score=priority_score
+                                    )
+                                    session.add(new_dept)
+                            await session.commit()
+
+                    # Success: mark completed
+                    item.status = "completed"
+                    item.last_attempt_at = datetime.now(timezone.utc).replace(tzinfo=None)
+                    session.add(item)
+                    await session.commit()
+
+                except EnrichmentError as e:
+                    # Exponential Backoff calculation
+                    item.retry_count += 1
+                    item.last_attempt_at = datetime.now(timezone.utc).replace(tzinfo=None)
+                    
+                    if item.retry_count == 1:
+                        delay = timedelta(minutes=15)
+                    elif item.retry_count == 2:
+                        delay = timedelta(hours=1)
+                    else:
+                        delay = timedelta(hours=6)
+                        
+                    item.next_attempt_at = item.last_attempt_at + delay
+                    item.status = "failed_retry"
+                    session.add(item)
+                    await session.commit()
+                    logger.warning(f"⚠️ Enrichment queue item {item.id} failed attempt {item.retry_count}: {e}. Scheduled retry at {item.next_attempt_at}")
+
+        except Exception as e:
+            logger.error(f"🚨 Enrichment Queue processing cycle error: {e}")

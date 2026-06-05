@@ -10,11 +10,13 @@ from cachetools import TTLCache
 
 # Internal AuraWorks Imports
 from app.models.visit import Visit, VisitCreate, PageViewCreate
-from app.models import Company, WaitlistLead
-from app.services.enrichment import enrich_visitor_data
-from app.services.notifications import post_to_slack
+from app.models import Company, WaitlistLead, PageView
+from app.models.enrichment_queue import EnrichmentQueue, QueueType
+from app.services.enrichment import enrich_visitor_data, EnrichmentError
+from app.services.notifications import post_to_slack, handle_juristic_only_alert
 from app.services.intelligence import get_visitor_journey
 from app.db import async_session_maker
+from uuid import UUID
 
 router = APIRouter()
 logger = logging.getLogger("uvicorn")
@@ -48,28 +50,37 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
 
     async with async_session_maker() as session:
         try:
-            # 1. Forensic Enrichment
-            enriched_info = await enrich_visitor_data(client_ip)
+            # 1. Forensic Enrichment (with defensive wrapper for Task 2.3)
+            is_failed = False
+            try:
+                enriched_info = await enrich_visitor_data(client_ip)
+            except EnrichmentError as e:
+                logger.warning(f"⚠️ IPinfo enrichment failed for IP {client_ip}, queuing: {e}")
+                is_failed = True
+                enriched_info = {"company_name": "Anonymous Entity", "domain": "unknown.com", "city": "Unknown", "region": "ZA"}
+
             domain = enriched_info.get("domain")
             
             # 2. Entity Resolution Logic
-            res = await session.execute(
-                select(Company).where(
-                    Company.domain == domain,
-                    Company.client_id == payload.client_id
+            # Search by domain globally (since Company is a shared table)
+            company = None
+            if domain and domain not in ["unknown.com", "n/a"]:
+                res = await session.execute(
+                    select(Company).where(
+                        Company.domain == domain
+                    )
                 )
-            )
-            company = res.scalars().first()
+                company = res.scalars().first()
 
             if company:
                 company.total_visits += 1 
                 session.add(company)
             elif domain and domain not in ["unknown.com", "n/a"]:
                 company = Company(
-                    client_id=payload.client_id,
-                    name=enriched_info.get("company_name", "Unknown"),
+                    company_name=enriched_info.get("company_name", "Unknown"),
                     domain=domain,
-                    is_verified=False
+                    cipc_verified=False,
+                    total_visits=1
                 )
                 session.add(company)
             
@@ -83,18 +94,41 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
                 client_id=payload.client_id,
                 aura_id=payload.aura_id,
                 ip_address=client_ip,
-                url=payload.url,
-                referrer=payload.referrer,
-                verification_status="verified" if (company and company.is_verified) else "verifying"
+                verification_status="verified" if (company and company.cipc_verified) else "verifying"
             )
             session.add(db_visit)
             await session.commit()
+            await session.refresh(db_visit)
+
+            # Create initial PageView record
+            db_page_view = PageView(
+                client_id=payload.client_id,
+                visit_id=db_visit.id,
+                url_path=payload.url,
+                referrer=payload.referrer or "direct"
+            )
+            session.add(db_page_view)
+            await session.commit()
+
+            # 4. Queue to EnrichmentQueue if IPinfo lookup failed
+            if is_failed:
+                queue_entry = EnrichmentQueue(
+                    client_id=payload.client_id,
+                    visit_id=db_visit.id,
+                    aura_id=payload.aura_id,
+                    queue_type=QueueType.IPINFO,
+                    payload={"ip_address": client_ip},
+                    status="pending",
+                    retry_count=0
+                )
+                session.add(queue_entry)
+                await session.commit()
             
         except Exception as e:
             await session.rollback()
             logger.error(f"🚨 Silent Ingestion Error: {e}")
 
-async def process_exit_logic(aura_id: str, client_id: str):
+async def process_exit_logic(aura_id: str, client_id: str, duration: int = 0, has_downloaded_asset: bool = False):
     """
     THE BATCH PROCESSOR:
     Fires exclusively upon departure. Evaluates identity data gates to avoid chat pollution.
@@ -103,25 +137,56 @@ async def process_exit_logic(aura_id: str, client_id: str):
     if not async_session_maker:
         return
 
-    # Anti-Spam: Skip duplicate execution loops for the same session footprint
-    if aura_id in exit_notification_cache:
+    # Anti-Spam: Skip duplicate execution loops for the same session footprint (Task 2.2 composite keys)
+    cache_key = f"{client_id}:{aura_id}"
+    if cache_key in exit_notification_cache:
         return
 
     async with async_session_maker() as session:
         try:
-            # 1. THE GATEKEEPER: Did they convert or hand over data via banner forms?
+            # 1. Dual-lookup configuration mapping both individual context and corporate metadata independently
+            # Individual context
             lead_stmt = select(WaitlistLead).where(
                 WaitlistLead.aura_id == aura_id,
-                WaitlistLead.client_id == client_id
+                WaitlistLead.client_id == UUID(client_id) if isinstance(client_id, str) else client_id
             )
             lead = (await session.execute(lead_stmt)).scalars().first()
 
-            # Ghost tracking bypass: If no identity attributes exist, terminate silently.
-            if not lead:
+            # Corporate metadata: find active Company identification matching the cryptographic aura_id
+            visit_stmt = select(Visit).where(
+                Visit.aura_id == aura_id,
+                Visit.client_id == UUID(client_id) if isinstance(client_id, str) else client_id,
+                Visit.company_id != None
+            ).order_by(Visit.created_at.desc())
+            visit_with_company = (await session.execute(visit_stmt)).scalars().first()
+
+            company = None
+            if visit_with_company:
+                company = await session.get(Company, visit_with_company.company_id)
+
+            if not lead and not company:
+                return
+
+            if not lead and company:
+                journey = await get_visitor_journey(aura_id, session)
+                
+                # Check if duration criteria breach the 15-second baseline tracking floor
+                # Sum the durations of all visits for this session
+                visits_stmt = select(Visit).where(
+                    Visit.aura_id == aura_id,
+                    Visit.client_id == UUID(client_id) if isinstance(client_id, str) else client_id
+                )
+                visits = (await session.execute(visits_stmt)).scalars().all()
+                db_total_duration = sum(v.duration for v in visits if v.duration)
+                effective_duration = max(duration, db_total_duration)
+
+                if effective_duration >= 15 or has_downloaded_asset:
+                    exit_notification_cache[cache_key] = True
+                    await handle_juristic_only_alert(company, journey, client_id)
                 return
 
             # Active context throttle lock
-            exit_notification_cache[aura_id] = True
+            exit_notification_cache[cache_key] = True
             logger.info(f"🚪 High-Intent Exit Flagged for {aura_id}. Compiling full DeepSeek journey matrix...")
 
             # 2. Compile the full session ledger into a single operational object
@@ -132,7 +197,7 @@ async def process_exit_logic(aura_id: str, client_id: str):
             if lead.company_id:
                 company = await session.get(Company, lead.company_id)
                 if company:
-                    company_name = company.name
+                    company_name = company.company_name
 
             # 4. Normalize the unified dataset dictionary payload with Location data included
             complete_lead_payload = {
@@ -239,8 +304,7 @@ async def track_event(payload: PageViewCreate):
         target_aura_id = payload.aura_id if getattr(payload, "aura_id", None) else payload.client_id
         res = await session.execute(
             select(Visit).where(
-                Visit.aura_id == target_aura_id,
-                Visit.url == payload.url 
+                Visit.aura_id == target_aura_id
             ).order_by(Visit.created_at.desc())
         )
         visit = res.scalars().first()
@@ -275,13 +339,12 @@ async def track_exit(payload: PageViewCreate, background_tasks: BackgroundTasks)
     except (ValueError, TypeError):
         processed_duration = 0
 
-    target_aura_id = payload.aura_id if getattr(payload, "aura_id", None) else payload.client_id
+    target_aura_id = payload.aura_id if getattr(payload, "aura_id", None) else str(payload.client_id)
 
     async with async_session_maker() as session:
         res = await session.execute(
             select(Visit).where(
-                Visit.aura_id == target_aura_id,
-                Visit.url == payload.url
+                Visit.aura_id == target_aura_id
             ).order_by(Visit.created_at.desc())
         )
         visit = res.scalars().first()
@@ -294,6 +357,12 @@ async def track_exit(payload: PageViewCreate, background_tasks: BackgroundTasks)
 
     # Launch Batch Intelligence processing sequentially when the session closes down
     if target_aura_id and payload.client_id:
-        background_tasks.add_task(process_exit_logic, target_aura_id, payload.client_id)
+        background_tasks.add_task(
+            process_exit_logic,
+            target_aura_id,
+            str(payload.client_id),
+            processed_duration,
+            getattr(payload, "has_downloaded_asset", False)
+        )
 
     return {"status": "recorded"}

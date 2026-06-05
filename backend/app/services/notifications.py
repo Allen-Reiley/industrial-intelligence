@@ -134,3 +134,42 @@ async def post_to_slack(lead_data: dict, journey: dict = None):
             response.raise_for_status()
         except Exception as e:
             logger.error(f"Lead Channel Dispatch Failure: {e}")
+
+async def handle_juristic_only_alert(company, journey: dict, client_id: str):
+    """
+    Alerts Slack when high-intent juristic visitor leaves the site (no personal data).
+    """
+    webhook_url = settings.SLACK_WEBHOOK_URL or settings.SLACK_VISIT_WEBHOOK_URL
+    if not webhook_url:
+        return
+
+    payload = {
+        "blocks": [
+            {
+                "type": "header",
+                "text": {"type": "plain_text", "text": "🏢 Juristic Intent Detected"}
+            },
+            {
+                "type": "section",
+                "fields": [
+                    {"type": "mrkdwn", "text": f"*Entity:*\n{company.company_name}"},
+                    {"type": "mrkdwn", "text": f"*Domain:*\n{company.domain}"},
+                    {"type": "mrkdwn", "text": f"*Industry:*\n{company.industry or 'Industrial'}"},
+                    {"type": "mrkdwn", "text": f"*Pathway:*\n{journey.get('pathway', 'Direct')}"}
+                ]
+            },
+            {
+                "type": "context",
+                "elements": [
+                    {"type": "mrkdwn", "text": f"📍 Forensic Audit: `{journey.get('intent_summary', '')[:200]}`"}
+                ]
+            }
+        ]
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(webhook_url, json=payload, timeout=10.0)
+            response.raise_for_status()
+        except Exception as e:
+            logger.error(f"🚨 Juristic Alert Slack Dispatch Failure: {e}")

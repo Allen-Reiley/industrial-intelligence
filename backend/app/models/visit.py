@@ -30,8 +30,8 @@ class Visit(SQLModel, table=True):
     is_consented: bool = Field(default=False, index=True)
     fingerprint_hash: Optional[str] = Field(default=None, index=True, nullable=True)
     duration: int = Field(default=0)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
     company: Optional["Company"] = Relationship(back_populates="visits")
     page_views: List["PageView"] = Relationship(back_populates="visit")
@@ -54,3 +54,4 @@ class PageViewCreate(BaseModel):
     event_type: str = "exit"
     intent_cluster: Optional[str] = None
     signature: Optional[Dict[str, Any]] = None
+    has_downloaded_asset: Optional[bool] = False
