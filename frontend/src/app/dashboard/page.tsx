@@ -18,7 +18,7 @@ import {
 
 // --- DATA CONTRACTS ---
 interface Lead {
-  id: number;
+  id: string;
   company_name: string | null;
   is_b2b: boolean;
   industry: string | null;
