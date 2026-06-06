@@ -4,166 +4,229 @@
   "graph": {},
   "nodes": [
     {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "frontend/src/app/admin/page.tsx",
+      "source_location": "L1",
+      "id": "admin_page",
+      "community": 21,
+      "norm_label": "page.tsx"
+    },
+    {
+      "label": "Lead",
+      "file_type": "code",
+      "source_file": "frontend/src/app/admin/page.tsx",
+      "source_location": "L19",
+      "id": "admin_page_lead",
+      "community": 21,
+      "norm_label": "lead"
+    },
+    {
+      "label": "AdminDashboard()",
+      "file_type": "code",
+      "source_file": "frontend/src/app/admin/page.tsx",
+      "source_location": "L38",
+      "id": "admin_page_admindashboard",
+      "community": 21,
+      "norm_label": "admindashboard()"
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "frontend/src/app/dashboard/page.tsx",
+      "source_location": "L1",
+      "id": "dashboard_page",
+      "community": 18,
+      "norm_label": "page.tsx"
+    },
+    {
+      "label": "Lead",
+      "file_type": "code",
+      "source_file": "frontend/src/app/dashboard/page.tsx",
+      "source_location": "L20",
+      "id": "dashboard_page_lead",
+      "community": 18,
+      "norm_label": "lead"
+    },
+    {
+      "label": "GroupedEntity",
+      "file_type": "code",
+      "source_file": "frontend/src/app/dashboard/page.tsx",
+      "source_location": "L36",
+      "id": "dashboard_page_groupedentity",
+      "community": 18,
+      "norm_label": "groupedentity"
+    },
+    {
+      "label": "UnifiedDashboard()",
+      "file_type": "code",
+      "source_file": "frontend/src/app/dashboard/page.tsx",
+      "source_location": "L43",
+      "id": "dashboard_page_unifieddashboard",
+      "community": 18,
+      "norm_label": "unifieddashboard()"
+    },
+    {
       "label": "db.py",
       "file_type": "code",
       "source_file": "backend/app/db.py",
       "source_location": "L1",
-      "id": "app_db",
       "community": 2,
-      "norm_label": "db.py"
+      "norm_label": "db.py",
+      "id": "app_db"
     },
     {
       "label": "init_db()",
       "file_type": "code",
       "source_file": "backend/app/db.py",
       "source_location": "L68",
-      "id": "app_db_init_db",
       "community": 2,
-      "norm_label": "init_db()"
+      "norm_label": "init_db()",
+      "id": "app_db_init_db"
     },
     {
       "label": "get_async_session()",
       "file_type": "code",
       "source_file": "backend/app/db.py",
       "source_location": "L138",
-      "id": "app_db_get_async_session",
       "community": 4,
-      "norm_label": "get_async_session()"
+      "norm_label": "get_async_session()",
+      "id": "app_db_get_async_session"
     },
     {
       "label": "Request",
       "file_type": "code",
       "source_file": "backend/app/db.py",
       "source_location": "L138",
-      "id": "request",
       "community": 4,
-      "norm_label": "request"
+      "norm_label": "request",
+      "id": "request"
     },
     {
       "label": "AsyncSession",
       "file_type": "code",
       "source_file": "backend/app/db.py",
       "source_location": "L138",
-      "id": "asyncsession",
       "community": 4,
-      "norm_label": "asyncsession"
+      "norm_label": "asyncsession",
+      "id": "asyncsession"
     },
     {
       "label": "get_session()",
       "file_type": "code",
       "source_file": "backend/app/db.py",
       "source_location": "L181",
-      "id": "app_db_get_session",
       "community": 2,
-      "norm_label": "get_session()"
+      "norm_label": "get_session()",
+      "id": "app_db_get_session"
     },
     {
       "label": "Schema Synchronization.     Verifies that the database ledger tables are correct",
       "file_type": "rationale",
       "source_file": "backend/app/db.py",
       "source_location": "L69",
-      "id": "app_db_rationale_69",
       "community": 2,
-      "norm_label": "schema synchronization.     verifies that the database ledger tables are correct"
+      "norm_label": "schema synchronization.     verifies that the database ledger tables are correct",
+      "id": "app_db_rationale_69"
     },
     {
       "label": "FastAPI Dependency: Yields a transaction-scoped Asynchronous session.     Automa",
       "file_type": "rationale",
       "source_file": "backend/app/db.py",
       "source_location": "L139",
-      "id": "app_db_rationale_139",
       "community": 4,
-      "norm_label": "fastapi dependency: yields a transaction-scoped asynchronous session.     automa"
+      "norm_label": "fastapi dependency: yields a transaction-scoped asynchronous session.     automa",
+      "id": "app_db_rationale_139"
     },
     {
       "label": "FastAPI Dependency: Yields a transaction-scoped Synchronous session.     Used fo",
       "file_type": "rationale",
       "source_file": "backend/app/db.py",
       "source_location": "L182",
-      "id": "app_db_rationale_182",
       "community": 2,
-      "norm_label": "fastapi dependency: yields a transaction-scoped synchronous session.     used fo"
+      "norm_label": "fastapi dependency: yields a transaction-scoped synchronous session.     used fo",
+      "id": "app_db_rationale_182"
     },
     {
       "label": "1ac2f9ae2341_fix_schema_drift.py",
       "file_type": "code",
       "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
       "source_location": "L1",
-      "id": "versions_1ac2f9ae2341_fix_schema_drift",
-      "community": 1,
-      "norm_label": "1ac2f9ae2341_fix_schema_drift.py"
+      "community": 16,
+      "norm_label": "1ac2f9ae2341_fix_schema_drift.py",
+      "id": "versions_1ac2f9ae2341_fix_schema_drift"
     },
     {
       "label": "table_exists()",
       "file_type": "code",
       "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
       "source_location": "L22",
-      "id": "versions_1ac2f9ae2341_fix_schema_drift_table_exists",
-      "community": 1,
-      "norm_label": "table_exists()"
+      "community": 16,
+      "norm_label": "table_exists()",
+      "id": "versions_1ac2f9ae2341_fix_schema_drift_table_exists"
     },
     {
       "label": "column_exists()",
       "file_type": "code",
       "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
       "source_location": "L29",
-      "id": "versions_1ac2f9ae2341_fix_schema_drift_column_exists",
-      "community": 1,
-      "norm_label": "column_exists()"
+      "community": 16,
+      "norm_label": "column_exists()",
+      "id": "versions_1ac2f9ae2341_fix_schema_drift_column_exists"
     },
     {
       "label": "get_column_type()",
       "file_type": "code",
       "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
       "source_location": "L36",
-      "id": "versions_1ac2f9ae2341_fix_schema_drift_get_column_type",
-      "community": 1,
-      "norm_label": "get_column_type()"
+      "community": 16,
+      "norm_label": "get_column_type()",
+      "id": "versions_1ac2f9ae2341_fix_schema_drift_get_column_type"
     },
     {
       "label": "upgrade()",
       "file_type": "code",
       "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
       "source_location": "L42",
-      "id": "versions_1ac2f9ae2341_fix_schema_drift_upgrade",
-      "community": 1,
-      "norm_label": "upgrade()"
+      "community": 16,
+      "norm_label": "upgrade()",
+      "id": "versions_1ac2f9ae2341_fix_schema_drift_upgrade"
     },
     {
       "label": "downgrade()",
       "file_type": "code",
       "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
       "source_location": "L166",
-      "id": "versions_1ac2f9ae2341_fix_schema_drift_downgrade",
-      "community": 1,
-      "norm_label": "downgrade()"
+      "community": 16,
+      "norm_label": "downgrade()",
+      "id": "versions_1ac2f9ae2341_fix_schema_drift_downgrade"
     },
     {
       "label": "Upgrade schema to resolve legacy drift.",
       "file_type": "rationale",
       "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
       "source_location": "L43",
-      "id": "versions_1ac2f9ae2341_fix_schema_drift_rationale_43",
-      "community": 1,
-      "norm_label": "upgrade schema to resolve legacy drift."
+      "community": 16,
+      "norm_label": "upgrade schema to resolve legacy drift.",
+      "id": "versions_1ac2f9ae2341_fix_schema_drift_rationale_43"
     },
     {
       "label": "reset_db.py",
       "file_type": "code",
       "source_file": "backend/reset_db.py",
       "source_location": "L1",
-      "id": "backend_reset_db",
       "community": 1,
-      "norm_label": "reset_db.py"
+      "norm_label": "reset_db.py",
+      "id": "backend_reset_db"
     },
     {
       "label": "reset_database()",
       "file_type": "code",
       "source_file": "backend/reset_db.py",
       "source_location": "L15",
-      "id": "backend_reset_db_reset_database",
       "community": 1,
-      "norm_label": "reset_database()"
+      "norm_label": "reset_database()",
+      "id": "backend_reset_db_reset_database"
     },
     {
       "label": "waitlist.py",
@@ -278,7 +341,7 @@
       "file_type": "code",
       "source_file": "backend/app/core/scheduler.py",
       "source_location": "L13",
-      "community": 18,
+      "community": 8,
       "norm_label": "run_enrichment_cycle()",
       "id": "core_scheduler_run_enrichment_cycle"
     },
@@ -305,7 +368,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/core/scheduler.py",
       "source_location": "L14",
-      "community": 18,
+      "community": 8,
       "norm_label": "industrial async enrichment task:     maps corporate departments for captured ju",
       "id": "core_scheduler_rationale_14"
     },
@@ -1088,7 +1151,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/notion.py",
       "source_location": "L1",
-      "community": 16,
+      "community": 4,
       "norm_label": "notion.py",
       "id": "services_notion"
     },
@@ -1097,7 +1160,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/notion.py",
       "source_location": "L8",
-      "community": 16,
+      "community": 4,
       "norm_label": "notionvault",
       "id": "services_notion_notionvault"
     },
@@ -1106,7 +1169,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/notion.py",
       "source_location": "L9",
-      "community": 16,
+      "community": 4,
       "norm_label": ".__init__()",
       "id": "services_notion_notionvault_init"
     },
@@ -1115,7 +1178,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/notion.py",
       "source_location": "L19",
-      "community": 16,
+      "community": 4,
       "norm_label": ".archive_corporate_visit()",
       "id": "services_notion_notionvault_archive_corporate_visit"
     },
@@ -1124,7 +1187,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/services/notion.py",
       "source_location": "L20",
-      "community": 16,
+      "community": 4,
       "norm_label": "creates a clinical audit page in the notion vault.",
       "id": "services_notion_rationale_20"
     },
@@ -2033,7 +2096,7 @@
       "file_type": "code",
       "source_file": "backend/app/models/company.py",
       "source_location": "L12",
-      "community": 18,
+      "community": 0,
       "norm_label": "company",
       "id": "models_company_company"
     },
@@ -2051,7 +2114,7 @@
       "file_type": "code",
       "source_file": "backend/app/models/department.py",
       "source_location": "L10",
-      "community": 18,
+      "community": 0,
       "norm_label": "department",
       "id": "models_department_department"
     },
@@ -2087,7 +2150,7 @@
       "file_type": "code",
       "source_file": "backend/app/models/enrichment_queue.py",
       "source_location": "L38",
-      "community": 18,
+      "community": 0,
       "norm_label": "failedenrichment",
       "id": "models_enrichment_queue_failedenrichment"
     },
@@ -2267,7 +2330,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L1",
-      "community": 18,
+      "community": 0,
       "norm_label": "enrichment.py",
       "id": "services_enrichment"
     },
@@ -2294,7 +2357,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L11",
-      "community": 18,
+      "community": 0,
       "norm_label": ".__init__()",
       "id": "services_enrichment_enrichmenterror_init"
     },
@@ -2303,7 +2366,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L11",
-      "community": 18,
+      "community": 0,
       "norm_label": "str",
       "id": "backend_app_services_enrichment_py_str"
     },
@@ -2312,7 +2375,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L11",
-      "community": 18,
+      "community": 0,
       "norm_label": "int",
       "id": "backend_app_services_enrichment_py_int"
     },
@@ -2321,7 +2384,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L23",
-      "community": 18,
+      "community": 0,
       "norm_label": "is_consumer_traffic()",
       "id": "services_enrichment_is_consumer_traffic"
     },
@@ -2330,7 +2393,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L23",
-      "community": 18,
+      "community": 0,
       "norm_label": "bool",
       "id": "backend_app_services_enrichment_py_bool"
     },
@@ -2339,7 +2402,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L30",
-      "community": 18,
+      "community": 0,
       "norm_label": "perform_local_reverse_dns()",
       "id": "services_enrichment_perform_local_reverse_dns"
     },
@@ -2348,7 +2411,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L30",
-      "community": 18,
+      "community": 0,
       "norm_label": "any",
       "id": "backend_app_services_enrichment_py_any"
     },
@@ -2357,7 +2420,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L51",
-      "community": 18,
+      "community": 0,
       "norm_label": "enrich_visitor_data()",
       "id": "services_enrichment_enrich_visitor_data"
     },
@@ -2366,7 +2429,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L133",
-      "community": 18,
+      "community": 0,
       "norm_label": "get_departmental_intelligence()",
       "id": "services_enrichment_get_departmental_intelligence"
     },
@@ -2375,7 +2438,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L180",
-      "community": 18,
+      "community": 0,
       "norm_label": "enrich_company_departments()",
       "id": "services_enrichment_enrich_company_departments"
     },
@@ -2384,7 +2447,7 @@
       "file_type": "code",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L253",
-      "community": 18,
+      "community": 0,
       "norm_label": "process_enrichment_queue()",
       "id": "services_enrichment_process_enrichment_queue"
     },
@@ -2393,7 +2456,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L24",
-      "community": 18,
+      "community": 0,
       "norm_label": "detects if a visit originates from a known consumer isp.",
       "id": "services_enrichment_rationale_24"
     },
@@ -2402,7 +2465,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L31",
-      "community": 18,
+      "community": 0,
       "norm_label": "layer 1: zero-cost classification.     identifies cloud providers and obvious is",
       "id": "services_enrichment_rationale_31"
     },
@@ -2411,7 +2474,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L52",
-      "community": 18,
+      "community": 0,
       "norm_label": "phase 01: forensic ip resolution with warm lead overrides.     if 'volunteered_c",
       "id": "services_enrichment_rationale_52"
     },
@@ -2420,7 +2483,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L134",
-      "community": 18,
+      "community": 0,
       "norm_label": "phase 02: industrial cluster mapping (apollo.io).     identifies departmental de",
       "id": "services_enrichment_rationale_134"
     },
@@ -2429,7 +2492,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L181",
-      "community": 18,
+      "community": 0,
       "norm_label": "fires instantly inside an asynchronous background task right after ipinfo     va",
       "id": "services_enrichment_rationale_181"
     },
@@ -2438,7 +2501,7 @@
       "file_type": "rationale",
       "source_file": "backend/app/services/enrichment.py",
       "source_location": "L254",
-      "community": 18,
+      "community": 0,
       "norm_label": "background task runner: processes queued items across a strict 3-stage exponenti",
       "id": "services_enrichment_rationale_254"
     },
@@ -2771,7 +2834,7 @@
       "file_type": "code",
       "source_file": "backend/tests/test_phase3.py",
       "source_location": "L1",
-      "community": 19,
+      "community": 1,
       "norm_label": "test_phase3.py",
       "id": "tests_test_phase3"
     },
@@ -2780,7 +2843,7 @@
       "file_type": "code",
       "source_file": "backend/tests/test_phase3.py",
       "source_location": "L20",
-      "community": 19,
+      "community": 1,
       "norm_label": "dispose_engine_fixture()",
       "id": "tests_test_phase3_dispose_engine_fixture"
     },
@@ -2789,7 +2852,7 @@
       "file_type": "code",
       "source_file": "backend/tests/test_phase3.py",
       "source_location": "L24",
-      "community": 19,
+      "community": 0,
       "norm_label": "test_janitor_anonymization_cascade()",
       "id": "tests_test_phase3_test_janitor_anonymization_cascade"
     },
@@ -2798,7 +2861,7 @@
       "file_type": "code",
       "source_file": "backend/tests/test_phase3.py",
       "source_location": "L151",
-      "community": 19,
+      "community": 1,
       "norm_label": "test_immediate_departmental_contact_mapping()",
       "id": "tests_test_phase3_test_immediate_departmental_contact_mapping"
     },
@@ -2807,7 +2870,7 @@
       "file_type": "rationale",
       "source_file": "backend/tests/test_phase3.py",
       "source_location": "L25",
-      "community": 19,
+      "community": 0,
       "norm_label": "seed the database with a test fixture containing an unconsented visit marked as",
       "id": "tests_test_phase3_rationale_25"
     },
@@ -2816,7 +2879,7 @@
       "file_type": "rationale",
       "source_file": "backend/tests/test_phase3.py",
       "source_location": "L152",
-      "community": 19,
+      "community": 1,
       "norm_label": "configure apollo mapping to fire instantly right after ipinfo validates a b2b pr",
       "id": "tests_test_phase3_rationale_152"
     },
@@ -2852,7 +2915,7 @@
       "file_type": "code",
       "source_file": "backend/tests/test_phase4.py",
       "source_location": "L116",
-      "community": 3,
+      "community": 0,
       "norm_label": "test_daily_deepseek_batch_aggregation()",
       "id": "tests_test_phase4_test_daily_deepseek_batch_aggregation"
     },
@@ -2870,7 +2933,7 @@
       "file_type": "rationale",
       "source_file": "backend/tests/test_phase4.py",
       "source_location": "L117",
-      "community": 3,
+      "community": 0,
       "norm_label": "populate the database with 5 distinct tracking sessions from the same company do",
       "id": "tests_test_phase4_rationale_117"
     },
@@ -3137,6 +3200,56 @@
     }
   ],
   "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/app/admin/page.tsx",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "admin_page",
+      "target": "admin_page_admindashboard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/app/admin/page.tsx",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "admin_page",
+      "target": "admin_page_lead",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/app/dashboard/page.tsx",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "dashboard_page",
+      "target": "dashboard_page_groupedentity",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/app/dashboard/page.tsx",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "dashboard_page",
+      "target": "dashboard_page_lead",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/app/dashboard/page.tsx",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "dashboard_page",
+      "target": "dashboard_page_unifieddashboard",
+      "confidence_score": 1.0
+    },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -3629,9 +3742,9 @@
       "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
       "source_location": "L12",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "versions_1ac2f9ae2341_fix_schema_drift",
-      "target": "sqlmodel",
-      "confidence_score": 1.0
+      "target": "sqlmodel"
     },
     {
       "relation": "contains",
@@ -3639,9 +3752,9 @@
       "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
       "source_location": "L29",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "versions_1ac2f9ae2341_fix_schema_drift",
-      "target": "versions_1ac2f9ae2341_fix_schema_drift_column_exists",
-      "confidence_score": 1.0
+      "target": "versions_1ac2f9ae2341_fix_schema_drift_column_exists"
     },
     {
       "relation": "contains",
@@ -3649,9 +3762,9 @@
       "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
       "source_location": "L166",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "versions_1ac2f9ae2341_fix_schema_drift",
-      "target": "versions_1ac2f9ae2341_fix_schema_drift_downgrade",
-      "confidence_score": 1.0
+      "target": "versions_1ac2f9ae2341_fix_schema_drift_downgrade"
     },
     {
       "relation": "contains",
@@ -3659,9 +3772,9 @@
       "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
       "source_location": "L36",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "versions_1ac2f9ae2341_fix_schema_drift",
-      "target": "versions_1ac2f9ae2341_fix_schema_drift_get_column_type",
-      "confidence_score": 1.0
+      "target": "versions_1ac2f9ae2341_fix_schema_drift_get_column_type"
     },
     {
       "relation": "contains",
@@ -3669,9 +3782,9 @@
       "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
       "source_location": "L22",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "versions_1ac2f9ae2341_fix_schema_drift",
-      "target": "versions_1ac2f9ae2341_fix_schema_drift_table_exists",
-      "confidence_score": 1.0
+      "target": "versions_1ac2f9ae2341_fix_schema_drift_table_exists"
     },
     {
       "relation": "contains",
@@ -3679,9 +3792,9 @@
       "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
       "source_location": "L42",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "versions_1ac2f9ae2341_fix_schema_drift",
-      "target": "versions_1ac2f9ae2341_fix_schema_drift_upgrade",
-      "confidence_score": 1.0
+      "target": "versions_1ac2f9ae2341_fix_schema_drift_upgrade"
     },
     {
       "relation": "calls",
@@ -3690,9 +3803,9 @@
       "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
       "source_location": "L67",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "versions_1ac2f9ae2341_fix_schema_drift_upgrade",
-      "target": "versions_1ac2f9ae2341_fix_schema_drift_table_exists",
-      "confidence_score": 1.0
+      "target": "versions_1ac2f9ae2341_fix_schema_drift_table_exists"
     },
     {
       "relation": "calls",
@@ -3701,9 +3814,9 @@
       "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
       "source_location": "L74",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "versions_1ac2f9ae2341_fix_schema_drift_upgrade",
-      "target": "versions_1ac2f9ae2341_fix_schema_drift_column_exists",
-      "confidence_score": 1.0
+      "target": "versions_1ac2f9ae2341_fix_schema_drift_column_exists"
     },
     {
       "relation": "calls",
@@ -3712,9 +3825,9 @@
       "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
       "source_location": "L68",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "versions_1ac2f9ae2341_fix_schema_drift_upgrade",
-      "target": "versions_1ac2f9ae2341_fix_schema_drift_get_column_type",
-      "confidence_score": 1.0
+      "target": "versions_1ac2f9ae2341_fix_schema_drift_get_column_type"
     },
     {
       "relation": "rationale_for",
@@ -3722,9 +3835,9 @@
       "source_file": "backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py",
       "source_location": "L43",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "versions_1ac2f9ae2341_fix_schema_drift_rationale_43",
-      "target": "versions_1ac2f9ae2341_fix_schema_drift_upgrade",
-      "confidence_score": 1.0
+      "target": "versions_1ac2f9ae2341_fix_schema_drift_upgrade"
     },
     {
       "relation": "contains",
@@ -3732,9 +3845,9 @@
       "source_file": "backend/reset_db.py",
       "source_location": "L15",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_reset_db",
-      "target": "backend_reset_db_reset_database",
-      "confidence_score": 1.0
+      "target": "backend_reset_db_reset_database"
     },
     {
       "relation": "imports_from",
@@ -3743,9 +3856,9 @@
       "source_file": "backend/reset_db.py",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_reset_db",
-      "target": "sqlmodel",
-      "confidence_score": 1.0
+      "target": "sqlmodel"
     },
     {
       "relation": "imports_from",
@@ -10285,5 +10398,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "ad96cbd0c01c7b8a0aad68a92b566f1097d97284"
+  "built_at_commit": "3f5cba61211b4996451de79a594b76db5ce2cec9"
 }

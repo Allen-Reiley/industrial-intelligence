@@ -1,16 +1,16 @@
 # Graph Report - industrial-intelligence  (2026-06-05)
 
 ## Corpus Check
-- 159 files · ~133,665 words
+- 159 files · ~134,225 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 348 nodes · 687 edges · 21 communities (17 shown, 4 thin omitted)
+- 355 nodes · 692 edges · 22 communities (17 shown, 5 thin omitted)
 - Extraction: 73% EXTRACTED · 27% INFERRED · 0% AMBIGUOUS · INFERRED: 186 edges (avg confidence: 0.58)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `ad96cbd0`
+- Built from commit: `3f5cba61`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -35,6 +35,7 @@
 - [[_COMMUNITY_Community 18|Community 18]]
 - [[_COMMUNITY_Community 19|Community 19]]
 - [[_COMMUNITY_Community 20|Community 20]]
+- [[_COMMUNITY_Community 21|Community 21]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `Visit` - 23 edges
@@ -68,15 +69,15 @@
 - 1-file cycle: `backend/app/services/reports.py -> backend/app/services/reports.py`
 - 2-file cycle: `backend/app/db.py -> backend/app/main.py -> backend/app/db.py`
 
-## Communities (21 total, 4 thin omitted)
+## Communities (22 total, 5 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.18
-Nodes (32): BackgroundTasks, bool, int, Request, str, BaseModel, Enum, Exception (+24 more)
+Cohesion: 0.11
+Nodes (55): BackgroundTasks, bool, int, Request, str, Any, bool, int (+47 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.08
-Nodes (12): NotificationThrottle, WaitlistLead, SQLModel, Spins up an in-memory SQLite database to verify all tables, UUIDs,      and fore, test_database_schema_initialization(), column_exists(), get_column_type(), Upgrade schema to resolve legacy drift. (+4 more)
+Nodes (9): NotificationThrottle, WaitlistLead, SQLModel, Spins up an in-memory SQLite database to verify all tables, UUIDs,      and fore, test_database_schema_initialization(), Configure Apollo mapping to fire instantly right after IPinfo validates a B2B pr, test_immediate_departmental_contact_mapping(), Upgrade schema to support timezone-aware columns and add new Visit columns. (+1 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.05
@@ -84,11 +85,11 @@ Nodes (41): get_session(), init_db(), FastAPI Dependency: Yields a transaction-s
 
 ### Community 3 - "Community 3"
 Cohesion: 0.10
-Nodes (29): Any, AsyncSession, bool, int, str, analyze_corporate_intent(), enrich_ip_intel(), enrich_visitor_data() (+21 more)
+Nodes (27): Any, AsyncSession, bool, int, str, analyze_corporate_intent(), enrich_ip_intel(), enrich_visitor_data() (+19 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.18
-Nodes (24): get_async_session(), FastAPI Dependency: Yields a transaction-scoped Asynchronous session.     Automa, AsyncSession, str, AsyncSession, BackgroundTasks, Request, str (+16 more)
+Cohesion: 0.14
+Nodes (26): get_async_session(), FastAPI Dependency: Yields a transaction-scoped Asynchronous session.     Automa, AsyncSession, str, AsyncSession, BackgroundTasks, Request, str (+18 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.22
@@ -103,8 +104,8 @@ Cohesion: 0.28
 Nodes (7): get_test_client(), Mock external API network dependencies to simulate outage.     Send payload to /, Assert that modifications, updates, or expirations applied to key 1     leave ke, Send a mock transaction payload to POST /v1/track/exit passing a valid aura_id, test_composite_cache_key_isolation(), test_enrichment_queue_failover(), test_exit_endpoint_without_lead()
 
 ### Community 8 - "Community 8"
-Cohesion: 0.12
-Nodes (25): AsyncSession, bool, str, UUID, bytes, Weekly Reporting cron task: compiles the report for each active client,     uplo, Initializes the Asynchronous AuraWorks Background Engine Pipeline., run_weekly_reporting_cycle() (+17 more)
+Cohesion: 0.11
+Nodes (27): AsyncSession, bool, str, UUID, bytes, Weekly Reporting cron task: compiles the report for each active client,     uplo, Industrial Async Enrichment Task:     Maps corporate departments for captured Ju, Initializes the Asynchronous AuraWorks Background Engine Pipeline. (+19 more)
 
 ### Community 10 - "Community 10"
 Cohesion: 0.17
@@ -122,32 +123,32 @@ Nodes (9): 🏗️ Architecture & Remote Lifecycle, 🛰️ AuraWorks Industrial
 Cohesion: 0.29
 Nodes (6): devDependencies, terser, name, scripts, build, version
 
-### Community 18 - "Community 18"
-Cohesion: 0.20
-Nodes (21): Any, bool, int, str, Industrial Async Enrichment Task:     Maps corporate departments for captured Ju, run_enrichment_cycle(), Company, Department (+13 more)
+### Community 16 - "Community 16"
+Cohesion: 0.43
+Nodes (5): column_exists(), get_column_type(), Upgrade schema to resolve legacy drift., table_exists(), upgrade()
 
 ### Community 19 - "Community 19"
-Cohesion: 0.20
-Nodes (9): AsyncSession, cleanup_unverified_visits(), execute_janitor_scrub_cascade(), Executes a precise column anonymization cascade matching POPIA parameters.     I, FastAPI background task entry point for the periodic Janitor Sweep., Configure Apollo mapping to fire instantly right after IPinfo validates a B2B pr, Seed the database with a test fixture containing an unconsented Visit marked as, test_immediate_departmental_contact_mapping() (+1 more)
+Cohesion: 0.47
+Nodes (5): AsyncSession, cleanup_unverified_visits(), execute_janitor_scrub_cascade(), Executes a precise column anonymization cascade matching POPIA parameters.     I, FastAPI background task entry point for the periodic Janitor Sweep.
 
 ### Community 20 - "Community 20"
 Cohesion: 0.32
 Nodes (7): AsyncSession, int, str, get_lead_intelligence(), get_leads(), Industrial Ledger: Retrieves leads and prioritizes 'Warm Leads' (those with volu, Provides the forensic audit for a specific lead, including their      behavioral
 
 ## Knowledge Gaps
-- **24 isolated node(s):** `int`, `BackgroundTasks`, `AsyncSession`, `bool`, `str` (+19 more)
+- **27 isolated node(s):** `Lead`, `Lead`, `GroupedEntity`, `int`, `BackgroundTasks` (+22 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **5 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Client` connect `Community 4` to `Community 2`, `Community 3`, `Community 7`, `Community 16`, `Community 19`?**
-  _High betweenness centrality (0.056) - this node is a cross-community bridge._
+- **Why does `Client` connect `Community 4` to `Community 0`, `Community 1`, `Community 2`, `Community 7`?**
+  _High betweenness centrality (0.053) - this node is a cross-community bridge._
 - **Why does `compile_and_send_contract()` connect `Community 8` to `Community 6`?**
-  _High betweenness centrality (0.045) - this node is a cross-community bridge._
-- **Why does `Company` connect `Community 18` to `Community 0`, `Community 1`, `Community 2`, `Community 3`, `Community 7`, `Community 19`?**
-  _High betweenness centrality (0.042) - this node is a cross-community bridge._
+  _High betweenness centrality (0.043) - this node is a cross-community bridge._
+- **Why does `Company` connect `Community 0` to `Community 1`, `Community 2`, `Community 7`?**
+  _High betweenness centrality (0.041) - this node is a cross-community bridge._
 - **Are the 21 inferred relationships involving `Visit` (e.g. with `BackgroundTasks` and `bool`) actually correct?**
   _`Visit` has 21 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 16 inferred relationships involving `EnrichmentError` (e.g. with `BackgroundTasks` and `bool`) actually correct?**
