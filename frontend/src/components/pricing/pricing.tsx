@@ -85,7 +85,7 @@ export default function Pricing() {
                                                 asChild
                                                 size="lg"
                                                 className="w-full md:w-auto px-10 py-7 text-base md:text-lg font-medium tracking-tight shadow-xl">
-                                                <Link href="/get-started">Request Enterprise Access</Link>
+                                                <Link href="/book-demo">Request Enterprise Access</Link>
                                             </Button>
                                         </AnimatedGroup>
                                     </div>

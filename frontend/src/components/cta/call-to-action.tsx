@@ -13,8 +13,8 @@ export default function CallToAction() {
                         <Button
                             asChild
                             size="lg">
-                            <Link href="/get-started">
-                                <span>Get Started</span>
+                            <Link href="/book-demo">
+                                <span>Book Demo</span>
                             </Link>
                         </Button>
 

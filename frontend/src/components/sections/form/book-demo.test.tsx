@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import GetStartedPage from './get-started';
+import BookDemoPage from './book-demo';
 import { submitToProspects } from '@/lib/api';
 
 // Mock the API client
@@ -16,7 +16,7 @@ jest.mock('next/link', () => {
   };
 });
 
-describe('GetStartedPage Form Submission Flow', () => {
+describe('BookDemoPage Form Submission Flow', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -24,7 +24,7 @@ describe('GetStartedPage Form Submission Flow', () => {
   test('successfully navigates steps and submits the form data', async () => {
     (submitToProspects as jest.Mock).mockResolvedValue({ status: 'success' });
 
-    render(<GetStartedPage />);
+    render(<BookDemoPage />);
 
     // --- STEP 1: Identification Form ---
     // Assert Step 1 is active
@@ -89,7 +89,7 @@ describe('GetStartedPage Form Submission Flow', () => {
   });
 
   test('validates work email format before moving to step 2', () => {
-    render(<GetStartedPage />);
+    render(<BookDemoPage />);
     
     // Mock window.alert
     const alertMock = jest.spyOn(window, 'alert').mockImplementation(() => {});

@@ -50,7 +50,7 @@ export default function Forbidden403() {
                         variant="default" 
                         className="rounded-xl font-bold py-6 shadow-xl shadow-primary/10 transition-all hover:scale-[1.02]"
                     >
-                        <Link href="/get-started">
+                        <Link href="/book-demo">
                             <Key className="mr-2 h-4 w-4" /> Request Elevated Access
                         </Link>
                     </Button>

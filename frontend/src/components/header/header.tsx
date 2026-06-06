@@ -95,19 +95,19 @@ export const HeroHeader = () => {
                                     asChild
                                     size="sm"
                                     className={cn(isScrolled && 'lg:hidden')}>
-                                    <Link href="/get-started">
-                                        <span>Get Started</span>
+                                    <Link href="/book-demo">
+                                        <span>Book Demo</span>
                                     </Link>
                                 </Button>
-
+ 
                                 {/* This button ONLY appears on Desktop when scrolled */}
                                 {isScrolled && (
                                     <Button
                                         asChild
                                         size="sm"
                                         className="hidden lg:inline-flex">
-                                        <Link href="/get-started">
-                                            <span>Get Started</span>
+                                        <Link href="/book-demo">
+                                            <span>Book Demo</span>
                                         </Link>
                                     </Button>
                                 )}

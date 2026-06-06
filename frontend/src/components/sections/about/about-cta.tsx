@@ -18,8 +18,8 @@ export function AboutCTA() {
                         asChild
                         size="lg"
                         className="rounded-xl px-10 shadow-xl shadow-primary/10">
-                        <Link href="/get-started">
-                            <span>Get Started</span>
+                        <Link href="/book-demo">
+                            <span>Book Demo</span>
                         </Link>
                     </Button>
 

@@ -13,7 +13,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { submitToProspects } from "@/lib/api";
 
-export default function GetStartedPage() {
+export default function BookDemoPage() {
     const [step, setStep] = useState(1)
     const [isLoading, setIsLoading] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
