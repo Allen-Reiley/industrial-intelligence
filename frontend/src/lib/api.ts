@@ -73,3 +73,31 @@ export async function submitToProspects(formData: Record<string, unknown>) {
         throw error;
     }
 }
+
+export async function trackIntent(payload: {
+    client_id: string;
+    aura_id: string;
+    vsl_completion_percentage: number;
+    vsl_abandoned?: boolean;
+}) {
+    const endpoint = getEndpoint('api/v1/track/intent');
+    try {
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.detail || 'Failed to track intent.');
+        }
+
+        return await response.json();
+    } catch (error: unknown) {
+        console.error("🚨 Intent Telemetry Error:", error);
+        throw error;
+    }
+}

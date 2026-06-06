@@ -47,3 +47,17 @@
     - [x] Task 9.2: Webhook Endpoint: Build POST /api/v1/webhooks/inbound-email
     - [x] Task 9.3: Slack Routing: Implement alias-to-channel routing (#compliance vs #support)
     - [x] Task 9.4: Auto-Replies: Contextual auto-responses via Resend based on recipient alias
+
+- [x] **PHASE 10: VSL CONVERSION FUNNEL IMPLEMENTATION**
+    - [x] Task 10.1: Backend Intent Telemetry API: Create POST /api/v1/track/intent, update models
+    - [x] Task 10.2: Slack Alert Routing: Add VSL completion pings for #prospects channel
+    - [x] Task 10.3: VSL Page Layout: Build isolated /vsl route without global nav/footer, add Back button
+    - [x] Task 10.4: Player & Dynamic CTA: Integrate ImageKit player, bind playback tracking & ended reveal
+
+- [ ] **PHASE 11: ADVANCED BANNER DATA FLOW & ENTITY STITCHING**
+    - [ ] Task 11.1: Multi-Tenant DB: Add client_id to Visit, Company, Prospect models. Generate migrations.
+    - [ ] Task 11.2: Immediate Workers: Trigger IPinfo/Apollo enrichment tasks immediately on banner submission.
+    - [ ] Task 11.3: Stitching Engine: Implement Substring Match -> DeepSeek verification -> Banner Fallback if ISP.
+    - [ ] Task 11.4: Surge Alerts: Aggregate visitor counts and dispatch surge alerts.
+
+

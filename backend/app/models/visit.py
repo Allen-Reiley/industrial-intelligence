@@ -35,6 +35,12 @@ class Visit(SQLModel, table=True):
     clock_drift: Optional[str] = Field(default=None, nullable=True)
     fingerprint_hash: Optional[str] = Field(default=None, index=True, nullable=True)
     duration: int = Field(default=0)
+    vsl_completion_percentage: Optional[int] = Field(default=None, nullable=True)
+    vsl_completed_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    vsl_abandoned: Optional[bool] = Field(default=False, nullable=True)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(DateTime(timezone=True), nullable=False)

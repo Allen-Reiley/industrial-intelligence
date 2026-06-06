@@ -106,3 +106,25 @@ Implement the alias-to-channel routing logic (legal@/privacy@ to #compliance; cu
 Task 9.4: Auto-Reply Engine
 Build contextual outbound auto-responses via Resend based on the recipient alias.
 
+Phase 10: VSL Conversion Funnel Implementation
+Deploy a distraction-free Video Sales Letter (VSL) landing page with intent telemetry tracking and dynamic CTA reveal mechanics.
+Task 10.1: Backend Intent Telemetry
+Create POST /api/v1/track/intent. Update PostgreSQL schemas (Visit/Prospect) to store vsl_completion_percentage and vsl_completed_at.
+Task 10.2: Slack Alert Routing
+Implement the VSL completion Slack notification payload in the intelligence routing service to alert #prospects channel on 100% completion.
+Task 10.3: VSL Page Layout
+Build the isolated /vsl Next.js layout. Remove global nav/footer and implement a subtle "Go Back" button.
+Task 10.4: Player & Dynamic CTA
+Integrate ImageKit video player. Bind timeupdate to telemetry API. Bind ended event to Framer Motion state to reveal the CTA and micro-copy strictly after video ends.
+
+Phase 11: Advanced Banner Data Flow & Entity Stitching Implementation
+Upgrade the intelligence engine to support multi-tenancy, deterministic B2B entity stitching with AI fallbacks, and real-time organizational surge alerting.
+Task 11.1: Multi-Tenant Migration
+Add client_id column to Visit, Company, and Prospect tables. Update SQLAlchemy models and Alembic migrations.
+Task 11.2: Immediate Workers
+Refactor the banner ingestion endpoint to immediately trigger IPinfo and Apollo background enrichment tasks.
+Task 11.3: DeepSeek Stitching Engine
+Implement the Entity Resolution protocol (Substring matching -> DeepSeek ISP Verification -> Fallback).
+Task 11.4: Surge Alert System
+Implement SQL aggregation logic to monitor unique visitors per company. Trigger the instant Slack alert when thresholds are met.
+

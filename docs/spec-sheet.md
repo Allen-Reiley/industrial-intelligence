@@ -236,3 +236,31 @@ USING (client_id = current_setting('app.current_client_id', True)::uuid);
 * **FastAPI Core Service:** Run in Docker (`python:3.12-slim`) deployed to a **Railway Starter Plane** instance to circumvent scale-to-zero telemetry cold starts.
 * **Database Cluster:** Deployed on **Neon Serverless PostgreSQL** infrastructure.
 * **Notifications:** Slack real-time alerts fire on High-Intent milestones, gated by an hourly throttle (`NotificationThrottle` model) permitting a maximum of 1 notification per hour per company entity.
+
+---
+
+## 8. Video Sales Letter (VSL) Funnel Specification (Phase 10)
+
+A dedicated, distraction-free `/vsl` landing page featuring an optimized ImageKit-hosted HTML5 video player.
+
+- **Delayed Reveal**: Hides all conversion elements ("Book Demo" CTA and micro-copy) until playback ends. Uses Framer Motion for entrance animations.
+- **Subtle Navigation**: Replaces global header/footer with a minimal "Go Back" button.
+- **Playback Telemetry**: Sends telemetry pings to `POST /api/v1/track/intent` at 25%, 50%, 75%, and 100% completion milestones.
+- **Warm Abandonment**: Triggers a 10-second timer after playback ends. If the CTA is not clicked within 10 seconds, pings the backend with `vsl_abandoned=True`.
+- **Intelligence Routing**: Sends real-time Slack alerts to `#prospects` if a known company completes the VSL.
+
+---
+
+## 9. Advanced Banner Data Flow & Entity Stitching Specification (Phase 11)
+
+Enhance telemetry multi-tenancy and data isolation, execute immediate firmographic enrichment, and resolve entities deterministically with DeepSeek fallbacks.
+
+- **Multi-Tenancy Isolation**: Explicitly support `client_id` on telemetry records (Visit, Company, Prospect) with scoped queries for tenant sandboxing.
+- **Immediate Enrichment Dispatch**: Submit immediate IPinfo/Apollo enrichment tasks as background tasks on banner submission rather than batch queues.
+- **Deterministic Entity Stitching with DeepSeek Fallback**: 
+  - 1st Tier: Substring match check between user company name and enriched company name.
+  - 2nd Tier: Fast DeepSeek JSON prompting to evaluate entity sameness and verify if the enriched company is actually an ISP.
+  - 3rd Tier: ISP Discarding. If the enriched entity is classified as an ISP, promote the user-provided name to the head entity instead.
+- **Real-Time Surge Alerting**: Monitor cluster density. If 3 or more unique forensic IDs from the same company visit within a predefined window, fire an immediate "Account Surge" alert to the client.
+
+

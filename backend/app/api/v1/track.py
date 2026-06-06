@@ -1,5 +1,4 @@
-# backend/app/api/v1/track.py
-from fastapi import APIRouter, BackgroundTasks, Request, Header, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Request, Header, HTTPException, Depends
 from typing import Optional, Dict, Any
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,7 +14,7 @@ from app.models.enrichment_queue import EnrichmentQueue, QueueType
 from app.services.enrichment import enrich_visitor_data, EnrichmentError
 from app.services.notifications import post_to_slack, handle_juristic_only_alert
 from app.services.intelligence import get_visitor_journey
-from app.db import async_session_maker
+from app.db import async_session_maker, get_async_session
 from uuid import UUID
 
 router = APIRouter()
@@ -372,3 +371,82 @@ async def track_exit(payload: PageViewCreate, background_tasks: BackgroundTasks)
         )
 
     return {"status": "recorded"}
+
+
+class IntentPayload(BaseModel):
+    client_id: UUID
+    aura_id: str
+    vsl_completion_percentage: int
+    vsl_abandoned: Optional[bool] = None
+
+
+@router.post("/intent")
+async def track_intent(
+    payload: IntentPayload,
+    background_tasks: BackgroundTasks,
+    session: AsyncSession = Depends(get_async_session)
+):
+    """
+    Tracks real-time prospect intent telemetry (e.g. VSL completion percentage).
+    Updates Visit and Prospect records accordingly.
+    Triggers Slack alerting on 100% completion.
+    """
+    from app.models.visit import Visit
+    from app.models.prospect import Prospect
+    from datetime import datetime, timezone
+    
+    # 1. Update Visit
+    visit_stmt = select(Visit).where(
+        Visit.aura_id == payload.aura_id,
+        Visit.client_id == payload.client_id
+    ).order_by(Visit.created_at.desc())
+    visit_res = await session.execute(visit_stmt)
+    visit = visit_res.scalars().first()
+    
+    now = datetime.now(timezone.utc)
+    if visit:
+        current_pct = visit.vsl_completion_percentage or 0
+        if payload.vsl_completion_percentage > current_pct:
+            visit.vsl_completion_percentage = payload.vsl_completion_percentage
+            if payload.vsl_completion_percentage == 100:
+                visit.vsl_completed_at = now
+        if payload.vsl_abandoned is not None:
+            visit.vsl_abandoned = payload.vsl_abandoned
+        session.add(visit)
+            
+    # 2. Update Prospect (if a prospect exists for this aura_id and client_id)
+    prospect_stmt = select(Prospect).where(
+        Prospect.aura_id == payload.aura_id,
+        Prospect.client_id == payload.client_id
+    ).order_by(Prospect.created_at.desc())
+    prospect_res = await session.execute(prospect_stmt)
+    prospect = prospect_res.scalars().first()
+    
+    if prospect:
+        current_pct = prospect.vsl_completion_percentage or 0
+        if payload.vsl_completion_percentage > current_pct:
+            prospect.vsl_completion_percentage = payload.vsl_completion_percentage
+            if payload.vsl_completion_percentage == 100:
+                prospect.vsl_completed_at = now
+        if payload.vsl_abandoned is not None:
+            prospect.vsl_abandoned = payload.vsl_abandoned
+        session.add(prospect)
+
+    await session.commit()
+    
+    # 3. Trigger Slack alerts if 100% complete
+    if payload.vsl_completion_percentage == 100:
+        company_name = None
+        if prospect and prospect.company_name_raw:
+            company_name = prospect.company_name_raw
+        elif visit and visit.company_id:
+            from app.models.company import Company
+            company = await session.get(Company, visit.company_id)
+            if company:
+                company_name = company.company_name
+                
+        if company_name:
+            from app.services.notifications import post_vsl_completion_to_slack
+            background_tasks.add_task(post_vsl_completion_to_slack, company_name, payload.client_id, payload.aura_id)
+
+    return {"status": "success", "percentage": payload.vsl_completion_percentage}

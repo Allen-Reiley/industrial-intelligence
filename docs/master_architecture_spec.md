@@ -205,3 +205,28 @@ USING (client_id == current_setting('app.current_client_id', True)::uuid);
 8.3 Routing & Notifications: Route messages based on alias to compliance (#compliance) or support (#support) Slack channels with sender details, subject, a 150-char snippet, and an admin thread CTA.
 8.4 Auto-Responder: Contextual outbound email template sent via Resend immediately on successful DB commit to confirm receipt.
 
+
+9. Phase 10: VSL Conversion Funnel Specifications
+9.1 Video Player Integration: Next.js landing page at /vsl containing custom HTML5 video component streaming from ImageKit.io.
+9.2 Delayed CTA Reveal: Omit global navigation and footer elements on the layout. Hide CTA buttons and micro-copy until the ended event is dispatched, utilizing Framer Motion for exit/entry animations.
+9.3 Inbound Intent Telemetry API: POST /api/v1/track/intent payload structure:
+  - aura_id: str
+  - email: Optional[str]
+  - completion_percentage: int
+  - is_completed: bool
+  - client_id: UUID
+Updates the matching Prospect or Visit record's vsl_completion_percentage and vsl_completed_at values.
+9.4 Slack Intelligence Routing: Triggers alert to #prospects channel when a known company reaches 100% VSL completion.
+
+
+10. Phase 11: Advanced Banner Data Flow & Entity Stitching Specifications
+10.1 Multi-Tenant DB: Ensure `client_id` (UUID) is present and scoped across Visit, Company, and Prospect tables to enforce data isolation.
+10.2 Immediate Enrichment Background Workers: Instantly trigger IPinfo and Apollo API enrichment tasks in background on banner form submission.
+10.3 Stitching Engine: Implement deterministic and AI-powered entity stitching protocol:
+  - Substring matching checks if user-provided banner name is inside enriched name.
+  - Fast DeepSeek verification handles matching evaluation and ISP check fallback.
+  - Discard ISP name and fallback to banner name if LLM marks enriched record as ISP.
+10.4 Surge Alerting: Trigger real-time alert to client when visitor count threshold for a single company is crossed (e.g., 3 unique forensic IDs).
+
+
+

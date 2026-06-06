@@ -469,3 +469,55 @@ async def post_inbound_email_to_slack(
             logger.info(f"Slack notification sent successfully for inbound email (ID: {inbound_msg_id}).")
         except Exception as e:
             logger.error(f"🚨 Inbound Email Slack Dispatch Failure: {e}")
+
+
+async def post_vsl_completion_to_slack(company_name: str, client_id: UUID, aura_id: str):
+    """
+    Alerts the prospects Slack channel when a known company completes watching the VSL.
+    """
+    if not settings.SLACK_WEBHOOK_URL:
+        return
+        
+    dashboard_url = f"https://auraworks.co.za/admin/prospects?aura_id={aura_id}"
+
+    payload = {
+        "text": f"🔥 VSL Completed: {company_name}",
+        "blocks": [
+            {
+                "type": "header",
+                "text": {"type": "plain_text", "text": "🔥 High Intent Activity"}
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"*High Intent:* *{company_name}* just finished watching the core VSL."
+                }
+            },
+            {
+                "type": "context",
+                "elements": [
+                    {"type": "mrkdwn", "text": f"📍 Forensic Lock: `{aura_id}` | Client ID: `{client_id}`"}
+                ]
+            },
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "View Prospect Details"},
+                        "url": dashboard_url,
+                        "style": "primary"
+                    }
+                ]
+            }
+        ]
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(settings.SLACK_WEBHOOK_URL, json=payload, timeout=10.0)
+            response.raise_for_status()
+            logger.info(f"VSL completion Slack alert successfully sent for company: {company_name}")
+        except Exception as e:
+            logger.error(f"🚨 post_vsl_completion_to_slack Failure: {e}")

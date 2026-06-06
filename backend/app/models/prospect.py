@@ -28,6 +28,12 @@ class Prospect(SQLModel, table=True):
     welcome_email_sent: bool = Field(default=False)
     status: str = Field(default="demo_requested", index=True)  # demo_requested, call_booked
     calendly_event_uuid: Optional[str] = Field(default=None, index=True, nullable=True)
+    vsl_completion_percentage: Optional[int] = Field(default=None, nullable=True)
+    vsl_completed_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    vsl_abandoned: Optional[bool] = Field(default=False, nullable=True)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(DateTime(timezone=True), nullable=False)
