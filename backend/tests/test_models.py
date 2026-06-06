@@ -12,6 +12,7 @@ from app.models.prospect import Prospect
 from app.models.enrichment_queue import EnrichmentQueue, FailedEnrichment
 from app.models.notification_throttle import NotificationThrottle
 from app.models.crm_dead_letter import CrmDeadLetter
+from app.models.inbound_message import InboundMessage, MessageStatus
 
 def test_database_schema_initialization():
     """
@@ -30,10 +31,53 @@ def test_database_schema_initialization():
     expected_tables = [
         "client", "company", "department", "visit", 
         "page_view", "prospect", "enrichment_queue", 
-        "failed_enrichment", "notification_throttle", "crm_dead_letter"
+        "failed_enrichment", "notification_throttle", "crm_dead_letter",
+        "inbound_message"
     ]
     
     for t in expected_tables:
         assert t in tables, f"Missing table: {t}"
         
-    print("✅ All 9 database tables successfully initialized with perfect referential integrity.")
+    print("✅ All database tables successfully initialized with perfect referential integrity.")
+
+def test_inbound_message_crud():
+    """
+    Verifies that InboundMessage records can be created, read, updated, and deleted.
+    """
+    engine = create_engine("sqlite:///:memory:")
+    SQLModel.metadata.create_all(engine)
+
+    with Session(engine) as session:
+        # Create
+        msg = InboundMessage(
+            sender_email="test@example.com",
+            recipient_alias="privacy@auraworks.co.za",
+            subject="Data request",
+            text_body="Please delete my data.",
+            html_body="<p>Please delete my data.</p>"
+        )
+        session.add(msg)
+        session.commit()
+        session.refresh(msg)
+        
+        assert msg.id is not None
+        assert msg.status == MessageStatus.UNREAD
+
+        # Read
+        db_msg = session.get(InboundMessage, msg.id)
+        assert db_msg is not None
+        assert db_msg.sender_email == "test@example.com"
+
+        # Update
+        db_msg.status = MessageStatus.IN_PROGRESS
+        session.add(db_msg)
+        session.commit()
+        session.refresh(db_msg)
+        assert db_msg.status == MessageStatus.IN_PROGRESS
+
+        # Delete
+        session.delete(db_msg)
+        session.commit()
+        deleted_msg = session.get(InboundMessage, msg.id)
+        assert deleted_msg is None
+

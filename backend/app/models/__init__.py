@@ -8,5 +8,6 @@ from .prospect import Prospect
 from .enrichment_queue import EnrichmentQueue, FailedEnrichment, QueueType
 from .notification_throttle import NotificationThrottle
 from .crm_dead_letter import CrmDeadLetter
+from .inbound_message import InboundMessage, MessageStatus
 
 # Do NOT include router logic here

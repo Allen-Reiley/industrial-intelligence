@@ -94,3 +94,15 @@ Task 8.4: Slack Intelligence
 Update the Slack notification payload builders for "Form Submission" and "Meeting Booked" events for #prospects channel.
 Task 8.5: Frontend UX
 Update Next.js API client routing to point to /prospects/ and implement success toast UX.
+
+Phase 9: Inbound Email Routing & Processing
+Establish automated inbound email ingestion via Resend webhook, database ticketing layer, compliance/support Slack routing, and contextual auto-replies.
+Task 9.1: Database Migration
+Create the InboundMessage SQLModel and MessageStatus Enum (unread, in_progress, resolved). Generate the Alembic migration.
+Task 9.2: Webhook Ingestion
+Build POST /api/v1/webhooks/inbound-email. Implement payload parsing and secure endpoint validation.
+Task 9.3: Slack Dispatcher
+Implement the alias-to-channel routing logic (legal@/privacy@ to #compliance; customer@ to #support) and message snippet payload layout.
+Task 9.4: Auto-Reply Engine
+Build contextual outbound auto-responses via Resend based on the recipient alias.
+

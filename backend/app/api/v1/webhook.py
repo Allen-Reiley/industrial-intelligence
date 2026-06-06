@@ -3,11 +3,11 @@ import hmac
 import hashlib
 import logging
 from uuid import UUID
-from typing import Optional
+from typing import Optional, List
 from fastapi import APIRouter, Depends, Request, Header, HTTPException, BackgroundTasks
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.db import get_async_session
 from app.models.client import Client, SubscriptionStatus
@@ -23,6 +23,18 @@ class PayGeniusWebhookPayload(BaseModel):
     email: str
     payment_plan: Optional[str] = "monthly"
     signature: Optional[str] = None
+
+class ResendEmailData(BaseModel):
+    from_email: str = Field(..., alias="from")
+    to: List[str]
+    subject: str
+    text: Optional[str] = None
+    html: Optional[str] = None
+
+class ResendWebhookPayload(BaseModel):
+    type: str
+    created_at: str
+    data: ResendEmailData
 
 @router.post("/paygenius")
 async def paygenius_webhook(
@@ -198,3 +210,129 @@ async def calendly_webhook(
     background_tasks.add_task(post_meeting_booked_to_slack, prospect.id, data)
     
     return {"status": "success", "message": "Prospect booking recorded and Slack alert dispatched"}
+
+
+@router.post("/inbound-email")
+async def inbound_email_webhook(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    svix_id: Optional[str] = Header(None, alias="svix-id"),
+    svix_timestamp: Optional[str] = Header(None, alias="svix-timestamp"),
+    svix_signature: Optional[str] = Header(None, alias="svix-signature"),
+    session: AsyncSession = Depends(get_async_session)
+):
+    """
+    Ingests inbound emails from Resend.
+    Verifies payload signature using Svix mechanism.
+    Commits message to database as InboundMessage, dispatches Slack alert and auto-reply.
+    """
+    import base64
+    import hmac
+    import hashlib
+    import time
+    import json
+    from app.models.inbound_message import InboundMessage, MessageStatus
+    from app.services.notifications import post_inbound_email_to_slack
+    from app.services.email import send_inbound_auto_reply
+
+    body = await request.body()
+    body_str = body.decode("utf-8")
+
+    # 1. Signature Verification
+    if not svix_id or not svix_timestamp or not svix_signature:
+        logger.error("Resend Inbound Webhook: Missing signature headers.")
+        raise HTTPException(status_code=401, detail="Missing signature headers")
+
+    current_time = int(time.time())
+    try:
+        timestamp = int(svix_timestamp)
+    except ValueError:
+        logger.error("Resend Inbound Webhook: Invalid timestamp format.")
+        raise HTTPException(status_code=401, detail="Invalid timestamp format")
+
+    if abs(current_time - timestamp) > 300:
+        logger.error(f"Resend Inbound Webhook: Signature expired. Diff: {abs(current_time - timestamp)}")
+        raise HTTPException(status_code=401, detail="Signature expired")
+
+    secret = settings.RESEND_WEBHOOK_SECRET or ""
+    signed_content = f"{svix_id}.{svix_timestamp}.{body_str}"
+
+    try:
+        if secret.startswith("whsec_"):
+            secret_key = base64.b64decode(secret.split("_")[1])
+        else:
+            secret_key = base64.b64decode(secret)
+    except Exception:
+        secret_key = secret.encode("utf-8")
+
+    computed = base64.b64encode(
+        hmac.new(secret_key, signed_content.encode("utf-8"), hashlib.sha256).digest()
+    ).decode("utf-8")
+
+    verified = False
+    for sig in svix_signature.split(" "):
+        if "," in sig:
+            parts = sig.split(",")
+            if len(parts) == 2 and parts[0] == "v1":
+                if hmac.compare_digest(parts[1], computed):
+                    verified = True
+                    break
+
+    if not verified:
+        logger.error("Resend Inbound Webhook: Signature verification failed.")
+        raise HTTPException(status_code=403, detail="Invalid signature")
+
+    # 2. Parse JSON payload
+    try:
+        payload_dict = json.loads(body_str)
+        payload = ResendWebhookPayload(**payload_dict)
+    except Exception as e:
+        logger.error(f"Resend Inbound Webhook: Failed to parse body. Error: {e}")
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+    if payload.type != "email.received":
+        logger.info(f"Resend Inbound Webhook: Ignored event type '{payload.type}'")
+        return {"status": "ignored", "message": f"Event type '{payload.type}' ignored"}
+
+    # 3. Extract Email Fields
+    sender_email = payload.data.from_email
+    recipient_alias = payload.data.to[0] if payload.data.to else "customer@auraworks.co.za"
+    subject = payload.data.subject
+    text_body = payload.data.text
+    html_body = payload.data.html
+
+    # 4. Commit to Database
+    msg = InboundMessage(
+        sender_email=sender_email,
+        recipient_alias=recipient_alias,
+        subject=subject,
+        text_body=text_body,
+        html_body=html_body,
+        status=MessageStatus.UNREAD
+    )
+    session.add(msg)
+    await session.commit()
+    await session.refresh(msg)
+
+    logger.info(f"Resend Inbound Webhook: Saved inbound message {msg.id} from {sender_email} to {recipient_alias}")
+
+    # 5. Dispatch Slack Alerts in background
+    body_for_slack = text_body or html_body or ""
+    background_tasks.add_task(
+        post_inbound_email_to_slack,
+        msg.id,
+        sender_email,
+        recipient_alias,
+        subject,
+        body_for_slack
+    )
+
+    # 6. Trigger Contextual Auto-Replies in background
+    background_tasks.add_task(
+        send_inbound_auto_reply,
+        sender_email,
+        recipient_alias
+    )
+
+    return {"status": "success", "message": "Inbound message processed", "message_id": str(msg.id)}
+

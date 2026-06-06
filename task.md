@@ -34,3 +34,16 @@
     - [x] Task 7.2: Deploy Throttled Slack Notification Routing
     - [x] Task 7.3: Implement CRM Synchronization Outbox
     - [x] Task 7.4 [FINAL MOVE]: Notion Personal Vault Synchronization
+
+- [x] **PHASE 8: DEMO ONBOARDING & SCHEDULING IMPLEMENTATION**
+    - [x] Task 8.1: Database Refactoring & Prospect Remodeling
+    - [x] Task 8.2: Calendly Webhook & HMAC Verification
+    - [x] Task 8.3: Resend Onboarding Email Integration
+    - [x] Task 8.4: Slack Alerts and Timezone Conversion
+    - [x] Task 8.5: Frontend UX CTA Realignment
+
+- [x] **PHASE 9: INBOUND EMAIL ROUTING & PROCESSING**
+    - [x] Task 9.1: Database Migration: Create InboundMessage SQLModel & State Enum
+    - [x] Task 9.2: Webhook Endpoint: Build POST /api/v1/webhooks/inbound-email
+    - [x] Task 9.3: Slack Routing: Implement alias-to-channel routing (#compliance vs #support)
+    - [x] Task 9.4: Auto-Replies: Contextual auto-responses via Resend based on recipient alias

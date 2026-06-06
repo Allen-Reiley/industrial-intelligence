@@ -189,3 +189,19 @@ USING (client_id == current_setting('app.current_client_id', True)::uuid);
 7. Intelligence Delivery & Deployment Specifications
 7.1 Notification Management: Actionable corporate leads meeting High-Intent markers broadcast compact, button-driven payloads directly to client Slack instances inside a 60-second window. Alerts utilize an automated hourly throttle filter via a NotificationThrottle model, restricting matching entities to a single instant push per hour to insulate channels from tracking flood events.
 7.2 Production Hosting Strategy: Core FastAPI routers operate inside a dedicated Docker container utilizing a python:3.12-slim image layer deployed to an active Railway Starter Plane instance to circumvent telemetry cold-start delays. Analytical data clusters communicate exclusively with the serverless production Neon PostgreSQL architecture.
+
+
+8. Phase 9: Inbound Email Routing & Processing Specifications
+8.1 Inbound Processing Engine: Webhook ingest endpoint POST /api/v1/webhooks/inbound-email. Receives email payloads sent to legal@, privacy@, and customer@ via Resend Inbound Webhooks.
+8.2 InboundMessage Schema:
+  - id: UUID (primary key)
+  - sender_email: str
+  - recipient_alias: str
+  - subject: str
+  - text_body: Optional[str]
+  - html_body: Optional[str]
+  - status: MessageStatus Enum (unread, in_progress, resolved)
+  - created_at: datetime
+8.3 Routing & Notifications: Route messages based on alias to compliance (#compliance) or support (#support) Slack channels with sender details, subject, a 150-char snippet, and an admin thread CTA.
+8.4 Auto-Responder: Contextual outbound email template sent via Resend immediately on successful DB commit to confirm receipt.
+

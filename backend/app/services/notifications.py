@@ -393,3 +393,79 @@ async def handle_juristic_only_alert(company, journey: dict, client_id: str):
             response.raise_for_status()
         except Exception as e:
             logger.error(f"🚨 Juristic Alert Slack Dispatch Failure: {e}")
+
+
+async def post_inbound_email_to_slack(
+    inbound_msg_id: UUID,
+    sender_email: str,
+    recipient_alias: str,
+    subject: str,
+    body: str
+):
+    """
+    Routes an incoming message to distinct Slack channels based on the receiving alias:
+    - legal@ and privacy@ -> #compliance channel.
+    - customer@ -> #support channel.
+    """
+    recipient_alias_lower = recipient_alias.lower()
+    
+    if "legal" in recipient_alias_lower or "privacy" in recipient_alias_lower:
+        webhook_url = settings.SLACK_COMPLIANCE_WEBHOOK_URL or settings.SLACK_WEBHOOK_URL
+        channel_name = "#compliance"
+    elif "customer" in recipient_alias_lower:
+        webhook_url = settings.SLACK_SUPPORT_WEBHOOK_URL or settings.SLACK_WEBHOOK_URL
+        channel_name = "#support"
+    else:
+        webhook_url = settings.SLACK_WEBHOOK_URL
+        channel_name = "#general"
+        
+    if not webhook_url:
+        logger.warning("Slack Dispatcher: No webhook URL configured for inbound email alerts.")
+        return
+
+    snippet = body[:150] + "..." if len(body) > 150 else body
+    dashboard_url = f"https://auraworks.co.za/admin/tickets/{inbound_msg_id}"
+    
+    payload = {
+        "text": f"New Inbound Email to {recipient_alias}",
+        "blocks": [
+            {
+                "type": "header",
+                "text": {"type": "plain_text", "text": f"✉️ New Inbound Message ({channel_name})"}
+            },
+            {
+                "type": "section",
+                "fields": [
+                    {"type": "mrkdwn", "text": f"*Sender:*\n{sender_email}"},
+                    {"type": "mrkdwn", "text": f"*Alias Emailed:*\n{recipient_alias}"},
+                    {"type": "mrkdwn", "text": f"*Subject:*\n{subject}"}
+                ]
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"*Snippet:*\n{snippet}"
+                }
+            },
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "View Thread in Dashboard"},
+                        "url": dashboard_url,
+                        "style": "primary"
+                    }
+                ]
+            }
+        ]
+    }
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(webhook_url, json=payload, timeout=10.0)
+            response.raise_for_status()
+            logger.info(f"Slack notification sent successfully for inbound email (ID: {inbound_msg_id}).")
+        except Exception as e:
+            logger.error(f"🚨 Inbound Email Slack Dispatch Failure: {e}")

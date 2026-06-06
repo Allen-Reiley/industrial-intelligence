@@ -134,3 +134,71 @@ async def send_prospect_success_email(
         subject=subject,
         html_content=html_template
     )
+
+
+async def send_inbound_auto_reply(to_email: str, recipient_alias: str) -> bool:
+    """
+    Sends an immediate contextual auto-reply based on the recipient alias.
+    Prevents infinite email loops.
+    """
+    sender_lower = to_email.lower()
+    loop_indicators = [
+        "legal@auraworks.co.za",
+        "privacy@auraworks.co.za",
+        "customer@auraworks.co.za",
+        "noreply",
+        "no-reply",
+        "mailer-daemon",
+        "bounce",
+        "postmaster"
+    ]
+    if any(indicator in sender_lower for indicator in loop_indicators):
+        logger.info(f"🚫 Auto-reply skipped for {to_email} to prevent infinite loops.")
+        return False
+
+    recipient_alias_lower = recipient_alias.lower()
+    if "privacy" in recipient_alias_lower:
+        subject = "We have received your inquiry regarding data privacy"
+        message_text = "We have received your inquiry regarding data privacy. Our Information Officer will review your request and respond shortly."
+    elif "legal" in recipient_alias_lower:
+        subject = "We have received your legal inquiry"
+        message_text = "We have received your legal inquiry. Our compliance team will review your request and respond shortly."
+    else:
+        subject = "We have received your inquiry"
+        message_text = "We have received your inquiry. Our support team will review your request and respond shortly."
+
+    # Premium minimalist design framework
+    html_template = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #fafafa; color: #1a1a1a; margin: 0; padding: 40px; }}
+            .card {{ max-width: 520px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e5e5; border-radius: 4px; padding: 40px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02); }}
+            .brand {{ font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: #737373; margin-bottom: 32px; }}
+            .greeting {{ font-size: 15px; font-weight: 500; margin-bottom: 16px; color: #171717; }}
+            .body-text {{ font-size: 14px; line-height: 1.6; color: #404040; margin-bottom: 24px; }}
+            .footer {{ border-top: 1px solid #f3f3f3; padding-top: 24px; font-size: 11px; color: #a3a3a3; letter-spacing: 0.05em; line-height: 1.5; }}
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <div class="brand">AuraWorks Correspondence</div>
+            <div class="greeting">Hello,</div>
+            <div class="body-text">
+                {message_text}
+            </div>
+            <div class="footer">
+                AuraWorks (Pty) Ltd &bull; Where presence meets performance.
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+    return await send_resend_email(
+        to_email=to_email,
+        subject=subject,
+        html_content=html_template
+    )
