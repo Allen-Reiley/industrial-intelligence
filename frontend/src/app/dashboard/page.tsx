@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
+import Link from 'next/link';
 import { 
   Building2, 
   MapPin, 
@@ -128,12 +129,45 @@ export default function UnifiedDashboard() {
             <div className="h-10 w-10 rounded-lg bg-zinc-100 flex items-center justify-center text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]">
               <Activity className="h-5 w-5" />
             </div>
-            <div>
+            <div className="hidden md:block">
               <div className="flex items-center gap-2 text-[10px] tracking-[0.3em] text-emerald-500 font-bold uppercase">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span>Live Signal Ledger</span>
               </div>
               <h1 className="text-lg font-light tracking-tight">Intelligence Dashboard</h1>
+            </div>
+          </div>
+
+          {/* Navigation Switcher */}
+          <div className="flex items-center bg-zinc-950/60 border border-zinc-850 rounded-lg p-1 text-xs">
+            <div className="relative group">
+              <Link
+                href="/dashboard"
+                className="px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+              >
+                <Activity className="h-3.5 w-3.5" />
+                <span>Dashboard</span>
+              </Link>
+              {/* Tooltip */}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-52 p-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] text-zinc-400 opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 shadow-2xl z-50 text-center leading-normal">
+                <p className="font-bold text-zinc-200 mb-0.5">Intelligence Dashboard</p>
+                Real-time visitor telemetry, geolocation mapping, and live traffic analytics.
+              </div>
+            </div>
+            
+            <div className="relative group">
+              <Link
+                href="/admin"
+                className="px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50"
+              >
+                <Building2 className="h-3.5 w-3.5" />
+                <span>Admin Ledger</span>
+              </Link>
+              {/* Tooltip */}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-52 p-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] text-zinc-400 opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 shadow-2xl z-50 text-center leading-normal">
+                <p className="font-bold text-zinc-200 mb-0.5">Juristic Identity Ledger</p>
+                B2B consent records, enterprise identity resolution, and CSV lead exporter.
+              </div>
             </div>
           </div>
 
