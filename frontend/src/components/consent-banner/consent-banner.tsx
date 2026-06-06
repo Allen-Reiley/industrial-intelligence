@@ -178,7 +178,7 @@ const AuraConsentBanner = () => {
 
     const clientId = (window as any).AURA_ID || (window as any).AURA_AGENCY_ID || 'c4a6c9b1-8355-4de2-985d-a04f4dcd63a0';
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/waitlist/join`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/prospects/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -195,7 +195,7 @@ const AuraConsentBanner = () => {
         })
       });
     } catch (err) {
-      console.error("Waitlist full capture failed", err);
+      console.error("Prospect full capture failed", err);
     }
 
     setIsVisible(false);
@@ -219,7 +219,7 @@ const AuraConsentBanner = () => {
     }));
 
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/waitlist/join`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/prospects/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -230,7 +230,7 @@ const AuraConsentBanner = () => {
         })
       });
     } catch (err) {
-      console.error("Waitlist exit intent capture failed", err);
+      console.error("Prospect exit intent capture failed", err);
     }
 
     setIsVisible(false);

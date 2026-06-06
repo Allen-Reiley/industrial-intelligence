@@ -7,7 +7,7 @@ from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
 if TYPE_CHECKING:
     from app.models.department import Department
     from app.models.visit import Visit
-    from app.models.waitlist_lead import WaitlistLead
+    from app.models.prospect import Prospect
 
 class Company(SQLModel, table=True):
     __tablename__ = "company"
@@ -34,4 +34,4 @@ class Company(SQLModel, table=True):
     # Relationships
     departments: List["Department"] = Relationship(back_populates="company")
     visits: List["Visit"] = Relationship(back_populates="company")
-    leads: List["WaitlistLead"] = Relationship(back_populates="company")
+    prospects: List["Prospect"] = Relationship(back_populates="company")

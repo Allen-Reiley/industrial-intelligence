@@ -7,7 +7,7 @@ from app.core.config import settings
 
 logger = logging.getLogger("uvicorn")
 
-async def sync_to_airtable(lead_data: Dict[str, Any], journey: Dict[str, Any]):
+async def sync_to_airtable(prospect_data: Dict[str, Any], journey: Dict[str, Any]):
     """
     Phase 3: The Airtable Bridge.
     Pushes the compiled lead metrics, session journey, URL footprints, 
@@ -28,13 +28,13 @@ async def sync_to_airtable(lead_data: Dict[str, Any], journey: Dict[str, Any]):
 
     # Map internal data schemas strictly to your Airtable Column Headers
     raw_fields = {
-        "Company": lead_data.get("company_name_final") or "Unknown Entity",
-        "Lead Name": lead_data.get("name") or "Unknown Lead",
-        "Email": lead_data.get("email"),
-        "Position": lead_data.get("position") or "Evaluator",
-        "Department": lead_data.get("department") or "Undetermined",
-        "Industry": lead_data.get("industry") or "Industrial",
-        "URL": lead_data.get("website") or "N/A", 
+        "Company": prospect_data.get("company_name_final") or "Unknown Entity",
+        "Lead Name": prospect_data.get("name") or "Unknown Lead",
+        "Email": prospect_data.get("email"),
+        "Position": prospect_data.get("position") or "Evaluator",
+        "Department": prospect_data.get("department") or "Undetermined",
+        "Industry": prospect_data.get("industry") or "Industrial",
+        "URL": prospect_data.get("website") or "N/A", 
         "Pathway": journey.get("pathway") or "Direct",
         "Intent Summary": journey.get("intent_summary") or "Pending Intelligence...",
         "Status": "Needs Review"
@@ -55,14 +55,14 @@ async def sync_to_airtable(lead_data: Dict[str, Any], journey: Dict[str, Any]):
         try:
             response = await client.post(url, headers=headers, json=payload, timeout=10.0)
             if response.status_code == 200:
-                logger.info(f"🟢 Airtable Sync Success for Lead: {lead_data.get('email')}")
+                logger.info(f"🟢 Airtable Sync Success for Lead: {prospect_data.get('email')}")
             else:
                 logger.error(f"❌ Airtable Sync Failed ({response.status_code}): {response.text}")
         except Exception as e:
             logger.error(f"🚨 Airtable Transport Error: {e}")
 
 
-async def sync_to_notion(lead_data: Dict[str, Any], journey: Dict[str, Any]):
+async def sync_to_notion(prospect_data: Dict[str, Any], journey: Dict[str, Any]):
     """
     Phase 4: The Notion Vault Bridge.
     Creates an itemized ledger entry mapping ALL associated firmographic,
@@ -81,13 +81,13 @@ async def sync_to_notion(lead_data: Dict[str, Any], journey: Dict[str, Any]):
     }
 
     # Extract clean parameters with fallback safe-guards
-    company_name = lead_data.get("company_name_final") or lead_data.get("company_name") or "Anonymous Entity"
-    lead_name = lead_data.get("name") or "Unknown Lead"
-    email = lead_data.get("email") or "unknown@entity.co.za"
-    position = lead_data.get("position") or "Evaluator"
-    department = lead_data.get("department") or "Undetermined"
-    industry = lead_data.get("industry") or "Industrial"
-    website_url = lead_data.get("website") or "https://auraworks.co.za"
+    company_name = prospect_data.get("company_name_final") or prospect_data.get("company_name") or "Anonymous Entity"
+    lead_name = prospect_data.get("name") or "Unknown Lead"
+    email = prospect_data.get("email") or "unknown@entity.co.za"
+    position = prospect_data.get("position") or "Evaluator"
+    department = prospect_data.get("department") or "Undetermined"
+    industry = prospect_data.get("industry") or "Industrial"
+    website_url = prospect_data.get("website") or "https://auraworks.co.za"
     
     # Extract journey stats
     total_touches = str(journey.get("total_touches", "1"))
@@ -95,8 +95,8 @@ async def sync_to_notion(lead_data: Dict[str, Any], journey: Dict[str, Any]):
     summary_text = journey.get("intent_summary") or "No intelligence data compiled."
     
     # Location data mapping
-    city = lead_data.get("city") or journey.get("city") or "Unknown"
-    region = lead_data.get("region") or journey.get("region") or "ZA"
+    city = prospect_data.get("city") or journey.get("city") or "Unknown"
+    region = prospect_data.get("region") or journey.get("region") or "ZA"
     location_str = f"{city}, {region}"
 
     # Deeply structured properties to map ALL parameters into Notion types

@@ -118,7 +118,7 @@ async def test_crm_synchronization_dead_letter_queue():
     """
     client_id = uuid4()
     client_domain = f"crmtest-{uuid4()}.co.za"
-    lead_data = {
+    prospect_data = {
         "email": "lead@crmtest.co.za",
         "name": "Jane Doe",
         "company_name_final": "CRM Test Pty Ltd"
@@ -140,7 +140,7 @@ async def test_crm_synchronization_dead_letter_queue():
     # Mock httpx to raise a timeout on every call
     with patch("httpx.AsyncClient.post", side_effect=httpx.ConnectTimeout("Connection timed out")):
         # Use backoff_base=0.01 to run retries immediately without delaying the test run
-        success = await sync_lead_to_crm(client_id, lead_data, backoff_base=0.01)
+        success = await sync_lead_to_crm(client_id, prospect_data, backoff_base=0.01)
         assert success is False
         
     # Check that a dead-letter record was committed to the DB
@@ -160,7 +160,7 @@ async def test_notion_vault_synchronization_isolation():
     Mock a transport error to assert the exception is isolated cleanly,
     allowing the caller process to finish without rising or raising failures.
     """
-    lead_data = {
+    prospect_data = {
         "email": "notion@test.co.za",
         "company_name_final": "Notion Corp"
     }
@@ -172,4 +172,4 @@ async def test_notion_vault_synchronization_isolation():
         with patch("app.services.vault.settings.NOTION_DATABASE_ID", "mock-db"):
             with patch("httpx.AsyncClient.post", side_effect=httpx.ConnectError("Network is down")):
                 # Should not raise exception and log isolated error message
-                await sync_to_notion(lead_data, journey)
+                await sync_to_notion(prospect_data, journey)

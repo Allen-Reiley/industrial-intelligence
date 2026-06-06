@@ -57,7 +57,7 @@ async def test_composite_cache_key_isolation():
 async def test_exit_endpoint_without_lead(mock_juristic_alert):
     """
     Send a mock transaction payload to POST /v1/track/exit passing a valid aura_id
-    and a company_id but completely lacking a matching WaitlistLead database entry.
+    and a company_id but completely lacking a matching Prospect database entry.
     Assert an HTTP 200 response, verify that session duration math is updated on
     the Visit row, and confirm that handle_juristic_only_alert is invoked.
     """

@@ -40,7 +40,7 @@ To guarantee compliance with the South African Protection of Personal Informatio
 | **POPIA Status** | Legitimate Business Interest (No upfront consent required) | Explicit Opt-In Gated (Consent mandatory) |
 | **Retention Window** | Permanent, immutable ledger tracking | 48-Hour conditional window (Scrubbed if unverified) |
 | **Janitor Execution** | Protected from scrubbing cascades | Automatically anonymized/zeroed out if unverified |
-| **Enrichment Triggers** | Immediate asynchronous IPinfo + Apollo extraction | Gated until waitlist form submission or manual banner opt-in |
+| **Enrichment Triggers** | Immediate asynchronous IPinfo + Apollo extraction | Gated until prospect form submission or manual banner opt-in |
 
 ---
 

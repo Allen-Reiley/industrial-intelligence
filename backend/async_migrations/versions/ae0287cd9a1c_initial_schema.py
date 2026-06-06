@@ -159,7 +159,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix_visit_is_b2b'), 'visit', ['is_b2b'], unique=False)
     op.create_index(op.f('ix_visit_is_consented'), 'visit', ['is_consented'], unique=False)
     op.create_index(op.f('ix_visit_verification_status'), 'visit', ['verification_status'], unique=False)
-    op.create_table('waitlist_lead',
+    op.create_table('prospect',
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('client_id', sa.Uuid(), nullable=False),
     sa.Column('company_id', sa.Uuid(), nullable=True),
@@ -182,11 +182,11 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['company_id'], ['company.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_waitlist_lead_aura_id'), 'waitlist_lead', ['aura_id'], unique=False)
-    op.create_index(op.f('ix_waitlist_lead_client_id'), 'waitlist_lead', ['client_id'], unique=False)
-    op.create_index(op.f('ix_waitlist_lead_company_id'), 'waitlist_lead', ['company_id'], unique=False)
-    op.create_index(op.f('ix_waitlist_lead_email'), 'waitlist_lead', ['email'], unique=False)
-    op.create_index(op.f('ix_waitlist_lead_id'), 'waitlist_lead', ['id'], unique=False)
+    op.create_index(op.f('ix_prospect_aura_id'), 'prospect', ['aura_id'], unique=False)
+    op.create_index(op.f('ix_prospect_client_id'), 'prospect', ['client_id'], unique=False)
+    op.create_index(op.f('ix_prospect_company_id'), 'prospect', ['company_id'], unique=False)
+    op.create_index(op.f('ix_prospect_email'), 'prospect', ['email'], unique=False)
+    op.create_index(op.f('ix_prospect_id'), 'prospect', ['id'], unique=False)
     op.create_table('page_view',
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('client_id', sa.Uuid(), nullable=False),
@@ -214,12 +214,12 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_page_view_id'), table_name='page_view')
     op.drop_index(op.f('ix_page_view_client_id'), table_name='page_view')
     op.drop_table('page_view')
-    op.drop_index(op.f('ix_waitlist_lead_id'), table_name='waitlist_lead')
-    op.drop_index(op.f('ix_waitlist_lead_email'), table_name='waitlist_lead')
-    op.drop_index(op.f('ix_waitlist_lead_company_id'), table_name='waitlist_lead')
-    op.drop_index(op.f('ix_waitlist_lead_client_id'), table_name='waitlist_lead')
-    op.drop_index(op.f('ix_waitlist_lead_aura_id'), table_name='waitlist_lead')
-    op.drop_table('waitlist_lead')
+    op.drop_index(op.f('ix_prospect_id'), table_name='prospect')
+    op.drop_index(op.f('ix_prospect_email'), table_name='prospect')
+    op.drop_index(op.f('ix_prospect_company_id'), table_name='prospect')
+    op.drop_index(op.f('ix_prospect_client_id'), table_name='prospect')
+    op.drop_index(op.f('ix_prospect_aura_id'), table_name='prospect')
+    op.drop_table('prospect')
     op.drop_index(op.f('ix_visit_verification_status'), table_name='visit')
     op.drop_index(op.f('ix_visit_is_consented'), table_name='visit')
     op.drop_index(op.f('ix_visit_is_b2b'), table_name='visit')

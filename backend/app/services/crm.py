@@ -9,7 +9,7 @@ from app.models.crm_dead_letter import CrmDeadLetter
 
 logger = logging.getLogger("uvicorn")
 
-async def sync_lead_to_crm(client_id: UUID, lead_data: dict, crm_url: str = None, backoff_base: float = 1.0) -> bool:
+async def sync_lead_to_crm(client_id: UUID, prospect_data: dict, crm_url: str = None, backoff_base: float = 1.0) -> bool:
     """
     Asynchronously synchronizes a promoted lead matrix to an outbound CRM webhook endpoint.
     Attempts up to 3 times with exponential backoff on connection failure,
@@ -26,7 +26,7 @@ async def sync_lead_to_crm(client_id: UUID, lead_data: dict, crm_url: str = None
         attempts += 1
         try:
             async with httpx.AsyncClient() as client:
-                response = await client.post(crm_url, json=lead_data, timeout=5.0)
+                response = await client.post(crm_url, json=prospect_data, timeout=5.0)
                 if response.status_code in [200, 201]:
                     logger.info(f"🟢 CRM Sync Success for client {client_id} (Attempt {attempts})")
                     return True
@@ -48,7 +48,7 @@ async def sync_lead_to_crm(client_id: UUID, lead_data: dict, crm_url: str = None
             try:
                 dead_letter = CrmDeadLetter(
                     client_id=client_id,
-                    payload=lead_data,
+                    payload=prospect_data,
                     attempts=max_attempts,
                     last_error=last_error,
                     failed_at=datetime.now(timezone.utc)

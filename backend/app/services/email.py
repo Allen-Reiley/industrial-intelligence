@@ -60,13 +60,19 @@ async def send_resend_email(
         return False
 
 
-async def send_waitlist_success_email(recipient_email: str, recipient_name: Optional[str] = None) -> bool:
+async def send_prospect_success_email(
+    recipient_email: str,
+    recipient_name: Optional[str] = None,
+    calendly_link: Optional[str] = None
+) -> bool:
     """
-    Sends a premium confirmation message to users who join the waitlist.
+    Sends a premium demo onboarding confirmation email to prospects.
+    Introduces AuraWorks' Identity Resolution engine and requests booking.
     """
-    subject = "Submission Received — AuraWorks Waitlist"
+    subject = "Confirm Your AuraWorks Demo & Onboarding"
     
     greeting = f"Hello {recipient_name}," if recipient_name else "Hello,"
+    link = calendly_link or settings.CALENDLY_LINK
     
     # Premium minimalist design framework matching a professional brand layout
     html_template = f"""
@@ -76,11 +82,14 @@ async def send_waitlist_success_email(recipient_email: str, recipient_name: Opti
         <meta charset="utf-8">
         <style>
             body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #fafafa; color: #1a1a1a; margin: 0; padding: 40px; }}
-            .card {{ max-width: 520px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e5e5; border-radius: 4px; padding: 40px; }}
+            .card {{ max-width: 520px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e5e5; border-radius: 4px; padding: 40px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02); }}
             .brand {{ font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: #737373; margin-bottom: 32px; }}
             .greeting {{ font-size: 15px; font-weight: 500; margin-bottom: 16px; color: #171717; }}
-            .body-text {{ font-size: 14px; line-height: 1.6; color: #404040; margin-bottom: 32px; }}
-            .status-tag {{ display: inline-block; font-size: 12px; font-family: monospace; background: #f4f4f5; color: #18181b; padding: 6px 12px; border-radius: 2px; margin-bottom: 32px; font-weight: 500; }}
+            .body-text {{ font-size: 14px; line-height: 1.6; color: #404040; margin-bottom: 24px; }}
+            .cta-container {{ margin: 32px 0; text-align: left; }}
+            .cta-button {{ display: inline-block; font-size: 13px; font-weight: 600; color: #ffffff !important; background: #000000; padding: 12px 24px; text-decoration: none; border-radius: 4px; letter-spacing: 0.05em; }}
+            .cta-button:hover {{ background: #262626; }}
+            .status-tag {{ display: inline-block; font-size: 12px; font-family: monospace; background: #f4f4f5; color: #18181b; padding: 6px 12px; border-radius: 2px; margin-bottom: 24px; font-weight: 500; }}
             .footer {{ border-top: 1px solid #f3f3f3; padding-top: 24px; font-size: 11px; color: #a3a3a3; letter-spacing: 0.05em; line-height: 1.5; }}
         </style>
     </head>
@@ -90,17 +99,29 @@ async def send_waitlist_success_email(recipient_email: str, recipient_name: Opti
             <div class="greeting">{greeting}</div>
             
             <div class="body-text">
-                Your entry has been securely captured by our waitlist registration system. We appreciate your interest in our business intelligence and performance solutions.
+                Thank you for requesting a demonstration of AuraWorks. Your inquiry has been securely registered in our system.
             </div>
             
-            <div class="status-tag">STATUS: QUEUED_FOR_REVIEW</div>
+            <div class="status-tag">STATUS: DEMO_REQUESTED</div>
             
             <div class="body-text">
-                Our team monitors submissions on an ongoing basis. An operational specialist will reach out to your provided contact path shortly to discuss access parameters.
+                AuraWorks specializes in industrial-grade <strong>Identity Resolution</strong>, bridging the gap between anonymous traffic and verified operational profiles to reveal hidden demand.
+            </div>
+
+            <div class="body-text">
+                To proceed with your demo, please select a convenient timeframe for your onboarding call with our technical engineering team:
+            </div>
+
+            <div class="cta-container">
+                <a href="{link}" class="cta-button" target="_blank">Book Onboarding Session</a>
+            </div>
+
+            <div class="body-text">
+                If you have any questions before our session, simply reply directly to this email to contact our team.
             </div>
             
             <div class="footer">
-                This is an automated tracking update.<br>
+                This is an automated demo onboarding dispatch.<br>
                 AuraWorks (Pty) Ltd &bull; Where presence meets performance.
             </div>
         </div>

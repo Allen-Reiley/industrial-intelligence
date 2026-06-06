@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import async_engine
-from app.models import Visit, WaitlistLead
+from app.models import Visit, Prospect
 
 logger = logging.getLogger("uvicorn")
 
@@ -32,9 +32,9 @@ async def execute_janitor_scrub_cascade(session: AsyncSession):
 
     for visit in candidates:
         # Safety Check: The 'Waitlist Shield'
-        lead_stmt = select(WaitlistLead).where(WaitlistLead.aura_id == visit.aura_id)
-        lead_res = await session.execute(lead_stmt)
-        has_lead = lead_res.scalars().first()
+        prospect_stmt = select(Prospect).where(Prospect.aura_id == visit.aura_id)
+        prospect_res = await session.execute(prospect_stmt)
+        has_lead = prospect_res.scalars().first()
         
         if has_lead:
             visit.verification_status = "verified"

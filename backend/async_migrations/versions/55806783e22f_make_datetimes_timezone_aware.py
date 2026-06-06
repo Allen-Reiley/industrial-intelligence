@@ -45,8 +45,8 @@ def upgrade() -> None:
     
     op.execute('ALTER TABLE "page_view" ALTER COLUMN "created_at" TYPE TIMESTAMP WITH TIME ZONE USING "created_at" AT TIME ZONE \'UTC\';')
     
-    op.execute('ALTER TABLE "waitlist_lead" ALTER COLUMN "created_at" TYPE TIMESTAMP WITH TIME ZONE USING "created_at" AT TIME ZONE \'UTC\';')
-    op.execute('ALTER TABLE "waitlist_lead" ALTER COLUMN "updated_at" TYPE TIMESTAMP WITH TIME ZONE USING "updated_at" AT TIME ZONE \'UTC\';')
+    op.execute('ALTER TABLE "prospect" ALTER COLUMN "created_at" TYPE TIMESTAMP WITH TIME ZONE USING "created_at" AT TIME ZONE \'UTC\';')
+    op.execute('ALTER TABLE "prospect" ALTER COLUMN "updated_at" TYPE TIMESTAMP WITH TIME ZONE USING "updated_at" AT TIME ZONE \'UTC\';')
     
     op.execute('ALTER TABLE "enrichment_queue" ALTER COLUMN "created_at" TYPE TIMESTAMP WITH TIME ZONE USING "created_at" AT TIME ZONE \'UTC\';')
     op.execute('ALTER TABLE "enrichment_queue" ALTER COLUMN "last_attempt_at" TYPE TIMESTAMP WITH TIME ZONE USING "last_attempt_at" AT TIME ZONE \'UTC\';')
@@ -75,8 +75,8 @@ def downgrade() -> None:
     
     op.execute('ALTER TABLE "page_view" ALTER COLUMN "created_at" TYPE TIMESTAMP WITHOUT TIME ZONE USING "created_at" AT TIME ZONE \'UTC\';')
     
-    op.execute('ALTER TABLE "waitlist_lead" ALTER COLUMN "created_at" TYPE TIMESTAMP WITHOUT TIME ZONE USING "created_at" AT TIME ZONE \'UTC\';')
-    op.execute('ALTER TABLE "waitlist_lead" ALTER COLUMN "updated_at" TYPE TIMESTAMP WITHOUT TIME ZONE USING "updated_at" AT TIME ZONE \'UTC\';')
+    op.execute('ALTER TABLE "prospect" ALTER COLUMN "created_at" TYPE TIMESTAMP WITHOUT TIME ZONE USING "created_at" AT TIME ZONE \'UTC\';')
+    op.execute('ALTER TABLE "prospect" ALTER COLUMN "updated_at" TYPE TIMESTAMP WITHOUT TIME ZONE USING "updated_at" AT TIME ZONE \'UTC\';')
     
     op.execute('ALTER TABLE "enrichment_queue" ALTER COLUMN "created_at" TYPE TIMESTAMP WITHOUT TIME ZONE USING "created_at" AT TIME ZONE \'UTC\';')
     op.execute('ALTER TABLE "enrichment_queue" ALTER COLUMN "last_attempt_at" TYPE TIMESTAMP WITHOUT TIME ZONE USING "last_attempt_at" AT TIME ZONE \'UTC\';')

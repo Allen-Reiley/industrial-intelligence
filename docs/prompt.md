@@ -22,9 +22,9 @@ Generating or provisioning third-party platform API keys, client tokens, or endp
 Performing external browser-based interactive tasks (e.g., verifying Cloudflare dashboard caching rules or creating bucket storage configurations on the Cloudflare R2 dashboard).
 5. CORE IMPLEMENTATION & PROGRESS CHECKLIST (`task.md`)
 [ ] PHASE 1: PERSISTENT DATABASE LAYER & SECURITY SHIELD
-[ ] Task 1.1: Initialize SQLModel Database Entities (Create client.py, company.py, department.py, visit.py, pageview.py, waitlist_lead.py, enrichment_queue.py, and notification_throttle.py inside backend/app/models/ precisely matching section 3 schemas).
-[ ] Task 1.2: Establish Fields Encryption Layer (Implement AES-256-GCM functions inside backend/app/core/security.py and hook it to the WaitlistLead.phone_encrypted field).
-[ ] Task 1.3: Configure PostgreSQL Row-Level Security (RLS) Engine (Generate Alembic migration scripts to enable RLS on visit, page_view, and waitlist_lead tables based on session variable app.current_client_id, and update db.py to apply this hook).
+[ ] Task 1.1: Initialize SQLModel Database Entities (Create client.py, company.py, department.py, visit.py, pageview.py, prospect.py, enrichment_queue.py, and notification_throttle.py inside backend/app/models/ precisely matching section 3 schemas).
+[ ] Task 1.2: Establish Fields Encryption Layer (Implement AES-256-GCM functions inside backend/app/core/security.py and hook it to the Prospect.phone_encrypted field).
+[ ] Task 1.3: Configure PostgreSQL Row-Level Security (RLS) Engine (Generate Alembic migration scripts to enable RLS on visit, page_view, and prospect tables based on session variable app.current_client_id, and update db.py to apply this hook).
 [ ] PHASE 2: INGESTION ENGINE & TRAFFIC ANALYSIS PIPELINE
 [ ] Task 2.1: Refactor Exit Route & Discard Consent Gate (Modify process_exit_logic() inside backend/app/api/v1/endpoints/track.py to completely strip the if not lead: return block, letting juristic data route independently).
 [ ] Task 2.2: Implement Composite Multi-Tenant Cache Keys (Refactor Redis lookup configurations inside track.py to shift memory caching tokens from a raw aura_id layout to a decoupled client_id:aura_id mapping).

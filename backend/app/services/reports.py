@@ -136,7 +136,7 @@ from datetime import datetime, timedelta, timezone
 import hmac
 import hashlib
 from app.models.visit import Visit
-from app.models.waitlist_lead import WaitlistLead
+from app.models.prospect import Prospect
 from app.models.company import Company
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -158,12 +158,12 @@ async def compile_weekly_report(client_id: UUID, session: AsyncSession) -> bytes
     visit_res = await session.execute(visit_stmt)
     visits = visit_res.scalars().all()
     
-    lead_stmt = select(WaitlistLead).where(
-        WaitlistLead.client_id == client_id,
-        WaitlistLead.created_at >= threshold_naive
+    prospect_stmt = select(Prospect).where(
+        Prospect.client_id == client_id,
+        Prospect.created_at >= threshold_naive
     )
-    lead_res = await session.execute(lead_stmt)
-    leads = lead_res.scalars().all()
+    prospect_res = await session.execute(prospect_stmt)
+    leads = prospect_res.scalars().all()
     
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter)

@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
-import { submitToWaitlist } from "@/lib/api";
+import { submitToProspects } from "@/lib/api";
 
 export default function GetStartedPage() {
     const [step, setStep] = useState(1)
@@ -45,7 +45,7 @@ export default function GetStartedPage() {
         
         try {
             const aura_id = typeof window !== 'undefined' ? localStorage.getItem('aura_uid') : null;
-            await submitToWaitlist({
+            await submitToProspects({
                 ...formData,
                 aura_id: aura_id
             });
@@ -96,9 +96,9 @@ export default function GetStartedPage() {
                                     <CheckCircle className="h-12 w-12 text-primary" />
                                 </div>
                             </div>
-                            <h2 className="text-3xl font-bold tracking-tight">Audit Initiated</h2>
+                            <h2 className="text-3xl font-bold tracking-tight">Access Requested</h2>
                             <p className="text-muted-foreground mt-4 text-sm max-w-sm mx-auto">
-                                Thank you, {formData.name.split(' ')[0]}. We&apos;ve added {formData.company} to the Phase 01 queue. 
+                                An email has been sent to {formData.email}. Please check your inbox (and spam folder) for the Calendly scheduling link.
                             </p>
                             <Button asChild variant="outline" className="mt-8 rounded-xl">
                                 <Link href="/">Return to Home</Link>

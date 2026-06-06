@@ -70,7 +70,7 @@ def upgrade() -> None:
             conn.execute(sa.text("ALTER TABLE client ALTER COLUMN id TYPE UUID USING id::uuid;"))
             
             # Alter referencing columns
-            for t in ["visit", "page_view", "enrichment_queue", "failed_enrichment", "notification_throttle", "waitlist_lead"]:
+            for t in ["visit", "page_view", "enrichment_queue", "failed_enrichment", "notification_throttle", "prospect"]:
                 if table_exists(conn, t) and column_exists(conn, t, "client_id"):
                     conn.execute(sa.text(f"ALTER TABLE {t} ALTER COLUMN client_id TYPE UUID USING client_id::uuid;"))
 
@@ -101,9 +101,9 @@ def upgrade() -> None:
             if table_exists(conn, "department"):
                 conn.execute(sa.text("ALTER TABLE department ADD COLUMN new_company_id UUID;"))
                 conn.execute(sa.text("UPDATE department d SET new_company_id = c.new_id FROM company c WHERE d.company_id::text = c.id::text;"))
-            if table_exists(conn, "waitlist_lead"):
-                conn.execute(sa.text("ALTER TABLE waitlist_lead ADD COLUMN new_company_id UUID;"))
-                conn.execute(sa.text("UPDATE waitlist_lead wl SET new_company_id = c.new_id FROM company c WHERE wl.company_id::text = c.id::text;"))
+            if table_exists(conn, "prospect"):
+                conn.execute(sa.text("ALTER TABLE prospect ADD COLUMN new_company_id UUID;"))
+                conn.execute(sa.text("UPDATE prospect wl SET new_company_id = c.new_id FROM company c WHERE wl.company_id::text = c.id::text;"))
                 
             conn.execute(sa.text("ALTER TABLE company ADD COLUMN new_parent_company_id UUID;"))
             conn.execute(sa.text("UPDATE company c1 SET new_parent_company_id = c2.new_id FROM company c2 WHERE c1.parent_company_id::text = c2.id::text;"))
@@ -115,8 +115,8 @@ def upgrade() -> None:
                 conn.execute(sa.text("ALTER TABLE visit DROP COLUMN IF EXISTS company_id;"))
             if table_exists(conn, "department"):
                 conn.execute(sa.text("ALTER TABLE department DROP COLUMN IF EXISTS company_id;"))
-            if table_exists(conn, "waitlist_lead"):
-                conn.execute(sa.text("ALTER TABLE waitlist_lead DROP COLUMN IF EXISTS company_id;"))
+            if table_exists(conn, "prospect"):
+                conn.execute(sa.text("ALTER TABLE prospect DROP COLUMN IF EXISTS company_id;"))
             conn.execute(sa.text("ALTER TABLE company DROP COLUMN IF EXISTS parent_company_id;"))
             
             # Rename new columns to old names
@@ -127,8 +127,8 @@ def upgrade() -> None:
                 conn.execute(sa.text("ALTER TABLE visit RENAME COLUMN new_company_id TO company_id;"))
             if table_exists(conn, "department"):
                 conn.execute(sa.text("ALTER TABLE department RENAME COLUMN new_company_id TO company_id;"))
-            if table_exists(conn, "waitlist_lead"):
-                conn.execute(sa.text("ALTER TABLE waitlist_lead RENAME COLUMN new_company_id TO company_id;"))
+            if table_exists(conn, "prospect"):
+                conn.execute(sa.text("ALTER TABLE prospect RENAME COLUMN new_company_id TO company_id;"))
             conn.execute(sa.text("ALTER TABLE company RENAME COLUMN new_parent_company_id TO parent_company_id;"))
 
     # 4. Fix visit connection_type column
@@ -157,10 +157,10 @@ def upgrade() -> None:
     if table_exists(conn, "company"):
         conn.execute(sa.text("ALTER TABLE company ADD CONSTRAINT company_parent_company_id_fkey FOREIGN KEY (parent_company_id) REFERENCES company(id);"))
         
-    if table_exists(conn, "waitlist_lead") and table_exists(conn, "client"):
-        conn.execute(sa.text("ALTER TABLE waitlist_lead ADD CONSTRAINT waitlist_lead_client_id_fkey FOREIGN KEY (client_id) REFERENCES client(id);"))
-    if table_exists(conn, "waitlist_lead") and table_exists(conn, "company"):
-        conn.execute(sa.text("ALTER TABLE waitlist_lead ADD CONSTRAINT waitlist_lead_company_id_fkey FOREIGN KEY (company_id) REFERENCES company(id);"))
+    if table_exists(conn, "prospect") and table_exists(conn, "client"):
+        conn.execute(sa.text("ALTER TABLE prospect ADD CONSTRAINT prospect_client_id_fkey FOREIGN KEY (client_id) REFERENCES client(id);"))
+    if table_exists(conn, "prospect") and table_exists(conn, "company"):
+        conn.execute(sa.text("ALTER TABLE prospect ADD CONSTRAINT prospect_company_id_fkey FOREIGN KEY (company_id) REFERENCES company(id);"))
 
 
 def downgrade() -> None:

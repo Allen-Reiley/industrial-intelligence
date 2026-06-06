@@ -30,7 +30,7 @@ Protected from scrubbing cascades
 Automatically anonymized/zeroed out if unverified
 Enrichment Triggers
 Immediate asynchronous IPinfo + Apollo extraction
-Gated until waitlist form submission or manual banner opt-in
+Gated until prospect form submission or manual banner opt-in
 
 3. Comprehensive Database Schema & Data Models
 The following structural configurations define the persistent database schema layers implemented via SQLModel abstractions.

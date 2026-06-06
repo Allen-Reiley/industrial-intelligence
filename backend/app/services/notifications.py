@@ -156,15 +156,16 @@ async def post_to_visit_channel(visit_data: dict, journey: dict):
 
 # --- PHASE 02: Lead Notifications (Identity Promotion) ---
 
-async def post_to_slack(lead_data: dict, journey: dict = None):
+async def post_to_slack(prospect_data: dict, journey: dict = None):
     """
-    Standard lead notification for identified conversions (Promotion).
+    Standard lead notification for identified conversions (Promotion / Form Submission).
+    Structures firmographic and forensic profile data clearly.
     """
     if not settings.SLACK_WEBHOOK_URL:
         return
 
-    client_id = lead_data.get("client_id")
-    company_id = lead_data.get("company_id")
+    client_id = prospect_data.get("client_id")
+    company_id = prospect_data.get("company_id")
     
     if client_id and company_id:
         if await is_slack_notification_throttled(UUID(str(client_id)), UUID(str(company_id))):
@@ -177,12 +178,23 @@ async def post_to_slack(lead_data: dict, journey: dict = None):
     notion_url = f"https://www.notion.so/{notion_db}" if notion_db else "#"
 
     # External lookups
-    company_name = lead_data.get("company_name_final") or lead_data.get("company_name") or "Anonymous Entity"
-    domain = lead_data.get("website") or ""
+    company_name = prospect_data.get("company_name_final") or prospect_data.get("company_name") or "Anonymous Entity"
+    domain = prospect_data.get("website") or ""
     website_url = f"http://{domain}" if domain and not domain.startswith("http") else domain or "#"
     linkedin_url = f"https://www.linkedin.com/search/results/companies/?keywords={urllib.parse.quote(company_name)}"
     google_news_url = f"https://www.google.com/search?tbm=nws&q={urllib.parse.quote(company_name)}"
     external_links = f"<{website_url}|🌐 Website> | <{linkedin_url}|🔗 LinkedIn> | <{google_news_url}|📰 Google News>"
+
+    fields = [
+        {"type": "mrkdwn", "text": f"*Entity:*\n{company_name}"},
+        {"type": "mrkdwn", "text": f"*Lead:*\n{prospect_data.get('name') or 'N/A'} ({prospect_data.get('email')})"},
+        {"type": "mrkdwn", "text": f"*Role / Dept:*\n{prospect_data.get('position', 'Evaluator')} / {prospect_data.get('department', 'Undetermined')}"},
+        {"type": "mrkdwn", "text": f"*Firmographics:*\nInd: {prospect_data.get('industry', 'Industrial')} | Traffic: {prospect_data.get('traffic', 'N/A')}"},
+        {"type": "mrkdwn", "text": f"*ZAR Value:*\n{prospect_data.get('avg_price', 'N/A')}"},
+        {"type": "mrkdwn", "text": f"*Capture Source:*\n`{prospect_data.get('capture_source', 'Verification')}`"},
+        {"type": "mrkdwn", "text": f"*Pathway:*\n{journey.get('pathway', 'Direct Entry')}"},
+        {"type": "mrkdwn", "text": f"*External Lookups:*\n{external_links}"}
+    ]
 
     payload = {
         "blocks": [
@@ -192,13 +204,7 @@ async def post_to_slack(lead_data: dict, journey: dict = None):
             },
             {
                 "type": "section",
-                "fields": [
-                    {"type": "mrkdwn", "text": f"*Entity:*\n{company_name}"},
-                    {"type": "mrkdwn", "text": f"*Lead:*\n{lead_data.get('name')} ({lead_data.get('email')})"},
-                    {"type": "mrkdwn", "text": f"*Capture Source:*\n`{lead_data.get('capture_source', 'Verification')}`"},
-                    {"type": "mrkdwn", "text": f"*Pathway:*\n{journey.get('pathway', 'Direct Entry')}"},
-                    {"type": "mrkdwn", "text": f"*External Lookups:*\n{external_links}"}
-                ]
+                "fields": fields
             }
         ]
     }
@@ -222,6 +228,118 @@ async def post_to_slack(lead_data: dict, journey: dict = None):
             response.raise_for_status()
         except Exception as e:
             logger.error(f"Lead Channel Dispatch Failure: {e}")
+
+
+async def post_meeting_booked_to_slack(prospect_id: UUID, webhook_payload: dict):
+    """
+    Formulates and posts a Slack notification when a prospect books a Calendly call.
+    Translates meeting times into SAST (UTC+2) and includes full firmographic context.
+    """
+    if not settings.SLACK_WEBHOOK_URL:
+        return
+        
+    if not async_session_maker:
+        logger.error("❌ post_meeting_booked_to_slack: Async Session Maker offline.")
+        return
+
+    from app.models import Prospect, Company
+    from app.services.intelligence import get_visitor_journey
+
+    async with async_session_maker() as session:
+        try:
+            prospect = await session.get(Prospect, prospect_id)
+            if not prospect:
+                logger.error(f"❌ post_meeting_booked_to_slack: Prospect {prospect_id} not found.")
+                return
+
+            company_name = "Anonymous Entity"
+            domain = prospect.website or ""
+            industry = prospect.industry or "Industrial"
+            if prospect.company_id:
+                company = await session.get(Company, prospect.company_id)
+                if company:
+                    company_name = company.company_name
+                    domain = company.domain or domain
+                    industry = company.industry or industry
+            elif prospect.company_name_raw:
+                company_name = prospect.company_name_raw
+
+            # Extract invitee/meeting details from Calendly payload
+            payload_data = webhook_payload.get("payload", {})
+            event_name = payload_data.get("scheduled_event", {}).get("name", "Demo & Onboarding")
+            
+            # Format timeframes to SAST (UTC+2)
+            start_utc = payload_data.get("scheduled_event", {}).get("start_time")
+            end_utc = payload_data.get("scheduled_event", {}).get("end_time")
+            
+            sast_timeframe = "Scheduling Context TBD"
+            if start_utc and end_utc:
+                try:
+                    start_dt = datetime.fromisoformat(start_utc.replace("Z", "+00:00"))
+                    end_dt = datetime.fromisoformat(end_utc.replace("Z", "+00:00"))
+                    sast_timezone = timezone(timedelta(hours=2))
+                    start_sast = start_dt.astimezone(sast_timezone)
+                    end_sast = end_dt.astimezone(sast_timezone)
+                    
+                    sast_timeframe = f"{start_sast.strftime('%Y-%m-%d %H:%M')} - {end_sast.strftime('%H:%M')} SAST"
+                except Exception as ex:
+                    logger.error(f"Error converting Calendly time to SAST: {ex}")
+                    sast_timeframe = f"{start_utc} - {end_utc} UTC"
+
+            # Location / Join Link
+            location_data = payload_data.get("scheduled_event", {}).get("location", {})
+            join_url = location_data.get("join_url") or "TBD"
+
+            # External lookups
+            website_url = f"http://{domain}" if domain and not domain.startswith("http") else domain or "#"
+            linkedin_url = f"https://www.linkedin.com/search/results/companies/?keywords={urllib.parse.quote(company_name)}"
+            google_news_url = f"https://www.google.com/search?tbm=nws&q={urllib.parse.quote(company_name)}"
+            external_links = f"<{website_url}|🌐 Website> | <{linkedin_url}|🔗 LinkedIn> | <{google_news_url}|📰 Google News>"
+
+            # Journey/forensics fallback
+            journey = {}
+            if prospect.aura_id:
+                try:
+                    journey = await get_visitor_journey(prospect.aura_id, session)
+                except Exception:
+                    pass
+
+            location_str = f"Location: {journey.get('city', 'Unknown')}, {journey.get('region', 'ZA')}" if journey else "Location: Unknown"
+
+            payload = {
+                "blocks": [
+                    {
+                        "type": "header",
+                        "text": {"type": "plain_text", "text": "📅 Meeting Booked"}
+                    },
+                    {
+                        "type": "section",
+                        "fields": [
+                            {"type": "mrkdwn", "text": f"*Entity:*\n{company_name}"},
+                            {"type": "mrkdwn", "text": f"*Prospect:*\n{prospect.name or 'N/A'} ({prospect.email})"},
+                            {"type": "mrkdwn", "text": f"*SAST Timeframe:*\n`{sast_timeframe}`"},
+                            {"type": "mrkdwn", "text": f"*Meeting Type:*\n{event_name}"},
+                            {"type": "mrkdwn", "text": f"*Role / Dept:*\n{prospect.position or 'Evaluator'} / {prospect.department or 'Undetermined'}"},
+                            {"type": "mrkdwn", "text": f"*Firmographics:*\nInd: {industry} | Traffic: {prospect.traffic or 'N/A'}"},
+                            {"type": "mrkdwn", "text": f"*Join Link:*\n<{join_url}|Join Call>" if join_url != "TBD" else "*Join Link:*\nTBD"},
+                            {"type": "mrkdwn", "text": f"*External Lookups:*\n{external_links}"}
+                        ]
+                    },
+                    {
+                        "type": "context",
+                        "elements": [
+                            {"type": "mrkdwn", "text": f"📍 Forensic Lock: `{prospect.aura_id or 'UNKNOWN'}` | {location_str}"}
+                        ]
+                    }
+                ]
+            }
+
+            async with httpx.AsyncClient() as client:
+                response = await client.post(settings.SLACK_WEBHOOK_URL, json=payload, timeout=10.0)
+                response.raise_for_status()
+                logger.info(f"Slack notification sent successfully for booked meeting (Prospect ID: {prospect_id}).")
+        except Exception as e:
+            logger.error(f"🚨 post_meeting_booked_to_slack Failure: {e}")
 
 async def handle_juristic_only_alert(company, journey: dict, client_id: str):
     """

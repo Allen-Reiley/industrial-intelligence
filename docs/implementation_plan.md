@@ -8,13 +8,13 @@ Phase 1: Persistent Database Layer & Security Shield
 Establish the shared models, schema indexes, database pooling properties, and data encryptions before creating any ingestion endpoints.
 Task 1.1: Initialize SQLModel Database Entities
 Antigravity Target Module: backend/app/models/
-Prompt Instructions for Antigravity: Create the discrete SQLModel schema files inside the database models directory. Build individual files matching the technical spec precisely: client.py, company.py, department.py, visit.py, pageview.py, waitlist_lead.py, enrichment_queue.py, and notification_throttle.py. Ensure enums conform exactly to the design constraints (ClientCategory, SubscriptionStatus, VerificationStatus, QueueType). Every table property must map strictly to the specifications. Ensure all timestamp fields utilize explicit UTC timezone defaults.
+Prompt Instructions for Antigravity: Create the discrete SQLModel schema files inside the database models directory. Build individual files matching the technical spec precisely: client.py, company.py, department.py, visit.py, pageview.py, prospect.py, enrichment_queue.py, and notification_throttle.py. Ensure enums conform exactly to the design constraints (ClientCategory, SubscriptionStatus, VerificationStatus, QueueType). Every table property must map strictly to the specifications. Ensure all timestamp fields utilize explicit UTC timezone defaults.
 Task 1.2: Establish Fields Encryption Layer
 Antigravity Target Module: backend/app/core/security.py
-Prompt Instructions for Antigravity: Implement a robust cryptographic encryption utility module leveraging the cryptography library. Build helper functions encrypt_field_value(raw_text: str) -> str and decrypt_field_value(encrypted_text: str) -> str using authenticated AES-256-GCM configurations. Link this utility layer directly to the phone_encrypted parameter inside the WaitlistLead database model. Firmographic metadata fields (Company Name, Domain, Industry, City/Region) must remain raw and unencrypted to maintain uninhibited indexing speeds.
+Prompt Instructions for Antigravity: Implement a robust cryptographic encryption utility module leveraging the cryptography library. Build helper functions encrypt_field_value(raw_text: str) -> str and decrypt_field_value(encrypted_text: str) -> str using authenticated AES-256-GCM configurations. Link this utility layer directly to the phone_encrypted parameter inside the Prospect database model. Firmographic metadata fields (Company Name, Domain, Industry, City/Region) must remain raw and unencrypted to maintain uninhibited indexing speeds.
 Task 1.3: Configure PostgreSQL Row-Level Security (RLS) Engine
 Antigravity Target Module: backend/app/db.py and Alembic migrations
-Prompt Instructions for Antigravity: Generate custom migration tracking files to force native Row-Level Security constraints within the PostgreSQL database environment. Enable RLS on the multi-tenant interaction data tables: visit, page_view, and waitlist_lead. Establish an operational policy matching rows strictly against a request-scoped session configuration variable: current_setting('app.current_client_id', true)::uuid. Update the async backend connection session initializer function inside db.py to automatically execute a raw SQL command string assigning this parameter on every incoming API thread execution hook.
+Prompt Instructions for Antigravity: Generate custom migration tracking files to force native Row-Level Security constraints within the PostgreSQL database environment. Enable RLS on the multi-tenant interaction data tables: visit, page_view, and prospect. Establish an operational policy matching rows strictly against a request-scoped session configuration variable: current_setting('app.current_client_id', true)::uuid. Update the async backend connection session initializer function inside db.py to automatically execute a raw SQL command string assigning this parameter on every incoming API thread execution hook.
 Phase 2: Ingestion Engine & Traffic Analysis Pipeline
 Refactor real-time metric tracking nodes to decouple firmographic aggregation from natural person input blocks.
 Task 2.1: Refactor Exit Route & Discard Consent Gate
@@ -81,3 +81,16 @@ Prompt Instructions for Antigravity: Construct an outbound data synchronization 
 Final Project Move: Notion Personal Vault Synchronization
 Antigravity Target Module: backend/app/services/vault.py
 Prompt Instructions for Antigravity: As the absolute final addition to the codebase ecosystem, establish the third-party workspace synchronization layer. Build the service function sync_to_notion(client_id: UUID, lead_data: dict) using the official Notion SDK. When an individual lead crosses the consent threshold and completes enrichment parameters, compile their personal data parameters (decrypted email, name, priority level, and associated corporate company name) and map them directly into a designated client Notion database block. Wrap the entire connection loop with strict error isolation logic and backoff retry queues to guarantee that any external integration outages never bottleneck or impact the core ingestion tracking cluster.
+
+Phase 8: Demo Onboarding & Scheduling Implementation
+Deploy Calendly integration, Resend automated onboarding emails, Slack alerting updates, and rename the legacy Waitlist schemas to Prospects.
+Task 8.1: Database Migration
+Rename WaitlistLead to Prospect. Update all SQLModels, schemas, and endpoints from /waitlist/ to /prospects/. Generate Alembic migrations.
+Task 8.2: Outbound Email Integration
+Configure Resend for onboarding@auraworks.co.za. Construct the HTML email template with Calendly link.
+Task 8.3: Calendly Webhook
+Create the POST /api/v1/webhooks/calendly endpoint. Implement HMAC-SHA256 signature verification and event_uuid idempotency.
+Task 8.4: Slack Intelligence
+Update the Slack notification payload builders for "Form Submission" and "Meeting Booked" events for #prospects channel.
+Task 8.5: Frontend UX
+Update Next.js API client routing to point to /prospects/ and implement success toast UX.

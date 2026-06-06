@@ -23,7 +23,7 @@ from app.models.company import Company
 from app.models.department import Department
 from app.models.visit import Visit
 from app.models.pageview import PageView
-from app.models.waitlist_lead import WaitlistLead
+from app.models.prospect import Prospect
 from app.models.enrichment_queue import EnrichmentQueue, FailedEnrichment
 from app.models.notification_throttle import NotificationThrottle
 

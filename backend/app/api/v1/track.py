@@ -10,7 +10,7 @@ from cachetools import TTLCache
 
 # Internal AuraWorks Imports
 from app.models.visit import Visit, VisitCreate, PageViewCreate
-from app.models import Company, WaitlistLead, PageView
+from app.models import Company, Prospect, PageView
 from app.models.enrichment_queue import EnrichmentQueue, QueueType
 from app.services.enrichment import enrich_visitor_data, EnrichmentError
 from app.services.notifications import post_to_slack, handle_juristic_only_alert
@@ -152,11 +152,11 @@ async def process_exit_logic(aura_id: str, client_id: str, duration: int = 0, ha
         try:
             # 1. Dual-lookup configuration mapping both individual context and corporate metadata independently
             # Individual context
-            lead_stmt = select(WaitlistLead).where(
-                WaitlistLead.aura_id == aura_id,
-                WaitlistLead.client_id == UUID(client_id) if isinstance(client_id, str) else client_id
+            prospect_stmt = select(Prospect).where(
+                Prospect.aura_id == aura_id,
+                Prospect.client_id == UUID(client_id) if isinstance(client_id, str) else client_id
             )
-            lead = (await session.execute(lead_stmt)).scalars().first()
+            lead = (await session.execute(prospect_stmt)).scalars().first()
 
             # Corporate metadata: find active Company identification matching the cryptographic aura_id
             visit_stmt = select(Visit).where(
@@ -206,7 +206,7 @@ async def process_exit_logic(aura_id: str, client_id: str, duration: int = 0, ha
                     company_name = company.company_name
 
             # 4. Normalize the unified dataset dictionary payload with Location data included
-            complete_lead_payload = {
+            complete_prospect_payload = {
                 "id": lead.id,
                 "aura_id": lead.aura_id,
                 "name": lead.name or "Unknown Lead",
@@ -226,16 +226,16 @@ async def process_exit_logic(aura_id: str, client_id: str, duration: int = 0, ha
             # =================================================================
 
             # Route the clean, fully-formed summary packet to Slack
-            await post_to_slack(lead_data=complete_lead_payload, journey=journey)
+            await post_to_slack(prospect_data=complete_prospect_payload, journey=journey)
             
             # Phase 3 & Phase 4 Vault Bridge integrations
             from app.services.vault import sync_to_airtable, sync_to_notion
             
             # Push completed session summary metrics out to Airtable
-            await sync_to_airtable(complete_lead_payload, journey)
+            await sync_to_airtable(complete_prospect_payload, journey)
             
             # Spin up the comprehensive canvas log layout space inside Notion
-            await sync_to_notion(complete_lead_payload, journey)
+            await sync_to_notion(complete_prospect_payload, journey)
 
             logger.info(f"✅ DeepSeek Batch Processing synchronized delivery complete for {aura_id}")
 
@@ -280,15 +280,15 @@ async def track_identity(payload: IdentityPayload):
             visit.is_consented = True
 
             res_lead = await session.execute(
-                select(WaitlistLead).where(
-                    WaitlistLead.aura_id == payload.aura_id,
-                    WaitlistLead.client_id == payload.client_id
+                select(Prospect).where(
+                    Prospect.aura_id == payload.aura_id,
+                    Prospect.client_id == payload.client_id
                 )
             )
             lead = res_lead.scalars().first()
 
             if not lead:
-                lead = WaitlistLead(
+                lead = Prospect(
                     client_id=payload.client_id,
                     aura_id=payload.aura_id,
                     email=payload.email

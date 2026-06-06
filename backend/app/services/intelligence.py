@@ -9,7 +9,7 @@ from cachetools import TTLCache
 import redis.asyncio as aioredis
 from bs4 import BeautifulSoup
 
-from app.models import Visit, Company, WaitlistLead, PageView, Client, VerificationStatus
+from app.models import Visit, Company, Prospect, PageView, Client, VerificationStatus
 from app.core.config import settings
 
 logger = logging.getLogger("uvicorn")
@@ -195,8 +195,8 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
     lead = None
     
     # Check for volunteered data (The 'Warm' Check)
-    lead_stmt = select(WaitlistLead).where(WaitlistLead.aura_id == aura_id)
-    res_lead = await session.execute(lead_stmt)
+    prospect_stmt = select(Prospect).where(Prospect.aura_id == aura_id)
+    res_lead = await session.execute(prospect_stmt)
     lead = res_lead.scalars().first()
 
     # Link to Company model if forensic stitching has already occurred
@@ -215,12 +215,12 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
     if not company and last_visit.ip_address:
         # If we don't know who this is, check if ANYONE from this IP ever identified themselves.
         # This is how we deanonymize colleagues in the same building.
-        past_lead_stmt = select(WaitlistLead).join(
-            Visit, WaitlistLead.aura_id == Visit.aura_id
+        past_prospect_stmt = select(Prospect).join(
+            Visit, Prospect.aura_id == Visit.aura_id
         ).where(Visit.ip_address == last_visit.ip_address)
         
-        past_lead_res = await session.execute(past_lead_stmt)
-        past_lead = past_lead_res.scalars().first()
+        past_prospect_res = await session.execute(past_prospect_stmt)
+        past_lead = past_prospect_res.scalars().first()
         
         if past_lead:
             company = await session.get(Company, past_lead.company_id)

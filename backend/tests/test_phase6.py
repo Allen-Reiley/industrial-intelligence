@@ -96,7 +96,7 @@ async def test_layered_consent_phases():
         "full_capture": True
     }
     
-    response = await client.post("/api/v1/waitlist/join", json=payload_p2)
+    response = await client.post("/api/v1/prospects/join", json=payload_p2)
     assert response.status_code == 200
 
 async def test_geolocation_consent_routing():

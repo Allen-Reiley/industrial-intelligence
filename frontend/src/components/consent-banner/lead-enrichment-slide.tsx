@@ -39,7 +39,7 @@ const LeadEnrichmentSlide = ({ auraId, onComplete, onDismiss }: LeadEnrichmentPr
 
     // 2. Standard API Partial Capture
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/waitlist/join`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/prospects/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -66,7 +66,7 @@ const LeadEnrichmentSlide = ({ auraId, onComplete, onDismiss }: LeadEnrichmentPr
 
     // 2. Standard API Full Capture
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/waitlist/join`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/prospects/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

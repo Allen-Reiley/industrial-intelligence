@@ -21,12 +21,12 @@ const getEndpoint = (path: string) => {
     return `${cleanBase}/${cleanPath}`;
 };
 
-export async function submitToWaitlist(formData: Record<string, unknown>) {
+export async function submitToProspects(formData: Record<string, unknown>) {
     /**
-     * Targets the updated v1/waitlist/join endpoint.
-     * Matches the backend route defined in app/api/v1/waitlist.py
+     * Targets the updated v1/prospects/join endpoint.
+     * Matches the backend route defined in app/api/v1/prospects.py
      */
-    const endpoint = getEndpoint('api/v1/waitlist/join');
+    const endpoint = getEndpoint('api/v1/prospects/join');
 
     const clientId = process.env.NEXT_PUBLIC_WAITLIST_API_KEY || 
                      (typeof window !== 'undefined' ? (window as unknown as Record<string, unknown>).AURA_AGENCY_ID : null);

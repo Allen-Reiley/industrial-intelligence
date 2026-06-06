@@ -26,8 +26,8 @@ def upgrade() -> None:
     op.execute('ALTER TABLE "visit" FORCE ROW LEVEL SECURITY;')
     op.execute('ALTER TABLE "page_view" ENABLE ROW LEVEL SECURITY;')
     op.execute('ALTER TABLE "page_view" FORCE ROW LEVEL SECURITY;')
-    op.execute('ALTER TABLE "waitlist_lead" ENABLE ROW LEVEL SECURITY;')
-    op.execute('ALTER TABLE "waitlist_lead" FORCE ROW LEVEL SECURITY;')
+    op.execute('ALTER TABLE "prospect" ENABLE ROW LEVEL SECURITY;')
+    op.execute('ALTER TABLE "prospect" FORCE ROW LEVEL SECURITY;')
 
     # 2. Establish RLS policies restricting operations to the current_client_id setting
     op.execute(
@@ -43,7 +43,7 @@ def upgrade() -> None:
         'WITH CHECK (client_id = nullif(current_setting(\'app.current_client_id\', true), \'\')::uuid);'
     )
     op.execute(
-        'CREATE POLICY waitlist_lead_tenant_policy ON "waitlist_lead" '
+        'CREATE POLICY prospect_tenant_policy ON "prospect" '
         'FOR ALL '
         'USING (client_id = nullif(current_setting(\'app.current_client_id\', true), \'\')::uuid) '
         'WITH CHECK (client_id = nullif(current_setting(\'app.current_client_id\', true), \'\')::uuid);'
@@ -55,12 +55,12 @@ def downgrade() -> None:
     # 1. Drop RLS policies
     op.execute('DROP POLICY IF EXISTS visit_tenant_policy ON "visit";')
     op.execute('DROP POLICY IF EXISTS page_view_tenant_policy ON "page_view";')
-    op.execute('DROP POLICY IF EXISTS waitlist_lead_tenant_policy ON "waitlist_lead";')
+    op.execute('DROP POLICY IF EXISTS prospect_tenant_policy ON "prospect";')
 
     # 2. Disable Row-Level Security
     op.execute('ALTER TABLE "visit" NO FORCE ROW LEVEL SECURITY;')
     op.execute('ALTER TABLE "visit" DISABLE ROW LEVEL SECURITY;')
     op.execute('ALTER TABLE "page_view" NO FORCE ROW LEVEL SECURITY;')
     op.execute('ALTER TABLE "page_view" DISABLE ROW LEVEL SECURITY;')
-    op.execute('ALTER TABLE "waitlist_lead" NO FORCE ROW LEVEL SECURITY;')
-    op.execute('ALTER TABLE "waitlist_lead" DISABLE ROW LEVEL SECURITY;')
+    op.execute('ALTER TABLE "prospect" NO FORCE ROW LEVEL SECURITY;')
+    op.execute('ALTER TABLE "prospect" DISABLE ROW LEVEL SECURITY;')

@@ -97,4 +97,4 @@ The system enforces the **South African POPIA (No. 4 of 2013)** via a decoupled 
    * *Metrics:* First/Last Name, Personal Email, Direct Phone, Clear Fingerprints.
    * *Legal Basis:* Explicit Opt-In Gated (Consent mandatory).
    * *Retention:* 48-Hour conditional window (Scrubbed and anonymized if unverified by the Janitor cascade).
-   * *Enrichment:* Gated until waitlist form submission or manual banner opt-in.
+   * *Enrichment:* Gated until prospect form submission or manual banner opt-in.

@@ -5,7 +5,7 @@ from sqlmodel import select, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from app.db import get_async_session
-from app.models import WaitlistLead, Company, Visit
+from app.models import Prospect, Company, Visit
 import logging
 
 router = APIRouter()
@@ -25,10 +25,10 @@ async def get_leads(
         # 1. Build the Query: Order by creation but prioritize records with emails/positions
         # This surfaces 'Warm Leads' who interacted with the banner/waitlist first
         statement = (
-            select(WaitlistLead, Company)
-            .where(WaitlistLead.client_id == client_id)
-            .outerjoin(Company, WaitlistLead.company_id == Company.id)
-            .order_by(desc(WaitlistLead.created_at))
+            select(Prospect, Company)
+            .where(Prospect.client_id == client_id)
+            .outerjoin(Company, Prospect.company_id == Company.id)
+            .order_by(desc(Prospect.created_at))
             .limit(limit)
         )
         
@@ -74,8 +74,8 @@ async def get_lead_intelligence(
     """
     try:
         # 1. Resolve Lead Identity
-        lead_stmt = select(WaitlistLead).where(WaitlistLead.aura_id == aura_id)
-        res_lead = await session.execute(lead_stmt)
+        prospect_stmt = select(Prospect).where(Prospect.aura_id == aura_id)
+        res_lead = await session.execute(prospect_stmt)
         lead = res_lead.scalars().first()
         
         if not lead:
