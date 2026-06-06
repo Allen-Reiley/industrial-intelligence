@@ -295,8 +295,8 @@
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/frontend/src/app/admin/page.tsx": {
-    "mtime": 1780690877.7370715,
-    "ast_hash": "de779e5652c562bf63096db59f1b4ae5",
+    "mtime": 1780733326.9209547,
+    "ast_hash": "b519773757fbf04c3a755f6ae294c8aa",
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/frontend/src/app/dashboard/layout.tsx": {
@@ -305,8 +305,8 @@
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/frontend/src/app/dashboard/page.tsx": {
-    "mtime": 1780690885.1184247,
-    "ast_hash": "dd4b441cb3987f6a2513d6f0354b6dca",
+    "mtime": 1780733333.2590857,
+    "ast_hash": "85e0d41a6931cd9ca0c9012670f36291",
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/frontend/src/app/layout.jsx": {
@@ -570,7 +570,7 @@
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/frontend/src/next-env.d.ts": {
-    "mtime": 1780439590.7002692,
+    "mtime": 1780735628.8307836,
     "ast_hash": "2a74d3909800ca5467fa83b0ab4a4890",
     "semantic_hash": ""
   },
