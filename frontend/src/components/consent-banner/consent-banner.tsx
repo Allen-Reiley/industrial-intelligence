@@ -32,13 +32,18 @@ const AuraConsentBanner = () => {
     setIsEnriched(enriched);
     setAuraId(id);
 
-    // Phase 01: Slide-in after 2.5s initial delay
+    // Initial phase setup on load
     if (!consent) {
       const initialTimer = setTimeout(() => {
         setIsVisible(true);
         setPhase(1);
       }, 2500);
       return () => clearTimeout(initialTimer);
+    } else if (!enriched) {
+      // Consent was already given but details have not been submitted yet
+      setIsVisible(true);
+      setPhase(2);
+      setFormStep(1);
     }
   }, []);
 
@@ -96,7 +101,7 @@ const AuraConsentBanner = () => {
     localStorage.setItem('aura_consent_given', 'true');
     setIsConsented(true);
 
-    const clientId = (window as any).AURA_ID || 'c4a6c9b1-8355-4de2-985d-a04f4dcd63a0';
+    const clientId = (window as any).AURA_ID || (window as any).AURA_AGENCY_ID || 'c4a6c9b1-8355-4de2-985d-a04f4dcd63a0';
     
     // Dispatch telemetry event to promote lead
     try {
@@ -118,13 +123,10 @@ const AuraConsentBanner = () => {
       detail: { status: 'accepted', source: 'react_banner' } 
     }));
 
-    // If it was Phase 4 (asset gate) or Phase 1 (invite contact), transition to enrichment form step
-    if (phase === 4 || phase === 1) {
-      setPhase(2);
-      setFormStep(1);
-    } else {
-      setIsVisible(false);
-    }
+    // Transition directly to Phase 2 contact details form
+    setPhase(2);
+    setFormStep(1);
+    setIsVisible(true);
   };
 
   const handleNextStep = (e: React.MouseEvent) => {
@@ -174,7 +176,7 @@ const AuraConsentBanner = () => {
       }
     }));
 
-    const clientId = (window as any).AURA_ID || 'c4a6c9b1-8355-4de2-985d-a04f4dcd63a0';
+    const clientId = (window as any).AURA_ID || (window as any).AURA_AGENCY_ID || 'c4a6c9b1-8355-4de2-985d-a04f4dcd63a0';
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/waitlist/join`, {
         method: 'POST',
@@ -206,7 +208,7 @@ const AuraConsentBanner = () => {
     localStorage.setItem('aura_consent_given', 'true');
     setIsConsented(true);
 
-    const clientId = (window as any).AURA_ID || 'c4a6c9b1-8355-4de2-985d-a04f4dcd63a0';
+    const clientId = (window as any).AURA_ID || (window as any).AURA_AGENCY_ID || 'c4a6c9b1-8355-4de2-985d-a04f4dcd63a0';
 
     // Dispatch custom event to notify aura.js script
     window.dispatchEvent(new CustomEvent('aura_warm_lead', {
@@ -332,14 +334,14 @@ const AuraConsentBanner = () => {
                 Let's Connect
               </h3>
               <p className="text-slate-400 text-xs leading-relaxed font-light">
-                We notice you are browsing from an industrial network. We'd love to share relevant SADC procurement guides and discuss engineering solutions. Would you be open to sharing your contact details so our team can reach out?
+                We noticed you may be interested in our product. May we reach out for further communication?
               </p>
               <div className="flex items-center gap-3 pt-2">
                 <button
                   onClick={handleAcceptConsent}
                   className="flex-grow py-3 bg-slate-50 hover:bg-white text-black text-xs font-black uppercase tracking-wider rounded transition-all active:scale-95"
                 >
-                  Connect With Us
+                  Authorize
                 </button>
                 <button
                   onClick={handleDismiss}
@@ -506,7 +508,7 @@ const AuraConsentBanner = () => {
           )}
 
           <p className="text-[8px] text-slate-600 leading-tight mt-4 text-center">
-            AuraWorks (Pty) Ltd — B2B Telemetry & Intent Resolution
+            AuraWorks (Pty) Ltd — Industrial Intelligence Solutions
           </p>
         </div>
       </div>
