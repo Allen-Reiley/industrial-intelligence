@@ -25,13 +25,13 @@
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/app/api/v1/prospects.py": {
-    "mtime": 1780753480.022986,
-    "ast_hash": "95a01ea85ca173873b791e9bb8048c86",
+    "mtime": 1780778168.5685794,
+    "ast_hash": "f8a9388e6d3d54cda58d63ac81eee6b6",
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/app/api/v1/track.py": {
-    "mtime": 1780760832.823391,
-    "ast_hash": "53ff87be5214d6a94906d581dab83153",
+    "mtime": 1780777997.5970817,
+    "ast_hash": "7e975783a69ccaba39181863ff8cee05",
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/app/api/v1/webhook.py": {
@@ -75,8 +75,8 @@
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/app/models/company.py": {
-    "mtime": 1780753657.209737,
-    "ast_hash": "34132932a3701eb6fd07d140df34d844",
+    "mtime": 1780778579.748777,
+    "ast_hash": "e5d9dd5607246f3fe0c9d894bf2ef5bb",
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/app/models/crm_dead_letter.py": {
@@ -140,18 +140,18 @@
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/app/services/enrichment.py": {
-    "mtime": 1780653537.133967,
-    "ast_hash": "4361d06e62b1da07083c5a9392755f02",
+    "mtime": 1780778012.3781247,
+    "ast_hash": "73d0482d59812d29511150ed2d83b4b2",
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/app/services/intelligence.py": {
-    "mtime": 1780753480.067925,
-    "ast_hash": "6e9beb6a40e7874075d2e5a741325c60",
+    "mtime": 1780777687.2861779,
+    "ast_hash": "7f92d4fb7455feeb481820aaa9fdddd5",
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/app/services/notifications.py": {
-    "mtime": 1780759144.7774894,
-    "ast_hash": "17c8ac2ef439fdaf18203b14279020ee",
+    "mtime": 1780778102.5103872,
+    "ast_hash": "4116e9497da46438ed45d97c5d32903f",
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/app/services/notion.py": {
@@ -190,8 +190,8 @@
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/async_migrations/versions/2fd7136b9308_rename_waitlist_lead_to_prospect.py": {
-    "mtime": 1780754151.261831,
-    "ast_hash": "636b0ddf82446aab4e55805e04bc8911",
+    "mtime": 1780849991.6742027,
+    "ast_hash": "597b43727f5e2e227632c66165b42ac2",
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/async_migrations/versions/43306783e22e_enable_rls.py": {
@@ -295,8 +295,8 @@
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/tests/test_rls.py": {
-    "mtime": 1780437847.3722322,
-    "ast_hash": "a3193e09a030c3ee72a097c37965c2f0",
+    "mtime": 1780777070.267981,
+    "ast_hash": "1a1277d39ffb4a39e0a836e4b2bddea5",
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/tests/test_security.py": {
@@ -860,8 +860,8 @@
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/task.md": {
-    "mtime": 1780775425.4865916,
-    "ast_hash": "308a9d2f6f16e3663f265523a1ea6cf0",
+    "mtime": 1780854886.3850064,
+    "ast_hash": "dcdd472b59785af68bc69fffbd93c5ba",
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/tracker/README.md": {
@@ -942,6 +942,16 @@
   "/home/allenreiley7/projects/industrial-intelligence/frontend/src/public/payments.webp": {
     "mtime": 1773903862.0115175,
     "ast_hash": "7cf232119f2c7198c4b4a94de81e0c8f",
+    "semantic_hash": ""
+  },
+  "/home/allenreiley7/projects/industrial-intelligence/backend/async_migrations/versions/c7fc79d43b47_add_client_id_to_company.py": {
+    "mtime": 1780777061.6547682,
+    "ast_hash": "6f846f2cf26cdb2c0e9ff862363e94d0",
+    "semantic_hash": ""
+  },
+  "/home/allenreiley7/projects/industrial-intelligence/backend/tests/test_phase11.py": {
+    "mtime": 1780778189.8706415,
+    "ast_hash": "b26bddd7a6c71076bceacc7c392d75b7",
     "semantic_hash": ""
   }
 }

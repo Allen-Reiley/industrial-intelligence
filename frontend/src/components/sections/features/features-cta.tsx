@@ -7,10 +7,10 @@ export function FeaturesCTA() {
         <section className="py-24 md:py-48">
             <div className="mx-auto max-w-5xl px-6 text-center">
                 <h2 className="text-balance text-4xl font-semibold lg:text-5xl tracking-tight">
-                    Deploy the identity bridge today.
+                    Deploy corporate identity resolution today.
                 </h2>
                 <p className="mx-auto mt-6 max-w-2xl text-muted-foreground text-lg">
-                    Stop letting anonymous industrial traffic leave without a trace. Turn your website into a high-intent lead generation engine.
+                    Stop letting anonymous industrial traffic leave your website without a trace. Turn invisible interest into active pipeline for your enterprise sales team.
                 </p>
 
                 <div className="mt-12 flex flex-wrap justify-center gap-4">

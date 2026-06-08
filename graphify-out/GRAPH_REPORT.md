@@ -1,16 +1,16 @@
-# Graph Report - industrial-intelligence  (2026-06-06)
+# Graph Report - industrial-intelligence  (2026-06-08)
 
 ## Corpus Check
-- 174 files · ~143,620 words
+- 176 files · ~145,978 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 103 nodes · 186 edges · 13 communities (10 shown, 3 thin omitted)
-- Extraction: 72% EXTRACTED · 28% INFERRED · 0% AMBIGUOUS · INFERRED: 52 edges (avg confidence: 0.55)
+- 192 nodes · 357 edges · 13 communities (11 shown, 2 thin omitted)
+- Extraction: 75% EXTRACTED · 25% INFERRED · 0% AMBIGUOUS · INFERRED: 88 edges (avg confidence: 0.6)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `8bac5377`
+- Built from commit: `c9a55dbe`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -29,37 +29,37 @@
 - [[_COMMUNITY_Community 11|Community 11]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `Prospect` - 15 edges
-2. `Visit` - 15 edges
-3. `VisitCreate` - 13 edges
-4. `PageViewCreate` - 13 edges
-5. `UUID` - 13 edges
-6. `🏗️ Technical Specification: Industrial Intelligence Engine (v2.0)` - 10 edges
-7. `process_exit_logic()` - 8 edges
-8. `ConsentPayload` - 7 edges
-9. `IdentityPayload` - 7 edges
-10. `BackgroundTasks` - 7 edges
+1. `Company` - 29 edges
+2. `UUID` - 19 edges
+3. `EnrichmentError` - 17 edges
+4. `str` - 11 edges
+5. `Prospect` - 11 edges
+6. `Visit` - 11 edges
+7. `background_prospect_analysis()` - 10 edges
+8. `🏗️ Technical Specification: Industrial Intelligence Engine (v2.0)` - 10 edges
+9. `ConsentPayload` - 9 edges
+10. `IdentityPayload` - 9 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `ConsentPayload` --uses--> `Prospect`  [INFERRED]
-  backend/app/api/v1/track.py → backend/app/models/prospect.py
-- `ConsentPayload` --uses--> `PageViewCreate`  [INFERRED]
-  backend/app/api/v1/track.py → backend/app/models/visit.py
-- `ConsentPayload` --uses--> `Visit`  [INFERRED]
-  backend/app/api/v1/track.py → backend/app/models/visit.py
-- `ConsentPayload` --uses--> `VisitCreate`  [INFERRED]
-  backend/app/api/v1/track.py → backend/app/models/visit.py
-- `IdentityPayload` --uses--> `PageViewCreate`  [INFERRED]
-  backend/app/api/v1/track.py → backend/app/models/visit.py
+- `bool` --uses--> `Company`  [INFERRED]
+  backend/app/services/enrichment.py → backend/app/models/company.py
+- `int` --uses--> `Company`  [INFERRED]
+  backend/app/services/enrichment.py → backend/app/models/company.py
+- `AsyncSession` --uses--> `Company`  [INFERRED]
+  backend/app/services/notifications.py → backend/app/models/company.py
+- `bool` --uses--> `Company`  [INFERRED]
+  backend/app/services/notifications.py → backend/app/models/company.py
+- `int` --uses--> `Company`  [INFERRED]
+  backend/app/services/notifications.py → backend/app/models/company.py
 
 ## Import Cycles
 - 1-file cycle: `backend/app/services/notifications.py -> backend/app/services/notifications.py`
 
-## Communities (13 total, 3 thin omitted)
+## Communities (13 total, 2 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.16
-Nodes (20): bool, str, handle_juristic_only_alert(), is_slack_notification_throttled(), post_inbound_email_to_slack(), post_meeting_booked_to_slack(), post_to_slack(), post_to_visit_channel() (+12 more)
+Cohesion: 0.14
+Nodes (24): AsyncSession, bool, int, str, check_and_trigger_company_surge(), handle_juristic_only_alert(), is_slack_notification_throttled(), post_inbound_email_to_slack() (+16 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.10
@@ -70,48 +70,52 @@ Cohesion: 0.24
 Nodes (6): getEndpoint(), submitToProspects(), trackIntent(), metadata, mockBack, mockPush
 
 ### Community 3 - "Community 3"
-Cohesion: 0.18
-Nodes (3): SQLModel, get_test_client(), test_intent_telemetry_updates_models()
+Cohesion: 0.08
+Nodes (8): SQLModel, get_test_client(), test_intent_telemetry_updates_models(), test_vsl_slack_alert(), Verifies that Row-Level Security constraints strictly isolate      client intera, Verifies that Row-Level Security constraints strictly isolate      company recor, test_company_row_level_security_isolation(), test_row_level_security_isolation()
 
 ### Community 4 - "Community 4"
-Cohesion: 0.39
-Nodes (9): str, int, Visit, VisitCreate, Request, process_entry_logic(), SILENT INGESTION ENGINE:     Records raw traffic trails and resolves firmographi, track_entry() (+1 more)
+Cohesion: 0.17
+Nodes (32): AsyncSession, BackgroundTasks, bool, int, Request, str, BaseModel, Exception (+24 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.47
-Nodes (6): AsyncSession, BaseModel, PageViewCreate, IntentPayload, Tracks real-time prospect intent telemetry (e.g. VSL completion percentage)., track_intent()
+Cohesion: 0.12
+Nodes (27): Any, AsyncSession, bool, int, str, analyze_corporate_intent(), enrich_ip_intel(), enrich_visitor_data() (+19 more)
 
 ### Community 6 - "Community 6"
-Cohesion: 0.50
-Nodes (5): bool, Prospect, IdentityPayload, Upgrades anonymous forensic profiles using volunteered banner form data., track_identity()
+Cohesion: 0.19
+Nodes (16): Any, bool, int, str, enrich_company_departments(), enrich_visitor_data(), get_departmental_intelligence(), is_consumer_traffic() (+8 more)
 
 ### Community 7 - "Community 7"
-Cohesion: 0.40
-Nodes (5): BackgroundTasks, PageViewCreate, Records session metrics upon departure and coordinates the batch analytical thre, track_event(), track_exit()
+Cohesion: 0.20
+Nodes (11): Any, AsyncSession, BackgroundTasks, Request, str, background_prospect_analysis(), format_zar(), join_prospects() (+3 more)
 
 ### Community 8 - "Community 8"
 Cohesion: 0.67
 Nodes (3): Enum, VerificationStatus, str
 
+### Community 9 - "Community 9"
+Cohesion: 0.31
+Nodes (7): Stitches volunteered company name with enriched name:     1. Substring Match (ca, resolve_entity_stitching(), get_test_client(), test_entity_stitching_deepseek_match(), test_entity_stitching_isp_fallback(), test_entity_stitching_substring_match(), test_immediate_enrichment_workers_triggered()
+
 ## Knowledge Gaps
-- **20 isolated node(s):** `bool`, `Remediated Logic Structure`, `1.1 The Three Pillars`, `2. Legal Topography (Two-Tier POPIA Identity Model)`, `3.1 Client & Subscription Management` (+15 more)
+- **25 isolated node(s):** `Any`, `BackgroundTasks`, `Request`, `AsyncSession`, `bool` (+20 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `UUID` connect `Community 0` to `Community 8`, `Community 9`, `Community 3`?**
-  _High betweenness centrality (0.119) - this node is a cross-community bridge._
-- **Why does `Visit` connect `Community 4` to `Community 3`, `Community 5`, `Community 6`, `Community 7`, `Community 8`, `Community 9`?**
-  _High betweenness centrality (0.037) - this node is a cross-community bridge._
-- **Why does `process_exit_logic()` connect `Community 0` to `Community 9`, `Community 4`, `Community 6`?**
-  _High betweenness centrality (0.037) - this node is a cross-community bridge._
-- **Are the 13 inferred relationships involving `Prospect` (e.g. with `AsyncSession` and `bool`) actually correct?**
-  _`Prospect` has 13 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 13 inferred relationships involving `Visit` (e.g. with `AsyncSession` and `bool`) actually correct?**
-  _`Visit` has 13 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 11 inferred relationships involving `VisitCreate` (e.g. with `AsyncSession` and `bool`) actually correct?**
-  _`VisitCreate` has 11 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 11 inferred relationships involving `PageViewCreate` (e.g. with `AsyncSession` and `bool`) actually correct?**
-  _`PageViewCreate` has 11 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `Company` connect `Community 4` to `Community 0`, `Community 3`, `Community 6`, `Community 7`?**
+  _High betweenness centrality (0.212) - this node is a cross-community bridge._
+- **Why does `UUID` connect `Community 0` to `Community 8`, `Community 9`, `Community 3`, `Community 4`?**
+  _High betweenness centrality (0.095) - this node is a cross-community bridge._
+- **Why does `background_prospect_analysis()` connect `Community 7` to `Community 0`, `Community 4`, `Community 5`, `Community 6`, `Community 9`?**
+  _High betweenness centrality (0.070) - this node is a cross-community bridge._
+- **Are the 27 inferred relationships involving `Company` (e.g. with `AsyncSession` and `BackgroundTasks`) actually correct?**
+  _`Company` has 27 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 2 inferred relationships involving `UUID` (e.g. with `Company` and `process_exit_logic()`) actually correct?**
+  _`UUID` has 2 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 12 inferred relationships involving `EnrichmentError` (e.g. with `AsyncSession` and `BackgroundTasks`) actually correct?**
+  _`EnrichmentError` has 12 INFERRED edges - model-reasoned connections that need verification._
+- **What connects `Any`, `BackgroundTasks`, `Request` to the rest of the system?**
+  _62 weakly-connected nodes found - possible documentation gaps or missing edges._

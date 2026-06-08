@@ -40,12 +40,12 @@ export default function Pricing() {
                     <div className="mx-auto max-w-2xl text-center">
                         <h2 className="text-balance text-3xl font-bold md:text-4xl lg:text-5xl leading-tight">
                             <TextEffect preset="fade-in-blur" speedSegment={0.3}>
-                                Deploy Your Industrial Growth Engine
+                                Deploy Your Industrial Sales Engine
                             </TextEffect>
                         </h2>
                         <div className="text-muted-foreground mt-6 text-base md:text-lg px-2">
                             <AnimatedGroup variants={transitionVariants}>
-                                One year of unmasked revenue. Total visibility into the construction, mining, logistics, and manufacturing firms visiting your site.
+                                Unmask your website's hidden pipeline. A fractional investment to secure total visibility into the mining, manufacturing, and logistics firms visiting your site—where landing a single contract pays for the engine multiple times over.
                             </AnimatedGroup>
                         </div>
                     </div>
@@ -66,7 +66,7 @@ export default function Pricing() {
                                     <AnimatedGroup variants={transitionVariants}>
                                         {/* FIX: break-words and responsive text size */}
                                         <div className="mt-3 text-[10px] md:text-sm text-muted-foreground uppercase tracking-[0.2em] break-words">
-                                            Enterprise Sales Intelligence
+                                            Corporate Identity Resolution
                                         </div>
                                     </AnimatedGroup>
 
@@ -92,7 +92,7 @@ export default function Pricing() {
 
                                     <div className="text-muted-foreground mt-10 text-[11px] md:text-xs leading-relaxed max-w-[280px] md:max-w-xs mx-auto">
                                         <TextEffect preset="fade-in-blur" speedSegment={0.3}>
-                                            Annual License includes: Dedicated Identity Bridge, Full Social Enrichment, and Priority Industrial Lead Routing.
+                                            Annual License includes: Custom tracking script, juristic identity resolution database query access, and weekly lead digests.
                                         </TextEffect>
                                     </div>
                                 </div>
@@ -102,11 +102,11 @@ export default function Pricing() {
                                     <AnimatedGroup variants={transitionVariants} className="space-y-8">
                                         <ul role="list" className="space-y-5">
                                             {[
-                                                'Real-time identity resolution for SA and International traffic',
-                                                'Weekly "Hot Lead" reports delivered to your inbox',
-                                                'LinkedIn & Corporate Email enrichment',
-                                                'POPIA-compliant visitor consent management',
-                                                'Industrial-sector automated nurture sequence'
+                                                'Real-time corporate identity resolution for SADC traffic',
+                                                'Weekly unmasked hot lead digests delivered straight to your inbox',
+                                                'Direct contact paths (validated department emails & switchboards)',
+                                                'POPIA-compliant juristic-first data resolution',
+                                                'Spec-sheet download and CAD technical asset tracking'
                                             ].map((item, index) => (
                                                 <li key={index} className="flex items-start gap-3">
                                                     <Check className="size-4 text-primary mt-1 shrink-0" />
@@ -115,7 +115,7 @@ export default function Pricing() {
                                             ))}
                                         </ul>
                                         <div className="text-muted-foreground text-xs md:text-sm leading-relaxed border-t pt-8 italic">
-                                            &quot;Designed for firms that measure success in multi-million Rand contracts, not clicks.&quot;
+                                            &quot;A single unmasked contract pays for the annual engine. Designed for firms that measure success in multi-million Rand purchase orders, not clicks.&quot;
                                         </div>
                                     </AnimatedGroup>
                                 </div>

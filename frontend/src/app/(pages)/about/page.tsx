@@ -7,8 +7,8 @@ import { HeroHeader } from "@/components/header/header";
 import Footer from "@/components/footer/footer";
 
 export const metadata: Metadata = {
-  title: 'Our Mission & Engineering DNA',
-  description: 'Discover how AuraWorks was built to bring clinical, POPIA-compliant B2B corporate sales intelligence to South African heavy industries.',
+  title: 'AuraWorks | Our Mission & Engineering DNA',
+  description: 'Discover how AuraWorks was built to bring POPIA-compliant B2B corporate sales intelligence to South African heavy industries—where presence meets performance.',
 };
 
 export default function AboutPage() {

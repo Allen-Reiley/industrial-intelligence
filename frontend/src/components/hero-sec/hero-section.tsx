@@ -99,7 +99,7 @@ export default function HeroSection() {
                                     <Link
                                         href="/features"
                                         className="hover:bg-background dark:hover:border-t-border bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-zinc-950/5 transition-colors duration-300 dark:border-t-white/5 dark:shadow-zinc-950">
-                                        <span className="text-foreground text-sm">Industrial Sales Intelligence</span>
+                                        <span className="text-foreground text-sm">Industrial Identity Resolution</span>
                                         <span className="dark:border-background block h-4 w-0.5 border-l bg-white dark:bg-zinc-700"></span>
 
                                         <div className="bg-background group-hover:bg-muted size-6 overflow-hidden rounded-full duration-500">
@@ -120,7 +120,7 @@ export default function HeroSection() {
                                     speedSegment={0.3}
                                     as="h1"
                                     className="mx-auto mt-8 max-w-4xl text-balance text-5xl font-bold md:text-7xl lg:mt-16 xl:text-[4rem] tracking-tight">
-                                    Know Which Companies Are Researching Your Products
+                                    Identify the High-Value Companies Visiting Your Website
                                 </TextEffect>
                                 <TextEffect
                                     per="line"
@@ -129,7 +129,7 @@ export default function HeroSection() {
                                     delay={0.5}
                                     as="p"
                                     className="mx-auto mt-8 max-w-2xl text-balance text-lg text-muted-foreground">
-                                    AuraWorks identifies your anonymous industrial visitors and delivers their contact info to your inbox. Simple, weekly leads for your sales team.
+                                    Stop letting anonymous corporate traffic leave without a trace. AuraWorks identifies exactly who is browsing your site and delivers direct contact paths to your sales team before they issue a tender to a competitor.
                                 </TextEffect>
 
                                 <AnimatedGroup

@@ -6,8 +6,8 @@ import CallToAction from "@/components/cta/call-to-action";
 import Footer from "@/components/footer/footer";
 
 export const metadata: Metadata = {
-  title: "Industrial Sales Intelligence & Lead Generation",
-  description: "Identify companies visiting your website. AuraWorks turns anonymous industrial traffic into high-intent sales leads for B2B firms in South Africa.",
+  title: "AuraWorks | Industrial Sales Intelligence & Identity Resolution",
+  description: "Identify the anonymous corporate entities visiting your website. AuraWorks unmasks high-value industrial traffic and delivers the direct contact data your sales team needs to close enterprise deals.",
 };
 
 export default function Home() {

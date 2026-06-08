@@ -5,28 +5,28 @@ export default function ContentSection2() {
     return (
         <section className="py-16 md:py-32">
             <div className="mx-auto max-w-5xl space-y-8 px-6 md:space-y-16">
-                <h2 className="relative z-10 max-w-xl text-4xl font-medium lg:text-5xl">Everything your sales team needs to close.</h2>
+                <h2 className="relative z-10 max-w-xl text-4xl font-medium lg:text-5xl">Equip your sales team with actionable intent.</h2>
                 <div className="relative">
                     <div className="relative z-10 space-y-4 md:w-1/2">
                         <p>
-                            Identifying the company is only half the battle. <span className="font-medium">We provide the &quot;Action Layer&quot; that turns a name into a conversation.</span> — from visit to sale.
+                            Identifying the company is only the beginning. <span className="font-medium">AuraWorks provides the contact enrichment and deep intent data</span> required to turn an anonymous visitor into a warm sales conversation.
                         </p>
-                        <p>Our weekly reports give your sales team the direct path to the decision-makers.</p>
+                        <p>Our intelligence reports give your sales team a clear, direct path to key decision-makers, bypassing traditional gatekeepers.</p>
 
                         <div className="grid grid-cols-2 gap-3 pt-6 sm:gap-4"> 
                             <div className="space-y-3">
                                 <div className="flex items-center gap-2">
                                     <Zap className="size-4" />
-                                    <h3 className="text-sm font-medium">Faaast</h3>
+                                    <h3 className="text-sm font-medium">Real-Time</h3>
                                 </div>
-                                <p className="text-muted-foreground text-sm">Visitors are detected and monitored from the instant they land on your site.</p>
+                                <p className="text-muted-foreground text-sm">Monitor high-value interest the instant a prospect lands on your technical pages.</p>
                             </div>
                             <div className="space-y-2">
                                 <div className="flex items-center gap-2">
                                     <Cpu className="size-4" />
-                                    <h3 className="text-sm font-medium">Powerful</h3>
+                                    <h3 className="text-sm font-medium">Direct Paths</h3>
                                 </div>
-                                <p className="text-muted-foreground text-sm">We provide HQ switchboard numbers and department emails.</p>
+                                <p className="text-muted-foreground text-sm">Gain verified corporate emails, department contacts, and switchboard numbers.</p>
                             </div>
                         </div>
                     </div>

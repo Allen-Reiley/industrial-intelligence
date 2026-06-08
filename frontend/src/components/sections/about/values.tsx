@@ -1,9 +1,9 @@
 // @/components/sections/about/values.tsx
 export function ValuesSection() {
     const values = [
-        { label: "01", title: "Precision Over Volume", desc: "We would rather deliver 5 high-intent mining leads than 5,000 random clicks." },
-        { label: "02", title: "Technical Authority", desc: "Our systems are built for stability. We use 'boring,' predictable technology to ensure 99.9% uptime for your lead routing." },
-        { label: "03", title: "Industrial Focus", desc: "We specialize in the South African manufacturing and construction verticals. We speak the language of spec-sheets and RFPs." }
+        { label: "01", title: "Precision Over Volume", desc: "We would rather deliver 5 unmasked enterprise prospects than 5,000 anonymous website clicks." },
+        { label: "02", title: "Juristic-First Compliance", desc: "We prioritize clean corporate resolution to ensure your sales team operates fully within South African POPIA regulations." },
+        { label: "03", title: "SADC Industrial Focus", desc: "We specialize exclusively in the South African heavy industry sectors, speaking the language of spec-sheets, RFPs, and tenders." }
     ]
 
     return (

@@ -6,8 +6,8 @@ export default function CallToAction() {
         <section className="py-16 md:py-32">
             <div className="mx-auto max-w-5xl px-6">
                 <div className="text-center">
-                    <h2 className="text-balance text-4xl font-semibold lg:text-5xl">Turn your website into a sales machine.</h2>
-                    <p className="mt-4">Get a weekly list of high-intent B2B leads for a flat monthly/annual retainer. No complex software to learn — just results delivered to your inbox.</p>
+                    <h2 className="text-balance text-4xl font-semibold lg:text-5xl">Turn anonymous traffic into paying clients.</h2>
+                    <p className="mt-4">Stop letting high-value interest leave without a trace. Get a curated, weekly digest of unmasked corporate leads delivered straight to your inbox. No complex software to learn—just raw pipeline.</p>
 
                     <div className="mt-12 flex flex-wrap justify-center gap-4">
                         <Button

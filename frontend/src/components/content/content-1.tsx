@@ -5,7 +5,7 @@ export default function ContentSection1({ className }: { className?: string }) {
     return (
         <section className={cn("py-16 md:py-32", className)}>
             <div className="mx-auto max-w-5xl space-y-8 px-6 md:space-y-16">
-                <h2 className="relative z-10 max-w-xl text-4xl font-medium lg:text-5xl">Business intelligence, not random traffic.</h2>
+                <h2 className="relative z-10 max-w-xl text-4xl font-medium lg:text-5xl">Your highest-value pipeline is visiting you in secret.</h2>
                 <div className="grid gap-6 sm:grid-cols-2 md:gap-12 lg:gap-24">
                     <div className="relative mb-6 sm:mb-0">
                         <div className="bg-linear-to-b aspect-76/59 relative rounded-2xl from-zinc-300 to-transparent p-px dark:from-zinc-700">
@@ -28,13 +28,13 @@ export default function ContentSection1({ className }: { className?: string }) {
 
                     <div className="relative space-y-4">
                         <p className="text-muted-foreground">
-                            We filter out the noise. Our engine ignores personal traffic to show you only <span className="text-accent-foreground font-bold">real business prospects.</span> — Know which industrial firms are studying your specs before they even issue a tender.
+                            Every day, decision-makers from major mining houses, manufacturing giants, and logistics firms visit your website. They inspect your spec sheets, review your capacities, and leave without filling out a form. Because they remain anonymous, you lose the opportunity to influence the deal before a tender is issued.
                         </p>
-                        <p className="text-muted-foreground">Our engine supports many business ecosystems — it&apos;s a plug and play system that delivers automated results for your sales team to close more deals.</p>
+                        <p className="text-muted-foreground">AuraWorks unmasks these corporate entities in real time. We filter out consumer and residential noise to deliver only <span className="text-accent-foreground font-bold">high-intent juristic prospects</span> directly to your sales pipeline.</p>
 
                         <div className="pt-6">
                             <blockquote className="border-l-4 pl-4 border-primary/20">
-                                <p className="italic text-muted-foreground">&quot;Every day, procurement officers and engineers from major industrial firms are browsing your technical specs, but they leave without a trace. Capitalize on them before your competitors do.&quot;</p>
+                                <p className="italic text-muted-foreground">&quot;Every day, key decision-makers from major industrial firms study your technical specifications, then leave without a trace. AuraWorks uncovers these high-value opportunities before the RFP is even published.&quot;</p>
 
                                 <div className="mt-6 space-y-4">
                                     <cite className="block font-medium text-foreground">Reitumetse Sethabela, Founder</cite>

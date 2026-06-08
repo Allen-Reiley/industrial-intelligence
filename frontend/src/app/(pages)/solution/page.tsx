@@ -7,8 +7,8 @@ import { HeroHeader } from '@/components/header/header';
 import Footer from '@/components/footer/footer';
 
 export const metadata: Metadata = {
-  title: 'B2B Traffic De-Anonymization Solution',
-  description: 'Uncover the registered corporate identity of anonymous manufacturing, mining, and logistics entities visiting your site without natural person consent gates.',
+  title: 'AuraWorks | Industrial Sales Intelligence & B2B Solutions',
+  description: 'Bridge the gap between anonymous website traffic and high-value contracts. Learn how AuraWorks unmasks mining, manufacturing, and logistics companies visiting your site.',
 };
 
 export default function SolutionPage() {

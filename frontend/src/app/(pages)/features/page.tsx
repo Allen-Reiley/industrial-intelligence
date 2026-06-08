@@ -8,8 +8,8 @@ import Footer from "@/components/footer/footer";
 import { HeroHeader } from "@/components/header/header";
 
 export const metadata: Metadata = {
-  title: 'Forensic Fingerprinting & Resolution Features',
-  description: 'Canvas & WebGL unmasking, clock drift detection, single-page application router patching, and POPIA-compliant B2B auditing features.',
+  title: 'AuraWorks | B2B Identity Resolution & Spec-Sheet Tracking Features',
+  description: 'Explore the corporate identity resolution capabilities of the AuraWorks Engine. Legally unmask high-value industrial visitors and track spec-sheet downloads.',
 };
 
 export default function FeaturesPage() {

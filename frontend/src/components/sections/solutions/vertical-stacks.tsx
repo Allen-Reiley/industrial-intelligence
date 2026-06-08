@@ -4,20 +4,20 @@ import { cn } from '@/lib/utils'
 const verticals = [
     {
         title: "Mining & Resource Extraction",
-        problem: "Procurement officers from Tier-1 mining houses browse your specs months before a tender is issued.",
-        solution: "Identify the specific mining site or regional HQ researching your equipment, allowing your reps to engage before the RFP goes public.",
+        problem: "Waiting for procurement officers from Tier-1 mining houses to submit a contact form—only to discover they have already drafted their RFP specifications with a competitor.",
+        solution: "Intercept the specific mining site or regional HQ while they are window-shopping your technical specifications, allowing your team to shape the requirements before the tender goes public.",
         stats: "Ideal for: Drill rigs, safety gear, and processing plant OEMs."
     },
     {
         title: "Industrial Manufacturing",
-        problem: "Engineers are looking for technical CAD files and load capacities, but remain anonymous.",
-        solution: "Track which manufacturing firms are downloading your technical documentation to gauge their project timeline and capacity needs.",
+        problem: "Losing visibility when engineers download CAD drawings and load capacities anonymously, leaving your sales team blind to active factory expansion projects.",
+        solution: "De-anonymize the manufacturing firms downloading your technical documentation to gauge their project timeline and capacity needs before your competitors do.",
         stats: "Ideal for: Precision tooling, automation systems, and raw material suppliers."
     },
     {
         title: "Logistics & Infrastructure",
-        problem: "Large-scale fleet and warehouse managers are comparing your rates and coverage areas in secret.",
-        solution: "Unmask the logistics directors from corporate entities, focusing your outbound efforts on firms with active expansion intent.",
+        problem: "Hoping fleet and facility directors reach out via your contact page while they secretly compare your routes, cold-chain capacities, and logistics rates.",
+        solution: "Unmask the logistics entities researching your infrastructure, allowing your sales team to initiate targeted outreach to expanding firms.",
         stats: "Ideal for: 3PL providers, fleet management, and cold-chain specialists."
     }
 ]
