@@ -494,3 +494,84 @@ Task: Synthesize a concise 2-sentence 'Executive Intent Summary' identifying if 
         session.add(company)
         
     await session.commit()
+
+
+async def evaluate_stitching_with_deepseek(volunteered_name: str, enriched_name: str) -> Dict[str, Any]:
+    """
+    Evaluates if volunteered_name and enriched_name refer to the same B2B entity,
+    and checks if enriched_name is an ISP/infrastructure provider.
+    Returns a dictionary: {"same_entity": bool, "is_isp": bool}
+    """
+    if not settings.DEEPSEEK_API_KEY:
+        return {"same_entity": False, "is_isp": False}
+
+    prompt = f"""
+    Evaluate if two corporate names refer to the same B2B company entity.
+    Volunteered Name: "{volunteered_name}"
+    Enriched Name: "{enriched_name}"
+
+    Also, check if the Enriched Name represents an Internet Service Provider (ISP), telecommunications carrier, or general internet infrastructure provider (e.g. Vodacom, MTN, Telkom, Liquid Telecom, Cloudflare, etc.).
+
+    Return ONLY a JSON object with two fields:
+    - "same_entity": true if they are the same company (even if formatted slightly differently), false otherwise.
+    - "is_isp": true if the Enriched Name represents an ISP or carrier, false otherwise.
+    """
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                "https://api.deepseek.com/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {settings.DEEPSEEK_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "deepseek-chat",
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.1,
+                    "response_format": {"type": "json_object"}
+                },
+                timeout=10.0
+            )
+            if response.status_code == 200:
+                import json
+                content = response.json()['choices'][0]['message']['content'].strip()
+                return json.loads(content)
+            else:
+                logger.error(f"🤖 DeepSeek Stitching: API returned code {response.status_code}: {response.text}")
+        except Exception as e:
+            logger.error(f"🤖 DeepSeek Stitching Failure: {e}")
+    return {"same_entity": False, "is_isp": False}
+
+
+async def resolve_entity_stitching(volunteered_name: str, enriched_name: str) -> str:
+    """
+    Stitches volunteered company name with enriched name:
+    1. Substring Match (case-insensitive).
+    2. DeepSeek evaluation.
+    3. ISP/Infrastructure filter.
+    """
+    if not volunteered_name:
+        return enriched_name or "Unknown Entity"
+    if not enriched_name:
+        return volunteered_name
+
+    v_lower = volunteered_name.lower().strip()
+    e_lower = enriched_name.lower().strip()
+
+    # 1. Substring Match
+    if v_lower in e_lower or e_lower in v_lower:
+        return enriched_name
+
+    # 2. DeepSeek Evaluation
+    try:
+        ds_res = await evaluate_stitching_with_deepseek(volunteered_name, enriched_name)
+        if ds_res.get("same_entity"):
+            return enriched_name
+        elif ds_res.get("is_isp"):
+            return volunteered_name
+    except Exception as e:
+        logger.error(f"❌ resolve_entity_stitching Error: {e}")
+
+    # Fallback to volunteered name
+    return volunteered_name

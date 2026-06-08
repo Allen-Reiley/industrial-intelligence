@@ -187,3 +187,151 @@ async def test_row_level_security_isolation():
             await admin_session.commit()
             
         await rls_engine.dispose()
+
+
+async def test_company_row_level_security_isolation():
+    """
+    Verifies that Row-Level Security constraints strictly isolate 
+    company records across multi-tenant contexts.
+    """
+    from app.models.company import Company
+    
+    if not async_engine or "postgresql" not in async_engine.url.drivername:
+        pytest.skip("SQLAlchemy is not configured for a PostgreSQL driver. Skipping RLS tests.")
+
+    # 1. Establish the non-owner RLS test user/role.
+    try:
+        async with AsyncSession(async_engine) as cleanup_session:
+            await cleanup_session.execute(text("REASSIGN OWNED BY rls_test_user TO postgres;"))
+            await cleanup_session.execute(text("DROP OWNED BY rls_test_user;"))
+            await cleanup_session.commit()
+    except Exception:
+        pass
+
+    async with AsyncSession(async_engine) as admin_session:
+        await admin_session.execute(text("DROP ROLE IF EXISTS rls_test_user;"))
+        await admin_session.execute(
+            text("CREATE ROLE rls_test_user WITH LOGIN PASSWORD 'rls_test_pass';")
+        )
+        await admin_session.execute(
+            text("GRANT ALL PRIVILEGES ON SCHEMA public TO rls_test_user;")
+        )
+        await admin_session.execute(
+            text("GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO rls_test_user;")
+        )
+        await admin_session.execute(
+            text("GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO rls_test_user;")
+        )
+        await admin_session.commit()
+
+    base_url = str(async_engine.url)
+    import re
+    rls_url = re.sub(r"://[^@]+@", "://rls_test_user:rls_test_pass@", base_url)
+    rls_engine = create_async_engine(rls_url, echo=False)
+
+    client_a_id = uuid4()
+    client_b_id = uuid4()
+    company_a_id = uuid4()
+    company_b_id = uuid4()
+
+    try:
+        # 2. Insert using admin session
+        async with AsyncSession(async_engine) as admin_session:
+            client_a = Client(
+                id=client_a_id,
+                company_name="RLS Company Client Alpha",
+                domain="rls-company-alpha.com",
+                category=ClientCategory.INDUSTRIAL,
+                client_product_description="Alpha Products",
+                subscription_status=SubscriptionStatus.ACTIVE,
+                payment_plan="enterprise",
+                setup_fee_paid=True,
+                is_active=True,
+                created_at=datetime.now(timezone.utc).replace(tzinfo=None)
+            )
+            client_b = Client(
+                id=client_b_id,
+                company_name="RLS Company Client Beta",
+                domain="rls-company-beta.com",
+                category=ClientCategory.INDUSTRIAL,
+                client_product_description="Beta Products",
+                subscription_status=SubscriptionStatus.ACTIVE,
+                payment_plan="enterprise",
+                setup_fee_paid=True,
+                is_active=True,
+                created_at=datetime.now(timezone.utc).replace(tzinfo=None)
+            )
+            admin_session.add(client_a)
+            admin_session.add(client_b)
+            await admin_session.commit()
+
+            company_a = Company(
+                id=company_a_id,
+                client_id=client_a_id,
+                domain="alpha-mining.co.za",
+                company_name="Alpha Mining Group",
+                industry="Mining",
+                created_at=datetime.now(timezone.utc).replace(tzinfo=None)
+            )
+            company_b = Company(
+                id=company_b_id,
+                client_id=client_b_id,
+                domain="beta-logistics.co.za",
+                company_name="Beta Logistics",
+                industry="Logistics",
+                created_at=datetime.now(timezone.utc).replace(tzinfo=None)
+            )
+            admin_session.add(company_a)
+            admin_session.add(company_b)
+            await admin_session.commit()
+
+        # 3. Query under Client A context
+        async with AsyncSession(rls_engine) as rls_session:
+            await rls_session.execute(
+                text("SELECT set_config('app.current_client_id', :client_id, true)").bindparams(client_id=str(client_a_id))
+            )
+            stmt = select(Company)
+            res = await rls_session.execute(stmt)
+            companies = res.scalars().all()
+            
+            assert len(companies) == 1
+            assert companies[0].company_name == "Alpha Mining Group"
+            assert companies[0].client_id == client_a_id
+
+        # 4. Query under Client B context
+        async with AsyncSession(rls_engine) as rls_session:
+            await rls_session.execute(
+                text("SELECT set_config('app.current_client_id', :client_id, true)").bindparams(client_id=str(client_b_id))
+            )
+            stmt = select(Company)
+            res = await rls_session.execute(stmt)
+            companies = res.scalars().all()
+            
+            assert len(companies) == 1
+            assert companies[0].company_name == "Beta Logistics"
+            assert companies[0].client_id == client_b_id
+
+    finally:
+        async with AsyncSession(async_engine) as admin_session:
+            await admin_session.execute(
+                text('DELETE FROM "company" WHERE id IN (:a, :b)').bindparams(a=company_a_id, b=company_b_id)
+            )
+            await admin_session.execute(
+                text('DELETE FROM "client" WHERE id IN (:a, :b)').bindparams(a=client_a_id, b=client_b_id)
+            )
+            await admin_session.commit()
+            
+        try:
+            async with AsyncSession(async_engine) as cleanup_session:
+                await cleanup_session.execute(text("REASSIGN OWNED BY rls_test_user TO postgres;"))
+                await cleanup_session.execute(text("DROP OWNED BY rls_test_user;"))
+                await cleanup_session.commit()
+        except Exception:
+            pass
+
+        async with AsyncSession(async_engine) as admin_session:
+            await admin_session.execute(text("DROP ROLE IF EXISTS rls_test_user;"))
+            await admin_session.commit()
+            
+        await rls_engine.dispose()
+

@@ -13,7 +13,13 @@ class Company(SQLModel, table=True):
     __tablename__ = "company"
     
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    client_id: UUID = Field(
+        default_factory=lambda: UUID("c4a6c9b1-8355-4de2-985d-a04f4dcd63a0"),
+        foreign_key="client.id",
+        index=True
+    )
     domain: str = Field(index=True)
+
     company_name: str = Field(index=True)
     industry: Optional[str] = Field(default=None, index=True)
     parent_company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", nullable=True)

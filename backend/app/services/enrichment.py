@@ -324,19 +324,31 @@ async def process_enrichment_queue():
                         domain = info.get("domain")
                         company = None
                         if domain and domain not in ["unknown.com", "n/a"]:
-                            comp_stmt = select(Company).where(Company.domain == domain)
+                            comp_stmt = select(Company).where(Company.domain == domain, Company.client_id == item.client_id)
                             company_res = await session.execute(comp_stmt)
                             company = company_res.scalars().first()
                             if not company:
                                 company = Company(
+                                    client_id=item.client_id,
                                     company_name=info.get("company_name", "Unknown"),
                                     domain=domain,
                                     cipc_verified=False,
                                     total_visits=1
                                 )
                                 session.add(company)
+
                                 await session.commit()
                                 await session.refresh(company)
+                                if company:
+                                    visit = await session.get(Visit, item.visit_id)
+                                    if visit:
+                                        visit.company_id = company.id
+                                        session.add(visit)
+                                        await session.commit()
+
+                                    # Check and trigger company intent surge alerts
+                                    from app.services.notifications import check_and_trigger_company_surge
+                                    await check_and_trigger_company_surge(company.id, item.client_id, session)
                             else:
                                 company.total_visits += 1
                                 session.add(company)
@@ -369,9 +381,10 @@ async def process_enrichment_queue():
                         depts_data = await get_departmental_intelligence(domain)
                         
                         # Resolve Company
-                        comp_stmt = select(Company).where(Company.domain == domain)
+                        comp_stmt = select(Company).where(Company.domain == domain, Company.client_id == item.client_id)
                         company_res = await session.execute(comp_stmt)
                         company = company_res.scalars().first()
+
 
                         if company and depts_data:
                             # Map departments and contacts

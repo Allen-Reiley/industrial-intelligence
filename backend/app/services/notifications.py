@@ -5,6 +5,7 @@ import urllib.parse
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.db import async_session_maker
@@ -521,3 +522,98 @@ async def post_vsl_completion_to_slack(company_name: str, client_id: UUID, aura_
             logger.info(f"VSL completion Slack alert successfully sent for company: {company_name}")
         except Exception as e:
             logger.error(f"🚨 post_vsl_completion_to_slack Failure: {e}")
+
+
+async def post_surge_alert_to_slack(company_name: str, client_id: UUID, company_id: UUID, unique_visitor_count: int):
+    """
+    Alerts the Slack channel when an Account Surge is detected for a company.
+    Enforces a 1-hour throttle per company to prevent duplicate alerts.
+    """
+    if not settings.SLACK_WEBHOOK_URL:
+        return
+
+    # Check and apply throttle (1 hour throttle per client/company)
+    throttled = await is_slack_notification_throttled(client_id, company_id)
+    if throttled:
+        logger.info(f"⏭️ Surge alert throttled for company: {company_name}")
+        return
+
+    dashboard_url = f"https://auraworks.co.za/admin/companies?id={company_id}"
+
+    payload = {
+        "text": f"🚨 Account Surge: {company_name}",
+        "blocks": [
+            {
+                "type": "header",
+                "text": {"type": "plain_text", "text": "⚡ Account Surge Detected"}
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"*Account Surge:* *{company_name}* has demonstrated high concentrated intent.\n*Intent Density:* *{unique_visitor_count}* unique individuals identified visiting within the last 72 hours."
+                }
+            },
+            {
+                "type": "context",
+                "elements": [
+                    {"type": "mrkdwn", "text": f"🏢 Company ID: `{company_id}` | Client ID: `{client_id}`"}
+                ]
+            },
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "View Company Activity"},
+                        "url": dashboard_url,
+                        "style": "primary"
+                    }
+                ]
+            }
+        ]
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(settings.SLACK_WEBHOOK_URL, json=payload, timeout=10.0)
+            response.raise_for_status()
+            logger.info(f"⚡ Surge Slack alert successfully sent for company: {company_name}")
+        except Exception as e:
+            logger.error(f"🚨 post_surge_alert_to_slack Failure: {e}")
+
+
+async def check_and_trigger_company_surge(company_id: UUID, client_id: UUID, session: AsyncSession):
+    """
+    Monitors cluster density for a company. If 3 or more unique visitors (aura_id values)
+    from the same company are identified within the last 72 hours, triggers an immediate
+    surge Slack alert.
+    """
+    from datetime import datetime, timezone, timedelta
+    from app.models.visit import Visit
+    from app.models.company import Company
+    from sqlmodel import select
+    from sqlalchemy import func
+
+    # Calculate 72 hours window
+    time_offset = datetime.now(timezone.utc) - timedelta(hours=72)
+
+    # Query unique visitor counts
+    stmt = select(func.count(func.distinct(Visit.aura_id))).where(
+        Visit.company_id == company_id,
+        Visit.client_id == client_id,
+        Visit.created_at >= time_offset
+    )
+    res = await session.execute(stmt)
+    unique_visitors = res.scalar() or 0
+
+    if unique_visitors >= 3:
+        company = await session.get(Company, company_id)
+        if company:
+            # Trigger Slack alert
+            await post_surge_alert_to_slack(
+                company_name=company.company_name,
+                client_id=client_id,
+                company_id=company_id,
+                unique_visitor_count=unique_visitors
+            )

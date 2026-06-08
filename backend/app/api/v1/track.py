@@ -66,7 +66,8 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
             if domain and domain not in ["unknown.com", "n/a"]:
                 res = await session.execute(
                     select(Company).where(
-                        Company.domain == domain
+                        Company.domain == domain,
+                        Company.client_id == payload.client_id
                     )
                 )
                 company = res.scalars().first()
@@ -76,12 +77,14 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
                 session.add(company)
             elif domain and domain not in ["unknown.com", "n/a"]:
                 company = Company(
+                    client_id=payload.client_id,
                     company_name=enriched_info.get("company_name", "Unknown"),
                     domain=domain,
                     cipc_verified=False,
                     total_visits=1
                 )
                 session.add(company)
+
             
             await session.commit()
             if company: 
@@ -104,6 +107,12 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
             session.add(db_visit)
             await session.commit()
             await session.refresh(db_visit)
+
+            # Check and trigger company intent surge alerts
+            if company:
+                from app.services.notifications import check_and_trigger_company_surge
+                await check_and_trigger_company_surge(company.id, payload.client_id, session)
+
 
             # Create initial PageView record
             db_page_view = PageView(

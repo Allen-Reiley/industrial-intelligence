@@ -1,6 +1,7 @@
 # backend/app/api/v1/prospects.py
 import logging
-from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
+from typing import Any
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Request
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_async_session, async_session_maker
@@ -36,11 +37,11 @@ def format_zar(value: str) -> str:
     clean_value = "".join(filter(str.isdigit, val_str.replace('k', '000')))
     return f"R{int(clean_value):,}" if clean_value else str(value)
 
-async def background_prospect_analysis(prospect_id: int, aura_id: str, payload: dict):
+async def background_prospect_analysis(prospect_id: Any, aura_id: str, payload: dict, ip_address: str):
     """
-    Sequential Forensic Orchestration Engine.
-    Holds back external system sinks (Slack, Airtable) until DeepSeek 
-    and firmographic intelligence have fully compiled their data.
+    Sequential Forensic Ingestion & Stitching Engine.
+    Executes immediate IPinfo and Apollo background enrichment,
+    performs entity stitching, updates models, and dispatches alerts.
     """
     if not async_session_maker:
         logger.error("❌ background_prospect_analysis: Aborted. Async Engine offline.")
@@ -50,7 +51,7 @@ async def background_prospect_analysis(prospect_id: int, aura_id: str, payload: 
         try:
             logger.info(f"⏳ Ingesting Sequential Audit Pipeline for Lead ID: {prospect_id}")
 
-            # 1. Pull the fresh lead record to get the linked company context
+            # 1. Pull the fresh lead record
             prospect_stmt = select(Prospect).where(Prospect.id == prospect_id)
             prospect_res = await session.execute(prospect_stmt)
             lead = prospect_res.scalars().first()
@@ -59,30 +60,105 @@ async def background_prospect_analysis(prospect_id: int, aura_id: str, payload: 
                 logger.error(f"❌ Sequential Pipeline Error: Lead ID {prospect_id} not found in DB.")
                 return
 
-            # 2. Compile Unified Journey & Ghost Enrichment (Awaits DeepSeek completely before proceeding)
+            # 2. Immediate IPinfo Enrichment (Task 11.2 & Task 11.3)
+            # Fetch enriched visitor data
+            from app.services.enrichment import enrich_visitor_data, enrich_company_departments
+            from app.services.intelligence import resolve_entity_stitching
+            
+            enriched_info = {}
+            try:
+                enriched_info = await enrich_visitor_data(ip_address)
+            except Exception as e:
+                logger.warning(f"⚠️ Immediate IPinfo enrichment failed for IP {ip_address}: {e}")
+                
+            enriched_company_name = enriched_info.get("company_name", "Anonymous Entity")
+            volunteered_company = lead.company_name_raw or payload.get("company") or "Unknown"
+
+            # Entity Stitching Resolution (Substring -> DeepSeek -> Fallback)
+            final_company_name = await resolve_entity_stitching(volunteered_company, enriched_company_name)
+            logger.info(f"Stitched Entity Name: {final_company_name} (from: volunteered='{volunteered_company}', enriched='{enriched_company_name}')")
+
+            # Determine company domain
+            domain = lead.website or enriched_info.get("domain")
+            if domain:
+                domain = domain.replace("https://", "").replace("http://", "").split("/")[0].lower()
+            if not domain and lead.email and "@" in lead.email:
+                domain = lead.email.split("@")[1].lower()
+            if not domain or domain in ["unknown.com", "n/a"]:
+                domain = "unknown-domain.com"
+
+            # 3. Resolve/Create Company (Multi-Tenant, Task 11.1)
+            company_stmt = select(Company).where(
+                (Company.domain == domain) | (Company.company_name == final_company_name),
+                Company.client_id == lead.client_id
+            )
+            company_res = await session.execute(company_stmt)
+            company = company_res.scalars().first()
+
+            if not company:
+                company = Company(
+                    client_id=lead.client_id,
+                    company_name=final_company_name,
+                    domain=domain,
+                    industry=lead.industry or enriched_info.get("industry"),
+                    cipc_verified=True, # Direct form submission acts as manual verification
+                    total_visits=1
+                )
+                session.add(company)
+                await session.commit()
+                await session.refresh(company)
+            else:
+                company.company_name = final_company_name
+                company.total_visits += 1
+                session.add(company)
+                await session.commit()
+                await session.refresh(company)
+
+            # Link Prospect and Visits to the resolved Company
+            lead.company_id = company.id
+            session.add(lead)
+
+            if aura_id:
+                visit_stmt = select(Visit).where(Visit.aura_id == aura_id, Visit.client_id == lead.client_id)
+                res_visits = await session.execute(visit_stmt)
+                past_visits = res_visits.scalars().all()
+                for v in past_visits:
+                    v.is_consented = True
+                    v.verification_status = "verified"
+                    v.company_id = company.id
+                    session.add(v)
+
+            await session.commit()
+
+            # Trigger immediate Account Surge check (Task 11.4)
+            from app.services.notifications import check_and_trigger_company_surge
+            try:
+                await check_and_trigger_company_surge(company.id, lead.client_id, session)
+            except Exception as e:
+                logger.error(f"❌ Failed to check surge alert: {e}")
+
+            # 4. Immediate Apollo Enrichment (Task 11.2)
+            if company.domain and company.domain != "unknown-domain.com":
+                try:
+                    await enrich_company_departments(company.id, company.domain)
+                except Exception as e:
+                    logger.error(f"❌ Immediate Apollo Enrichment failed: {e}")
+
+            # 5. Compile Unified Journey & Ghost Enrichment
             journey = await get_visitor_journey(aura_id, session)
 
-            # 3. Pull resolved company context for notifications
-            company_name = "Anonymous Entity"
-            if lead.company_id:
-                company = await session.get(Company, lead.company_id)
-                if company:
-                    company_name = company.company_name
-            elif lead.company_name_raw:
-                company_name = lead.company_name_raw
-
-            # 4. Pack the complete, unified data dictionary
+            # 6. Pack the complete, unified data dictionary
             complete_prospect_payload = {
                 "id": lead.id,
                 "aura_id": lead.aura_id,
                 "name": lead.name,
                 "email": lead.email,
-                "company_name_final": company_name,
+                "company_name_final": company.company_name,
                 "company_id": lead.company_id,
                 "client_id": lead.client_id,
                 "department": lead.department or "Undetermined",
                 "position": lead.position or "Evaluator",
-                "industry": lead.industry or "Industrial",
+                "industry": company.industry or "Industrial",
                 "website": lead.website or "N/A",
                 "capture_source": "waitlist_conversion",
                 "traffic": lead.traffic or "N/A",
@@ -93,21 +169,13 @@ async def background_prospect_analysis(prospect_id: int, aura_id: str, payload: 
 
             logger.info(f"✨ DeepSeek Data compiled for Lead ID {prospect_id}. Releasing external notification gates...")
 
-            # =================================================================
-            # 5. RELEASE GATES: Dispatch completed data packets sequentially
-            # =================================================================
-            
-            # Dispatch Premium Identity Promotion Alert to Slack with full data resolved
+            # 7. Dispatch completed data packets
             from app.services.notifications import post_to_slack
             await post_to_slack(prospect_data=complete_prospect_payload, journey=journey)
-
-            # PHASE 3: The Airtable Bridge
             await sync_to_airtable(complete_prospect_payload, journey)
-            
-            # PHASE 4: The Notion Bridge
             await sync_to_notion(complete_prospect_payload, journey)
 
-            logger.info(f"✅ Full Synchronization Cycle Complete for Lead ID: {prospect_id}")
+            logger.info(f"✅ Full Synchronization & Enrichment Cycle Complete for Lead ID: {prospect_id}")
 
         except Exception as e:
             logger.error(f"🚨 Sequential Lead Pipeline Failure for Lead ID {prospect_id}: {e}")
@@ -116,6 +184,7 @@ async def background_prospect_analysis(prospect_id: int, aura_id: str, payload: 
 async def join_prospects(
     payload: dict, 
     background_tasks: BackgroundTasks,
+    request: Request,
     session: AsyncSession = Depends(get_async_session)
 ):
     """
@@ -145,7 +214,8 @@ async def join_prospects(
         
         # Search for company by domain or name globally (since Company is a shared table)
         company_stmt = select(Company).where(
-            (Company.domain == domain) if domain else (Company.company_name == raw_company_name)
+            (Company.domain == domain) if domain else (Company.company_name == raw_company_name),
+            Company.client_id == client_id
         )
         res_company = await session.execute(company_stmt)
         company = res_company.scalars().first()
@@ -153,6 +223,7 @@ async def join_prospects(
         if not company:
             # Create a new Juristic record if this is a first-time encounter
             company = Company(
+                client_id=client_id,
                 company_name=raw_company_name or "Unknown Industrial Entity", 
                 domain=domain,
                 industry=payload.get("industry"),
@@ -161,6 +232,7 @@ async def join_prospects(
             session.add(company)
             await session.commit()
             await session.refresh(company)
+
 
         # 2. Identity Promotion & Lead Deep-Merge
         # Check if we already have a partial record for this person
@@ -216,6 +288,17 @@ async def join_prospects(
                 v.company_id = company.id
                 session.add(v)
 
+        # Resolve visitor IP address
+        ip_address = None
+        if aura_id:
+            visit_stmt = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at.desc())
+            res_visits = await session.execute(visit_stmt)
+            latest_visit = res_visits.scalars().first()
+            if latest_visit:
+                ip_address = latest_visit.ip_address
+        if not ip_address:
+            ip_address = request.client.host if request.client else "127.0.0.1"
+
         await session.commit()
         await session.refresh(lead)
 
@@ -225,7 +308,8 @@ async def join_prospects(
             background_prospect_analysis, 
             prospect_id=lead.id, 
             aura_id=aura_id, 
-            payload=payload
+            payload=payload,
+            ip_address=ip_address
         )
         
         # PHASE 1: Schedule the Resend confirmation email dispatch asynchronously

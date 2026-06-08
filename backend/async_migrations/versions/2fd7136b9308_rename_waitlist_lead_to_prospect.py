@@ -21,33 +21,58 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Upgrade schema."""
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    tables = inspector.get_table_names()
+
     # 1. Drop old indexes on waitlist_lead
-    op.drop_index('ix_waitlist_lead_aura_id', table_name='waitlist_lead')
-    op.drop_index('ix_waitlist_lead_client_id', table_name='waitlist_lead')
-    op.drop_index('ix_waitlist_lead_company_id', table_name='waitlist_lead')
-    op.drop_index('ix_waitlist_lead_email', table_name='waitlist_lead')
-    op.drop_index('ix_waitlist_lead_id', table_name='waitlist_lead')
+    op.execute("DROP INDEX IF EXISTS ix_waitlist_lead_aura_id")
+    op.execute("DROP INDEX IF EXISTS ix_waitlist_lead_client_id")
+    op.execute("DROP INDEX IF EXISTS ix_waitlist_lead_company_id")
+    op.execute("DROP INDEX IF EXISTS ix_waitlist_lead_email")
+    op.execute("DROP INDEX IF EXISTS ix_waitlist_lead_id")
 
-    # 2. Rename the table
-    op.rename_table('waitlist_lead', 'prospect')
+    # 2. Rename the table if it exists
+    if 'waitlist_lead' in tables:
+        op.rename_table('waitlist_lead', 'prospect')
+        
+        # 4. Rename constraints
+        try:
+            op.execute("ALTER TABLE prospect RENAME CONSTRAINT waitlist_lead_pkey TO prospect_pkey")
+        except Exception:
+            pass
+        try:
+            op.execute("ALTER TABLE prospect RENAME CONSTRAINT waitlist_lead_client_id_fkey TO prospect_client_id_fkey")
+        except Exception:
+            pass
+        try:
+            op.execute("ALTER TABLE prospect RENAME CONSTRAINT waitlist_lead_company_id_fkey TO prospect_company_id_fkey")
+        except Exception:
+            pass
 
-    # 3. Add status and calendly_event_uuid columns
-    op.add_column('prospect', sa.Column('status', sa.String(), nullable=False, server_default='demo_requested'))
-    op.add_column('prospect', sa.Column('calendly_event_uuid', sa.String(), nullable=True))
+    # 3. Add status and calendly_event_uuid columns if they don't exist
+    columns = [col['name'] for col in inspector.get_columns('prospect')]
+    if 'status' not in columns:
+        op.add_column('prospect', sa.Column('status', sa.String(), nullable=False, server_default='demo_requested'))
+    if 'calendly_event_uuid' not in columns:
+        op.add_column('prospect', sa.Column('calendly_event_uuid', sa.String(), nullable=True))
 
-    # 4. Rename constraints
-    op.execute("ALTER TABLE prospect RENAME CONSTRAINT waitlist_lead_pkey TO prospect_pkey")
-    op.execute("ALTER TABLE prospect RENAME CONSTRAINT waitlist_lead_client_id_fkey TO prospect_client_id_fkey")
-    op.execute("ALTER TABLE prospect RENAME CONSTRAINT waitlist_lead_company_id_fkey TO prospect_company_id_fkey")
-
-    # 5. Create new indexes on prospect
-    op.create_index(op.f('ix_prospect_id'), 'prospect', ['id'], unique=False)
-    op.create_index(op.f('ix_prospect_client_id'), 'prospect', ['client_id'], unique=False)
-    op.create_index(op.f('ix_prospect_company_id'), 'prospect', ['company_id'], unique=False)
-    op.create_index(op.f('ix_prospect_email'), 'prospect', ['email'], unique=False)
-    op.create_index(op.f('ix_prospect_aura_id'), 'prospect', ['aura_id'], unique=False)
-    op.create_index(op.f('ix_prospect_status'), 'prospect', ['status'], unique=False)
-    op.create_index(op.f('ix_prospect_calendly_event_uuid'), 'prospect', ['calendly_event_uuid'], unique=False)
+    # 5. Create new indexes on prospect if they don't exist
+    indexes = [idx['name'] for idx in inspector.get_indexes('prospect')]
+    if 'ix_prospect_id' not in indexes:
+        op.create_index(op.f('ix_prospect_id'), 'prospect', ['id'], unique=False)
+    if 'ix_prospect_client_id' not in indexes:
+        op.create_index(op.f('ix_prospect_client_id'), 'prospect', ['client_id'], unique=False)
+    if 'ix_prospect_company_id' not in indexes:
+        op.create_index(op.f('ix_prospect_company_id'), 'prospect', ['company_id'], unique=False)
+    if 'ix_prospect_email' not in indexes:
+        op.create_index(op.f('ix_prospect_email'), 'prospect', ['email'], unique=False)
+    if 'ix_prospect_aura_id' not in indexes:
+        op.create_index(op.f('ix_prospect_aura_id'), 'prospect', ['aura_id'], unique=False)
+    if 'ix_prospect_status' not in indexes:
+        op.create_index(op.f('ix_prospect_status'), 'prospect', ['status'], unique=False)
+    if 'ix_prospect_calendly_event_uuid' not in indexes:
+        op.create_index(op.f('ix_prospect_calendly_event_uuid'), 'prospect', ['calendly_event_uuid'], unique=False)
 
 
 def downgrade() -> None:

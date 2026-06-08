@@ -1,0 +1,2858 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "track.py",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L1",
+      "id": "v1_track",
+      "community": 9,
+      "norm_label": "track.py"
+    },
+    {
+      "label": "ConsentPayload",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L27",
+      "id": "v1_track_consentpayload",
+      "community": 9,
+      "norm_label": "consentpayload"
+    },
+    {
+      "label": "BaseModel",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "basemodel",
+      "community": 5,
+      "norm_label": "basemodel"
+    },
+    {
+      "label": "IdentityPayload",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L32",
+      "id": "v1_track_identitypayload",
+      "community": 6,
+      "norm_label": "identitypayload"
+    },
+    {
+      "label": "process_entry_logic()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L42",
+      "id": "v1_track_process_entry_logic",
+      "community": 4,
+      "norm_label": "process_entry_logic()"
+    },
+    {
+      "label": "VisitCreate",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L42",
+      "id": "visitcreate",
+      "community": 4,
+      "norm_label": "visitcreate"
+    },
+    {
+      "label": "str",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L42",
+      "id": "backend_app_api_v1_track_py_str",
+      "community": 4,
+      "norm_label": "str"
+    },
+    {
+      "label": "process_exit_logic()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L136",
+      "id": "v1_track_process_exit_logic",
+      "community": 0,
+      "norm_label": "process_exit_logic()"
+    },
+    {
+      "label": "int",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L136",
+      "id": "int",
+      "community": 4,
+      "norm_label": "int"
+    },
+    {
+      "label": "bool",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L136",
+      "id": "backend_app_api_v1_track_py_bool",
+      "community": 6,
+      "norm_label": "bool"
+    },
+    {
+      "label": "track_entry()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L245",
+      "id": "v1_track_track_entry",
+      "community": 4,
+      "norm_label": "track_entry()"
+    },
+    {
+      "label": "Request",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L245",
+      "id": "request",
+      "community": 4,
+      "norm_label": "request"
+    },
+    {
+      "label": "BackgroundTasks",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L245",
+      "id": "backgroundtasks",
+      "community": 7,
+      "norm_label": "backgroundtasks"
+    },
+    {
+      "label": "track_identity()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L251",
+      "id": "v1_track_track_identity",
+      "community": 6,
+      "norm_label": "track_identity()"
+    },
+    {
+      "label": "track_event()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L307",
+      "id": "v1_track_track_event",
+      "community": 7,
+      "norm_label": "track_event()"
+    },
+    {
+      "label": "PageViewCreate",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L307",
+      "id": "pageviewcreate",
+      "community": 7,
+      "norm_label": "pageviewcreate"
+    },
+    {
+      "label": "track_consent()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L324",
+      "id": "v1_track_track_consent",
+      "community": 9,
+      "norm_label": "track_consent()"
+    },
+    {
+      "label": "track_exit()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L340",
+      "id": "v1_track_track_exit",
+      "community": 7,
+      "norm_label": "track_exit()"
+    },
+    {
+      "label": "IntentPayload",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L376",
+      "id": "v1_track_intentpayload",
+      "community": 5,
+      "norm_label": "intentpayload"
+    },
+    {
+      "label": "track_intent()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L384",
+      "id": "v1_track_track_intent",
+      "community": 5,
+      "norm_label": "track_intent()"
+    },
+    {
+      "label": "AsyncSession",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L384",
+      "id": "asyncsession",
+      "community": 5,
+      "norm_label": "asyncsession"
+    },
+    {
+      "label": "SILENT INGESTION ENGINE:     Records raw traffic trails and resolves firmographi",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L43",
+      "id": "v1_track_rationale_43",
+      "community": 4,
+      "norm_label": "silent ingestion engine:     records raw traffic trails and resolves firmographi"
+    },
+    {
+      "label": "THE BATCH PROCESSOR:     Fires exclusively upon departure. Evaluates identity da",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L137",
+      "id": "v1_track_rationale_137",
+      "community": 0,
+      "norm_label": "the batch processor:     fires exclusively upon departure. evaluates identity da"
+    },
+    {
+      "label": "Upgrades anonymous forensic profiles using volunteered banner form data.",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L252",
+      "id": "v1_track_rationale_252",
+      "community": 6,
+      "norm_label": "upgrades anonymous forensic profiles using volunteered banner form data."
+    },
+    {
+      "label": "Records session metrics upon departure and coordinates the batch analytical thre",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L341",
+      "id": "v1_track_rationale_341",
+      "community": 7,
+      "norm_label": "records session metrics upon departure and coordinates the batch analytical thre"
+    },
+    {
+      "label": "Tracks real-time prospect intent telemetry (e.g. VSL completion percentage).",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L389",
+      "id": "v1_track_rationale_389",
+      "community": 5,
+      "norm_label": "tracks real-time prospect intent telemetry (e.g. vsl completion percentage)."
+    },
+    {
+      "label": "prospect.py",
+      "file_type": "code",
+      "source_file": "backend/app/models/prospect.py",
+      "source_location": "L1",
+      "id": "models_prospect",
+      "community": 3,
+      "norm_label": "prospect.py"
+    },
+    {
+      "label": "Prospect",
+      "file_type": "code",
+      "source_file": "backend/app/models/prospect.py",
+      "source_location": "L10",
+      "id": "models_prospect_prospect",
+      "community": 6,
+      "norm_label": "prospect"
+    },
+    {
+      "label": "SQLModel",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "sqlmodel",
+      "community": 3,
+      "norm_label": "sqlmodel"
+    },
+    {
+      "label": "visit.py",
+      "file_type": "code",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L1",
+      "id": "models_visit",
+      "community": 8,
+      "norm_label": "visit.py"
+    },
+    {
+      "label": "VerificationStatus",
+      "file_type": "code",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L13",
+      "id": "models_visit_verificationstatus",
+      "community": 8,
+      "norm_label": "verificationstatus"
+    },
+    {
+      "label": "str",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "str",
+      "community": 8,
+      "norm_label": "str"
+    },
+    {
+      "label": "Enum",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "enum",
+      "community": 8,
+      "norm_label": "enum"
+    },
+    {
+      "label": "Visit",
+      "file_type": "code",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L18",
+      "id": "models_visit_visit",
+      "community": 4,
+      "norm_label": "visit"
+    },
+    {
+      "label": "VisitCreate",
+      "file_type": "code",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L56",
+      "id": "models_visit_visitcreate",
+      "community": 4,
+      "norm_label": "visitcreate"
+    },
+    {
+      "label": "PageViewCreate",
+      "file_type": "code",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L66",
+      "id": "models_visit_pageviewcreate",
+      "community": 5,
+      "norm_label": "pageviewcreate"
+    },
+    {
+      "label": "notifications.py",
+      "file_type": "code",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L1",
+      "id": "services_notifications",
+      "community": 0,
+      "norm_label": "notifications.py"
+    },
+    {
+      "label": "is_slack_notification_throttled()",
+      "file_type": "code",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L15",
+      "id": "services_notifications_is_slack_notification_throttled",
+      "community": 0,
+      "norm_label": "is_slack_notification_throttled()"
+    },
+    {
+      "label": "UUID",
+      "file_type": "code",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L15",
+      "id": "uuid",
+      "community": 0,
+      "norm_label": "uuid"
+    },
+    {
+      "label": "bool",
+      "file_type": "code",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L15",
+      "id": "backend_app_services_notifications_py_bool",
+      "community": 0,
+      "norm_label": "bool"
+    },
+    {
+      "label": "post_to_visit_channel()",
+      "file_type": "code",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L66",
+      "id": "services_notifications_post_to_visit_channel",
+      "community": 0,
+      "norm_label": "post_to_visit_channel()"
+    },
+    {
+      "label": "post_to_slack()",
+      "file_type": "code",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L159",
+      "id": "services_notifications_post_to_slack",
+      "community": 0,
+      "norm_label": "post_to_slack()"
+    },
+    {
+      "label": "post_meeting_booked_to_slack()",
+      "file_type": "code",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L233",
+      "id": "services_notifications_post_meeting_booked_to_slack",
+      "community": 0,
+      "norm_label": "post_meeting_booked_to_slack()"
+    },
+    {
+      "label": "handle_juristic_only_alert()",
+      "file_type": "code",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L344",
+      "id": "services_notifications_handle_juristic_only_alert",
+      "community": 0,
+      "norm_label": "handle_juristic_only_alert()"
+    },
+    {
+      "label": "str",
+      "file_type": "code",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L344",
+      "id": "backend_app_services_notifications_py_str",
+      "community": 0,
+      "norm_label": "str"
+    },
+    {
+      "label": "post_inbound_email_to_slack()",
+      "file_type": "code",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L398",
+      "id": "services_notifications_post_inbound_email_to_slack",
+      "community": 0,
+      "norm_label": "post_inbound_email_to_slack()"
+    },
+    {
+      "label": "post_vsl_completion_to_slack()",
+      "file_type": "code",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L474",
+      "id": "services_notifications_post_vsl_completion_to_slack",
+      "community": 0,
+      "norm_label": "post_vsl_completion_to_slack()"
+    },
+    {
+      "label": "Checks if a Slack alert was already sent for the given client_id and company_id",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L16",
+      "id": "services_notifications_rationale_16",
+      "community": 0,
+      "norm_label": "checks if a slack alert was already sent for the given client_id and company_id"
+    },
+    {
+      "label": "High-speed Signal for the #visit channel.     Only triggers for High-Confidence",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L67",
+      "id": "services_notifications_rationale_67",
+      "community": 0,
+      "norm_label": "high-speed signal for the #visit channel.     only triggers for high-confidence"
+    },
+    {
+      "label": "Standard lead notification for identified conversions (Promotion / Form Submissi",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L160",
+      "id": "services_notifications_rationale_160",
+      "community": 0,
+      "norm_label": "standard lead notification for identified conversions (promotion / form submissi"
+    },
+    {
+      "label": "Formulates and posts a Slack notification when a prospect books a Calendly call.",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L234",
+      "id": "services_notifications_rationale_234",
+      "community": 0,
+      "norm_label": "formulates and posts a slack notification when a prospect books a calendly call."
+    },
+    {
+      "label": "Alerts Slack when high-intent juristic visitor leaves the site (no personal data",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L345",
+      "id": "services_notifications_rationale_345",
+      "community": 0,
+      "norm_label": "alerts slack when high-intent juristic visitor leaves the site (no personal data"
+    },
+    {
+      "label": "Routes an incoming message to distinct Slack channels based on the receiving ali",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L405",
+      "id": "services_notifications_rationale_405",
+      "community": 0,
+      "norm_label": "routes an incoming message to distinct slack channels based on the receiving ali"
+    },
+    {
+      "label": "Alerts the prospects Slack channel when a known company completes watching the V",
+      "file_type": "rationale",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L475",
+      "id": "services_notifications_rationale_475",
+      "community": 0,
+      "norm_label": "alerts the prospects slack channel when a known company completes watching the v"
+    },
+    {
+      "label": "a0b642374ee4_add_vsl_abandoned_to_visit_and_prospect.py",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/a0b642374ee4_add_vsl_abandoned_to_visit_and_prospect.py",
+      "source_location": "L1",
+      "id": "versions_a0b642374ee4_add_vsl_abandoned_to_visit_and_prospect",
+      "community": 3,
+      "norm_label": "a0b642374ee4_add_vsl_abandoned_to_visit_and_prospect.py"
+    },
+    {
+      "label": "upgrade()",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/a0b642374ee4_add_vsl_abandoned_to_visit_and_prospect.py",
+      "source_location": "L22",
+      "id": "versions_a0b642374ee4_add_vsl_abandoned_to_visit_and_prospect_upgrade",
+      "community": 3,
+      "norm_label": "upgrade()"
+    },
+    {
+      "label": "downgrade()",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/a0b642374ee4_add_vsl_abandoned_to_visit_and_prospect.py",
+      "source_location": "L30",
+      "id": "versions_a0b642374ee4_add_vsl_abandoned_to_visit_and_prospect_downgrade",
+      "community": 3,
+      "norm_label": "downgrade()"
+    },
+    {
+      "label": "c9df6c21f291_add_vsl_tracking_fields_to_visit_and_.py",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/c9df6c21f291_add_vsl_tracking_fields_to_visit_and_.py",
+      "source_location": "L1",
+      "id": "versions_c9df6c21f291_add_vsl_tracking_fields_to_visit_and",
+      "community": 3,
+      "norm_label": "c9df6c21f291_add_vsl_tracking_fields_to_visit_and_.py"
+    },
+    {
+      "label": "upgrade()",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/c9df6c21f291_add_vsl_tracking_fields_to_visit_and_.py",
+      "source_location": "L22",
+      "id": "versions_c9df6c21f291_add_vsl_tracking_fields_to_visit_and_upgrade",
+      "community": 3,
+      "norm_label": "upgrade()"
+    },
+    {
+      "label": "downgrade()",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/c9df6c21f291_add_vsl_tracking_fields_to_visit_and_.py",
+      "source_location": "L32",
+      "id": "versions_c9df6c21f291_add_vsl_tracking_fields_to_visit_and_downgrade",
+      "community": 3,
+      "norm_label": "downgrade()"
+    },
+    {
+      "label": "test_phase10.py",
+      "file_type": "code",
+      "source_file": "backend/tests/test_phase10.py",
+      "source_location": "L1",
+      "id": "tests_test_phase10",
+      "community": 3,
+      "norm_label": "test_phase10.py"
+    },
+    {
+      "label": "dispose_engine_fixture()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_phase10.py",
+      "source_location": "L21",
+      "id": "tests_test_phase10_dispose_engine_fixture",
+      "community": 3,
+      "norm_label": "dispose_engine_fixture()"
+    },
+    {
+      "label": "get_test_client()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_phase10.py",
+      "source_location": "L26",
+      "id": "tests_test_phase10_get_test_client",
+      "community": 3,
+      "norm_label": "get_test_client()"
+    },
+    {
+      "label": "test_intent_telemetry_updates_models()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_phase10.py",
+      "source_location": "L33",
+      "id": "tests_test_phase10_test_intent_telemetry_updates_models",
+      "community": 3,
+      "norm_label": "test_intent_telemetry_updates_models()"
+    },
+    {
+      "label": "test_vsl_slack_alert()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_phase10.py",
+      "source_location": "L142",
+      "id": "tests_test_phase10_test_vsl_slack_alert",
+      "community": 0,
+      "norm_label": "test_vsl_slack_alert()"
+    },
+    {
+      "label": "implementation_plan.md",
+      "file_type": "document",
+      "source_file": "docs/implementation_plan.md",
+      "source_location": "L1",
+      "id": "docs_implementation_plan",
+      "community": 12,
+      "norm_label": "implementation_plan.md"
+    },
+    {
+      "label": "master_architecture_spec.md",
+      "file_type": "document",
+      "source_file": "docs/master_architecture_spec.md",
+      "source_location": "L1",
+      "id": "docs_master_architecture_spec",
+      "community": 10,
+      "norm_label": "master_architecture_spec.md"
+    },
+    {
+      "label": "Remediated Logic Structure",
+      "file_type": "document",
+      "source_file": "docs/master_architecture_spec.md",
+      "source_location": "L147",
+      "id": "docs_master_architecture_spec_remediated_logic_structure",
+      "community": 10,
+      "norm_label": "remediated logic structure"
+    },
+    {
+      "label": "spec-sheet.md",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L1",
+      "id": "docs_spec_sheet",
+      "community": 1,
+      "norm_label": "spec-sheet.md"
+    },
+    {
+      "label": "\ud83c\udfd7\ufe0f Technical Specification: Industrial Intelligence Engine (v2.0)",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L1",
+      "id": "docs_spec_sheet_technical_specification_industrial_intelligence_engine_v2_0",
+      "community": 1,
+      "norm_label": "\ud83c\udfd7\ufe0f technical specification: industrial intelligence engine (v2.0)"
+    },
+    {
+      "label": "1. System Architecture Overview",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L12",
+      "id": "docs_spec_sheet_1_system_architecture_overview",
+      "community": 1,
+      "norm_label": "1. system architecture overview"
+    },
+    {
+      "label": "1.1 The Three Pillars",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L25",
+      "id": "docs_spec_sheet_1_1_the_three_pillars",
+      "community": 1,
+      "norm_label": "1.1 the three pillars"
+    },
+    {
+      "label": "2. Legal Topography (Two-Tier POPIA Identity Model)",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L32",
+      "id": "docs_spec_sheet_2_legal_topography_two_tier_popia_identity_model",
+      "community": 1,
+      "norm_label": "2. legal topography (two-tier popia identity model)"
+    },
+    {
+      "label": "3. Persistent Database Schema (SQLModel Models)",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L47",
+      "id": "docs_spec_sheet_3_persistent_database_schema_sqlmodel_models",
+      "community": 1,
+      "norm_label": "3. persistent database schema (sqlmodel models)"
+    },
+    {
+      "label": "3.1 Client & Subscription Management",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L51",
+      "id": "docs_spec_sheet_3_1_client_subscription_management",
+      "community": 1,
+      "norm_label": "3.1 client & subscription management"
+    },
+    {
+      "label": "3.2 Enterprise Directory Core",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L86",
+      "id": "docs_spec_sheet_3_2_enterprise_directory_core",
+      "community": 1,
+      "norm_label": "3.2 enterprise directory core"
+    },
+    {
+      "label": "3.3 Multi-Tenant Interaction Telemetry (RLS Gated)",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L117",
+      "id": "docs_spec_sheet_3_3_multi_tenant_interaction_telemetry_rls_gated",
+      "community": 1,
+      "norm_label": "3.3 multi-tenant interaction telemetry (rls gated)"
+    },
+    {
+      "label": "4. Edge Telemetry Loop & Interactive Layout Phases",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L156",
+      "id": "docs_spec_sheet_4_edge_telemetry_loop_interactive_layout_phases",
+      "community": 1,
+      "norm_label": "4. edge telemetry loop & interactive layout phases"
+    },
+    {
+      "label": "4.1 Script Delivery & Caching",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L158",
+      "id": "docs_spec_sheet_4_1_script_delivery_caching",
+      "community": 1,
+      "norm_label": "4.1 script delivery & caching"
+    },
+    {
+      "label": "4.2 The 4 Interactive Capture Phases",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L163",
+      "id": "docs_spec_sheet_4_2_the_4_interactive_capture_phases",
+      "community": 1,
+      "norm_label": "4.2 the 4 interactive capture phases"
+    },
+    {
+      "label": "5. API Contract & Core Logic",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L171",
+      "id": "docs_spec_sheet_5_api_contract_core_logic",
+      "community": 1,
+      "norm_label": "5. api contract & core logic"
+    },
+    {
+      "label": "5.1 Public Ingestion Protocols",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L173",
+      "id": "docs_spec_sheet_5_1_public_ingestion_protocols",
+      "community": 1,
+      "norm_label": "5.1 public ingestion protocols"
+    },
+    {
+      "label": "5.2 Janitor Selective Anonymization Cascade (`janitor.py`)",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L191",
+      "id": "docs_spec_sheet_5_2_janitor_selective_anonymization_cascade_janitor_py",
+      "community": 1,
+      "norm_label": "5.2 janitor selective anonymization cascade (`janitor.py`)"
+    },
+    {
+      "label": "6. Financial Onboarding & Tenant Isolation",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L215",
+      "id": "docs_spec_sheet_6_financial_onboarding_tenant_isolation",
+      "community": 1,
+      "norm_label": "6. financial onboarding & tenant isolation"
+    },
+    {
+      "label": "6.1 Onboarding Pipeline",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L217",
+      "id": "docs_spec_sheet_6_1_onboarding_pipeline",
+      "community": 1,
+      "norm_label": "6.1 onboarding pipeline"
+    },
+    {
+      "label": "6.2 Database Tenant Isolation (RLS)",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L222",
+      "id": "docs_spec_sheet_6_2_database_tenant_isolation_rls",
+      "community": 1,
+      "norm_label": "6.2 database tenant isolation (rls)"
+    },
+    {
+      "label": "7. Hosting & Deployment Topology",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L234",
+      "id": "docs_spec_sheet_7_hosting_deployment_topology",
+      "community": 1,
+      "norm_label": "7. hosting & deployment topology"
+    },
+    {
+      "label": "8. Video Sales Letter (VSL) Funnel Specification (Phase 10)",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L242",
+      "id": "docs_spec_sheet_8_video_sales_letter_vsl_funnel_specification_phase_10",
+      "community": 1,
+      "norm_label": "8. video sales letter (vsl) funnel specification (phase 10)"
+    },
+    {
+      "label": "9. Advanced Banner Data Flow & Entity Stitching Specification (Phase 11)",
+      "file_type": "document",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L254",
+      "id": "docs_spec_sheet_9_advanced_banner_data_flow_entity_stitching_specification_phase_11",
+      "community": 1,
+      "norm_label": "9. advanced banner data flow & entity stitching specification (phase 11)"
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "frontend/src/app/(pages)/vsl/page.tsx",
+      "source_location": "L1",
+      "id": "vsl_page",
+      "community": 2,
+      "norm_label": "page.tsx"
+    },
+    {
+      "label": "metadata",
+      "file_type": "code",
+      "source_file": "frontend/src/app/(pages)/vsl/page.tsx",
+      "source_location": "L4",
+      "id": "vsl_page_metadata",
+      "community": 2,
+      "norm_label": "metadata"
+    },
+    {
+      "label": "VSLPage()",
+      "file_type": "code",
+      "source_file": "frontend/src/app/(pages)/vsl/page.tsx",
+      "source_location": "L9",
+      "id": "vsl_page_vslpage",
+      "community": 2,
+      "norm_label": "vslpage()"
+    },
+    {
+      "label": "vsl-funnel.test.tsx",
+      "file_type": "code",
+      "source_file": "frontend/src/components/vsl/vsl-funnel.test.tsx",
+      "source_location": "L1",
+      "id": "vsl_vsl_funnel_test",
+      "community": 2,
+      "norm_label": "vsl-funnel.test.tsx"
+    },
+    {
+      "label": "mockPush",
+      "file_type": "code",
+      "source_file": "frontend/src/components/vsl/vsl-funnel.test.tsx",
+      "source_location": "L8",
+      "id": "vsl_vsl_funnel_test_mockpush",
+      "community": 2,
+      "norm_label": "mockpush"
+    },
+    {
+      "label": "mockBack",
+      "file_type": "code",
+      "source_file": "frontend/src/components/vsl/vsl-funnel.test.tsx",
+      "source_location": "L9",
+      "id": "vsl_vsl_funnel_test_mockback",
+      "community": 2,
+      "norm_label": "mockback"
+    },
+    {
+      "label": "vsl-funnel.tsx",
+      "file_type": "code",
+      "source_file": "frontend/src/components/vsl/vsl-funnel.tsx",
+      "source_location": "L1",
+      "id": "vsl_vsl_funnel",
+      "community": 2,
+      "norm_label": "vsl-funnel.tsx"
+    },
+    {
+      "label": "VSLFunnel()",
+      "file_type": "code",
+      "source_file": "frontend/src/components/vsl/vsl-funnel.tsx",
+      "source_location": "L12",
+      "id": "vsl_vsl_funnel_vslfunnel",
+      "community": 2,
+      "norm_label": "vslfunnel()"
+    },
+    {
+      "label": "api.ts",
+      "file_type": "code",
+      "source_file": "frontend/src/lib/api.ts",
+      "source_location": "L1",
+      "id": "lib_api",
+      "community": 2,
+      "norm_label": "api.ts"
+    },
+    {
+      "label": "getEndpoint()",
+      "file_type": "code",
+      "source_file": "frontend/src/lib/api.ts",
+      "source_location": "L14",
+      "id": "lib_api_getendpoint",
+      "community": 2,
+      "norm_label": "getendpoint()"
+    },
+    {
+      "label": "submitToProspects()",
+      "file_type": "code",
+      "source_file": "frontend/src/lib/api.ts",
+      "source_location": "L24",
+      "id": "lib_api_submittoprospects",
+      "community": 2,
+      "norm_label": "submittoprospects()"
+    },
+    {
+      "label": "trackIntent()",
+      "file_type": "code",
+      "source_file": "frontend/src/lib/api.ts",
+      "source_location": "L77",
+      "id": "lib_api_trackintent",
+      "community": 2,
+      "norm_label": "trackintent()"
+    },
+    {
+      "label": "task.md",
+      "file_type": "document",
+      "source_file": "task.md",
+      "source_location": "L1",
+      "id": "task",
+      "community": 11,
+      "norm_label": "task.md"
+    },
+    {
+      "label": "AuraWorks Industrial Intelligence Engine Progress Checklist",
+      "file_type": "document",
+      "source_file": "task.md",
+      "source_location": "L1",
+      "id": "task_auraworks_industrial_intelligence_engine_progress_checklist",
+      "community": 11,
+      "norm_label": "auraworks industrial intelligence engine progress checklist"
+    }
+  ],
+  "links": [
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "uuid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_consentpayload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_identitypayload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L376",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_intentpayload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_process_entry_logic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L136",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_process_exit_logic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L324",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_track_consent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L245",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_track_entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L307",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_track_event",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L340",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_track_exit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L251",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_track_identity",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L384",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_track_intent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "v1_track_consentpayload",
+      "target": "basemodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L395",
+      "weight": 0.8,
+      "source": "v1_track_consentpayload",
+      "target": "models_prospect_prospect",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "v1_track_consentpayload",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L394",
+      "weight": 0.8,
+      "source": "v1_track_consentpayload",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "v1_track_consentpayload",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L324",
+      "weight": 1.0,
+      "source": "v1_track_track_consent",
+      "target": "v1_track_consentpayload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L66",
+      "weight": 1.0,
+      "source": "models_visit_pageviewcreate",
+      "target": "basemodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L56",
+      "weight": 1.0,
+      "source": "models_visit_visitcreate",
+      "target": "basemodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "v1_track_identitypayload",
+      "target": "basemodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L376",
+      "weight": 1.0,
+      "source": "v1_track_intentpayload",
+      "target": "basemodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L395",
+      "weight": 0.8,
+      "source": "v1_track_identitypayload",
+      "target": "models_prospect_prospect",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "v1_track_identitypayload",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L394",
+      "weight": 0.8,
+      "source": "v1_track_identitypayload",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "v1_track_identitypayload",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L251",
+      "weight": 1.0,
+      "source": "v1_track_track_identity",
+      "target": "v1_track_identitypayload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "v1_track_process_entry_logic",
+      "target": "backend_app_api_v1_track_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L97",
+      "weight": 1.0,
+      "source": "v1_track_process_entry_logic",
+      "target": "models_visit_visit"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "v1_track_process_entry_logic",
+      "target": "visitcreate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "v1_track_rationale_43",
+      "target": "v1_track_process_entry_logic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L245",
+      "weight": 1.0,
+      "source": "v1_track_track_entry",
+      "target": "visitcreate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L395",
+      "weight": 0.8,
+      "source": "visitcreate",
+      "target": "models_prospect_prospect",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "visitcreate",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L394",
+      "weight": 0.8,
+      "source": "visitcreate",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "visitcreate",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L395",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_str",
+      "target": "models_prospect_prospect",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_str",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L394",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_str",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_str",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L136",
+      "weight": 1.0,
+      "source": "v1_track_process_exit_logic",
+      "target": "backend_app_api_v1_track_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L136",
+      "weight": 1.0,
+      "source": "v1_track_process_exit_logic",
+      "target": "backend_app_api_v1_track_py_bool",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L136",
+      "weight": 1.0,
+      "source": "v1_track_process_exit_logic",
+      "target": "int",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L190",
+      "weight": 1.0,
+      "source": "v1_track_process_exit_logic",
+      "target": "services_notifications_handle_juristic_only_alert"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L228",
+      "weight": 1.0,
+      "source": "v1_track_process_exit_logic",
+      "target": "services_notifications_post_to_slack"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L156",
+      "weight": 1.0,
+      "source": "v1_track_process_exit_logic",
+      "target": "uuid"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L137",
+      "weight": 1.0,
+      "source": "v1_track_rationale_137",
+      "target": "v1_track_process_exit_logic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L395",
+      "weight": 0.8,
+      "source": "int",
+      "target": "models_prospect_prospect",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "int",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L394",
+      "weight": 0.8,
+      "source": "int",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "int",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L395",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_bool",
+      "target": "models_prospect_prospect",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_bool",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L394",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_bool",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "backend_app_api_v1_track_py_bool",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L245",
+      "weight": 1.0,
+      "source": "v1_track_track_entry",
+      "target": "backgroundtasks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L245",
+      "weight": 1.0,
+      "source": "v1_track_track_entry",
+      "target": "request",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L395",
+      "weight": 0.8,
+      "source": "request",
+      "target": "models_prospect_prospect",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "request",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L394",
+      "weight": 0.8,
+      "source": "request",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "request",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L395",
+      "weight": 0.8,
+      "source": "backgroundtasks",
+      "target": "models_prospect_prospect",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "backgroundtasks",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L394",
+      "weight": 0.8,
+      "source": "backgroundtasks",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "backgroundtasks",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L340",
+      "weight": 1.0,
+      "source": "v1_track_track_exit",
+      "target": "backgroundtasks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L384",
+      "weight": 1.0,
+      "source": "v1_track_track_intent",
+      "target": "backgroundtasks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L252",
+      "weight": 1.0,
+      "source": "v1_track_rationale_252",
+      "target": "v1_track_track_identity",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L290",
+      "weight": 1.0,
+      "source": "v1_track_track_identity",
+      "target": "models_prospect_prospect"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L307",
+      "weight": 1.0,
+      "source": "v1_track_track_event",
+      "target": "pageviewcreate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L395",
+      "weight": 0.8,
+      "source": "pageviewcreate",
+      "target": "models_prospect_prospect",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "pageviewcreate",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L394",
+      "weight": 0.8,
+      "source": "pageviewcreate",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "pageviewcreate",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L340",
+      "weight": 1.0,
+      "source": "v1_track_track_exit",
+      "target": "pageviewcreate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L341",
+      "weight": 1.0,
+      "source": "v1_track_rationale_341",
+      "target": "v1_track_track_exit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L395",
+      "weight": 0.8,
+      "source": "v1_track_intentpayload",
+      "target": "models_prospect_prospect",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "v1_track_intentpayload",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L394",
+      "weight": 0.8,
+      "source": "v1_track_intentpayload",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "v1_track_intentpayload",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L384",
+      "weight": 1.0,
+      "source": "v1_track_track_intent",
+      "target": "v1_track_intentpayload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L389",
+      "weight": 1.0,
+      "source": "v1_track_rationale_389",
+      "target": "v1_track_track_intent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L384",
+      "weight": 1.0,
+      "source": "v1_track_track_intent",
+      "target": "asyncsession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L395",
+      "weight": 0.8,
+      "source": "asyncsession",
+      "target": "models_prospect_prospect",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "asyncsession",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L394",
+      "weight": 0.8,
+      "source": "asyncsession",
+      "target": "models_visit_visit",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "asyncsession",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/prospect.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "models_prospect",
+      "target": "models_prospect_prospect",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/prospect.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "models_prospect",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/prospect.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "models_prospect",
+      "target": "uuid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/prospect.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "models_prospect_prospect",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/tests/test_phase10.py",
+      "source_location": "L69",
+      "weight": 1.0,
+      "source": "tests_test_phase10_test_intent_telemetry_updates_models",
+      "target": "models_prospect_prospect"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "models_visit",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "models_visit_visit",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "services_notifications",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase10.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "tests_test_phase10",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/a0b642374ee4_add_vsl_abandoned_to_visit_and_prospect.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "versions_a0b642374ee4_add_vsl_abandoned_to_visit_and_prospect",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/c9df6c21f291_add_vsl_tracking_fields_to_visit_and_.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "versions_c9df6c21f291_add_vsl_tracking_fields_to_visit_and",
+      "target": "sqlmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "models_visit",
+      "target": "enum",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L66",
+      "weight": 1.0,
+      "source": "models_visit",
+      "target": "models_visit_pageviewcreate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "models_visit",
+      "target": "models_visit_verificationstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "models_visit",
+      "target": "models_visit_visit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L56",
+      "weight": 1.0,
+      "source": "models_visit",
+      "target": "models_visit_visitcreate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "models_visit",
+      "target": "uuid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "models_visit_verificationstatus",
+      "target": "enum",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/visit.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "models_visit_verificationstatus",
+      "target": "str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/tests/test_phase10.py",
+      "source_location": "L59",
+      "weight": 1.0,
+      "source": "tests_test_phase10_test_intent_telemetry_updates_models",
+      "target": "models_visit_visit"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L344",
+      "weight": 1.0,
+      "source": "services_notifications",
+      "target": "services_notifications_handle_juristic_only_alert",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "services_notifications",
+      "target": "services_notifications_is_slack_notification_throttled",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L398",
+      "weight": 1.0,
+      "source": "services_notifications",
+      "target": "services_notifications_post_inbound_email_to_slack",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L233",
+      "weight": 1.0,
+      "source": "services_notifications",
+      "target": "services_notifications_post_meeting_booked_to_slack",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L159",
+      "weight": 1.0,
+      "source": "services_notifications",
+      "target": "services_notifications_post_to_slack",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L66",
+      "weight": 1.0,
+      "source": "services_notifications",
+      "target": "services_notifications_post_to_visit_channel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L474",
+      "weight": 1.0,
+      "source": "services_notifications",
+      "target": "services_notifications_post_vsl_completion_to_slack",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "services_notifications",
+      "target": "uuid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L353",
+      "weight": 1.0,
+      "source": "services_notifications_handle_juristic_only_alert",
+      "target": "services_notifications_is_slack_notification_throttled",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "services_notifications_is_slack_notification_throttled",
+      "target": "backend_app_services_notifications_py_bool",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "services_notifications_is_slack_notification_throttled",
+      "target": "uuid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L171",
+      "weight": 1.0,
+      "source": "services_notifications_post_to_slack",
+      "target": "services_notifications_is_slack_notification_throttled",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L83",
+      "weight": 1.0,
+      "source": "services_notifications_post_to_visit_channel",
+      "target": "services_notifications_is_slack_notification_throttled",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "services_notifications_rationale_16",
+      "target": "services_notifications_is_slack_notification_throttled",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L353",
+      "weight": 1.0,
+      "source": "services_notifications_handle_juristic_only_alert",
+      "target": "uuid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L398",
+      "weight": 1.0,
+      "source": "services_notifications_post_inbound_email_to_slack",
+      "target": "uuid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L233",
+      "weight": 1.0,
+      "source": "services_notifications_post_meeting_booked_to_slack",
+      "target": "uuid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L171",
+      "weight": 1.0,
+      "source": "services_notifications_post_to_slack",
+      "target": "uuid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L83",
+      "weight": 1.0,
+      "source": "services_notifications_post_to_visit_channel",
+      "target": "uuid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L474",
+      "weight": 1.0,
+      "source": "services_notifications_post_vsl_completion_to_slack",
+      "target": "uuid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase10.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "tests_test_phase10",
+      "target": "uuid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "services_notifications_rationale_67",
+      "target": "services_notifications_post_to_visit_channel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L160",
+      "weight": 1.0,
+      "source": "services_notifications_rationale_160",
+      "target": "services_notifications_post_to_slack",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L234",
+      "weight": 1.0,
+      "source": "services_notifications_rationale_234",
+      "target": "services_notifications_post_meeting_booked_to_slack",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L344",
+      "weight": 1.0,
+      "source": "services_notifications_handle_juristic_only_alert",
+      "target": "backend_app_services_notifications_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L345",
+      "weight": 1.0,
+      "source": "services_notifications_rationale_345",
+      "target": "services_notifications_handle_juristic_only_alert",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L398",
+      "weight": 1.0,
+      "source": "services_notifications_post_inbound_email_to_slack",
+      "target": "backend_app_services_notifications_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L474",
+      "weight": 1.0,
+      "source": "services_notifications_post_vsl_completion_to_slack",
+      "target": "backend_app_services_notifications_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L405",
+      "weight": 1.0,
+      "source": "services_notifications_rationale_405",
+      "target": "services_notifications_post_inbound_email_to_slack",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/services/notifications.py",
+      "source_location": "L475",
+      "weight": 1.0,
+      "source": "services_notifications_rationale_475",
+      "target": "services_notifications_post_vsl_completion_to_slack",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend/tests/test_phase10.py",
+      "source_location": "L153",
+      "weight": 1.0,
+      "source": "tests_test_phase10_test_vsl_slack_alert",
+      "target": "services_notifications_post_vsl_completion_to_slack"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/a0b642374ee4_add_vsl_abandoned_to_visit_and_prospect.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "versions_a0b642374ee4_add_vsl_abandoned_to_visit_and_prospect",
+      "target": "versions_a0b642374ee4_add_vsl_abandoned_to_visit_and_prospect_downgrade",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/a0b642374ee4_add_vsl_abandoned_to_visit_and_prospect.py",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "versions_a0b642374ee4_add_vsl_abandoned_to_visit_and_prospect",
+      "target": "versions_a0b642374ee4_add_vsl_abandoned_to_visit_and_prospect_upgrade",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/c9df6c21f291_add_vsl_tracking_fields_to_visit_and_.py",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "versions_c9df6c21f291_add_vsl_tracking_fields_to_visit_and",
+      "target": "versions_c9df6c21f291_add_vsl_tracking_fields_to_visit_and_downgrade",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/c9df6c21f291_add_vsl_tracking_fields_to_visit_and_.py",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "versions_c9df6c21f291_add_vsl_tracking_fields_to_visit_and",
+      "target": "versions_c9df6c21f291_add_vsl_tracking_fields_to_visit_and_upgrade",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase10.py",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "tests_test_phase10",
+      "target": "tests_test_phase10_dispose_engine_fixture",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase10.py",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "tests_test_phase10",
+      "target": "tests_test_phase10_get_test_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase10.py",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "tests_test_phase10",
+      "target": "tests_test_phase10_test_intent_telemetry_updates_models",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase10.py",
+      "source_location": "L142",
+      "weight": 1.0,
+      "source": "tests_test_phase10",
+      "target": "tests_test_phase10_test_vsl_slack_alert",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_phase10.py",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "tests_test_phase10_test_intent_telemetry_updates_models",
+      "target": "tests_test_phase10_get_test_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/master_architecture_spec.md",
+      "source_location": "L147",
+      "weight": 1.0,
+      "source": "docs_master_architecture_spec",
+      "target": "docs_master_architecture_spec_remediated_logic_structure",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "docs_spec_sheet",
+      "target": "docs_spec_sheet_technical_specification_industrial_intelligence_engine_v2_0",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "docs_spec_sheet_technical_specification_industrial_intelligence_engine_v2_0",
+      "target": "docs_spec_sheet_1_system_architecture_overview",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "docs_spec_sheet_technical_specification_industrial_intelligence_engine_v2_0",
+      "target": "docs_spec_sheet_2_legal_topography_two_tier_popia_identity_model",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L47",
+      "weight": 1.0,
+      "source": "docs_spec_sheet_technical_specification_industrial_intelligence_engine_v2_0",
+      "target": "docs_spec_sheet_3_persistent_database_schema_sqlmodel_models",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L156",
+      "weight": 1.0,
+      "source": "docs_spec_sheet_technical_specification_industrial_intelligence_engine_v2_0",
+      "target": "docs_spec_sheet_4_edge_telemetry_loop_interactive_layout_phases",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L171",
+      "weight": 1.0,
+      "source": "docs_spec_sheet_technical_specification_industrial_intelligence_engine_v2_0",
+      "target": "docs_spec_sheet_5_api_contract_core_logic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L215",
+      "weight": 1.0,
+      "source": "docs_spec_sheet_technical_specification_industrial_intelligence_engine_v2_0",
+      "target": "docs_spec_sheet_6_financial_onboarding_tenant_isolation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L234",
+      "weight": 1.0,
+      "source": "docs_spec_sheet_technical_specification_industrial_intelligence_engine_v2_0",
+      "target": "docs_spec_sheet_7_hosting_deployment_topology",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L242",
+      "weight": 1.0,
+      "source": "docs_spec_sheet_technical_specification_industrial_intelligence_engine_v2_0",
+      "target": "docs_spec_sheet_8_video_sales_letter_vsl_funnel_specification_phase_10",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L254",
+      "weight": 1.0,
+      "source": "docs_spec_sheet_technical_specification_industrial_intelligence_engine_v2_0",
+      "target": "docs_spec_sheet_9_advanced_banner_data_flow_entity_stitching_specification_phase_11",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "docs_spec_sheet_1_system_architecture_overview",
+      "target": "docs_spec_sheet_1_1_the_three_pillars",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "docs_spec_sheet_3_persistent_database_schema_sqlmodel_models",
+      "target": "docs_spec_sheet_3_1_client_subscription_management",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L86",
+      "weight": 1.0,
+      "source": "docs_spec_sheet_3_persistent_database_schema_sqlmodel_models",
+      "target": "docs_spec_sheet_3_2_enterprise_directory_core",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L117",
+      "weight": 1.0,
+      "source": "docs_spec_sheet_3_persistent_database_schema_sqlmodel_models",
+      "target": "docs_spec_sheet_3_3_multi_tenant_interaction_telemetry_rls_gated",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L158",
+      "weight": 1.0,
+      "source": "docs_spec_sheet_4_edge_telemetry_loop_interactive_layout_phases",
+      "target": "docs_spec_sheet_4_1_script_delivery_caching",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L163",
+      "weight": 1.0,
+      "source": "docs_spec_sheet_4_edge_telemetry_loop_interactive_layout_phases",
+      "target": "docs_spec_sheet_4_2_the_4_interactive_capture_phases",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L173",
+      "weight": 1.0,
+      "source": "docs_spec_sheet_5_api_contract_core_logic",
+      "target": "docs_spec_sheet_5_1_public_ingestion_protocols",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L191",
+      "weight": 1.0,
+      "source": "docs_spec_sheet_5_api_contract_core_logic",
+      "target": "docs_spec_sheet_5_2_janitor_selective_anonymization_cascade_janitor_py",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L217",
+      "weight": 1.0,
+      "source": "docs_spec_sheet_6_financial_onboarding_tenant_isolation",
+      "target": "docs_spec_sheet_6_1_onboarding_pipeline",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/spec-sheet.md",
+      "source_location": "L222",
+      "weight": 1.0,
+      "source": "docs_spec_sheet_6_financial_onboarding_tenant_isolation",
+      "target": "docs_spec_sheet_6_2_database_tenant_isolation_rls",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/app/(pages)/vsl/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "vsl_page",
+      "target": "vsl_page_metadata",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/app/(pages)/vsl/page.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "vsl_page",
+      "target": "vsl_page_vslpage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/app/(pages)/vsl/page.tsx",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "vsl_page",
+      "target": "vsl_vsl_funnel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/components/vsl/vsl-funnel.test.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "vsl_vsl_funnel_test",
+      "target": "lib_api",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/components/vsl/vsl-funnel.test.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "vsl_vsl_funnel_test",
+      "target": "lib_api_trackintent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/components/vsl/vsl-funnel.test.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "vsl_vsl_funnel_test",
+      "target": "vsl_vsl_funnel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/components/vsl/vsl-funnel.test.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "vsl_vsl_funnel_test",
+      "target": "vsl_vsl_funnel_test_mockback",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/components/vsl/vsl-funnel.test.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "vsl_vsl_funnel_test",
+      "target": "vsl_vsl_funnel_test_mockpush",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/components/vsl/vsl-funnel.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "vsl_vsl_funnel",
+      "target": "lib_api",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/components/vsl/vsl-funnel.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "vsl_vsl_funnel",
+      "target": "lib_api_trackintent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/components/vsl/vsl-funnel.tsx",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "vsl_vsl_funnel",
+      "target": "vsl_vsl_funnel_vslfunnel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/lib/api.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "lib_api",
+      "target": "lib_api_getendpoint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/lib/api.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "lib_api",
+      "target": "lib_api_submittoprospects",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/lib/api.ts",
+      "source_location": "L77",
+      "weight": 1.0,
+      "source": "lib_api",
+      "target": "lib_api_trackintent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/lib/api.ts",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "lib_api_submittoprospects",
+      "target": "lib_api_getendpoint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/lib/api.ts",
+      "source_location": "L83",
+      "weight": 1.0,
+      "source": "lib_api_trackintent",
+      "target": "lib_api_getendpoint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "task.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "task",
+      "target": "task_auraworks_industrial_intelligence_engine_progress_checklist",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "built_at_commit": "8bac5377f93bc724e602608b0d7d94a71e48a81b"
+}
