@@ -33,15 +33,8 @@ export default function ContentSection2() {
                     <div className="md:mask-l-from-35% md:mask-l-to-55% mt-12 h-fit md:absolute md:-inset-y-12 md:inset-x-0 md:mt-0">
                         <div className="border-border/50 relative rounded-2xl border border-dotted p-2">
                             <Image
-                                src="/charts.png"
-                                className="hidden rounded-[12px] dark:block"
-                                alt="payments illustration dark"
-                                width={1207}
-                                height={929}
-                            />
-                            <Image
                                 src="/charts-light.webp"
-                                className="rounded-[12px] shadow dark:hidden"
+                                className="rounded-[12px] shadow"
                                 alt="payments illustration light"
                                 width={1207}
                                 height={929}

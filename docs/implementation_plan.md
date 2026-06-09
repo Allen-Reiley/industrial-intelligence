@@ -106,7 +106,7 @@ Implement the alias-to-channel routing logic (legal@/privacy@ to #compliance; cu
 Task 9.4: Auto-Reply Engine
 Build contextual outbound auto-responses via Resend based on the recipient alias.
 
-Phase 10: VSL Conversion Funnel Implementation
+Phase 10: VSL Conversion Funnel Implementation [COMPLETED]
 Deploy a distraction-free Video Sales Letter (VSL) landing page with intent telemetry tracking and dynamic CTA reveal mechanics.
 Task 10.1: Backend Intent Telemetry
 Create POST /api/v1/track/intent. Update PostgreSQL schemas (Visit/Prospect) to store vsl_completion_percentage and vsl_completed_at.
@@ -128,7 +128,7 @@ Implement the Entity Resolution protocol (Substring matching -> DeepSeek ISP Ver
 Task 11.4: Surge Alert System
 Implement SQL aggregation logic to monitor unique visitors per company. Trigger the instant Slack alert when thresholds are met.
 
-Phase 12: Decoupled Edge Architecture Implementation
+Phase 12: Decoupled Edge Architecture Implementation [COMPLETED]
 This phase extracts the core intelligence tracking and consent UI from the Next.js monolith, deploying them as pure, highly optimized JavaScript micro-assets on the edge (CDN).
 Task 12.1: Directory & Build Configuration
 Structure tracker/src/public/aura.js and tracker/src/banner/banner.js. Configure package.json build script to execute Terser local minification.
@@ -179,3 +179,13 @@ Task 15.4: Trial Automation Worker
 Implement trial expiration checks, warning email alerts dispatched via Resend 48 hours prior, and `/cancel-request` cancellation endpoints with #support Slack alerts. Write time-mocked tests.
 Task 15.5: Recurring Billing & Grace Period Engine
 Build recurring cron jobs for Monthly (1st of month + 3-day grace) and Annual (Anniversary + 7-day grace) billing triggers utilizing Ikhokha tokens. Write recurring cron tests.
+
+Phase 16: Frontend Integration & UI Overhaul [COMPLETED]
+This phase executes a major frontend integration and UI overhaul, bridging the decoupled edge tracking architecture with the top-of-funnel VSL strategy and enforcing strict theme partitioning.
+Task 16.1: Edge Tracker Integration [COMPLETED]
+Locate app/layout.jsx, remove old React-based AuraTracker and AuraConsentBanner, and inject the new edge tracker script src="https://cdn.auraworks.co.za/aura.js" with client ID c4a6c9b1-8355-4de2-985d-a04f4dcd63a0 into the head.
+Task 16.2: Global VSL CTA Migration [COMPLETED]
+Perform a global conversion of public page calls-to-action ("Book a Call", "Get Demo", "Join Waitlist") to "Watch Video" pointing directly to the /vsl route.
+Task 16.3: Quiet Premium Theme Partitioning [COMPLETED]
+Remove dark mode from public pages. Forcefully default public views to light mode and strip all dark: utility classes from public UI files. Ensure admin/dashboard layouts retain their custom dark styling.
+

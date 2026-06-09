@@ -12,10 +12,7 @@ export function SolutionsCTA() {
                 </p>
                 <div className="mt-12 flex flex-wrap justify-center gap-4">
                     <Button asChild size="lg" className="rounded-xl px-10 shadow-xl shadow-primary/10">
-                        <Link href="/book-demo">Book Demo</Link>
-                    </Button>
-                    <Button asChild size="lg" variant="outline" className="rounded-xl px-10">
-                        <Link href="/book-call">Book a Call</Link>
+                        <Link href="/vsl">Watch Video</Link>
                     </Button>
                 </div>
             </div>

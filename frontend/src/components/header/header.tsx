@@ -64,7 +64,7 @@ export const HeroHeader = () => {
                             </ul>
                         </div>
 
-                        <div className="bg-background in-data-[state=active]:block lg:in-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl border p-6 shadow-2xl shadow-zinc-300/20 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none dark:shadow-none dark:lg:bg-transparent">
+                        <div className="bg-background in-data-[state=active]:block lg:in-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl border p-6 shadow-2xl shadow-zinc-300/20 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none">
                             <div className="lg:hidden">
                                 <ul className="space-y-6 text-base">
                                     {menuItems.map((item, index) => (
@@ -81,22 +81,13 @@ export const HeroHeader = () => {
                             </div>
                             
                             <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
-                                {/* Only show these two buttons in the expanded menu or the top-of-page header */}
-                                <Button
-                                    asChild
-                                    variant="outline"
-                                    size="sm"
-                                    className={cn(isScrolled && 'lg:hidden')}>
-                                    <Link href="/book-call">
-                                        <span>Book a call</span>
-                                    </Link>
-                                </Button>
+                                {/* Only show the Watch Video button in the expanded menu or the top-of-page header */}
                                 <Button
                                     asChild
                                     size="sm"
                                     className={cn(isScrolled && 'lg:hidden')}>
-                                    <Link href="/book-demo">
-                                        <span>Book Demo</span>
+                                    <Link href="/vsl">
+                                        <span>Watch Video</span>
                                     </Link>
                                 </Button>
  
@@ -106,8 +97,8 @@ export const HeroHeader = () => {
                                         asChild
                                         size="sm"
                                         className="hidden lg:inline-flex">
-                                        <Link href="/book-demo">
-                                            <span>Book Demo</span>
+                                        <Link href="/vsl">
+                                            <span>Watch Video</span>
                                         </Link>
                                     </Button>
                                 )}

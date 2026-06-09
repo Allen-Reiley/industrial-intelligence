@@ -85,7 +85,7 @@ export default function Pricing() {
                                                 asChild
                                                 size="lg"
                                                 className="w-full md:w-auto px-10 py-7 text-base md:text-lg font-medium tracking-tight shadow-xl">
-                                                <Link href="/book-demo">Request Enterprise Access</Link>
+                                                <Link href="/vsl">Watch Video</Link>
                                             </Button>
                                         </AnimatedGroup>
                                     </div>
@@ -98,7 +98,7 @@ export default function Pricing() {
                                 </div>
 
                                 {/* RIGHT COLUMN: Features */}
-                                <div className="p-8 md:p-12 bg-zinc-50/50 dark:bg-zinc-900/10">
+                                <div className="p-8 md:p-12 bg-zinc-50/50">
                                     <AnimatedGroup variants={transitionVariants} className="space-y-8">
                                         <ul role="list" className="space-y-5">
                                             {[

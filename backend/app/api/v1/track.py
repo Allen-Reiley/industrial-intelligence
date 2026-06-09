@@ -49,6 +49,10 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
 
     async with async_session_maker() as session:
         try:
+            from sqlalchemy import text
+            await session.execute(
+                text("SELECT set_config('app.current_client_id', :client_id, true)").bindparams(client_id=str(payload.client_id))
+            )
             # 1. Forensic Enrichment (with defensive wrapper for Task 2.3)
             is_failed = False
             try:
@@ -158,6 +162,10 @@ async def process_exit_logic(aura_id: str, client_id: str, duration: int = 0, ha
 
     async with async_session_maker() as session:
         try:
+            from sqlalchemy import text
+            await session.execute(
+                text("SELECT set_config('app.current_client_id', :client_id, true)").bindparams(client_id=str(client_id))
+            )
             # 1. Dual-lookup configuration mapping both individual context and corporate metadata independently
             # Individual context
             prospect_stmt = select(Prospect).where(
@@ -257,96 +265,106 @@ async def track_entry(payload: VisitCreate, request: Request, background_tasks: 
     return {"status": "accepted"}
 
 @router.post("/identity")
-async def track_identity(payload: IdentityPayload):
+async def track_identity(
+    payload: IdentityPayload,
+    session: AsyncSession = Depends(get_async_session)
+):
     """Upgrades anonymous forensic profiles using volunteered banner form data."""
-    async with async_session_maker() as session:
-        res = await session.execute(
-            select(Visit).where(
-                Visit.aura_id == payload.aura_id,
-                Visit.client_id == payload.client_id
-            ).order_by(Visit.created_at.desc())
-        )
-        visit = res.scalars().first()
-        
-        if not visit:
-            return {"status": "visit_not_found"}
+    res = await session.execute(
+        select(Visit).where(
+            Visit.aura_id == payload.aura_id,
+            Visit.client_id == payload.client_id
+        ).order_by(Visit.created_at.desc())
+    )
+    visit = res.scalars().first()
+    
+    if not visit:
+        return {"status": "visit_not_found"}
 
-        if payload.signature:
-            sig = payload.signature
-            visit.canvas_hash = sig.get("canvas")
-            visit.webgl_renderer = sig.get("webgl")
-            visit.clock_drift = sig.get("drift")
-            net = sig.get("network")
-            if isinstance(net, dict):
-                visit.effective_connection_type = net.get("type")
-                visit.downlink_speed = net.get("downlink")
-                visit.rtt = net.get("rtt")
+    if payload.signature:
+        sig = payload.signature
+        visit.canvas_hash = sig.get("canvas")
+        visit.webgl_renderer = sig.get("webgl")
+        visit.clock_drift = sig.get("drift")
+        net = sig.get("network")
+        if isinstance(net, dict):
+            visit.effective_connection_type = net.get("type")
+            visit.downlink_speed = net.get("downlink")
+            visit.rtt = net.get("rtt")
 
-        if payload.email:
-            visit.capture_source = payload.capture_source
-            visit.verification_status = "verified" # Activate Janitor Shield
-            visit.is_consented = True
+    if payload.email:
+        visit.capture_source = payload.capture_source
+        visit.verification_status = "verified" # Activate Janitor Shield
+        visit.is_consented = True
 
-            res_lead = await session.execute(
-                select(Prospect).where(
-                    Prospect.aura_id == payload.aura_id,
-                    Prospect.client_id == payload.client_id
-                )
+        res_lead = await session.execute(
+            select(Prospect).where(
+                Prospect.aura_id == payload.aura_id,
+                Prospect.client_id == payload.client_id
             )
-            lead = res_lead.scalars().first()
+        )
+        lead = res_lead.scalars().first()
 
-            if not lead:
-                lead = Prospect(
-                    client_id=payload.client_id,
-                    aura_id=payload.aura_id,
-                    email=payload.email
-                )
-            
-            lead.email = payload.email
-            if payload.company_name: lead.company_name_raw = payload.company_name
-            if payload.department: lead.department = payload.department
-            if payload.position: lead.position = payload.position
-            session.add(lead)
+        if not lead:
+            lead = Prospect(
+                client_id=payload.client_id,
+                aura_id=payload.aura_id,
+                email=payload.email
+            )
+        
+        lead.email = payload.email
+        if payload.company_name: lead.company_name_raw = payload.company_name
+        if payload.department: lead.department = payload.department
+        if payload.position: lead.position = payload.position
+        session.add(lead)
 
-        session.add(visit)
-        await session.commit()
-        return {"status": "identity_locked"}
+    session.add(visit)
+    await session.commit()
+    return {"status": "identity_locked"}
 
 @router.post("/event")
-async def track_event(payload: PageViewCreate):
-    async with async_session_maker() as session:
-        target_aura_id = payload.aura_id if getattr(payload, "aura_id", None) else payload.client_id
-        res = await session.execute(
-            select(Visit).where(
-                Visit.aura_id == target_aura_id
-            ).order_by(Visit.created_at.desc())
-        )
-        visit = res.scalars().first()
-        if visit:
-            if getattr(payload, "event_type", None) == "intent_click":
-                visit.intent_cluster = getattr(payload, "intent_cluster", "General")
-            await session.commit()
-            return {"status": "event_logged"}
-        return {"status": "pending_entry"}
+async def track_event(
+    payload: PageViewCreate,
+    session: AsyncSession = Depends(get_async_session)
+):
+    target_aura_id = payload.aura_id if getattr(payload, "aura_id", None) else payload.client_id
+    res = await session.execute(
+        select(Visit).where(
+            Visit.aura_id == target_aura_id
+        ).order_by(Visit.created_at.desc())
+    )
+    visit = res.scalars().first()
+    if visit:
+        if getattr(payload, "event_type", None) == "intent_click":
+            visit.intent_cluster = getattr(payload, "intent_cluster", "General")
+        await session.commit()
+        return {"status": "event_logged"}
+    return {"status": "pending_entry"}
 
 @router.post("/consent")
-async def track_consent(payload: ConsentPayload):
-    async with async_session_maker() as session:
-        res = await session.execute(
-            select(Visit).where(
-                Visit.aura_id == payload.aura_id,
-                Visit.client_id == payload.client_id
-            )
+async def track_consent(
+    payload: ConsentPayload,
+    session: AsyncSession = Depends(get_async_session)
+):
+    res = await session.execute(
+        select(Visit).where(
+            Visit.aura_id == payload.aura_id,
+            Visit.client_id == payload.client_id
         )
-        visits = res.scalars().all()
-        for v in visits:
-            v.is_consented = True
-            session.add(v)
-        await session.commit()
-        return {"status": "consent_recorded"}
+    )
+    visits = res.scalars().all()
+    for v in visits:
+        v.is_consented = True
+        session.add(v)
+    await session.commit()
+    return {"status": "consent_recorded"}
 
 @router.post("/exit")
-async def track_exit(payload: PageViewCreate, background_tasks: BackgroundTasks):
+async def track_exit(
+    payload: PageViewCreate,
+    background_tasks: BackgroundTasks,
+    session: AsyncSession = Depends(get_async_session)
+):
     """Records session metrics upon departure and coordinates the batch analytical thread."""
     try:
         processed_duration = int(float(payload.duration))
@@ -355,19 +373,18 @@ async def track_exit(payload: PageViewCreate, background_tasks: BackgroundTasks)
 
     target_aura_id = payload.aura_id if getattr(payload, "aura_id", None) else str(payload.client_id)
 
-    async with async_session_maker() as session:
-        res = await session.execute(
-            select(Visit).where(
-                Visit.aura_id == target_aura_id
-            ).order_by(Visit.created_at.desc())
-        )
-        visit = res.scalars().first()
-        
-        if visit:
-            if processed_duration > (visit.duration or 0):
-                visit.duration = processed_duration
-                session.add(visit)
-                await session.commit()
+    res = await session.execute(
+        select(Visit).where(
+            Visit.aura_id == target_aura_id
+        ).order_by(Visit.created_at.desc())
+    )
+    visit = res.scalars().first()
+    
+    if visit:
+        if processed_duration > (visit.duration or 0):
+            visit.duration = processed_duration
+            session.add(visit)
+            await session.commit()
 
     # Launch Batch Intelligence processing sequentially when the session closes down
     if target_aura_id and payload.client_id:

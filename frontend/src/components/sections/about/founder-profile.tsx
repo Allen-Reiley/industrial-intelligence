@@ -3,7 +3,7 @@ import Image from 'next/image'
 
 export function FounderProfile() {
     return (
-        <section className="py-24 bg-zinc-50/50 dark:bg-zinc-950/20 border-y">
+        <section className="py-24 bg-zinc-50/50 border-y">
             <div className="mx-auto max-w-5xl px-6">
                 <div className="grid gap-16 md:grid-cols-2 items-center">
                     <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border bg-muted shadow-2xl">

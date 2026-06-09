@@ -16,7 +16,7 @@ export function FeatureGrid() {
             </div>
             <div className="mx-auto max-w-5xl px-6 grid gap-px bg-border overflow-hidden rounded-3xl border md:grid-cols-2">
                 {detailFeatures.map((f, i) => (
-                    <div key={i} className="bg-background p-10 space-y-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 transition-colors">
+                    <div key={i} className="bg-background p-10 space-y-4 hover:bg-zinc-50/50 transition-colors">
                         <f.icon className="size-5 text-muted-foreground" />
                         <h3 className="font-bold text-lg">{f.title}</h3>
                         <p className="text-muted-foreground text-sm leading-relaxed">{f.desc}</p>

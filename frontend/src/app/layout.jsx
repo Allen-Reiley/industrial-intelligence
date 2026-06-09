@@ -4,8 +4,6 @@ import "./globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { Analytics } from "@vercel/analytics/next";
-import AuraConsentBanner from "@/components/consent-banner/consent-banner";
-import AuraTracker from "@/components/tracker/aura-tracker";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -102,17 +100,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        {/* AuraWorks Industrial Intelligence Edge Tracker */}
+        <script src="https://cdn.auraworks.co.za/aura.js" data-client-id="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0" defer></script>
+      </head>
       <body className="antialiased">
         {children}
-
-        {/* AuraWorks Industrial Intelligence 
-          Silo: AuraWorks (Pty) Ltd Primary Ledger
-        */}
-        <AuraTracker 
-          clientId="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0" 
-        />
-
-        <AuraConsentBanner />
         
         {/* Third-party Analytics */}
         <SpeedInsights />

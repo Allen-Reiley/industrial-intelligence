@@ -1,7 +1,7 @@
 // @/components/sections/solutions/compliance-bridge.tsx
 export function ComplianceBridge() {
     return (
-        <section className="py-24 bg-zinc-50/50 dark:bg-zinc-950/20 border-y">
+        <section className="py-24 bg-zinc-50/50 border-y">
             <div className="mx-auto max-w-5xl px-6">
                 <div className="max-w-2xl">
                     <h2 className="text-3xl font-bold tracking-tight md:text-4xl">POPIA-Compliant B2B Identification</h2>

@@ -18,18 +18,8 @@ export function AboutCTA() {
                         asChild
                         size="lg"
                         className="rounded-xl px-10 shadow-xl shadow-primary/10">
-                        <Link href="/book-demo">
-                            <span>Book Demo</span>
-                        </Link>
-                    </Button>
-
-                    <Button
-                        asChild
-                        size="lg"
-                        variant="outline"
-                        className="rounded-xl px-10">
-                        <Link href="/book-call">
-                            <span>Book a Call</span>
+                        <Link href="/vsl">
+                            <span>Watch Video</span>
                         </Link>
                     </Button>
                 </div>

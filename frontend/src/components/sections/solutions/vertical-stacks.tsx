@@ -40,7 +40,7 @@ export function VerticalStacks() {
                             </div>
                             <p className="text-xs font-mono text-primary/70 bg-primary/5 w-fit px-3 py-1 rounded-full uppercase">{v.stats}</p>
                         </div>
-                        <div className="bg-zinc-100 dark:bg-zinc-900 aspect-video rounded-2xl border flex items-center justify-center overflow-hidden">
+                        <div className="bg-zinc-100 aspect-video rounded-2xl border flex items-center justify-center overflow-hidden">
                              {/* Placeholder for vertical-specific UI/Screenshot */}
                              <span className="text-[10px] text-muted-foreground uppercase tracking-widest">[ Vertical Intent Dashboard ]</span>
                         </div>

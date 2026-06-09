@@ -82,7 +82,7 @@ export default function BookCallPage() {
                             height="100%"
                             frameBorder="0"
                             title="Schedule a Call"
-                            className="bg-white dark:bg-zinc-900"
+                            className="bg-white"
                         ></iframe>
                         
                         {/* Loader Overlay (Optional) */}

@@ -2,7 +2,7 @@
 
 export function IdentityBridge() {
     return (
-        <section className="py-24 border-y bg-zinc-50/30 dark:bg-zinc-950/20">
+        <section className="py-24 border-y bg-zinc-50/30">
             <div className="mx-auto max-w-5xl px-6">
                 <div className="grid gap-16 md:grid-cols-2 items-center">
                     <div className="space-y-6">

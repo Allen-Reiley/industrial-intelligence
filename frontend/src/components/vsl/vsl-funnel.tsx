@@ -153,22 +153,22 @@ export default function VSLFunnel() {
 
   if (!hasHydrated) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-zinc-700 border-t-zinc-200 rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-zinc-200 border-t-zinc-900 rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
       {/* Background ambient glows */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-zinc-800/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-zinc-700/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none"></div>
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-zinc-100/50 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-zinc-50 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none"></div>
 
       {/* Subtle Go Back button */}
       <button
         onClick={handleGoBack}
-        className="absolute top-8 left-8 flex items-center gap-2 text-zinc-400 hover:text-zinc-200 transition-colors group z-10 py-2 px-3 rounded-lg hover:bg-zinc-900/50"
+        className="absolute top-8 left-8 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group z-10 py-2 px-3 rounded-lg hover:bg-zinc-100"
       >
         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
         <span className="text-sm font-medium">Go Back</span>
@@ -176,19 +176,19 @@ export default function VSLFunnel() {
 
       <div className="w-full max-w-4xl flex flex-col items-center z-10 space-y-8 mt-12 md:mt-0">
         <div className="text-center space-y-3">
-          <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
+          <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             AuraWorks Sales Intelligence
           </span>
-          <h1 className="text-3xl md:text-5xl font-semibold bg-gradient-to-r from-zinc-100 via-zinc-300 to-zinc-500 bg-clip-text text-transparent leading-tight tracking-tight">
+          <h1 className="text-3xl md:text-5xl font-semibold bg-gradient-to-r from-zinc-900 via-zinc-700 to-zinc-500 bg-clip-text text-transparent leading-tight tracking-tight">
             How It Works
           </h1>
-          <p className="text-sm md:text-base text-zinc-400 max-w-lg mx-auto">
+          <p className="text-sm md:text-base text-muted-foreground max-w-lg mx-auto">
             Learn how we de-anonymize network traffic into verified B2B prospects in South Africa.
           </p>
         </div>
 
         {/* Video Player Card */}
-        <div className="w-full bg-zinc-900/40 border border-zinc-800/80 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl relative group">
+        <div className="w-full bg-zinc-50/50 border border-border rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl relative group">
           <div className="aspect-video w-full relative bg-black flex items-center justify-center">
             <video
               ref={videoRef}
@@ -234,17 +234,17 @@ export default function VSLFunnel() {
               className="w-full max-w-xl text-center space-y-6 flex flex-col items-center"
             >
               <div className="space-y-2">
-                <p className="text-lg md:text-xl font-medium text-zinc-200">
+                <p className="text-lg md:text-xl font-medium text-foreground">
                   Ready to de-anonymize your website traffic?
                 </p>
-                <p className="text-sm text-zinc-400">
+                <p className="text-sm text-muted-foreground">
                   Secure your 15-minute operational audit and live platform demo.
                 </p>
               </div>
 
               <button
                 onClick={handleCtaClick}
-                className="w-full max-w-md py-4 px-8 bg-zinc-100 hover:bg-white text-zinc-950 font-medium rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-[0_0_40px_rgba(255,255,255,0.2)] cursor-pointer"
+                className="w-full max-w-md py-4 px-8 bg-zinc-900 hover:bg-zinc-800 text-white font-medium rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] shadow-md hover:shadow-lg cursor-pointer"
               >
                 Book Demo
               </button>

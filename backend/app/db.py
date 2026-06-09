@@ -120,6 +120,7 @@ def init_db():
                         id="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0",
                         company_name="AuraWorks Test Client",
                         domain="testclient.co.za",
+                        whitelisted_domains=["testclient.co.za", "auraworks.co.za", "www.auraworks.co.za"],
                         category=ClientCategory.COMMERCIAL,
                         client_product_description="Default integration test client for telemetry ingestion",
                         subscription_status=SubscriptionStatus.ACTIVE,
