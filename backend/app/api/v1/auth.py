@@ -9,6 +9,9 @@ from jose import jwt, JWTError
 from app.core.config import settings
 from app.core.security import create_access_token, create_refresh_token
 
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db import get_async_session
+
 router = APIRouter()
 logger = logging.getLogger("auraworks.auth")
 
@@ -22,7 +25,10 @@ class RefreshRequest(BaseModel):
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login", auto_error=False)
 
-def get_current_admin(token: Optional[str] = Depends(oauth2_scheme)) -> str:
+async def get_current_admin(
+    token: Optional[str] = Depends(oauth2_scheme),
+    session: AsyncSession = Depends(get_async_session)
+) -> str:
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -33,7 +39,7 @@ def get_current_admin(token: Optional[str] = Depends(oauth2_scheme)) -> str:
         secret = settings.SECRET_KEY or "dev-secret-key-12345678901234567890123456789012"
         payload = jwt.decode(token, secret, algorithms=["HS256"])
         username: str = payload.get("sub")
-        if username is None or username != "admin":
+        if username is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate credentials",
@@ -45,7 +51,23 @@ def get_current_admin(token: Optional[str] = Depends(oauth2_scheme)) -> str:
                 detail="Cannot use refresh token as access token",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        return username
+        
+        if username == "admin":
+            return username
+            
+        from app.models.admin_user import AdminUser
+        from sqlmodel import select
+        stmt = select(AdminUser).where(AdminUser.email == username)
+        res = await session.execute(stmt)
+        db_user = res.scalars().first()
+        if db_user:
+            return username
+            
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -54,7 +76,10 @@ def get_current_admin(token: Optional[str] = Depends(oauth2_scheme)) -> str:
         )
 
 @router.post("/login", response_model=TokenResponse)
-async def login(request: Request):
+async def login(
+    request: Request,
+    session: AsyncSession = Depends(get_async_session)
+):
     content_type = request.headers.get("content-type", "")
     username = None
     password = None
@@ -80,10 +105,26 @@ async def login(request: Request):
             detail="Missing username or password"
         )
         
-    expected_username = "admin"
-    expected_password = settings.ADMIN_API_KEY or "change-me-in-production"
+    # Check database first
+    from app.models.admin_user import AdminUser
+    from app.core.security import verify_password
+    from sqlmodel import select
     
-    if username != expected_username or password != expected_password:
+    stmt = select(AdminUser).where(AdminUser.email == username)
+    res = await session.execute(stmt)
+    db_user = res.scalars().first()
+    
+    authenticated = False
+    if db_user:
+        if verify_password(password, db_user.hashed_password):
+            authenticated = True
+    else:
+        expected_username = "admin"
+        expected_password = settings.ADMIN_API_KEY or "change-me-in-production"
+        if username == expected_username and password == expected_password:
+            authenticated = True
+            
+    if not authenticated:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",

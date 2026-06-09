@@ -10,5 +10,6 @@ from .notification_throttle import NotificationThrottle
 from .crm_dead_letter import CrmDeadLetter
 from .inbound_message import InboundMessage, MessageStatus
 from .transaction import Transaction, TransactionStatus
+from .admin_user import AdminUser
 
 # Do NOT include router logic here
