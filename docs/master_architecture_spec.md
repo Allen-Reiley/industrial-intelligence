@@ -228,5 +228,18 @@ Updates the matching Prospect or Visit record's vsl_completion_percentage and vs
   - Discard ISP name and fallback to banner name if LLM marks enriched record as ISP.
 10.4 Surge Alerting: Trigger real-time alert to client when visitor count threshold for a single company is crossed (e.g., 3 unique forensic IDs).
 
+11. Phase 12: Decoupled Edge Architecture Specifications
+11.1 Client Installation: Clients integrate a single tag: `<script src="https://cdn.auraworks.co.za/aura.js" data-client-id="[UUID]" defer></script>`.
+11.2 Handshake: `aura.js` parses the `data-client-id` and checks remote configuration: `GET https://api.auraworks.co.za/v1/clients/config?client_id=[UUID]&tz=[TZ]`.
+11.3 Dynamic Script Injection: If the backend configuration signals `require_consent_banner === true`, the client script dynamically appends a new script tag loading `banner.js` from `https://banner.auraworks.co.za/banner.js`.
+11.4 Shadow DOM UI Isolation: `banner.js` builds the 4-phase consent banner entirely in Vanilla JavaScript inside an isolated Shadow DOM Root container to prevent client CSS styling bleeding or script collision.
+11.5 Decoupled CustomEvent Architecture:
+  - Communication is strictly event-driven:
+  - `aura.js` dispatches `aura:ready` containing `auraId`, `clientId`, and `config`.
+  - `banner.js` listens to `aura:ready` to bootstrap the banner, and dispatches `aura_warm_lead` event on form submissions.
+  - `aura.js` captures `aura_warm_lead`, stamps UTMs, session ID, and telemetry, then dispatches the payload to the backend ingestion endpoint.
+11.6 Edge Deployment: All files inside the tracking bundle (`aura.js`, `banner.js`) are minified via Terser locally and synced to edge buckets with `Cache-Control: public, max-age=86400`.
+
+
 
 

@@ -128,3 +128,17 @@ Implement the Entity Resolution protocol (Substring matching -> DeepSeek ISP Ver
 Task 11.4: Surge Alert System
 Implement SQL aggregation logic to monitor unique visitors per company. Trigger the instant Slack alert when thresholds are met.
 
+Phase 12: Decoupled Edge Architecture Implementation
+This phase extracts the core intelligence tracking and consent UI from the Next.js monolith, deploying them as pure, highly optimized JavaScript micro-assets on the edge (CDN).
+Task 12.1: Directory & Build Configuration
+Structure tracker/src/public/aura.js and tracker/src/banner/banner.js. Configure package.json build script to execute Terser local minification.
+Task 12.2: aura.js Edge Refactoring
+Implement client ID and timezone parsing from script tags and native browser, GET configuration handshake, and dynamic injection of banner.js only when require_consent_banner is active.
+Task 12.3: Vanilla JS Banner & Shadow DOM Isolation
+Convert Next.js banner component code into pure Vanilla JS inside banner.js. Encapsulate all elements, styles, and transitions within an isolated Shadow DOM container.
+Task 12.4: Decoupled CustomEvent Communication
+Implement CustomEvent windows: aura:ready and aura_warm_lead. Decouple variables between scripts.
+Task 12.5: Edge Deployment Pipeline
+Create deploy.sh script to sync minified scripts to CDN / storage buckets with proper Cache-Control directives.
+
+

@@ -59,3 +59,11 @@
     - [x] Task 11.2: Immediate Workers: Trigger IPinfo/Apollo enrichment tasks immediately on banner submission.
     - [x] Task 11.3: Stitching Engine: Implement Substring Match -> DeepSeek verification -> Banner Fallback if ISP.
     - [x] Task 11.4: Surge Alerts: Aggregate visitor counts and dispatch surge alerts.
+
+- [x] **PHASE 12: DECOUPLED EDGE ARCHITECTURE IMPLEMENTATION**
+    - [x] Task 12.1: Directory & Build setup for Terser minification
+    - [x] Task 12.2: Refactor aura.js for config handshake & banner injection
+    - [x] Task 12.3: Extract vanilla JS banner with Shadow DOM
+    - [x] Task 12.4: Decouple communication via custom window events
+    - [x] Task 12.5: Build and verify deploy.sh shell script
+
