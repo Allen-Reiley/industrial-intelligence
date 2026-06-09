@@ -10,23 +10,44 @@ from datetime import datetime, timezone
 
 from app.core.config import settings
 from app.db import init_db, get_async_session
-from app.api.v1 import track, clients, identity, prospects, leads, webhook
+from app.api.v1 import track, clients, identity, prospects, leads, webhook, auth
 from app.models import Prospect, Company
 from app.tasks.janitor import cleanup_unverified_visits
 from app.core.scheduler import start_scheduler
+from typing import Optional
 
 # Setup logging - Industrial Clinical Style
 logger = logging.getLogger("uvicorn")
 
 # --- SECURITY: Admin Access Guard ---
-def verify_admin_token(x_aura_token: str = Header(...)):
+def verify_admin_token(
+    x_aura_token: Optional[str] = Header(None),
+    authorization: Optional[str] = Header(None)
+):
     """
     Hardens debug and admin routes. 
-    Rejects any request missing the correct ADMIN_API_KEY.
+    Rejects any request missing the correct ADMIN_API_KEY or valid Bearer JWT.
     """
-    if x_aura_token != settings.ADMIN_API_KEY:
-        logger.warning(f"🚨 UNAUTHORIZED ACCESS ATTEMPT: {datetime.now(timezone.utc)}")
-        raise HTTPException(status_code=403, detail="Unauthorized Forensic Access")
+    from jose import jwt, JWTError
+    
+    # 1. Try X-Aura-Token first (legacy API key)
+    if x_aura_token == settings.ADMIN_API_KEY and settings.ADMIN_API_KEY:
+        return "admin"
+        
+    # 2. Try Authorization Bearer Token
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization.split(" ")[1]
+        try:
+            secret = settings.SECRET_KEY or "dev-secret-key-12345678901234567890123456789012"
+            payload = jwt.decode(token, secret, algorithms=["HS256"])
+            username = payload.get("sub")
+            if username == "admin" and payload.get("type") != "refresh":
+                return "admin"
+        except JWTError:
+            pass
+            
+    logger.warning(f"🚨 UNAUTHORIZED ACCESS ATTEMPT: {datetime.now(timezone.utc)}")
+    raise HTTPException(status_code=403, detail="Unauthorized Forensic Access")
 
 async def run_janitor_loop():
     """
@@ -90,8 +111,11 @@ app.add_middleware(
 )
 
 # --- ROUTE REGISTRATION ---
+app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["authentication"])
 app.include_router(track.router, prefix=f"{settings.API_V1_STR}/track", tags=["tracking"])
+app.include_router(track.router, prefix="/v1/track", tags=["tracking"])
 app.include_router(clients.router, prefix=f"{settings.API_V1_STR}/clients", tags=["clients"])
+app.include_router(clients.router, prefix="/v1/clients", tags=["clients"])
 app.include_router(identity.router, prefix=f"{settings.API_V1_STR}/identity", tags=["identity"])
 app.include_router(prospects.router, prefix=f"{settings.API_V1_STR}/prospects", tags=["prospects"])
 app.include_router(leads.router, prefix=f"{settings.API_V1_STR}/leads", tags=["leads"]) # Primary Ledger

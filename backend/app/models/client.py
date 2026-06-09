@@ -1,22 +1,28 @@
 # backend/app/models/client.py
 from enum import Enum
-from typing import Optional
+from typing import Optional, List, Any
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
 from sqlmodel import SQLModel, Field, Column, DateTime
+from sqlalchemy import ARRAY, String, JSON
+from pydantic import model_validator
 
 class ClientCategory(str, Enum):
     INDUSTRIAL = "industrial"
     COMMERCIAL = "commercial"
 
 class SubscriptionStatus(str, Enum):
+    TRIAL = "trial"
     ACTIVE = "active"
-    PAST_DUE = "past_due"
     SUSPENDED = "suspended"
 
 class ClientBase(SQLModel):
     company_name: str = Field(index=True)
-    domain: str = Field(unique=True, index=True)
+    domain: Optional[str] = Field(default=None, index=True, nullable=True)
+    whitelisted_domains: List[str] = Field(
+        default=[],
+        sa_column=Column(ARRAY(String).with_variant(JSON, "sqlite"), nullable=False)
+    )
     category: ClientCategory = Field(default=ClientCategory.COMMERCIAL)
     client_product_description: str = Field(default="")
     subscription_status: SubscriptionStatus = Field(default=SubscriptionStatus.SUSPENDED)
@@ -30,6 +36,15 @@ class ClientBase(SQLModel):
     is_active: bool = Field(default=False)
     collect_personal_data: bool = Field(default=False)
     require_consent_banner: bool = Field(default=False)
+
+    def __init__(self, **data: Any):
+        domain = data.get("domain")
+        whitelisted = data.get("whitelisted_domains")
+        if domain and not whitelisted:
+            data["whitelisted_domains"] = [domain]
+        elif whitelisted and not domain:
+            data["domain"] = whitelisted[0]
+        super().__init__(**data)
 
 class Client(ClientBase, table=True):
     __tablename__ = "client"

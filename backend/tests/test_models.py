@@ -81,3 +81,27 @@ def test_inbound_message_crud():
         deleted_msg = session.get(InboundMessage, msg.id)
         assert deleted_msg is None
 
+def test_client_whitelisted_domains_validation():
+    """
+    Verifies that Client whitelisted_domains array and updated SubscriptionStatus are stored correctly.
+    """
+    engine = create_engine("sqlite:///:memory:")
+    SQLModel.metadata.create_all(engine)
+
+    from app.models.client import SubscriptionStatus
+    with Session(engine) as session:
+        client = Client(
+            company_name="AuraWorks Test Group",
+            whitelisted_domains=["test.com", "staging.test.com"],
+            subscription_status=SubscriptionStatus.TRIAL,
+            is_active=True
+        )
+        session.add(client)
+        session.commit()
+        session.refresh(client)
+
+        assert client.id is not None
+        assert client.domain == "test.com"
+        assert client.whitelisted_domains == ["test.com", "staging.test.com"]
+        assert client.subscription_status == SubscriptionStatus.TRIAL
+

@@ -85,7 +85,19 @@ async def get_client_config(
     """
     Returns remote configuration parameters for the embedded tracking tag.
     Performs strict domain validation and maps compliance rules dynamically via browser timezone.
+    Utilizes Two-Tier Caching for sub-millisecond responses.
     """
+    import json
+    from app.core.cache import TwoTierCache
+
+    cache_key = f"client_config:{client_id}:{tz or ''}"
+    try:
+        cached_val = await TwoTierCache.get(cache_key)
+        if cached_val:
+            return json.loads(cached_val)
+    except Exception as e:
+        logger.warning(f"Failed to read from TwoTierCache: {e}")
+
     client = await session.get(Client, client_id)
     if not client:
         raise HTTPException(status_code=404, detail="Client registry not found.")
@@ -115,15 +127,15 @@ async def get_client_config(
     if ":" in request_domain:
         request_domain = request_domain.split(":")[0]
         
-    client_domain = client.domain
-    if ":" in client_domain:
-        client_domain = client_domain.split(":")[0]
-
-    # Verify matching domain (strict matching of subdomain and staging domains)
-    if request_domain and request_domain != client_domain:
-        # Check if the domain whitelist is bypassed (e.g. standard local dev environments)
-        if request_domain not in ["localhost", "127.0.0.1", "::1"]:
-            logger.warning(f"AuraTracker: Strictly unauthorized domain match attempt: origin='{request_domain}', registered='{client_domain}'")
+    # Verify matching domain against whitelisted_domains
+    if request_domain and request_domain not in ["localhost", "127.0.0.1", "::1"]:
+        whitelisted = []
+        for d in client.whitelisted_domains:
+            if ":" in d:
+                d = d.split(":")[0]
+            whitelisted.append(d)
+        if request_domain not in whitelisted:
+            logger.warning(f"AuraTracker: Strictly unauthorized domain match attempt: origin='{request_domain}', registered={client.whitelisted_domains}")
             raise HTTPException(status_code=403, detail="Unauthorized website tag origin.")
 
     # 2. Timezone-Based Compliance Routing
@@ -139,10 +151,49 @@ async def get_client_config(
         elif "africa" in tz_lower:
             compliance_mode = "POPIA"
 
-    return {
-        "client_id": client.id,
+    response_data = {
+        "client_id": str(client.id),
         "collect_personal_data": client.collect_personal_data,
         "require_consent_banner": require_consent_banner,
         "compliance_mode": compliance_mode,
         "is_active": client.is_active
     }
+
+    try:
+        await TwoTierCache.set(cache_key, json.dumps(response_data), expire=300)
+    except Exception as e:
+        logger.warning(f"Failed to write to TwoTierCache: {e}")
+
+    return response_data
+
+from app.api.v1.auth import get_current_admin
+from sqlalchemy import func
+from typing import List
+
+@router.get("/", response_model=List[ClientPublic])
+async def list_clients(
+    session: AsyncSession = Depends(get_async_session),
+    admin: str = Depends(get_current_admin)
+):
+    """
+    Lists all registered clients in the tenant ledger.
+    """
+    stmt = select(Client)
+    res = await session.execute(stmt)
+    return res.scalars().all()
+
+@router.get("/{client_id}/verify")
+async def verify_client_installation(
+    client_id: UUID,
+    session: AsyncSession = Depends(get_async_session),
+    admin: str = Depends(get_current_admin)
+):
+    """
+    Queries the Visit table to check if a tracking payload containing the specific client_id
+    has been received, confirming successful installation.
+    """
+    from app.models.visit import Visit
+    stmt = select(func.count(Visit.id)).where(Visit.client_id == client_id)
+    res = await session.execute(stmt)
+    count = res.scalar() or 0
+    return {"installed": count > 0, "visit_count": count}

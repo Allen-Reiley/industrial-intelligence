@@ -141,4 +141,17 @@ Implement CustomEvent windows: aura:ready and aura_warm_lead. Decouple variables
 Task 12.5: Edge Deployment Pipeline
 Create deploy.sh script to sync minified scripts to CDN / storage buckets with proper Cache-Control directives.
 
+Phase 13: Provisioning Dashboard & Admin Console Implementation
+This phase establishes the internal command center for managing multi-tenant deployments, securing access via JWT, and optimizing configuration handshakes with a two-tier caching strategy.
+Task 13.1: Client DB Model & Schema Migrations
+Modify the database schema for the Client model, migrating domain to whitelisted_domains (string array) and updating SubscriptionStatus (trial, active, suspended). Create Alembic migrations.
+Task 13.2: JWT Auth Engine
+Build custom JWT generation, validation, and FastAPI dependencies for protected route security.
+Task 13.3: Two-Tier Cache & Configuration Handshake
+Implement Redis client caching with automatic failover to an in-memory cachetools.TTLCache fallback for GET /v1/clients/config resolver.
+Task 13.4: Next.js Admin Auth & Middleware
+Build the login page, secure /admin layout, and Next.js middleware for authentication redirects and state management.
+Task 13.5: Client Provisioning UI & Telemetry Indicator
+Create the register client forms, snippet generation modal with one-click copy, and live installation status verification using db visit polling.
+
 

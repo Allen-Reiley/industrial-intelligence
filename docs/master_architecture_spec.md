@@ -36,36 +36,63 @@ Gated until prospect form submission or manual banner opt-in
 The following structural configurations define the persistent database schema layers implemented via SQLModel abstractions.
 3.1 Core Client & Tenant Management Schema
 from enum import Enum
-from typing import Optional, List
+from typing import Optional, List, Any
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field, Column, DateTime
+from sqlalchemy import ARRAY, String, JSON
 
 class ClientCategory(str, Enum):
     INDUSTRIAL = "industrial"
     COMMERCIAL = "commercial"
 
 class SubscriptionStatus(str, Enum):
+    TRIAL = "trial"
     ACTIVE = "active"
-    PAST_DUE = "past_due"
     SUSPENDED = "suspended"
 
-class Client(SQLModel, table=True):
-    __tablename__ = "client"
-    
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+class ClientBase(SQLModel):
     company_name: str = Field(index=True)
-    domain: str = Field(unique=True, index=True)
+    domain: Optional[str] = Field(default=None, index=True, nullable=True)
+    whitelisted_domains: List[str] = Field(
+        default=[],
+        sa_column=Column(ARRAY(String).with_variant(JSON, "sqlite"), nullable=False)
+    )
     category: ClientCategory = Field(default=ClientCategory.COMMERCIAL)
     client_product_description: str = Field(default="")
     subscription_status: SubscriptionStatus = Field(default=SubscriptionStatus.SUSPENDED)
     payment_plan: str = Field(default="monthly")
     setup_fee_paid: bool = Field(default=False)
-    contract_signed_at: Optional[datetime] = Field(default=None, nullable=True)
+    contract_signed_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
     payment_provider_id: Optional[str] = Field(default=None, nullable=True)
     is_active: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    auto_classified_at: Optional[datetime] = Field(default=None, nullable=True)
+    collect_personal_data: bool = Field(default=False)
+    require_consent_banner: bool = Field(default=False)
+
+    def __init__(self, **data: Any):
+        domain = data.get("domain")
+        whitelisted = data.get("whitelisted_domains")
+        if domain and not whitelisted:
+            data["whitelisted_domains"] = [domain]
+        elif whitelisted and not domain:
+            data["domain"] = whitelisted[0]
+        super().__init__(**data)
+
+class Client(ClientBase, table=True):
+    __tablename__ = "client"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
+    auto_classified_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
 
 
 3.2 Enterprise & Departmental Directory Core Pool
@@ -239,6 +266,30 @@ Updates the matching Prospect or Visit record's vsl_completion_percentage and vs
   - `banner.js` listens to `aura:ready` to bootstrap the banner, and dispatches `aura_warm_lead` event on form submissions.
   - `aura.js` captures `aura_warm_lead`, stamps UTMs, session ID, and telemetry, then dispatches the payload to the backend ingestion endpoint.
 11.6 Edge Deployment: All files inside the tracking bundle (`aura.js`, `banner.js`) are minified via Terser locally and synced to edge buckets with `Cache-Control: public, max-age=86400`.
+
+12. Phase 13: Provisioning Dashboard & Admin Console Specifications
+
+12.1 Multi-Tenant Client Ledger Schema:
+* Extends the `Client` table with list-based `whitelisted_domains` arrays (PostgreSQL `ARRAY` datatype with a fallback to `JSON` for SQLite tests).
+* Adds a constructor override on instantiation to preserve backward compatibility, translating the legacy singular `domain` string to `whitelisted_domains` arrays, and vice versa.
+* Includes flags `require_consent_banner` and `collect_personal_data` to govern edge tracker configurations.
+
+12.2 Admin Authentication (JWT Engine):
+* **Login Gateway**: `/api/v1/auth/login` accepts admin credentials, validates against system secrets, and returns short-lived access and refresh tokens.
+* **Token Protection**: FastAPI endpoints are protected via `get_current_admin` dependencies checking the JWT signature, validity, and expiration.
+* **Fallback Verification**: Backend telemetry proxies accept authentication from either legacy `X-Aura-Token` header key strings or modern `Authorization: Bearer [JWT]` headers to secure administrative API routes.
+* **Routing Middleware**: Next.js custom middleware guards all `/admin/*` routes, checking the presence of a secure `admin_access_token` cookie and redirecting unauthenticated visitors to `/login`.
+
+12.3 Two-Tier High-Speed Config Cache:
+* **Tier 1 (Redis)**: Tries to read/write JSON-serialized client configurations from a Redis instance for sub-millisecond edge resolution.
+* **Tier 2 (In-Memory Fallback)**: Automatically falls back to a Python LRU cache (`cachetools.TTLCache`) with a 5-minute TTL if Redis is offline or unreachable. Connection failures degrade silently without raising HTTP 500 errors.
+* **Config Resolution Route**: `GET /v1/clients/config` resolves matching client whitelisted domains against request origins to authorize tracking handshakes.
+
+12.4 Snippet Generation & Verification Console:
+* **Administration Panel**: High-fidelity dark mode dashboard with active tenant switcher, client registration modal, and live leads feed.
+* **Copy Deployment Snippet**: Modal dynamically interpolates the registered client UUID into a production HTML script tag, with a copy-to-clipboard mechanism.
+* **Telemetry Verification Indicator**: Active status component polls `GET /api/v1/clients/{client_id}/verify` to trace visits linked to the tenant UUID. Once a visit is detected, the status transitions to "Installed & Active" and triggers a leads table refresh.
+
 
 
 

@@ -1,5 +1,7 @@
 "use client";
-import { useEffect, useState, useMemo } from 'react';
+
+import React, { useEffect, useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
   Building2, 
@@ -13,86 +15,280 @@ import {
   Download, 
   User, 
   Mail, 
-  Network 
+  Network,
+  Plus,
+  Code,
+  Copy,
+  Check,
+  AlertTriangle,
+  LogOut,
+  Sliders,
+  Database,
+  ArrowRight,
+  X
 } from 'lucide-react';
 
-// Unified Lead interface matching backend SQLModel UUID changes
-interface Lead {
-  id: string;              // UUID
-  name?: string;           // Consented Name
-  email?: string;          // Consented Email
-  company_name_raw?: string; 
-  website?: string;
-  industry?: string;
-  avg_price?: string;
-  aura_id: string;         // Forensic Anchor
-  created_at: string;
-  // Fields merged from the Intelligence Engine
+interface Client {
+  id: string;
+  company_name: string;
   domain?: string;
-  ip_address?: string;
-  city?: string;
-  region?: string;
-  duration?: number;
-  url?: string;
+  whitelisted_domains: string[];
+  subscription_status: 'trial' | 'active' | 'suspended';
+  require_consent_banner: boolean;
+  collect_personal_data: boolean;
+  is_active: boolean;
+}
+
+interface Lead {
+  id: string;
+  name?: string;
+  email?: string;
+  position?: string;
+  department?: string;
+  aura_id: string;
+  created_at: string;
+  is_warm: boolean;
+  company?: {
+    name: string;
+    domain?: string;
+    industry?: string;
+    total_visits: number;
+    is_verified: boolean;
+  };
 }
 
 export default function AdminDashboard() {
+  const router = useRouter();
+
+  // State managers
+  const [clients, setClients] = useState<Client[]>([]);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+  const [leadsLoading, setLeadsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Installation status polling
+  const [installationStatus, setInstallationStatus] = useState<{ installed: boolean; visit_count: number }>({ installed: false, visit_count: 0 });
+  const [isPolling, setIsPolling] = useState(false);
+
+  // Modal controls
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [showSnippetModal, setShowSnippetModal] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  // Form states
+  const [newCompanyName, setNewCompanyName] = useState('');
+  const [newWhitelistedDomains, setNewWhitelistedDomains] = useState('');
+  const [newRequireConsent, setNewRequireConsent] = useState(false);
+  const [newSubStatus, setNewSubStatus] = useState<'trial' | 'active' | 'suspended'>('trial');
+  const [formError, setFormError] = useState('');
+  const [formLoading, setFormLoading] = useState(false);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-  const fetchData = async () => {
-    setIsRefreshing(true);
+  // Auth resolver
+  const getHeaders = () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : '';
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+  };
+
+  const logout = () => {
+    document.cookie = 'admin_access_token=; path=/; max-age=0;';
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_refresh_token');
+    router.push('/login');
+  };
+
+  // Fetch all clients
+  const fetchClients = async (selectDefaultId?: string) => {
     try {
-      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/leads/`);
-      if (!res.ok) throw new Error('Network response was not ok');
+      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/clients/`, {
+        headers: getHeaders()
+      });
+      if (res.status === 401) {
+        logout();
+        return;
+      }
+      if (!res.ok) throw new Error('Failed to retrieve clients list.');
+      const data = await res.json();
+      setClients(data);
+      
+      if (data.length > 0) {
+        const nextSelected = selectDefaultId 
+          ? data.find((c: Client) => c.id === selectDefaultId) || data[0]
+          : data[0];
+        setSelectedClient(nextSelected);
+      }
+    } catch (err) {
+      console.error("🚨 Clients Fetch Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch leads for the selected client
+  const fetchLeads = async (clientId: string) => {
+    setLeadsLoading(true);
+    try {
+      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/leads/?client_id=${clientId}`, {
+        headers: getHeaders()
+      });
+      if (!res.ok) throw new Error('Failed to retrieve client leads.');
       const data = await res.json();
       setLeads(data);
     } catch (err) {
-      console.error("🚨 Dashboard Fetch Error:", err);
+      console.error("🚨 Leads Fetch Error:", err);
+      setLeads([]);
     } finally {
-      setLoading(false);
+      setLeadsLoading(false);
       setIsRefreshing(false);
     }
   };
 
+  // Check installation status
+  const checkInstallation = async (clientId: string) => {
+    try {
+      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/clients/${clientId}/verify`, {
+        headers: getHeaders()
+      });
+      if (!res.ok) throw new Error('Failed to verify installation.');
+      const data = await res.json();
+      setInstallationStatus(data);
+      return data.installed;
+    } catch (err) {
+      console.error("🚨 Installation Verification Failure:", err);
+      return false;
+    }
+  };
+
   useEffect(() => {
-    fetchData();
+    fetchClients();
   }, []);
 
-  // Filtered Leads based on search term
+  // Update leads and installation check when selected client changes
+  useEffect(() => {
+    if (selectedClient) {
+      fetchLeads(selectedClient.id);
+      checkInstallation(selectedClient.id);
+      setIsPolling(true);
+    } else {
+      setIsPolling(false);
+    }
+  }, [selectedClient]);
+
+  // Installation Polling Loop
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isPolling && selectedClient && !installationStatus.installed) {
+      interval = setInterval(async () => {
+        const isInstalled = await checkInstallation(selectedClient.id);
+        if (isInstalled) {
+          setIsPolling(false);
+          // Refresh leads once installed
+          fetchLeads(selectedClient.id);
+        }
+      }, 5000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isPolling, selectedClient, installationStatus.installed]);
+
+  // Client Registration Submission
+  const handleRegisterClient = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormLoading(true);
+    setFormError('');
+
+    const domainsArray = newWhitelistedDomains
+      .split(',')
+      .map(d => d.trim())
+      .filter(d => d.length > 0);
+
+    if (domainsArray.length === 0) {
+      setFormError('Please enter at least one whitelisted domain.');
+      setFormLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/clients/`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({
+          company_name: newCompanyName,
+          whitelisted_domains: domainsArray,
+          require_consent_banner: newRequireConsent,
+          subscription_status: newSubStatus,
+          is_active: newSubStatus !== 'suspended'
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to register client profile.');
+      }
+
+      const registered = await res.json();
+      
+      // Reset form fields
+      setNewCompanyName('');
+      setNewWhitelistedDomains('');
+      setNewRequireConsent(false);
+      setNewSubStatus('trial');
+      setShowRegisterModal(false);
+
+      // Refresh list and select the new client
+      await fetchClients(registered.id);
+    } catch (err: any) {
+      setFormError(err.message || 'An error occurred during client registration.');
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  const handleCopySnippet = () => {
+    if (!selectedClient) return;
+    const snippet = `<script src="https://cdn.auraworks.co.za/aura.js" data-client-id="${selectedClient.id}" defer></script>`;
+    navigator.clipboard.writeText(snippet);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Filtered Leads
   const filteredLeads = useMemo(() => {
     return leads.filter(lead => {
-      const searchStr = `${lead.name || ''} ${lead.email || ''} ${lead.company_name_raw || ''} ${lead.ip_address || ''} ${lead.industry || ''}`.toLowerCase();
+      const searchStr = `${lead.name || ''} ${lead.email || ''} ${lead.position || ''} ${lead.company?.name || ''} ${lead.company?.domain || ''}`.toLowerCase();
       return searchStr.includes(searchTerm.toLowerCase());
     });
   }, [leads, searchTerm]);
 
-  // KPI calculations
+  // KPI Calculations
   const stats = useMemo(() => {
     const total = leads.length;
-    const consentedCount = leads.filter(l => l.name || l.email).length;
-    const consentRate = total ? Math.round((consentedCount / total) * 100) : 0;
-    const avgDwell = total ? Math.round(leads.reduce((acc, curr) => acc + (curr.duration || 0), 0) / total) : 0;
-    return { total, consentedCount, consentRate, avgDwell };
-  }, [leads]);
+    const warmCount = leads.filter(l => l.is_warm).length;
+    const warmRate = total ? Math.round((warmCount / total) * 100) : 0;
+    const activeVisits = installationStatus.visit_count;
+    return { total, warmCount, warmRate, activeVisits };
+  }, [leads, installationStatus]);
 
-  // Export to CSV helper
+  // Export to CSV
   const handleExport = () => {
-    if (leads.length === 0) return;
-    const headers = ['Identity', 'Email', 'Company', 'Website', 'IP Address', 'Location', 'Dwell Time', 'Industry', 'Captured At'];
+    if (leads.length === 0 || !selectedClient) return;
+    const headers = ['Identity Name', 'Email Address', 'Corporate Role', 'Department', 'Entity Company', 'Website', 'Industry', 'Warm Lead', 'Captured At'];
     const rows = leads.map(l => [
-      l.name || 'Anonymous',
+      l.name || 'Anonymous Prospect',
       l.email || 'N/A',
-      l.company_name_raw || 'Unverified',
-      l.website || l.domain || 'N/A',
-      l.ip_address || '0.0.0.0',
-      `${l.city || ''}, ${l.region || ''}`,
-      `${l.duration || 0}s`,
-      l.industry || 'N/A',
+      l.position || 'N/A',
+      l.department || 'N/A',
+      l.company?.name || 'Unverified',
+      l.company?.domain || 'N/A',
+      l.company?.industry || 'N/A',
+      l.is_warm ? 'Yes' : 'No',
       l.created_at
     ]);
 
@@ -101,7 +297,7 @@ export default function AdminDashboard() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `AuraWorks_Lead_Ledger_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `Leads_${selectedClient.company_name}_${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -109,196 +305,441 @@ export default function AdminDashboard() {
   };
 
   if (loading) return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#09090b]">
-      <div className="h-8 w-8 border-2 border-zinc-800 border-t-indigo-500 rounded-full animate-spin mb-4" />
-      <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.3em]">Initializing Lead Ledger...</p>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#070708]">
+      <div className="h-8 w-8 border-2 border-zinc-900 border-t-indigo-500 rounded-full animate-spin mb-4" />
+      <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.3em]">Resolving Multi-Tenant Ledgers...</p>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100 pb-20 font-sans selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-[#070708] text-zinc-100 pb-20 font-sans selection:bg-indigo-500/30">
       {/* Navigation */}
-      <nav className="border-b border-zinc-900 bg-[#09090b]/80 backdrop-blur-md sticky top-0 z-20">
+      <nav className="border-b border-zinc-900 bg-[#070708]/80 backdrop-blur-md sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <div className="h-10 w-10 rounded-lg bg-zinc-100 flex items-center justify-center text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-              <Building2 className="h-5 w-5" />
+            <div className="h-10 w-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.1)]">
+              <Building2 className="h-5 w-5 text-indigo-400" />
             </div>
-            <div className="hidden md:block">
+            <div>
               <div className="flex items-center gap-2 text-[10px] tracking-[0.3em] text-indigo-400 font-bold uppercase">
                 <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
-                <span>Security Shield Active</span>
+                <span>Console Core</span>
               </div>
-              <h1 className="text-lg font-light tracking-tight">Juristic Identity Ledger</h1>
+              <h1 className="text-sm font-semibold tracking-tight text-zinc-300">Admin Control Console</h1>
             </div>
           </div>
 
-          {/* Navigation Switcher */}
-          <div className="flex items-center bg-zinc-950/60 border border-zinc-850 rounded-lg p-1 text-xs">
-            <div className="relative group">
-              <Link
-                href="/dashboard"
-                className="px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50"
+          {/* Client Tenant Switcher */}
+          {clients.length > 0 && selectedClient && (
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] text-zinc-500 uppercase font-black tracking-widest hidden sm:inline">Active Tenant:</span>
+              <select 
+                value={selectedClient.id} 
+                onChange={(e) => {
+                  const target = clients.find(c => c.id === e.target.value);
+                  if (target) setSelectedClient(target);
+                }}
+                className="bg-zinc-950 border border-zinc-850 rounded-lg px-3 py-1.5 text-xs text-zinc-300 font-medium focus:outline-none focus:border-indigo-500/40"
               >
-                <Activity className="h-3.5 w-3.5" />
-                <span>Dashboard</span>
-              </Link>
-              {/* Tooltip */}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-52 p-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] text-zinc-400 opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 shadow-2xl z-50 text-center leading-normal">
-                <p className="font-bold text-zinc-200 mb-0.5">Intelligence Dashboard</p>
-                Real-time visitor telemetry, geolocation mapping, and live traffic analytics.
-              </div>
-            </div>
-            
-            <div className="relative group">
-              <Link
-                href="/admin"
-                className="px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+                {clients.map(c => (
+                  <option key={c.id} value={c.id}>{c.company_name}</option>
+                ))}
+              </select>
+
+              <button 
+                onClick={() => setShowRegisterModal(true)}
+                className="h-8 px-3 rounded-lg bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 border border-indigo-500/15 flex items-center gap-1.5 text-xs font-semibold transition-all"
               >
-                <Building2 className="h-3.5 w-3.5" />
-                <span>Admin Ledger</span>
-              </Link>
-              {/* Tooltip */}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-52 p-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] text-zinc-400 opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 shadow-2xl z-50 text-center leading-normal">
-                <p className="font-bold text-zinc-200 mb-0.5">Juristic Identity Ledger</p>
-                B2B consent records, enterprise identity resolution, and CSV lead exporter.
-              </div>
+                <Plus className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Register Tenant</span>
+              </button>
             </div>
-          </div>
+          )}
 
           <div className="flex items-center gap-3">
             <button 
-              onClick={handleExport}
-              disabled={leads.length === 0}
-              className="p-2 px-3 hover:bg-zinc-900 rounded-lg border border-zinc-800 transition-colors text-xs text-zinc-400 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={logout}
+              className="p-2 hover:bg-zinc-900 rounded-full border border-zinc-850 transition-colors text-zinc-500 hover:text-zinc-350"
+              title="Logout from console"
             >
-              <Download className="h-3.5 w-3.5" /> Export CSV
-            </button>
-            <button onClick={fetchData} className="p-2 hover:bg-zinc-900 rounded-full border border-zinc-800 transition-colors">
-              <RefreshCcw className={`h-4 w-4 text-zinc-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <LogOut className="h-4 w-4" />
             </button>
           </div>
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-6 mt-12">
-        {/* Stat Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-          <div className="border border-zinc-800/80 rounded-xl p-6 bg-zinc-900/10 backdrop-blur-sm">
-            <div className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 mb-1">Total Leads Captured</div>
-            <div className="text-3xl font-light text-zinc-100">{stats.total}</div>
-          </div>
-          <div className="border border-zinc-800/80 rounded-xl p-6 bg-zinc-900/10 backdrop-blur-sm">
-            <div className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 mb-1">Identified Profiles</div>
-            <div className="text-3xl font-light text-zinc-100">{stats.consentedCount}</div>
-          </div>
-          <div className="border border-zinc-800/80 rounded-xl p-6 bg-zinc-900/10 backdrop-blur-sm">
-            <div className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 mb-1">Consent Conversion</div>
-            <div className="text-3xl font-light text-indigo-400">{stats.consentRate}%</div>
-          </div>
-          <div className="border border-zinc-800/80 rounded-xl p-6 bg-zinc-900/10 backdrop-blur-sm">
-            <div className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 mb-1">Avg Engagement Dwell</div>
-            <div className="text-3xl font-light text-zinc-100">{stats.avgDwell}s</div>
-          </div>
+      {clients.length === 0 ? (
+        <div className="max-w-md mx-auto mt-32 p-8 border border-zinc-850 bg-zinc-950/20 rounded-2xl text-center backdrop-blur-md">
+          <Database className="h-10 w-10 text-zinc-600 mx-auto mb-4 animate-pulse" />
+          <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-300">No Clients Registered</h2>
+          <p className="text-xs text-zinc-500 mt-2 mb-6">Create your first client tenant profile to initialize telemetry tracking snippets.</p>
+          <button 
+            onClick={() => setShowRegisterModal(true)}
+            className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold uppercase tracking-widest flex items-center justify-center gap-1.5 mx-auto transition-colors"
+          >
+            <Plus className="h-4 w-4" /> Register Client
+          </button>
         </div>
+      ) : (
+        <div className="max-w-7xl mx-auto px-6 mt-10">
+          {selectedClient && (
+            <div className="border border-zinc-850/70 rounded-2xl bg-zinc-950/20 backdrop-blur-md p-6 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent" />
+              
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <h2 className="text-xl font-light tracking-tight">{selectedClient.company_name}</h2>
+                  <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
+                    selectedClient.subscription_status === 'active' 
+                      ? 'bg-green-500/10 text-green-400 border border-green-500/15' 
+                      : selectedClient.subscription_status === 'trial'
+                      ? 'bg-amber-500/10 text-amber-400 border border-amber-500/15'
+                      : 'bg-red-500/10 text-red-400 border border-red-500/15'
+                  }`}>
+                    {selectedClient.subscription_status}
+                  </span>
+                </div>
+                
+                <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-zinc-500 font-medium">
+                  <div className="flex items-center gap-1.5">
+                    <Globe className="h-3.5 w-3.5 text-zinc-600" />
+                    <span>{selectedClient.whitelisted_domains.join(', ')}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Sliders className="h-3.5 w-3.5 text-zinc-600" />
+                    <span>Consent Banner: {selectedClient.require_consent_banner ? 'Required' : 'Disabled'}</span>
+                  </div>
+                </div>
+              </div>
 
-        {/* Filter Controls */}
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-          <input 
-            type="text" 
-            placeholder="Search leads by name, email, company, industry or IP address..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 rounded-lg border border-zinc-800 bg-zinc-900/20 text-zinc-100 text-sm focus:outline-none focus:border-indigo-500/50 transition-colors placeholder:text-zinc-600"
-          />
-        </div>
+              {/* Snippet and Installation verify state */}
+              <div className="flex items-center gap-4 shrink-0">
+                <button
+                  onClick={() => setShowSnippetModal(true)}
+                  className="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 rounded-lg text-xs text-zinc-300 font-semibold flex items-center gap-1.5 transition-colors"
+                >
+                  <Code className="h-3.5 w-3.5 text-zinc-400" /> Script Tag
+                </button>
 
-        {/* Lead Table */}
-        <div className="border border-zinc-800 rounded-xl overflow-hidden bg-zinc-900/20 shadow-2xl">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-zinc-900/50 text-zinc-500 text-[10px] uppercase tracking-[0.2em] border-b border-zinc-800">
-              <tr>
-                <th className="px-6 py-5 font-bold">Identity</th>
-                <th className="px-6 py-5 font-bold">Entity / Firmographics</th>
-                <th className="px-6 py-5 font-bold">Forensics / IP</th>
-                <th className="px-6 py-5 font-bold">Engagement</th>
-                <th className="px-6 py-5 font-bold text-right">Captured</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800/50">
-              {filteredLeads.map((lead) => (
-                <tr key={lead.id} className="hover:bg-zinc-800/30 transition-colors group">
-                  <td className="px-6 py-6">
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 group-hover:border-indigo-500/35 transition-colors">
-                        <User className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-zinc-100 group-hover:text-indigo-400 transition-colors leading-none mb-1">
-                          {lead.name || "Anonymous Prospect"}
-                        </div>
-                        <div className="text-[10px] text-zinc-500 font-mono tracking-tighter flex items-center gap-1">
-                          <Mail className="h-3 w-3" /> {lead.email || "Identity Hidden"}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-6">
-                    <div className="font-medium text-zinc-200">{lead.company_name_raw || "Unverified Entity"}</div>
-                    <div className="text-[11px] text-zinc-500 flex items-center gap-1 mt-0.5">
-                      <Globe className="h-3 w-3 text-zinc-600" />
-                      <a 
-                        href={lead.website || `https://${lead.domain}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="hover:underline text-indigo-400"
-                      >
-                        {lead.website || lead.domain || "no-domain.io"}
-                      </a>
-                    </div>
-                  </td>
-                  <td className="px-6 py-6">
-                    <div className="text-zinc-300 text-xs flex items-center gap-1.5">
-                      <MapPin className="h-3 w-3 text-zinc-600" />
-                      {lead.city || 'Hub'}, {lead.region || 'ZAF'}
-                    </div>
-                    <div className="text-[10px] text-zinc-500 font-mono mt-1 flex items-center gap-1">
-                      <Network className="h-3 w-3 text-zinc-700" /> {lead.ip_address || "0.0.0.0"}
-                    </div>
-                  </td>
-                  <td className="px-6 py-6">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-3.5 w-3.5 text-zinc-600" />
-                      <span className="text-xs font-semibold text-zinc-300">
-                        {lead.duration || 0}s <span className="text-zinc-500 font-normal">dwell</span>
-                      </span>
-                    </div>
-                    <div className="text-[10px] text-zinc-500 mt-1 uppercase tracking-wider font-semibold">
-                      {lead.industry || "General Industry"}
-                    </div>
-                  </td>
-                  <td className="px-6 py-6 text-right">
-                    <div className="text-[11px] font-mono font-bold text-zinc-400">
-                      {new Date(lead.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </div>
-                    <div className="text-[10px] text-zinc-600 mt-0.5">
-                      {new Date(lead.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {filteredLeads.length === 0 && (
-            <div className="py-24 text-center">
-              <Activity className="h-8 w-8 text-zinc-800 mb-3 mx-auto animate-pulse" />
-              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600">No Captured Leads Found</h3>
+                <div className="flex items-center gap-2">
+                  <div className={`h-2 w-2 rounded-full ${installationStatus.installed ? 'bg-green-500 animate-pulse' : 'bg-amber-500 animate-pulse'}`} />
+                  <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                    {installationStatus.installed ? 'Installed & Active' : 'Awaiting Tracking'}
+                  </span>
+                </div>
+              </div>
             </div>
           )}
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+            <div className="border border-zinc-850/60 rounded-xl p-5 bg-zinc-950/10 backdrop-blur-sm">
+              <div className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 mb-1">Total Hits</div>
+              <div className="text-3xl font-light text-zinc-200">{stats.activeVisits}</div>
+            </div>
+            <div className="border border-zinc-850/60 rounded-xl p-5 bg-zinc-950/10 backdrop-blur-sm">
+              <div className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 mb-1">Leads Captured</div>
+              <div className="text-3xl font-light text-zinc-200">{stats.total}</div>
+            </div>
+            <div className="border border-zinc-850/60 rounded-xl p-5 bg-zinc-950/10 backdrop-blur-sm">
+              <div className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 mb-1">Identified Profiles</div>
+              <div className="text-3xl font-light text-zinc-200">{stats.warmCount}</div>
+            </div>
+            <div className="border border-zinc-850/60 rounded-xl p-5 bg-zinc-950/10 backdrop-blur-sm">
+              <div className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 mb-1">Warm Profile Rate</div>
+              <div className="text-3xl font-light text-indigo-400">{stats.warmRate}%</div>
+            </div>
+          </div>
+
+          {/* Search and Export */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="relative flex-grow">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
+              <input 
+                type="text" 
+                placeholder="Search leads by name, email, company, role..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-11 pr-4 py-3 rounded-lg border border-zinc-850 bg-zinc-950/10 text-zinc-250 text-sm focus:outline-none focus:border-indigo-500/40 transition-colors placeholder:text-zinc-650"
+              />
+            </div>
+            
+            <button 
+              onClick={handleExport}
+              disabled={leads.length === 0}
+              className="p-3 px-5 bg-zinc-950/60 border border-zinc-850 hover:bg-zinc-900 rounded-lg text-xs font-semibold text-zinc-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              <Download className="h-4 w-4" /> Export CSV
+            </button>
+            <button 
+              onClick={() => selectedClient && fetchLeads(selectedClient.id)} 
+              className="p-3 hover:bg-zinc-900 rounded-lg border border-zinc-850 bg-zinc-950/60 transition-colors flex items-center justify-center"
+            >
+              <RefreshCcw className={`h-4 w-4 text-zinc-400 ${leadsLoading || isRefreshing ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+
+          {/* Leads Table */}
+          <div className="border border-zinc-850/60 rounded-xl overflow-hidden bg-zinc-950/10 shadow-2xl backdrop-blur-sm">
+            {leadsLoading ? (
+              <div className="py-24 text-center">
+                <div className="h-6 w-6 border-2 border-zinc-850 border-t-indigo-500 rounded-full animate-spin mx-auto mb-3" />
+                <span className="text-[10px] uppercase font-bold tracking-widest text-zinc-500">Querying database...</span>
+              </div>
+            ) : (
+              <table className="w-full text-left text-sm">
+                <thead className="bg-zinc-950/40 text-zinc-500 text-[10px] uppercase tracking-[0.25em] border-b border-zinc-850">
+                  <tr>
+                    <th className="px-6 py-4 font-bold">Identity</th>
+                    <th className="px-6 py-4 font-bold">Corporate Firmographics</th>
+                    <th className="px-6 py-4 font-bold">Role / Dept</th>
+                    <th className="px-6 py-4 font-bold">Warm Status</th>
+                    <th className="px-6 py-4 font-bold text-right">Captured</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-850/50">
+                  {filteredLeads.map((lead) => (
+                    <tr key={lead.id} className="hover:bg-zinc-900/10 transition-colors group">
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 group-hover:border-indigo-500/25 transition-colors">
+                            <User className="h-4 w-4 text-zinc-500" />
+                          </div>
+                          <div>
+                            <div className="font-semibold text-zinc-250 group-hover:text-indigo-400 transition-colors leading-none mb-1">
+                              {lead.name || "Anonymous Prospect"}
+                            </div>
+                            <div className="text-[10px] text-zinc-500 font-mono tracking-tighter flex items-center gap-1">
+                              <Mail className="h-3 w-3 text-zinc-600" /> {lead.email || "Identity Hidden"}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="font-medium text-zinc-300">{lead.company?.name || "Unverified Entity"}</div>
+                        {lead.company?.domain && (
+                          <div className="text-[11px] text-zinc-500 flex items-center gap-1 mt-0.5">
+                            <Globe className="h-3 w-3 text-zinc-650" />
+                            <a 
+                              href={`https://${lead.company.domain}`} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="hover:underline text-indigo-400"
+                            >
+                              {lead.company.domain}
+                            </a>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="text-zinc-300 text-xs font-semibold">{lead.position || 'Visitor'}</div>
+                        <div className="text-[10px] text-zinc-500 mt-0.5">{lead.department || 'Operations'}</div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
+                          lead.is_warm 
+                            ? 'bg-green-500/10 text-green-400 border border-green-500/15' 
+                            : 'bg-zinc-800 text-zinc-500'
+                        }`}>
+                          {lead.is_warm ? 'Warm' : 'Silent'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-5 text-right">
+                        <div className="text-[11px] font-mono font-bold text-zinc-400">
+                          {new Date(lead.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </div>
+                        <div className="text-[10px] text-zinc-600 mt-0.5">
+                          {new Date(lead.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            {filteredLeads.length === 0 && !leadsLoading && (
+              <div className="py-24 text-center">
+                <Activity className="h-8 w-8 text-zinc-800 mb-3 mx-auto animate-pulse" />
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600">No Leads Recorded</h3>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* REGISTER CLIENT MODAL */}
+      {showRegisterModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+          <div className="w-full max-w-lg bg-[#0c0c0e] border border-zinc-850 rounded-2xl overflow-hidden relative shadow-2xl animate-zoom">
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-indigo-500/35 to-transparent" />
+            
+            <div className="flex justify-between items-center p-6 border-b border-zinc-900">
+              <div className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-indigo-400" />
+                <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-250">Register New Tenant</h3>
+              </div>
+              <button 
+                onClick={() => setShowRegisterModal(false)}
+                className="p-1.5 hover:bg-zinc-900 rounded-lg text-zinc-550 hover:text-zinc-300 transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleRegisterClient} className="p-6 space-y-6">
+              {formError && (
+                <div className="flex items-start gap-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-400">
+                  <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                  <span>{formError}</span>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <label htmlFor="companyName" className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Company Name</label>
+                <input 
+                  id="companyName"
+                  type="text" 
+                  required
+                  placeholder="e.g. Acme Industrial Mining"
+                  value={newCompanyName}
+                  onChange={(e) => setNewCompanyName(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-850 focus:border-indigo-500/40 focus:outline-none rounded-lg p-3 text-sm text-zinc-200 transition-colors"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="whitelistedDomains" className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Whitelisted Domains</label>
+                <input 
+                  id="whitelistedDomains"
+                  type="text" 
+                  required
+                  placeholder="e.g. acme.com, staging.acme.com"
+                  value={newWhitelistedDomains}
+                  onChange={(e) => setNewWhitelistedDomains(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-850 focus:border-indigo-500/40 focus:outline-none rounded-lg p-3 text-sm text-zinc-200 transition-colors"
+                />
+                <span className="text-[10px] text-zinc-650 block">Comma-separated list of domains whitelisted to call client script tag APIs.</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="subStatus" className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Subscription Status</label>
+                  <select 
+                    id="subStatus"
+                    value={newSubStatus}
+                    onChange={(e) => setNewSubStatus(e.target.value as any)}
+                    className="w-full bg-zinc-950 border border-zinc-850 focus:border-indigo-500/40 focus:outline-none rounded-lg p-3 text-sm text-zinc-300"
+                  >
+                    <option value="trial">Trial</option>
+                    <option value="active">Active</option>
+                    <option value="suspended">Suspended</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-3 pt-6 pl-2">
+                  <input 
+                    type="checkbox" 
+                    id="requireConsent"
+                    checked={newRequireConsent}
+                    onChange={(e) => setNewRequireConsent(e.target.checked)}
+                    className="h-4 w-4 bg-zinc-950 border border-zinc-850 rounded focus:ring-indigo-500/20 text-indigo-650 cursor-pointer"
+                  />
+                  <label htmlFor="requireConsent" className="text-xs text-zinc-400 select-none cursor-pointer font-medium">Require Consent Banner</label>
+                </div>
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowRegisterModal(false)}
+                  className="flex-1 py-3 bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 rounded-lg text-xs font-semibold uppercase tracking-widest text-zinc-400 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={formLoading}
+                  className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold uppercase tracking-widest flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  {formLoading ? 'Registering...' : 'Register Profile'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* SNIPPET MODAL */}
+      {showSnippetModal && selectedClient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+          <div className="w-full max-w-lg bg-[#0c0c0e] border border-zinc-850 rounded-2xl overflow-hidden relative shadow-2xl animate-zoom">
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-indigo-500/35 to-transparent" />
+            
+            <div className="flex justify-between items-center p-6 border-b border-zinc-900">
+              <div className="flex items-center gap-2">
+                <Code className="h-5 w-5 text-indigo-400" />
+                <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-250 font-sans">Edge Deployment Tag</h3>
+              </div>
+              <button 
+                onClick={() => setShowSnippetModal(false)}
+                className="p-1.5 hover:bg-zinc-900 rounded-lg text-zinc-550 hover:text-zinc-300 transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                Embed this client-side tracking tag immediately inside the production HTML <code className="text-amber-400 font-mono text-[11px]">&lt;head&gt;</code> tag of <strong className="text-zinc-200">{selectedClient.company_name}</strong> to initialize B2B identity analytics.
+              </p>
+
+              <div className="relative group">
+                <pre className="bg-zinc-950 border border-zinc-850 rounded-xl p-4 pr-12 text-[11px] font-mono text-zinc-300 overflow-x-auto whitespace-pre-wrap leading-relaxed shadow-inner">
+                  {`<script src="https://cdn.auraworks.co.za/aura.js" data-client-id="${selectedClient.id}" defer></script>`}
+                </pre>
+                
+                <button
+                  onClick={handleCopySnippet}
+                  className="absolute right-3 top-3 p-2 bg-zinc-900/80 hover:bg-zinc-850 border border-zinc-800 rounded-lg text-zinc-400 hover:text-zinc-250 transition-all shadow-md flex items-center justify-center"
+                  title="Copy snippet to clipboard"
+                >
+                  {copied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
+                </button>
+              </div>
+
+              {installationStatus.installed ? (
+                <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-start gap-3">
+                  <ShieldCheck className="h-5 w-5 text-green-400 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-xs font-bold text-green-400 uppercase tracking-wider">Installation Verified</h4>
+                    <p className="text-[11px] text-zinc-400 leading-normal mt-1">
+                      Our tracking engine has received {installationStatus.visit_count} verification payloads for this client_id. Analytics collection is active.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5 animate-pulse" />
+                  <div>
+                    <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider animate-pulse">Awaiting Verification Payload</h4>
+                    <p className="text-[11px] text-zinc-400 leading-normal mt-1">
+                      The console is actively polling the Visit table. Ensure the script tag is embedded on the whitelisted domains and trigger a visitor page view.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={() => setShowSnippetModal(false)}
+                className="w-full py-3 bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 rounded-lg text-xs font-semibold uppercase tracking-widest text-zinc-300 transition-colors"
+              >
+                Close Deployment Console
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
