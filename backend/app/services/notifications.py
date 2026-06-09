@@ -617,3 +617,44 @@ async def check_and_trigger_company_surge(company_id: UUID, client_id: UUID, ses
                 company_id=company_id,
                 unique_visitor_count=unique_visitors
             )
+
+
+async def post_cancellation_pending_to_slack(client_id: UUID, company_name: str):
+    """
+    Pings the support Slack channel notifying that a client has requested cancellation.
+    """
+    webhook_url = settings.SLACK_SUPPORT_WEBHOOK_URL or settings.SLACK_WEBHOOK_URL
+    if not webhook_url:
+        logger.warning("Slack webhook url not configured, skipping cancellation ping.")
+        return
+        
+    payload = {
+        "text": f"⚠️ Cancellation Requested: {company_name}",
+        "blocks": [
+            {
+                "type": "header",
+                "text": {"type": "plain_text", "text": "⚠️ Retention Alert: Cancellation Requested"}
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"*Retention Action Required:* Client *{company_name}* has requested subscription cancellation."
+                }
+            },
+            {
+                "type": "context",
+                "elements": [
+                    {"type": "mrkdwn", "text": f"Client ID: `{client_id}`"}
+                ]
+            }
+        ]
+    }
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(webhook_url, json=payload, timeout=10.0)
+            response.raise_for_status()
+            logger.info(f"Cancellation alert successfully posted to Slack for client {client_id}")
+        except Exception as e:
+            logger.error(f"🚨 post_cancellation_pending_to_slack Failure: {e}")

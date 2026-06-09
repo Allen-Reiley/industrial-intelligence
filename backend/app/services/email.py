@@ -202,3 +202,69 @@ async def send_inbound_auto_reply(to_email: str, recipient_alias: str) -> bool:
         subject=subject,
         html_content=html_template
     )
+
+from uuid import UUID
+
+async def send_trial_warning_email(recipient_email: str, client_id: UUID) -> bool:
+    """
+    Sends a warning email to clients exactly 48 hours before their free trial expires,
+    notifying them of the upcoming automated billing.
+    Provides a retention gate cancellation link.
+    """
+    subject = "Important: Your AuraWorks Free Trial is Expiring in 48 Hours"
+    cancel_link = f"http://localhost:3000/cancel-request?client_id={client_id}"
+    
+    html_template = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #fafafa; color: #1a1a1a; margin: 0; padding: 40px; }}
+            .card {{ max-width: 520px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e5e5; border-radius: 4px; padding: 40px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02); }}
+            .brand {{ font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: #737373; margin-bottom: 32px; }}
+            .greeting {{ font-size: 15px; font-weight: 500; margin-bottom: 16px; color: #171717; }}
+            .body-text {{ font-size: 14px; line-height: 1.6; color: #404040; margin-bottom: 24px; }}
+            .cta-container {{ margin: 32px 0; text-align: left; }}
+            .cta-button {{ display: inline-block; font-size: 13px; font-weight: 600; color: #ef4444 !important; background: #fee2e2; border: 1px solid #fca5a5; padding: 12px 24px; text-decoration: none; border-radius: 4px; letter-spacing: 0.05em; }}
+            .cta-button:hover {{ background: #fecaca; }}
+            .status-tag {{ display: inline-block; font-size: 12px; font-family: monospace; background: #fef3c7; color: #92400e; padding: 6px 12px; border-radius: 2px; margin-bottom: 24px; font-weight: 500; }}
+            .footer {{ border-top: 1px solid #f3f3f3; padding-top: 24px; font-size: 11px; color: #a3a3a3; letter-spacing: 0.05em; line-height: 1.5; }}
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <div class="brand">AuraWorks Account Billing</div>
+            <div class="greeting">Hello,</div>
+            
+            <div class="body-text">
+                This email is to notify you that your 14-day free trial of AuraWorks is expiring in 48 hours.
+            </div>
+            
+            <div class="status-tag">STATUS: TRIAL_EXPIRING_WARNING</div>
+            
+            <div class="body-text">
+                If you choose to continue unmasking high-value industrial traffic, no action is required on your part. Your card on file will be automatically charged in 48 hours for your chosen plan.
+            </div>
+
+            <div class="body-text">
+                If you wish to cancel your subscription, please submit a cancellation request below:
+            </div>
+
+            <div class="cta-container">
+                <a href="{cancel_link}" class="cta-button" target="_blank">Request Subscription Cancellation</a>
+            </div>
+            
+            <div class="footer">
+                AuraWorks (Pty) Ltd &bull; Where presence meets performance.
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    return await send_resend_email(
+        to_email=recipient_email,
+        subject=subject,
+        html_content=html_template
+    )

@@ -50,6 +50,7 @@ class SubscriptionStatus(str, Enum):
     TRIAL = "trial"
     ACTIVE = "active"
     SUSPENDED = "suspended"
+    CANCELLATION_PENDING = "cancellation_pending"
 
 class ClientBase(SQLModel):
     company_name: str = Field(index=True)
@@ -71,6 +72,20 @@ class ClientBase(SQLModel):
     is_active: bool = Field(default=False)
     collect_personal_data: bool = Field(default=False)
     require_consent_banner: bool = Field(default=False)
+    payment_method_token: Optional[str] = Field(default=None, nullable=True)
+    custom_monthly_amount: Optional[int] = Field(default=None, nullable=True)
+    billing_cycle: str = Field(default="monthly", nullable=False)
+    trial_ends_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    tc_accepted_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    tc_accepted_ip: Optional[str] = Field(default=None, nullable=True)
+    cancellation_requested: bool = Field(default=False, nullable=False)
+    trial_warning_sent: bool = Field(default=False, nullable=False)
 
     def __init__(self, **data: Any):
         domain = data.get("domain")

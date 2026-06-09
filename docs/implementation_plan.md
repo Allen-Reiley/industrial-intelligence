@@ -167,5 +167,15 @@ Build the POST /api/v1/webhooks/ikhokha public webhook endpoint, validating HMAC
 Task 14.5: Next.js Admin Billing UI & Test Trigger
 Update the client detail view inside the administrative console to display billing status, monthly billing amount adjustments, transaction ledger history, and a manual payment simulation testing trigger.
 
-
-
+Phase 15: Automated Checkout, Proration & 2-Week Trial Implementation
+This phase finalizes the commercial pipeline by implementing automated trial conversions, dynamic prorated billing math, recurring cron jobs, and legally compliant T&C logging.
+Task 15.1: DB Models & Migrations
+Add billing_cycle, trial_ends_at, tc_accepted_at, tc_accepted_ip, and cancellation_requested fields to the Client model. Write DB tests.
+Task 15.2: Checkout Flow & UI Updates
+Update the Next.js UI to support Monthly/Annual selection and Terms & Conditions checkbox. Write UI tests.
+Task 15.3: Proration Mathematics Engine
+Build dynamic proration math logic on the backend for Early (Full), Mid (Half), and Late (Daily) month calculations. Write math unit tests.
+Task 15.4: Trial Automation Worker
+Implement trial expiration checks, warning email alerts dispatched via Resend 48 hours prior, and `/cancel-request` cancellation endpoints with #support Slack alerts. Write time-mocked tests.
+Task 15.5: Recurring Billing & Grace Period Engine
+Build recurring cron jobs for Monthly (1st of month + 3-day grace) and Annual (Anniversary + 7-day grace) billing triggers utilizing Ikhokha tokens. Write recurring cron tests.

@@ -80,3 +80,11 @@
     - [x] Task 14.3: Checkout Setup API Endpoint
     - [x] Task 14.4: Ikhokha Webhook Processing & HMAC Verification
     - [x] Task 14.5: Next.js Admin Billing UI & Test Trigger
+
+- [x] **PHASE 15: AUTOMATED CHECKOUT, PRORATION & 2-WEEK TRIAL IMPLEMENTATION**
+    - [x] Task 15.1: DB Models & Migrations
+    - [x] Task 15.2: Checkout Flow & UI Updates
+    - [x] Task 15.3: Proration Mathematics Engine
+    - [x] Task 15.4: Trial Automation Worker
+    - [x] Task 15.5: Recurring Billing & Grace Period Engine
+

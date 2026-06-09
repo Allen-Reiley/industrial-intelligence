@@ -97,3 +97,37 @@ async def test_store_payment_method_token_db():
     mock_session.add.assert_called_once_with(mock_client)
     mock_session.commit.assert_called_once()
     mock_session.refresh.assert_called_once_with(mock_client)
+
+from datetime import datetime
+from app.services.payment import calculate_prorated_amount
+
+def test_proration_mathematics():
+    """
+    Strict unit tests asserting the exact ZAR output for trial expirations 
+    on the 3rd (Full), 15th (R5k), and 25th (Daily rate) of a 30-day and 31-day month.
+    """
+    # June 2026 has 30 days
+    june_3 = datetime(2026, 6, 3, 12, 0, 0)
+    june_15 = datetime(2026, 6, 15, 12, 0, 0)
+    june_25 = datetime(2026, 6, 25, 12, 0, 0)
+    
+    # Assertions for 30-day month (June)
+    # 3rd of June -> Full price (1000000 cents)
+    assert calculate_prorated_amount(june_3) == 1000000
+    # 15th of June -> Flat R5k (500000 cents)
+    assert calculate_prorated_amount(june_15) == 500000
+    # 25th of June -> 6 days remaining -> (1000000 / 30) * 6 = 200000 cents
+    assert calculate_prorated_amount(june_25) == 200000
+
+    # July 2026 has 31 days
+    july_3 = datetime(2026, 7, 3, 12, 0, 0)
+    july_15 = datetime(2026, 7, 15, 12, 0, 0)
+    july_25 = datetime(2026, 7, 25, 12, 0, 0)
+
+    # Assertions for 31-day month (July)
+    # 3rd of July -> Full price (1000000 cents)
+    assert calculate_prorated_amount(july_3) == 1000000
+    # 15th of July -> Flat R5k (500000 cents)
+    assert calculate_prorated_amount(july_15) == 500000
+    # 25th of July -> 7 days remaining -> round((1000000 / 31) * 7) = 225806 cents
+    assert calculate_prorated_amount(july_25) == 225806

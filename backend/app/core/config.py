@@ -1,6 +1,10 @@
 # backend/app/core/config.py
+from dotenv import load_dotenv
+load_dotenv()
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional, List
+
 
 class Settings(BaseSettings):
     # --- APP SETTINGS ---

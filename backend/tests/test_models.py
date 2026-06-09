@@ -167,3 +167,49 @@ def test_transaction_crud():
         assert deleted_tx is None
 
 
+def test_client_phase_15_billing_fields():
+    """
+    Verifies that billing_cycle, trial_ends_at, tc_accepted_at, tc_accepted_ip,
+    and cancellation_requested on the Client model are successfully stored and loaded.
+    """
+    engine = create_engine("sqlite:///:memory:")
+    SQLModel.metadata.create_all(engine)
+
+    from datetime import datetime, timezone
+    from app.models.client import SubscriptionStatus
+
+    trial_end = datetime(2026, 6, 23, 12, 0, 0, tzinfo=timezone.utc)
+    tc_accept = datetime(2026, 6, 9, 12, 0, 0, tzinfo=timezone.utc)
+
+    with Session(engine) as session:
+        client = Client(
+            company_name="Phase 15 Corp",
+            whitelisted_domains=["phase15.co.za"],
+            subscription_status=SubscriptionStatus.TRIAL,
+            is_active=True,
+            billing_cycle="annual",
+            trial_ends_at=trial_end,
+            tc_accepted_at=tc_accept,
+            tc_accepted_ip="192.168.1.100",
+            cancellation_requested=True
+        )
+        session.add(client)
+        session.commit()
+        session.refresh(client)
+
+        assert client.id is not None
+        assert client.billing_cycle == "annual"
+        assert client.trial_ends_at.replace(tzinfo=timezone.utc) == trial_end
+        assert client.tc_accepted_at.replace(tzinfo=timezone.utc) == tc_accept
+        assert client.tc_accepted_ip == "192.168.1.100"
+        assert client.cancellation_requested is True
+
+        # Test new SubscriptionStatus enum value
+        client.subscription_status = SubscriptionStatus.CANCELLATION_PENDING
+        session.add(client)
+        session.commit()
+        session.refresh(client)
+        assert client.subscription_status == SubscriptionStatus.CANCELLATION_PENDING
+
+
+

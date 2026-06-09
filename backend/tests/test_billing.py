@@ -29,7 +29,10 @@ async def test_billing_setup_unauthorized():
     payload = {
         "client_id": str(uuid4()),
         "amount": 1000000,
-        "redirect_url": "http://redirect.com"
+        "redirect_url": "http://redirect.com",
+        "billing_cycle": "monthly",
+        "tc_accepted": True,
+        "tc_accepted_ip": "127.0.0.1"
     }
     
     # 1. No authorization header should be rejected (returns 401 for get_current_admin)
@@ -39,12 +42,37 @@ async def test_billing_setup_unauthorized():
     )
     assert response.status_code == 401
 
+async def test_billing_setup_tc_rejected():
+    client = await get_test_client()
+    payload = {
+        "client_id": str(uuid4()),
+        "amount": 1000000,
+        "redirect_url": "http://redirect.com",
+        "billing_cycle": "monthly",
+        "tc_accepted": False,
+        "tc_accepted_ip": "127.0.0.1"
+    }
+    
+    token = create_access_token(data={"sub": "admin"})
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    response = await client.post(
+        f"{settings.API_V1_STR}/billing/setup",
+        json=payload,
+        headers=headers
+    )
+    assert response.status_code == 400
+    assert "Terms & Conditions must be accepted" in response.json()["detail"]
+
 async def test_billing_setup_client_not_found():
     client = await get_test_client()
     payload = {
         "client_id": str(uuid4()),
         "amount": 1000000,
-        "redirect_url": "http://redirect.com"
+        "redirect_url": "http://redirect.com",
+        "billing_cycle": "monthly",
+        "tc_accepted": True,
+        "tc_accepted_ip": "127.0.0.1"
     }
     
     token = create_access_token(data={"sub": "admin"})
@@ -61,26 +89,32 @@ async def test_billing_setup_client_not_found():
 async def test_billing_setup_success():
     client = await get_test_client()
     client_uuid = uuid4()
+    
+    # Seed the client in the real DB
+    async with async_session_maker() as session:
+        client_row = Client(
+            id=client_uuid,
+            company_name="Setup Success Test Client",
+            whitelisted_domains=["success.com"],
+            custom_monthly_amount=1000000
+        )
+        session.add(client_row)
+        await session.commit()
+
     payload = {
         "client_id": str(client_uuid),
         "amount": 1200000,
-        "redirect_url": "http://redirect.com"
+        "redirect_url": "http://redirect.com",
+        "billing_cycle": "annual",
+        "tc_accepted": True,
+        "tc_accepted_ip": "192.168.1.55"
     }
     
     token = create_access_token(data={"sub": "admin"})
     headers = {"Authorization": f"Bearer {token}"}
     
-    # Mock database session lookup and Ikhokha Client call
-    mock_client_db = Client(
-        id=client_uuid,
-        company_name="Setup Success Test Client",
-        whitelisted_domains=["success.com"],
-        custom_monthly_amount=1000000
-    )
-    
-    with patch("sqlalchemy.ext.asyncio.AsyncSession.get", return_value=mock_client_db), \
-         patch("app.services.payment.IkhokhaClient.create_payment_intent") as mock_create_intent:
-        
+    # Mock only Ikhokha Client call
+    with patch("app.services.payment.IkhokhaClient.create_payment_intent") as mock_create_intent:
         mock_create_intent.return_value = {
             "intentId": "ik_intent_abc",
             "redirectUrl": "https://gateway.ikhokha.com/checkout/ik_intent_abc"
@@ -104,6 +138,21 @@ async def test_billing_setup_success():
             amount=1200000,
             redirect_url="http://redirect.com"
         )
+        
+    # Verify client details in DB
+    async with async_session_maker() as session:
+        client_db = await session.get(Client, client_uuid)
+        assert client_db.billing_cycle == "annual"
+        assert client_db.subscription_status == "trial"
+        assert client_db.is_active is True
+        assert client_db.tc_accepted_at is not None
+        assert client_db.tc_accepted_ip == "192.168.1.55"
+        assert client_db.trial_ends_at is not None
+        # Should be roughly 14 days from now
+        from datetime import datetime, timezone, timedelta
+        now = datetime.now(timezone.utc)
+        diff = client_db.trial_ends_at.replace(tzinfo=timezone.utc) - now
+        assert abs(diff.total_seconds() - 14 * 24 * 3600) < 60  # within a minute
 
 
 async def test_client_patch_success():
