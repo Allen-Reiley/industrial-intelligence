@@ -5,7 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
-from typing import Optional
+from typing import Optional, List
+from pydantic import BaseModel
+
 
 from app.db import get_async_session
 from app.models.client import Client, ClientCreate, ClientPublic, ClientCategory
@@ -197,3 +199,50 @@ async def verify_client_installation(
     res = await session.execute(stmt)
     count = res.scalar() or 0
     return {"installed": count > 0, "visit_count": count}
+
+
+class ClientUpdatePayload(BaseModel):
+    company_name: Optional[str] = None
+    whitelisted_domains: Optional[List[str]] = None
+    subscription_status: Optional[str] = None
+    require_consent_banner: Optional[bool] = None
+    collect_personal_data: Optional[bool] = None
+    is_active: Optional[bool] = None
+    custom_monthly_amount: Optional[int] = None
+
+
+@router.patch("/{client_id}", response_model=ClientPublic)
+async def update_client(
+    client_id: UUID,
+    payload: ClientUpdatePayload,
+    session: AsyncSession = Depends(get_async_session),
+    admin: str = Depends(get_current_admin)
+):
+    """
+    Updates a client tenant profile's configurations and fields.
+    """
+    from app.models.client import SubscriptionStatus
+
+    client = await session.get(Client, client_id)
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+
+    if payload.company_name is not None:
+        client.company_name = payload.company_name
+    if payload.whitelisted_domains is not None:
+        client.whitelisted_domains = payload.whitelisted_domains
+    if payload.subscription_status is not None:
+        client.subscription_status = SubscriptionStatus(payload.subscription_status)
+    if payload.require_consent_banner is not None:
+        client.require_consent_banner = payload.require_consent_banner
+    if payload.collect_personal_data is not None:
+        client.collect_personal_data = payload.collect_personal_data
+    if payload.is_active is not None:
+        client.is_active = payload.is_active
+    if payload.custom_monthly_amount is not None:
+        client.custom_monthly_amount = payload.custom_monthly_amount
+
+    session.add(client)
+    await session.commit()
+    await session.refresh(client)
+    return client

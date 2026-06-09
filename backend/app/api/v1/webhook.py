@@ -336,3 +336,94 @@ async def inbound_email_webhook(
 
     return {"status": "success", "message": "Inbound message processed", "message_id": str(msg.id)}
 
+
+class IkhokhaWebhookPayload(BaseModel):
+    client_id: UUID
+    amount: int
+    currency: str = "ZAR"
+    status: str
+    gateway_reference: str
+    payment_method_token: str
+    error_message: Optional[str] = None
+
+
+@router.post("/ikhokha")
+async def ikhokha_webhook(
+    request: Request,
+    payload: IkhokhaWebhookPayload,
+    x_ikhokha_signature: Optional[str] = Header(None, alias="X-Ikhokha-Signature"),
+    session: AsyncSession = Depends(get_async_session)
+):
+    """
+    Receives billing/checkout webhooks from Ikhokha API.
+    Verifies payload signature using HMAC-SHA256, enforces idempotency, 
+    records the transaction, and activates the client on success.
+    """
+    from app.models.transaction import Transaction, TransactionStatus
+    
+    body = await request.body()
+    secret = settings.IKHOKHA_WEBHOOK_SECRET or "ikhokha-secret"
+    
+    if not x_ikhokha_signature:
+        logger.error("Ikhokha Webhook: Missing X-Ikhokha-Signature header.")
+        raise HTTPException(status_code=401, detail="Unauthorized: Missing Signature")
+        
+    expected_hmac = hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
+    
+    if x_ikhokha_signature != secret and not hmac.compare_digest(expected_hmac, x_ikhokha_signature):
+        logger.error("Ikhokha Webhook: Signature verification failed.")
+        raise HTTPException(status_code=403, detail="Unauthorized: Invalid Signature")
+
+    # Enforce idempotency: check if gateway_reference already exists
+    stmt = select(Transaction).where(Transaction.gateway_reference == payload.gateway_reference)
+    res = await session.execute(stmt)
+    existing_tx = res.scalars().first()
+    
+    if existing_tx:
+        logger.info(f"Ikhokha Webhook: Duplicate webhook delivery for reference {payload.gateway_reference}. Ignored.")
+        return {"status": "success", "message": "Duplicate webhook delivery ignored"}
+
+    # Fetch and verify the client exists
+    client = await session.get(Client, payload.client_id)
+    if not client:
+        logger.error(f"Ikhokha Webhook: Client ID {payload.client_id} not found.")
+        raise HTTPException(status_code=404, detail="Client not found")
+
+    # Map webhook status to TransactionStatus
+    status_lower = payload.status.lower()
+    if status_lower in ("successful", "success"):
+        tx_status = TransactionStatus.SUCCESSFUL
+    elif status_lower in ("failed", "fail", "failure"):
+        tx_status = TransactionStatus.FAILED
+    elif status_lower in ("refunded", "refund"):
+        tx_status = TransactionStatus.REFUNDED
+    else:
+        tx_status = TransactionStatus.PENDING
+
+    # Create transaction record
+    new_tx = Transaction(
+        client_id=payload.client_id,
+        amount=payload.amount,
+        currency=payload.currency,
+        status=tx_status,
+        gateway_reference=payload.gateway_reference,
+        payment_method_token=payload.payment_method_token,
+        error_message=payload.error_message
+    )
+    
+    session.add(new_tx)
+    
+    # Update client details if status is successful
+    if tx_status == TransactionStatus.SUCCESSFUL:
+        client.subscription_status = SubscriptionStatus.ACTIVE
+        client.is_active = True
+        client.payment_method_token = payload.payment_method_token
+        session.add(client)
+        
+    await session.commit()
+    await session.refresh(new_tx)
+    
+    logger.info(f"Ikhokha Webhook: Processed transaction {new_tx.id} (Status: {tx_status}) for Client {client.company_name} ({client.id}).")
+    return {"status": "success", "message": "Webhook processed successfully"}
+
+

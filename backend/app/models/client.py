@@ -36,6 +36,8 @@ class ClientBase(SQLModel):
     is_active: bool = Field(default=False)
     collect_personal_data: bool = Field(default=False)
     require_consent_banner: bool = Field(default=False)
+    payment_method_token: Optional[str] = Field(default=None, nullable=True)
+    custom_monthly_amount: Optional[int] = Field(default=None, nullable=True)
 
     def __init__(self, **data: Any):
         domain = data.get("domain")

@@ -20,6 +20,12 @@ class Settings(BaseSettings):
     REDIS_URL: Optional[str] = None
     PAYGENIUS_WEBHOOK_SECRET: Optional[str] = None
     
+    # --- IKHOKHA PAYMENT INTEGRATION ---
+    IKHOKHA_API_URL: str = "https://api.ikhokha.com"
+    IKHOKHA_CLIENT_ID: Optional[str] = None
+    IKHOKHA_CLIENT_SECRET: Optional[str] = None
+    IKHOKHA_WEBHOOK_SECRET: Optional[str] = None
+    
     # --- ENRICHMENT TRIAD (National Scaling) ---
     IPINFO_TOKEN: Optional[str] = None 
     APOLLO_API_KEY: Optional[str] = None 

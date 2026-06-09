@@ -154,4 +154,18 @@ Build the login page, secure /admin layout, and Next.js middleware for authentic
 Task 13.5: Client Provisioning UI & Telemetry Indicator
 Create the register client forms, snippet generation modal with one-click copy, and live installation status verification using db visit polling.
 
+Phase 14: Payment Gateway Integration Implementation
+This phase establishes the foundational financial plumbing, integrating the Ikhokha API for ZAR transactions, tokenization for future recurring billing, and a secure internal transaction ledger.
+Task 14.1: Database Schema & Alembic Migration
+Create the Transaction SQLModel database ledger and add payment_method_token and custom_monthly_amount fields to the Client model. Generate Alembic migrations.
+Task 14.2: Ikhokha Payment Service & API Client
+Build the backend/app/services/payment.py service client to handle creating payment intents, checking transaction status, and storing card payment tokens from Ikhokha.
+Task 14.3: Checkout Setup API Endpoint
+Build the POST /api/v1/billing/setup checkout creation route that initiates the payment flow and provides redirect credentials or client secrets to the frontend.
+Task 14.4: Ikhokha Webhook Processing & HMAC Verification
+Build the POST /api/v1/webhooks/ikhokha public webhook endpoint, validating HMAC-SHA256 signatures, enforcing gateway reference idempotency, and updating client billing state in the database.
+Task 14.5: Next.js Admin Billing UI & Test Trigger
+Update the client detail view inside the administrative console to display billing status, monthly billing amount adjustments, transaction ledger history, and a manual payment simulation testing trigger.
+
+
 

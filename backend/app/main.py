@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 
 from app.core.config import settings
 from app.db import init_db, get_async_session
-from app.api.v1 import track, clients, identity, prospects, leads, webhook, auth
+from app.api.v1 import track, clients, identity, prospects, leads, webhook, auth, billing
 from app.models import Prospect, Company
 from app.tasks.janitor import cleanup_unverified_visits
 from app.core.scheduler import start_scheduler
@@ -121,6 +121,7 @@ app.include_router(prospects.router, prefix=f"{settings.API_V1_STR}/prospects", 
 app.include_router(leads.router, prefix=f"{settings.API_V1_STR}/leads", tags=["leads"]) # Primary Ledger
 app.include_router(webhook.router, prefix=f"{settings.API_V1_STR}/webhook", tags=["webhooks"])
 app.include_router(webhook.router, prefix=f"{settings.API_V1_STR}/webhooks", tags=["webhooks"])
+app.include_router(billing.router, prefix=f"{settings.API_V1_STR}/billing", tags=["billing"])
 
 @app.get("/health")
 def health_check():

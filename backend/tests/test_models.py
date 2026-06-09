@@ -13,6 +13,7 @@ from app.models.enrichment_queue import EnrichmentQueue, FailedEnrichment
 from app.models.notification_throttle import NotificationThrottle
 from app.models.crm_dead_letter import CrmDeadLetter
 from app.models.inbound_message import InboundMessage, MessageStatus
+from app.models.transaction import Transaction, TransactionStatus
 
 def test_database_schema_initialization():
     """
@@ -32,7 +33,7 @@ def test_database_schema_initialization():
         "client", "company", "department", "visit", 
         "page_view", "prospect", "enrichment_queue", 
         "failed_enrichment", "notification_throttle", "crm_dead_letter",
-        "inbound_message"
+        "inbound_message", "transaction"
     ]
     
     for t in expected_tables:
@@ -104,4 +105,65 @@ def test_client_whitelisted_domains_validation():
         assert client.domain == "test.com"
         assert client.whitelisted_domains == ["test.com", "staging.test.com"]
         assert client.subscription_status == SubscriptionStatus.TRIAL
+
+def test_transaction_crud():
+    """
+    Verifies that Transaction records can be created, read, updated, and deleted.
+    """
+    engine = create_engine("sqlite:///:memory:")
+    SQLModel.metadata.create_all(engine)
+
+    with Session(engine) as session:
+        # Create a client for foreign key reference
+        client = Client(
+            company_name="AuraWorks Finance Client",
+            whitelisted_domains=["finance.com"],
+            subscription_status="active",
+            is_active=True,
+            payment_method_token="pm_token_123",
+            custom_monthly_amount=1000000 # R10,000 in cents
+        )
+        session.add(client)
+        session.commit()
+        session.refresh(client)
+
+        # Create Transaction
+        tx = Transaction(
+            client_id=client.id,
+            amount=1000000,
+            currency="ZAR",
+            status=TransactionStatus.PENDING,
+            gateway_reference="ik_tx_999",
+            payment_method_token="pm_token_123",
+            error_message="Insufficient funds"
+        )
+        session.add(tx)
+        session.commit()
+        session.refresh(tx)
+
+        assert tx.id is not None
+        assert tx.status == TransactionStatus.PENDING
+        assert tx.gateway_reference == "ik_tx_999"
+        assert tx.error_message == "Insufficient funds"
+
+        # Read
+        db_tx = session.get(Transaction, tx.id)
+        assert db_tx is not None
+        assert db_tx.client_id == client.id
+
+        # Update
+        db_tx.status = TransactionStatus.SUCCESSFUL
+        db_tx.error_message = None
+        session.add(db_tx)
+        session.commit()
+        session.refresh(db_tx)
+        assert db_tx.status == TransactionStatus.SUCCESSFUL
+        assert db_tx.error_message is None
+
+        # Delete
+        session.delete(db_tx)
+        session.commit()
+        deleted_tx = session.get(Transaction, tx.id)
+        assert deleted_tx is None
+
 

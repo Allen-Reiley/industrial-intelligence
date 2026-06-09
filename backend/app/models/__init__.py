@@ -9,5 +9,6 @@ from .enrichment_queue import EnrichmentQueue, FailedEnrichment, QueueType
 from .notification_throttle import NotificationThrottle
 from .crm_dead_letter import CrmDeadLetter
 from .inbound_message import InboundMessage, MessageStatus
+from .transaction import Transaction, TransactionStatus
 
 # Do NOT include router logic here

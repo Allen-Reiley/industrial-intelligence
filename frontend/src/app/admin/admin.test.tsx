@@ -98,6 +98,23 @@ describe('AdminDashboard Component Tests', () => {
           json: async () => mockClients,
         });
       }
+      if (url.includes('/api/v1/clients/') && options?.method === 'PATCH') {
+        const body = JSON.parse(options.body);
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            id: 'client-uuid-1',
+            company_name: 'Acme Corp',
+            whitelisted_domains: ['acme.com'],
+            subscription_status: 'active',
+            require_consent_banner: true,
+            collect_personal_data: true,
+            is_active: true,
+            custom_monthly_amount: body.custom_monthly_amount,
+            payment_method_token: 'token-abc'
+          }),
+        });
+      }
       if (url.includes('/api/v1/leads/')) {
         return Promise.resolve({
           ok: true,
@@ -108,6 +125,35 @@ describe('AdminDashboard Component Tests', () => {
         return Promise.resolve({
           ok: true,
           json: async () => ({ installed: false, visit_count: 2 }),
+        });
+      }
+      if (url.includes('/api/v1/billing/transactions')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [
+            {
+              id: 'tx-1',
+              client_id: 'client-uuid-1',
+              amount: 1000000,
+              currency: 'ZAR',
+              status: 'successful',
+              gateway_reference: 'mock_ref_123',
+              payment_method_token: 'token-abc',
+              created_at: '2026-06-09T12:00:00Z',
+              updated_at: '2026-06-09T12:00:00Z'
+            }
+          ],
+        });
+      }
+      if (url.includes('/api/v1/billing/simulate-webhook')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            status: 'success',
+            message: 'Manual payment webhook simulation completed',
+            transaction_id: 'new-tx-uuid',
+            gateway_reference: 'mock_ref_999'
+          }),
         });
       }
       return Promise.reject(new Error(`Unhandled request to ${url}`));
@@ -236,6 +282,12 @@ describe('AdminDashboard Component Tests', () => {
           }),
         });
       }
+      if (url.includes('/api/v1/billing/transactions')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [],
+        });
+      }
       return Promise.reject(new Error(`Unhandled request to ${url}`));
     }) as any;
 
@@ -272,6 +324,91 @@ describe('AdminDashboard Component Tests', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Installed & Active')).toBeInTheDocument();
+    });
+  });
+
+  test('renders Billing Hub and Transaction History when client loaded', async () => {
+    render(<AdminDashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Acme Corp', level: 2 })).toBeInTheDocument();
+    });
+
+    // Verify Billing Hub elements exist
+    expect(screen.getByRole('heading', { name: 'Billing Hub', level: 3 })).toBeInTheDocument();
+    expect(screen.getByText('Subscription State:')).toBeInTheDocument();
+    expect(screen.getByText('Payment Method:')).toBeInTheDocument();
+    expect(screen.getByText('Last Charge:')).toBeInTheDocument();
+
+    // Verify Monthly Amount input
+    const monthlyRateInput = screen.getByLabelText(/Monthly Amount \(ZAR\)/i);
+    expect(monthlyRateInput).toBeInTheDocument();
+    expect(monthlyRateInput).toHaveValue(10000);
+
+    // Verify Ledger History table content is loaded
+    expect(screen.getByRole('heading', { name: 'Ledger History', level: 3 })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('R10,000')).toBeInTheDocument();
+      expect(screen.getByText('Ref: mock_ref_1...')).toBeInTheDocument();
+    });
+  });
+
+  test('allows editing and saving custom monthly billing amount', async () => {
+    render(<AdminDashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Acme Corp', level: 2 })).toBeInTheDocument();
+    });
+
+    const monthlyRateInput = screen.getByLabelText(/Monthly Amount \(ZAR\)/i);
+    const saveButton = screen.getByTitle('Save monthly amount');
+
+    // Change input value
+    fireEvent.change(monthlyRateInput, { target: { value: '15000' } });
+    expect(monthlyRateInput).toHaveValue(15000);
+
+    // Save
+    fireEvent.click(saveButton);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/clients/client-uuid-1'),
+        expect.objectContaining({
+          method: 'PATCH',
+          body: JSON.stringify({ custom_monthly_amount: 1500000 })
+        })
+      );
+    });
+  });
+
+  test('allows manual webhook simulation trigger', async () => {
+    render(<AdminDashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Acme Corp', level: 2 })).toBeInTheDocument();
+    });
+
+    const simulateSelect = screen.getByLabelText(/Simulation Tool/i);
+    const triggerBtn = screen.getByRole('button', { name: /Trigger/i });
+
+    // Choose failure simulation
+    fireEvent.change(simulateSelect, { target: { value: 'failed' } });
+
+    // Click trigger
+    fireEvent.click(triggerBtn);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/billing/simulate-webhook'),
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            client_id: 'client-uuid-1',
+            status: 'failed',
+            amount: 1000000
+          })
+        })
+      );
     });
   });
 });

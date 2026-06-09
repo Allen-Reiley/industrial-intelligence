@@ -93,10 +93,11 @@ Orchestration, environment variables, and Docker configurations.
 │   │   │       ├── track.py      # Entry & Exit telemetries
 │   │   │       ├── clients.py    # Client account manager
 │   │   │       ├── leads.py      # Analytics table aggregate
-│   │   │       └── webhook.py    # PayGenius webhooks & contracts
+│   │   │       ├── webhook.py    # Webhooks & security signatures
+│   │   │       └── billing.py    # Billing checkout setup & history
 │   │   ├── core/           # Security, encryption & config
-│   │   ├── models/         # SQLModel database schemas
-│   │   ├── services/       # Enrichment, reportlab PDFs & Janitor cascade
+│   │   ├── models/         # SQLModel database schemas (Client, Transaction, Visit...)
+│   │   ├── services/       # Enrichment, payment clients, PDFs & Janitors
 │   │   ├── db.py           # Postgres Engine & RLS Policies
 │   │   └── main.py         # FastAPI Entry point
 │   ├── async_migrations/   # Alembic Database Migrations

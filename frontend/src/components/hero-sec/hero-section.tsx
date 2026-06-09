@@ -120,7 +120,7 @@ export default function HeroSection() {
                                     speedSegment={0.3}
                                     as="h1"
                                     className="mx-auto mt-8 max-w-4xl text-balance text-5xl font-bold md:text-7xl lg:mt-16 xl:text-[4rem] tracking-tight">
-                                    Identify the High-Value Companies Visiting Your Website
+                                    Identify The High-Value Companies Visiting Your Website
                                 </TextEffect>
                                 <TextEffect
                                     per="line"
@@ -129,7 +129,7 @@ export default function HeroSection() {
                                     delay={0.5}
                                     as="p"
                                     className="mx-auto mt-8 max-w-2xl text-balance text-lg text-muted-foreground">
-                                    Stop letting anonymous corporate traffic leave without a trace. AuraWorks identifies exactly who is browsing your site and delivers direct contact paths to your sales team before they issue a tender to a competitor.
+                                    Stop letting anonymous corporate traffic leave without a trace. AuraWorks identifies exactly who is browsing your site and delivers direct contact details to your sales team before the visitor issues a tender to your competitors.
                                 </TextEffect>
 
                                 <AnimatedGroup
@@ -179,7 +179,7 @@ export default function HeroSection() {
                                 ...transitionVariants,
                             }}>
                             <div className="mask-b-from-55% relative mr-0 mt-8 overflow-hidden px-2 sm:mr-0 sm:mt-12 md:mt-20">
-                                
+
                                 <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-2xl shadow-zinc-950/20 ring-1">
                                     <Image
                                         className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
@@ -202,7 +202,7 @@ export default function HeroSection() {
                         </AnimatedGroup>
                     </div>
                 </section>
-                
+
                 {/* Social Proof Section 
                 <section className="bg-background pb-16 pt-24 md:pb-32">
                     <div className="group relative m-auto max-w-5xl px-6">
