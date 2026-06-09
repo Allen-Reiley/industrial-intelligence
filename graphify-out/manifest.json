@@ -10,8 +10,8 @@
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/app/api/v1/auth.py": {
-    "mtime": 1781007645.8402658,
-    "ast_hash": "f08d4bc960d44fbc2a66f6fc7b6d9f27",
+    "mtime": 1781022509.1562843,
+    "ast_hash": "db8fd5bdf4da1f116d631913bac60c60",
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/app/api/v1/billing.py": {
@@ -75,13 +75,18 @@
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/app/main.py": {
-    "mtime": 1781015354.8556771,
-    "ast_hash": "ca8e07429f5af48436a684042625e87a",
+    "mtime": 1781022523.5063488,
+    "ast_hash": "c7464066f6a8764e48276801cf0a41a3",
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/app/models/__init__.py": {
-    "mtime": 1781015095.547118,
-    "ast_hash": "37ed40a24e9397af72ec86280f8ba02a",
+    "mtime": 1781022480.3771548,
+    "ast_hash": "5940b8400bf87cb40fcd7fa73638fd3d",
+    "semantic_hash": ""
+  },
+  "/home/allenreiley7/projects/industrial-intelligence/backend/app/models/admin_user.py": {
+    "mtime": 1781022473.4181235,
+    "ast_hash": "f87b850f8cfb28b163f395b80328345b",
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/app/models/client.py": {
@@ -209,6 +214,11 @@
     "ast_hash": "d76a3d733216a97b914829d9e8a5913f",
     "semantic_hash": ""
   },
+  "/home/allenreiley7/projects/industrial-intelligence/backend/async_migrations/versions/18e8afd302da_create_admin_user_table.py": {
+    "mtime": 1781022488.8981931,
+    "ast_hash": "222ed120c4e0b8776d3897b98251f33c",
+    "semantic_hash": ""
+  },
   "/home/allenreiley7/projects/industrial-intelligence/backend/async_migrations/versions/1ac2f9ae2341_fix_schema_drift.py": {
     "mtime": 1780753480.1620014,
     "ast_hash": "d065ea2c33de2da12261a4de222c7e6a",
@@ -282,6 +292,11 @@
   "/home/allenreiley7/projects/industrial-intelligence/backend/reset_db.py": {
     "mtime": 1780753479.8890269,
     "ast_hash": "12d5be2628eb08463825c27da63e9636",
+    "semantic_hash": ""
+  },
+  "/home/allenreiley7/projects/industrial-intelligence/backend/seed_admin.py": {
+    "mtime": 1781022532.1901183,
+    "ast_hash": "f60cd8874e4f05e442378a64d35e93d1",
     "semantic_hash": ""
   },
   "/home/allenreiley7/projects/industrial-intelligence/backend/tests/conftest.py": {
