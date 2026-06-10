@@ -99,3 +99,17 @@ This log details the execution, design decisions, and completed steps for Phase 
   - Updated the existing callback success test in `backend/tests/test_auth.py` to assert the 302 response and local dev Location header redirect.
   - Created the integration test `test_google_oauth_callback_production` simulating proxy headers (`X-Forwarded-Proto`, `X-Forwarded-Host`) and verifying that the backend responds with a 302 status code and the production redirect location `https://auraworks.co.za/aurahq`.
   - Verified all 79 backend tests compile and pass successfully.
+
+## 10. Audit and Repair of `/v1/track/event` Endpoint
+- **Audit Findings**:
+  - **Schema & Model Alignment Check**: Verified that the client-side tracker (`aura.js`) and references (`tracker.js`) could dispatch custom event payloads containing nested dictionary/JSON properties or metadata fields. However, the incoming Pydantic schema model `PageViewCreate` did not explicitly define `properties` or `metadata` fields. To ensure proper type validation and avoid 422 errors, these fields were added as `Optional[Dict[str, Any]] = None`.
+  - **Database Mapping Audit**: Inspected the SQLAlchemy/SQLModel database entities (specifically `Visit`, `PageView`, `Prospect`, and `Company`). Confirmed that all references to the old `Waitlist` table have been successfully migrated and updated to the `Prospect` engine or client configurations with no deprecated constraints or fields remaining.
+  - **Exception Hardening**: Wrapped the execution block of `/v1/track/event` in `/backend/app/api/v1/track.py` in a clean `try...except Exception as e` safety net. If caught, it logs the explicit traceback using Python's standard logging module and raises a structured `HTTPException(status_code=400, detail=str(e))` to preserve CORS headers in response middleware instead of causing a generic unhandled 500 error.
+- **Actions Taken**:
+  - Modified `PageViewCreate` in `backend/app/models/visit.py` to accept:
+    ```python
+    properties: Optional[Dict[str, Any]] = None
+    metadata: Optional[Dict[str, Any]] = None
+    ```
+  - Implemented the `try...except Exception as e` safety net in `/v1/track/event` endpoint to log explicit tracebacks and raise structured `400 Bad Request` exceptions.
+  - Ran the test suite via `PYTHONPATH=. uv run pytest` and verified 79 unit tests passed successfully.

@@ -75,3 +75,5 @@ class PageViewCreate(BaseModel):
     intent_cluster: Optional[str] = None
     signature: Optional[Dict[str, Any]] = None
     has_downloaded_asset: Optional[bool] = False
+    properties: Optional[Dict[str, Any]] = None
+    metadata: Optional[Dict[str, Any]] = None
