@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 
-from app.core.users import fastapi_users_instance, auth_backend, google_oauth_client
+from app.core.users import fastapi_users_instance, auth_backend, oauth_auth_backend, google_oauth_client
 from app.models.user import User
 from app.core.config import settings
 
@@ -23,7 +23,7 @@ router.include_router(
 router.include_router(
     fastapi_users_instance.get_oauth_router(
         google_oauth_client,
-        auth_backend,
+        oauth_auth_backend,
         settings.SECRET_KEY or "dev-secret-key-12345678901234567890123456789012",
         redirect_url=settings.OAUTH_REDIRECT_URI,
         associate_by_email=True,

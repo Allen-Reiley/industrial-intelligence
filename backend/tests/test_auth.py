@@ -84,7 +84,8 @@ async def test_google_oauth_callback_success():
             }
         )
         
-        assert response.status_code in [200, 204]
+        assert response.status_code == 302
+        assert response.headers["Location"] == "http://localhost:3000/aurahq"
         cookies = response.cookies
         assert "aurahq_auth" in cookies
         
@@ -202,3 +203,58 @@ async def test_admin_summary_route_protection():
         cookies=response_login.cookies
     )
     assert response_cookie.status_code == 200
+
+
+async def test_google_oauth_callback_production():
+    """
+    Verifies that under production scheme / proxy headers, the callback endpoint
+    correctly resolves proxy headers and issues a 302 redirect strictly matching the production domain.
+    """
+    client = await get_test_client()
+    
+    # 1. Call authorize to get the signed state
+    response_auth = await client.get(
+        f"{settings.API_V1_STR}/auth/google/authorize",
+        params={"redirect_uri": "https://auraworks.co.za/login/callback"}
+    )
+    assert response_auth.status_code == 200
+    auth_data = response_auth.json()
+    auth_url = auth_data["authorization_url"]
+    
+    parsed_url = urlparse(auth_url)
+    query_params = parse_qs(parsed_url.query)
+    state = query_params["state"][0]
+    
+    mock_access_token = {
+        "access_token": "mocked_google_access_token_prod",
+        "expires_in": 3600,
+        "token_type": "Bearer",
+        "scope": "openid email profile",
+    }
+    mock_id_email = ("google-oauth-id-54321", "oauth-user-prod@auraworks.co.za")
+
+    # Force production settings for the request duration
+    with patch.object(settings, "ENVIRONMENT", "production"), \
+         patch.object(settings, "API_DOMAIN", "api.auraworks.co.za"), \
+         patch("app.core.users.google_oauth_client.get_access_token", new_callable=AsyncMock) as mock_get_token, \
+         patch("app.core.users.google_oauth_client.get_id_email", new_callable=AsyncMock) as mock_get_email:
+         
+        mock_get_token.return_value = mock_access_token
+        mock_get_email.return_value = mock_id_email
+        
+        response = await client.get(
+            f"{settings.API_V1_STR}/auth/google/callback",
+            params={
+                "code": "mocked_google_code_prod",
+                "state": state,
+                "redirect_uri": "https://auraworks.co.za/login/callback"
+            },
+            headers={
+                "x-forwarded-proto": "https",
+                "x-forwarded-host": "api.auraworks.co.za"
+            }
+        )
+        
+        assert response.status_code == 302
+        assert response.headers["Location"] == "https://auraworks.co.za/aurahq"
+        assert "aurahq_auth" in response.cookies

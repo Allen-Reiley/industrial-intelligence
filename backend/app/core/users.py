@@ -1,7 +1,8 @@
 # backend/app/core/users.py
 import uuid
 from typing import Optional
-from fastapi import Depends, Request
+from fastapi import Depends, Request, Response
+from fastapi.responses import RedirectResponse
 from fastapi_users import BaseUserManager, FastAPIUsers, UUIDIDMixin
 from fastapi_users.authentication import (
     AuthenticationBackend,
@@ -48,6 +49,26 @@ cookie_transport = CookieTransport(
     cookie_samesite="lax"
 )
 
+class RedirectCookieTransport(CookieTransport):
+    async def get_login_response(self, token: str) -> Response:
+        # Default to production redirect; fallback to localhost ONLY if ENVIRONMENT is explicitly local dev.
+        if settings.ENVIRONMENT in ["development", "dev", "local"]:
+            redirect_url = "http://localhost:3000/aurahq"
+        else:
+            redirect_url = "https://auraworks.co.za/aurahq"
+            
+        response = RedirectResponse(url=redirect_url, status_code=302)
+        self._set_login_cookie(response, token)
+        return response
+
+oauth_cookie_transport = RedirectCookieTransport(
+    cookie_name="aurahq_auth",
+    cookie_max_age=3600,
+    cookie_httponly=True,
+    cookie_secure=False,  # Set to True in production
+    cookie_samesite="lax"
+)
+
 def get_jwt_strategy() -> JWTStrategy:
     return JWTStrategy(
         secret=settings.SECRET_KEY or "dev-secret-key-12345678901234567890123456789012",
@@ -60,9 +81,15 @@ auth_backend = AuthenticationBackend(
     get_strategy=get_jwt_strategy,
 )
 
+oauth_auth_backend = AuthenticationBackend(
+    name="oauth_jwt_cookie",
+    transport=oauth_cookie_transport,
+    get_strategy=get_jwt_strategy,
+)
+
 fastapi_users_instance = FastAPIUsers[User, uuid.UUID](
     get_user_manager,
-    [auth_backend],
+    [auth_backend, oauth_auth_backend],
 )
 
 current_active_user = fastapi_users_instance.current_user(active=True)

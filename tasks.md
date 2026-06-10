@@ -90,3 +90,12 @@ This log details the execution, design decisions, and completed steps for Phase 
   - Registered custom global exception handlers for `Exception` and `SQLAlchemyError` using `@app.exception_handler()` in `backend/app/main.py`. These handlers log full tracebacks to the server log and return `JSONResponse` objects with explicitly injected CORS headers for allowed origins (allowing `https://www.auraworks.co.za`).
   - Wrapped database operations in `/v1/track/event` (`backend/app/api/v1/track.py`) in a `try...except` block catching `IntegrityError` to safely capture and return `400 Bad Request` ("Invalid or missing client_id") instead of crashing the process.
   - Verified all 78 backend tests continue to compile and pass successfully.
+
+## 9. Google OAuth Redirect Alignment & Integration Testing
+- **Actions Taken**:
+  - Implemented `RedirectCookieTransport` subclassing `CookieTransport` inside `backend/app/core/users.py` to return a `302 Redirect` response pointing directly to the unified frontend layout. By default, it prioritizes the production domain (`https://auraworks.co.za/aurahq`), falling back to local development (`http://localhost:3000/aurahq`) ONLY when `settings.ENVIRONMENT` is explicitly set to a local development flag (e.g. `"development"`, `"dev"`, `"local"`).
+  - Defined a separate `oauth_auth_backend` using this new transport, registering both `auth_backend` and `oauth_auth_backend` inside the `FastAPIUsers` instance to support standard credentials and redirect-based OAuth flows concurrently.
+  - Updated the Google OAuth router registration in `backend/app/api/v1/auth.py` to utilize `oauth_auth_backend`.
+  - Updated the existing callback success test in `backend/tests/test_auth.py` to assert the 302 response and local dev Location header redirect.
+  - Created the integration test `test_google_oauth_callback_production` simulating proxy headers (`X-Forwarded-Proto`, `X-Forwarded-Host`) and verifying that the backend responds with a 302 status code and the production redirect location `https://auraworks.co.za/aurahq`.
+  - Verified all 79 backend tests compile and pass successfully.
