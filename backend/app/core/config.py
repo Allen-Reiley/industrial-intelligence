@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     ADMIN_API_KEY: str = "change-me-in-production" 
     SECRET_KEY: Optional[str] = None  
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 11520  # 8 days (matches long-cycle industrial procurement)
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
+
     
     # --- DATABASE ---
     # Set to Optional to prevent build-time crashes on platforms like Railway
@@ -72,7 +75,9 @@ class Settings(BaseSettings):
         "https://cdn.auraworks.co.za",
         "https://dynamic-flow-production-a5d6.up.railway.app",
         "https://industrial-intelligence-git-main-allen-reileys-projects.vercel.app",
-        "https://industrial-intelligence-lttxeot8z-allen-reileys-projects.vercel.app"
+        "https://industrial-intelligence-lttxeot8z-allen-reileys-projects.vercel.app",
+        "https://api.auraworks.co.za",
+        "https://banner.auraworks.co.za"
     ]
 
     # Modern Pydantic V2 Configuration

@@ -87,6 +87,8 @@ def init_db():
         from app.models.enrichment_queue import EnrichmentQueue, FailedEnrichment
         from app.models.notification_throttle import NotificationThrottle
         from app.models.crm_dead_letter import CrmDeadLetter
+        from app.models.user import User, OAuthAccount
+
         
         # Run Alembic migrations programmatically to ensure the schema is fully updated with new columns
         import os

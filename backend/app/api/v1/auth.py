@@ -1,165 +1,64 @@
 # backend/app/api/v1/auth.py
 import logging
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from pydantic import BaseModel
 from jose import jwt, JWTError
 
+from app.core.users import fastapi_users_instance, auth_backend, google_oauth_client
+from app.models.user import User
 from app.core.config import settings
-from app.core.security import create_access_token, create_refresh_token
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.db import get_async_session
-
-router = APIRouter()
 logger = logging.getLogger("auraworks.auth")
 
-class TokenResponse(BaseModel):
-    access_token: str
-    refresh_token: str
-    token_type: str = "bearer"
+router = APIRouter()
 
-class RefreshRequest(BaseModel):
-    refresh_token: str
+# 1. Mount the FastAPI-Users standard authentication router (Cookie transport)
+router.include_router(
+    fastapi_users_instance.get_auth_router(auth_backend),
+    prefix="",
+)
+
+# 2. Mount the Google OAuth router
+router.include_router(
+    fastapi_users_instance.get_oauth_router(
+        google_oauth_client,
+        auth_backend,
+        settings.SECRET_KEY or "dev-secret-key-12345678901234567890123456789012",
+        associate_by_email=True,
+        is_verified_by_default=True
+    ),
+    prefix="/google",
+)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login", auto_error=False)
 
+# 3. Expose the security dependency get_current_admin (with legacy Bearer JWT fallback)
 async def get_current_admin(
     token: Optional[str] = Depends(oauth2_scheme),
-    session: AsyncSession = Depends(get_async_session)
+    user: Optional[User] = Depends(fastapi_users_instance.current_user(optional=True, active=True))
 ) -> str:
-    if not token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    try:
-        secret = settings.SECRET_KEY or "dev-secret-key-12345678901234567890123456789012"
-        payload = jwt.decode(token, secret, algorithms=["HS256"])
-        username: str = payload.get("sub")
-        if username is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Could not validate credentials",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        if payload.get("type") == "refresh":
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Cannot use refresh token as access token",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        
-        if username == "admin":
-            return username
-            
-        from app.models.admin_user import AdminUser
-        from sqlmodel import select
-        stmt = select(AdminUser).where(AdminUser.email == username)
-        res = await session.execute(stmt)
-        db_user = res.scalars().first()
-        if db_user:
-            return username
-            
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    """
+    Dependency to get the current authenticated active user.
+    Supports both FastAPI-Users cookie/JWT session AND legacy Bearer JWT tokens.
+    """
+    # A. Check if FastAPI-Users session is active
+    if user and user.is_active:
+        return user.email
 
-@router.post("/login", response_model=TokenResponse)
-async def login(
-    request: Request,
-    session: AsyncSession = Depends(get_async_session)
-):
-    content_type = request.headers.get("content-type", "")
-    username = None
-    password = None
-    
-    if "application/json" in content_type:
+    # B. Fallback to decoding custom legacy JWT tokens
+    if token:
         try:
-            body = await request.json()
-            username = body.get("username")
-            password = body.get("password")
-        except Exception:
+            secret = settings.SECRET_KEY or "dev-secret-key-12345678901234567890123456789012"
+            payload = jwt.decode(token, secret, algorithms=["HS256"])
+            username: str = payload.get("sub")
+            if username and payload.get("type") != "refresh":
+                return username
+        except JWTError:
             pass
-    else:
-        try:
-            form = await request.form()
-            username = form.get("username")
-            password = form.get("password")
-        except Exception:
-            pass
-            
-    if not username or not password:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Missing username or password"
-        )
-        
-    # Check database first
-    from app.models.admin_user import AdminUser
-    from app.core.security import verify_password
-    from sqlmodel import select
-    
-    stmt = select(AdminUser).where(AdminUser.email == username)
-    res = await session.execute(stmt)
-    db_user = res.scalars().first()
-    
-    authenticated = False
-    if db_user:
-        if verify_password(password, db_user.hashed_password):
-            authenticated = True
-    else:
-        expected_username = "admin"
-        expected_password = settings.ADMIN_API_KEY or "change-me-in-production"
-        if username == expected_username and password == expected_password:
-            authenticated = True
-            
-    if not authenticated:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-        
-    access_token = create_access_token(data={"sub": username})
-    refresh_token = create_refresh_token(data={"sub": username})
-    return {
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "token_type": "bearer"
-    }
 
-@router.post("/refresh", response_model=TokenResponse)
-async def refresh_token(payload: RefreshRequest):
-    try:
-        secret = settings.SECRET_KEY or "dev-secret-key-12345678901234567890123456789012"
-        token_data = jwt.decode(payload.refresh_token, secret, algorithms=["HS256"])
-        username: str = token_data.get("sub")
-        token_type: str = token_data.get("type")
-        if username is None or token_type != "refresh":
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid refresh token",
-            )
-        access_token = create_access_token(data={"sub": username})
-        new_refresh_token = create_refresh_token(data={"sub": username})
-        return {
-            "access_token": access_token,
-            "refresh_token": new_refresh_token,
-            "token_type": "bearer"
-        }
-    except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid refresh token",
-        )
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Not authenticated",
+        headers={"WWW-Authenticate": "Bearer"},
+    )

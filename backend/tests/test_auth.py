@@ -1,93 +1,155 @@
+# backend/tests/test_auth.py
 import pytest
-from datetime import datetime, timedelta, timezone
-from jose import jwt
+import uuid
+from unittest.mock import AsyncMock, patch
 import httpx
-from unittest.mock import patch
-
+from urllib.parse import urlparse, parse_qs
 from app.main import app
 from app.core.config import settings
-from app.core.security import create_access_token, create_refresh_token
+from app.models.user import User
+from sqlmodel import select
+from app.db import get_async_session
 
 pytestmark = pytest.mark.anyio
 
 async def get_test_client():
     try:
         transport = httpx.ASGITransport(app=app)
-        return httpx.AsyncClient(transport=transport, base_url="http://test")
+        return httpx.AsyncClient(transport=transport, base_url="https://test")
     except AttributeError:
-        return httpx.AsyncClient(app=app, base_url="http://test")
+        return httpx.AsyncClient(app=app, base_url="https://test")
 
-async def test_jwt_token_generation_and_validation():
-    """
-    Validates JWT generation, payload contents, and decoding with correct keys.
-    """
-    secret = settings.SECRET_KEY or "dev-secret-key-12345678901234567890123456789012"
-    payload = {"sub": "admin"}
-    
-    # 1. Access Token
-    access_token = create_access_token(payload)
-    decoded_access = jwt.decode(access_token, secret, algorithms=["HS256"])
-    assert decoded_access["sub"] == "admin"
-    assert "exp" in decoded_access
-    
-    # 2. Refresh Token
-    refresh_token = create_refresh_token(payload)
-    decoded_refresh = jwt.decode(refresh_token, secret, algorithms=["HS256"])
-    assert decoded_refresh["sub"] == "admin"
-    assert decoded_refresh["type"] == "refresh"
-    assert "exp" in decoded_refresh
 
-async def test_auth_login_json_and_form():
+async def test_google_oauth_authorize():
     """
-    Verifies that the /api/v1/auth/login endpoint accepts both JSON payloads
-    and form fields, returning access and refresh tokens.
+    Verifies that the Google OAuth authorization redirection URL generation works.
     """
     client = await get_test_client()
-    admin_password = settings.ADMIN_API_KEY or "change-me-in-production"
-    
-    # 1. JSON Payload Login
-    response = await client.post(
-        f"{settings.API_V1_STR}/auth/login",
-        json={"username": "admin", "password": admin_password}
+    response = await client.get(
+        f"{settings.API_V1_STR}/auth/google/authorize",
+        params={"redirect_uri": "http://localhost:3000/callback"}
     )
     assert response.status_code == 200
     data = response.json()
-    assert "access_token" in data
-    assert "refresh_token" in data
-    assert data["token_type"] == "bearer"
-    
-    # 2. Form Login
-    response_form = await client.post(
-        f"{settings.API_V1_STR}/auth/login",
-        data={"username": "admin", "password": admin_password}
-    )
-    assert response_form.status_code == 200
-    data_form = response_form.json()
-    assert "access_token" in data_form
-    assert "refresh_token" in data_form
+    assert "authorization_url" in data
+    assert "accounts.google.com" in data["authorization_url"]
 
-async def test_auth_login_unauthorized():
+async def test_google_oauth_callback_success():
     """
-    Asserts that incorrect usernames or passwords result in HTTP 401.
+    Verifies that the Google OAuth callback endpoint processes the code and state,
+    creates the user (or logs them in), and issues the aurahq_auth session cookie.
     """
     client = await get_test_client()
     
-    response = await client.post(
-        f"{settings.API_V1_STR}/auth/login",
-        json={"username": "admin", "password": "wrongpassword"}
+    # 1. Call authorize to get the signed state
+    response_auth = await client.get(
+        f"{settings.API_V1_STR}/auth/google/authorize",
+        params={"redirect_uri": "http://localhost:3000/callback"}
     )
-    assert response.status_code == 401
+    assert response_auth.status_code == 200
+    auth_data = response_auth.json()
+    auth_url = auth_data["authorization_url"]
     
-    response = await client.post(
+    # Extract the state query parameter
+    parsed_url = urlparse(auth_url)
+    query_params = parse_qs(parsed_url.query)
+    state = query_params["state"][0]
+    
+    mock_access_token = {
+        "access_token": "mocked_google_access_token",
+        "expires_in": 3600,
+        "token_type": "Bearer",
+        "scope": "openid email profile",
+    }
+    mock_id_email = ("google-oauth-id-12345", "oauth-user@auraworks.co.za")
+
+    with patch(
+        "app.core.users.google_oauth_client.get_access_token",
+        new_callable=AsyncMock
+    ) as mock_get_token, patch(
+        "app.core.users.google_oauth_client.get_id_email",
+        new_callable=AsyncMock
+    ) as mock_get_email:
+
+        
+        mock_get_token.return_value = mock_access_token
+        mock_get_email.return_value = mock_id_email
+        
+        response = await client.get(
+            f"{settings.API_V1_STR}/auth/google/callback",
+            params={
+                "code": "mocked_google_code",
+                "state": state,
+                "redirect_uri": "http://localhost:3000/callback"
+            }
+        )
+        
+        assert response.status_code in [200, 204]
+        cookies = response.cookies
+        assert "aurahq_auth" in cookies
+        
+        # Verify user was created in database
+        async for session in get_async_session():
+            stmt = select(User).where(User.email == "oauth-user@auraworks.co.za")
+            res = await session.execute(stmt)
+            db_user = res.scalars().first()
+            assert db_user is not None
+            assert db_user.is_active is True
+            assert db_user.is_verified is True
+            break
+
+async def test_standard_login_and_logout():
+    """
+    Tests standard email/password login and logout using FastAPI-Users.
+    """
+    client = await get_test_client()
+    from fastapi_users.password import PasswordHelper
+    password_helper = PasswordHelper()
+    
+    test_email = "test-user-login@auraworks.co.za"
+    test_password = "secure_password_123"
+    hashed_pwd = password_helper.hash(test_password)
+    
+    async for session in get_async_session():
+        stmt_cleanup = select(User).where(User.email == test_email)
+        res_cleanup = await session.execute(stmt_cleanup)
+        existing_user = res_cleanup.scalars().first()
+        if existing_user:
+            await session.delete(existing_user)
+            await session.commit()
+            
+        user = User(
+            id=uuid.uuid4(),
+            email=test_email,
+            hashed_password=hashed_pwd,
+            is_active=True,
+            is_verified=True,
+            is_superuser=False
+        )
+        session.add(user)
+        await session.commit()
+        break
+        
+    # Login via POST /api/v1/auth/login (as form data)
+    response_login = await client.post(
         f"{settings.API_V1_STR}/auth/login",
-        json={"username": "not_admin", "password": "wrongpassword"}
+        data={"username": test_email, "password": test_password}
     )
-    assert response.status_code == 401
+    assert response_login.status_code in [200, 204]
+    assert "aurahq_auth" in response_login.cookies
+    auth_cookies = response_login.cookies
+    
+    # Logout via POST /api/v1/auth/logout
+    response_logout = await client.post(
+        f"{settings.API_V1_STR}/auth/logout",
+        cookies=auth_cookies
+    )
+    assert response_logout.status_code in [200, 204]
 
 async def test_admin_summary_route_protection():
     """
-    Asserts that /api/v1/admin/summary is protected by verify_admin_token,
-    verifying access with a valid Bearer JWT and rejection without it.
+    Asserts that the admin summary route is protected and permits access with legacy
+    headers or the new Cookie session validation.
     """
     client = await get_test_client()
     admin_password = settings.ADMIN_API_KEY or "change-me-in-production"
@@ -103,52 +165,40 @@ async def test_admin_summary_route_protection():
     )
     assert response_legacy.status_code == 200
     
-    # 3. Accept with Bearer JWT token
-    login_res = await client.post(
+    # 3. Accept with cookie-based user session
+    from fastapi_users.password import PasswordHelper
+    password_helper = PasswordHelper()
+    test_email = "admin-summary-test@auraworks.co.za"
+    hashed_pwd = password_helper.hash("admin_pass_123")
+    
+    async for session in get_async_session():
+        stmt_cleanup = select(User).where(User.email == test_email)
+        res_cleanup = await session.execute(stmt_cleanup)
+        existing_user = res_cleanup.scalars().first()
+        if existing_user:
+            await session.delete(existing_user)
+            await session.commit()
+            
+        user = User(
+            id=uuid.uuid4(),
+            email=test_email,
+            hashed_password=hashed_pwd,
+            is_active=True,
+            is_verified=True,
+            is_superuser=True
+        )
+        session.add(user)
+        await session.commit()
+        break
+        
+    response_login = await client.post(
         f"{settings.API_V1_STR}/auth/login",
-        json={"username": "admin", "password": admin_password}
+        data={"username": test_email, "password": "admin_pass_123"}
     )
-    token = login_res.json()["access_token"]
+    assert response_login.status_code in [200, 204]
     
-    response_jwt = await client.get(
+    response_cookie = await client.get(
         f"{settings.API_V1_STR}/admin/summary",
-        headers={"Authorization": f"Bearer {token}"}
+        cookies=response_login.cookies
     )
-    assert response_jwt.status_code == 200
-    
-    # 4. Reject with invalid JWT token
-    response_invalid = await client.get(
-        f"{settings.API_V1_STR}/admin/summary",
-        headers={"Authorization": "Bearer invalid_token"}
-    )
-    assert response_invalid.status_code == 403
-
-async def test_auth_token_refresh():
-    """
-    Verifies that a valid refresh token can be used to retrieve new access/refresh tokens.
-    """
-    client = await get_test_client()
-    admin_password = settings.ADMIN_API_KEY or "change-me-in-production"
-    
-    login_res = await client.post(
-        f"{settings.API_V1_STR}/auth/login",
-        json={"username": "admin", "password": admin_password}
-    )
-    refresh_token = login_res.json()["refresh_token"]
-    
-    # Refresh token exchange
-    response = await client.post(
-        f"{settings.API_V1_STR}/auth/refresh",
-        json={"refresh_token": refresh_token}
-    )
-    assert response.status_code == 200
-    data = response.json()
-    assert "access_token" in data
-    assert "refresh_token" in data
-    
-    # Reject invalid/malformed refresh token
-    response_invalid = await client.post(
-        f"{settings.API_V1_STR}/auth/refresh",
-        json={"refresh_token": "invalid_refresh_token"}
-    )
-    assert response_invalid.status_code == 401
+    assert response_cookie.status_code == 200

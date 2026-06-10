@@ -34,19 +34,17 @@ describe('LoginPage Component Tests', () => {
   test('renders login form elements correctly', () => {
     render(<LoginPage />);
     
-    expect(screen.getByText('AuraWorks OS')).toBeInTheDocument();
+    expect(screen.getByText('AuraHQ Portal')).toBeInTheDocument();
+    expect(screen.getByText('Login with Google')).toBeInTheDocument();
     expect(screen.getByLabelText(/System Username/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Security Key/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Initialize Console/i })).toBeInTheDocument();
   });
 
-  test('handles successful login with cookie storage and redirect', async () => {
-    const fakeToken = 'fake-jwt-token';
-    const fakeRefreshToken = 'fake-refresh-token';
-    
+  test('handles successful credentials login with redirect', async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ access_token: fakeToken, refresh_token: fakeRefreshToken }),
+      json: async () => ({}),
     });
 
     render(<LoginPage />);
@@ -61,17 +59,55 @@ describe('LoginPage Component Tests', () => {
         expect.stringContaining('/api/v1/auth/login'),
         expect.objectContaining({
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: 'admin', password: 'secretkey' }),
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: expect.any(URLSearchParams),
         })
       );
     });
 
     await waitFor(() => {
-      expect(document.cookie).toContain('admin_access_token=fake-jwt-token');
-      expect(mockPush).toHaveBeenCalledWith('/admin');
+      expect(mockPush).toHaveBeenCalledWith('/aurahq/dashboard');
     });
   });
+
+  test('handles Login with Google button click', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ authorization_url: 'https://accounts.google.com/o/oauth2/auth?state=123' }),
+    });
+
+    const originalLocation = window.location;
+    const mockLocation = {
+      href: '',
+      origin: 'http://localhost:3000',
+    };
+    Object.defineProperty(window, 'location', {
+      value: mockLocation,
+      writable: true,
+      configurable: true,
+    });
+
+    render(<LoginPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Login with Google/i }));
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/auth/google/authorize?redirect_uri=')
+      );
+    });
+
+    await waitFor(() => {
+      expect(window.location.href).toBe('https://accounts.google.com/o/oauth2/auth?state=123');
+    });
+
+    Object.defineProperty(window, 'location', {
+      value: originalLocation,
+      writable: true,
+      configurable: true,
+    });
+  });
+
 
   test('handles login failure and displays error alert', async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
@@ -88,7 +124,6 @@ describe('LoginPage Component Tests', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Invalid administrative credentials.')).toBeInTheDocument();
-      expect(document.cookie).not.toContain('admin_access_token=');
       expect(mockPush).not.toHaveBeenCalled();
     });
   });

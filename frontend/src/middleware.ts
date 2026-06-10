@@ -2,23 +2,35 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get('admin_access_token')?.value;
+  // Check for both the new aurahq_auth cookie (FastAPI-Users) and legacy admin_access_token
+  const token = request.cookies.get('aurahq_auth')?.value || request.cookies.get('admin_access_token')?.value;
   const url = request.nextUrl.clone();
 
-  // Protect admin routes
-  if (url.pathname.startsWith('/admin')) {
+  // Redirect legacy /admin routes to /aurahq/admin
+  if (url.pathname === '/admin' || url.pathname.startsWith('/admin/')) {
+    url.pathname = url.pathname.replace('/admin', '/aurahq/admin');
+    return NextResponse.redirect(url);
+  }
+
+  // Redirect legacy /dashboard routes to /aurahq/dashboard
+  if (url.pathname === '/dashboard' || url.pathname.startsWith('/dashboard/')) {
+    url.pathname = url.pathname.replace('/dashboard', '/aurahq/dashboard');
+    return NextResponse.redirect(url);
+  }
+
+  // Protect AuraHQ route branch
+  if (url.pathname.startsWith('/aurahq')) {
     if (!token) {
       url.pathname = '/login';
-      // Store the requested path to redirect back after successful login
       url.searchParams.set('from', request.nextUrl.pathname);
       return NextResponse.redirect(url);
     }
   }
 
-  // Redirect authenticated users away from the login page
+  // Redirect authenticated users away from the login gate
   if (url.pathname === '/login') {
     if (token) {
-      url.pathname = '/admin';
+      url.pathname = '/aurahq/dashboard';
       return NextResponse.redirect(url);
     }
   }
@@ -27,5 +39,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/login'],
+  matcher: ['/aurahq/:path*', '/admin/:path*', '/dashboard/:path*', '/login'],
 };

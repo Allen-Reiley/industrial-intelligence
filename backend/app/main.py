@@ -20,45 +20,29 @@ from typing import Optional
 logger = logging.getLogger("uvicorn")
 
 # --- SECURITY: Admin Access Guard ---
+from app.core.users import fastapi_users_instance
+from app.models.user import User
+
 async def verify_admin_token(
     x_aura_token: Optional[str] = Header(None),
-    authorization: Optional[str] = Header(None),
-    session: AsyncSession = Depends(get_async_session)
+    user: Optional[User] = Depends(fastapi_users_instance.current_user(optional=True, active=True))
 ):
     """
     Hardens debug and admin routes. 
     Rejects any request missing the correct ADMIN_API_KEY or valid Bearer JWT.
     """
-    from jose import jwt, JWTError
-    from sqlmodel import select
-    from app.models.admin_user import AdminUser
-    
     # 1. Try X-Aura-Token first (legacy API key)
     if x_aura_token == settings.ADMIN_API_KEY and settings.ADMIN_API_KEY:
         return "admin"
         
-    # 2. Try Authorization Bearer Token
-    if authorization and authorization.startswith("Bearer "):
-        token = authorization.split(" ")[1]
-        try:
-            secret = settings.SECRET_KEY or "dev-secret-key-12345678901234567890123456789012"
-            payload = jwt.decode(token, secret, algorithms=["HS256"])
-            username = payload.get("sub")
-            if username and payload.get("type") != "refresh":
-                if username == "admin":
-                    return "admin"
-                
-                # Check DB for admin user
-                stmt = select(AdminUser).where(AdminUser.email == username)
-                res = await session.execute(stmt)
-                db_user = res.scalars().first()
-                if db_user:
-                    return username
-        except JWTError:
-            pass
+    # 2. Try FastAPI-Users user
+    if user:
+        return user.email
+
             
     logger.warning(f"🚨 UNAUTHORIZED ACCESS ATTEMPT: {datetime.now(timezone.utc)}")
     raise HTTPException(status_code=403, detail="Unauthorized Forensic Access")
+
 
 
 async def run_janitor_loop():
