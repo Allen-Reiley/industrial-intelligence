@@ -25,6 +25,7 @@ router.include_router(
         google_oauth_client,
         auth_backend,
         settings.SECRET_KEY or "dev-secret-key-12345678901234567890123456789012",
+        redirect_url=settings.OAUTH_REDIRECT_URI,
         associate_by_email=True,
         is_verified_by_default=True
     ),

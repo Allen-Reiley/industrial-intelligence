@@ -329,7 +329,7 @@ async def track_event(
     payload: PageViewCreate,
     session: AsyncSession = Depends(get_async_session)
 ):
-    target_aura_id = payload.aura_id if getattr(payload, "aura_id", None) else payload.client_id
+    target_aura_id = payload.aura_id if getattr(payload, "aura_id", None) else str(payload.client_id)
     res = await session.execute(
         select(Visit).where(
             Visit.aura_id == target_aura_id

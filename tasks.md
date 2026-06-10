@@ -49,3 +49,27 @@ This log details the execution, design decisions, and completed steps for Phase 
 - **Actions Taken**:
   - Fully stripped `dark:` utility classes from all public components to guarantee they render exclusively in the crisp, light "Quiet Premium" design.
   - Verified that the admin and dashboard pages (`/admin`, `/dashboard`) retain their original deep dark mode styling capabilities as they employ custom hardcoded dark-color utilities (e.g. `bg-[#070708]`, `bg-[#09090b]`, `bg-[#0c0c0e]`) which do not depend on `.dark` wrapper class toggles.
+
+## 5. Google OAuth Callback Routing Audit & Host Remediation
+- **Audit Findings**:
+  - The FastAPI-Users Google OAuth router is mounted inside `backend/app/api/v1/auth.py` via `fastapi_users_instance.get_oauth_router` with prefix `/google`.
+  - The auth router is loaded in `backend/app/main.py` under the prefix `/api/v1/auth`.
+  - The exact callback path string expected by the backend is `/api/v1/auth/google/callback`.
+  - **Local Development Callback URI**: `http://localhost:8000/api/v1/auth/google/callback`
+  - **Production Callback URI**: `https://api.auraworks.co.za/api/v1/auth/google/callback`
+- **Actions Taken**:
+  - Refactored `backend/app/core/config.py` to support dynamic environment setting `OAUTH_REDIRECT_URI`.
+  - Updated `backend/app/api/v1/auth.py` to supply `redirect_url=settings.OAUTH_REDIRECT_URI` to `get_oauth_router`, preventing scheme/host mismatches behind reverse proxies.
+  - Added default `OAUTH_REDIRECT_URI` to `backend/.env` for local development.
+  - Verified that all unit tests continue to pass.
+
+## 6. Edge Tracker Event Telemetry 500 & CORS Remediation
+- **Diagnostic Findings**:
+  - **CORS Configuration**: Verified `ALLOWED_ORIGINS` in `backend/app/core/config.py` correctly allows `https://auraworks.co.za` and `https://www.auraworks.co.za`. Unhandled exceptions in the endpoint bypassed CORS headers, surfacing as a browser CORS failure.
+  - **Database UUID/String Comparison Error (500)**: In `/v1/track/event` (`backend/app/api/v1/track.py`), when the `aura_id` was `None` or not initialized, the system fell back to `payload.client_id` (a `UUID` object). Running `select(Visit).where(Visit.aura_id == target_aura_id)` with a UUID object raised a SQL syntax error: `operator does not exist: character varying = uuid`, resulting in a 500 error.
+  - **Schema Validation Error (422)**: The client-side `aura.js` dispatches consent telemetry events via `/v1/track/event` without the optional `url` parameter. Since `url: str` was a required field in `PageViewCreate`, the endpoint rejected these payloads.
+- **Actions Taken**:
+  - Modified `PageViewCreate` in `backend/app/models/visit.py` to make the `url` field optional (`url: Optional[str] = None`).
+  - Wrapped the fallback `payload.client_id` in `str()` inside `track_event` route in `backend/app/api/v1/track.py` to coerce it to a string, preventing database comparison failures.
+  - Added the `test_track_event_without_url_and_null_aura_id` integration test simulating the bad payload, verifying it resolves and returns `200 OK`.
+  - Verified all 78 backend tests and 24 frontend tests pass successfully.

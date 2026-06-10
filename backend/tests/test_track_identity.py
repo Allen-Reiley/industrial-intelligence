@@ -132,3 +132,47 @@ async def test_resolve_identity():
         assert response.status_code == 200
         assert response.json()["status"] == "recognized"
 
+
+async def test_track_event_without_url_and_null_aura_id():
+    client_id = uuid4()
+    
+    async with async_session_maker() as session:
+        # Seed Client
+        client = Client(
+            id=client_id,
+            company_name=f"Event Client",
+            domain="event-test.com",
+            category=ClientCategory.INDUSTRIAL,
+            client_product_description="Products",
+            subscription_status=SubscriptionStatus.ACTIVE,
+            payment_plan="enterprise",
+            setup_fee_paid=True,
+            is_active=True
+        )
+        session.add(client)
+        
+        # Seed Visit where aura_id matches stringified client_id (which is the fallback when aura_id is None)
+        visit = Visit(
+            client_id=client_id,
+            aura_id=str(client_id),
+            ip_address="196.25.1.1",
+            connection_type="corporate",
+            is_b2b=True,
+            high_intent=False,
+            is_consented=False
+        )
+        session.add(visit)
+        await session.commit()
+
+    async with await get_test_client() as client:
+        payload = {
+            "client_id": str(client_id),
+            "aura_id": None,
+            # url is omitted completely to simulate payload without url
+            "event_type": "consent_granted"
+        }
+        
+        response = await client.post("/v1/track/event", json=payload)
+        assert response.status_code == 200
+        assert response.json() == {"status": "event_logged"}
+

@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 11520  # 8 days (matches long-cycle industrial procurement)
     GOOGLE_CLIENT_ID: Optional[str] = None
     GOOGLE_CLIENT_SECRET: Optional[str] = None
+    OAUTH_REDIRECT_URI: Optional[str] = None
 
     
     # --- DATABASE ---

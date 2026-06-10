@@ -69,7 +69,7 @@ class VisitCreate(BaseModel):
 class PageViewCreate(BaseModel):
     client_id: UUID
     aura_id: Optional[str] = None
-    url: str
+    url: Optional[str] = None
     duration: Optional[int] = 0
     event_type: str = "exit"
     intent_cluster: Optional[str] = None
