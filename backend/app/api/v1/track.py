@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from cachetools import TTLCache
 
 # Internal AuraWorks Imports
-from app.models.visit import Visit, VisitCreate, PageViewCreate
+from app.models.visit import Visit, VisitCreate, PageViewCreate, EventCreate
 from app.models import Company, Prospect, PageView
 from app.models.enrichment_queue import EnrichmentQueue, QueueType
 from app.services.enrichment import enrich_visitor_data, EnrichmentError
@@ -326,7 +326,7 @@ async def track_identity(
 
 @router.post("/event")
 async def track_event(
-    payload: PageViewCreate,
+    payload: EventCreate,
     session: AsyncSession = Depends(get_async_session)
 ):
     import traceback

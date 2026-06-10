@@ -44,6 +44,7 @@ class Visit(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), nullable=True)
     )
     vsl_abandoned: Optional[bool] = Field(default=False, nullable=True)
+    intent_cluster: Optional[str] = Field(default=None, nullable=True, index=True)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(DateTime(timezone=True), nullable=False)
@@ -77,3 +78,26 @@ class PageViewCreate(BaseModel):
     has_downloaded_asset: Optional[bool] = False
     properties: Optional[Dict[str, Any]] = None
     metadata: Optional[Dict[str, Any]] = None
+
+from pydantic import model_validator
+
+class EventCreate(BaseModel):
+    client_id: UUID
+    event_name: str
+    aura_id: Optional[str] = None
+    url: Optional[str] = None
+    duration: Optional[int] = 0
+    event_type: Optional[str] = None
+    intent_cluster: Optional[str] = None
+    timestamp: Optional[datetime] = None
+    properties: Dict[str, Any] = Field(default_factory=dict)
+
+    @model_validator(mode="before")
+    @classmethod
+    def fallback_event_fields(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if "event_name" not in data and "event_type" in data:
+                data["event_name"] = data["event_type"]
+            elif "event_type" not in data and "event_name" in data:
+                data["event_type"] = data["event_name"]
+        return data

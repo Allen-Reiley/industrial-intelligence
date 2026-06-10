@@ -1,5 +1,7 @@
 import pytest
 import asyncio
+from app.core.config import settings
+settings.COOKIE_DOMAIN = None
 from app.db import async_engine
 
 @pytest.fixture(scope="session")

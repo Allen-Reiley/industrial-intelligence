@@ -4,11 +4,18 @@
  * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
  */
 (async function() {
+    const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const logWarn = (...args) => { if (isLocalDev) console.warn(...args); };
+    const logError = (...args) => { if (isLocalDev) console.error(...args); };
+
     const script = document.currentScript || document.querySelector('script[data-client-id]') || document.querySelector('script[src*="aura.js"]');
     const agencyId = window.AURA_AGENCY_ID || script?.getAttribute('data-client-id') || script?.getAttribute('data-id');
     window.AURA_START_TIME = performance.now();
     
-    if (!agencyId) return console.error("❌ AuraWorks: Missing Client Identity.");
+    if (!agencyId) {
+        logError("❌ AuraWorks: Missing Client Identity.");
+        return;
+    }
 
     // Retrieve the base tracking endpoint.
     const getBaseUrl = () => {
@@ -151,13 +158,35 @@
         },
         async dispatch(endpoint, payload, useBeacon = false) {
             const utms = AuraPersistence.getStoredUTMs();
-            const data = {
+            let data = {
                 client_id: agencyId, 
                 aura_id: this.auraId,
                 timestamp: new Date().toISOString(),
                 ...utms,
                 ...payload
             };
+
+            if (endpoint === 'event') {
+                const eventName = payload.event_name || payload.event_type || 'unknown';
+                const properties = {};
+                const standardKeys = ['client_id', 'aura_id', 'url', 'duration', 'event_type', 'intent_cluster', 'event_name', 'timestamp'];
+                Object.keys(data).forEach(key => {
+                    if (!standardKeys.includes(key)) {
+                        properties[key] = data[key];
+                    }
+                });
+                data = {
+                    client_id: data.client_id,
+                    event_name: eventName,
+                    aura_id: data.aura_id,
+                    url: data.url || window.location.href,
+                    duration: data.duration || 0,
+                    event_type: data.event_type || eventName,
+                    intent_cluster: data.intent_cluster || null,
+                    properties: properties,
+                    timestamp: data.timestamp
+                };
+            }
 
             const url = `${API_URL}/${endpoint}`;
 
@@ -223,7 +252,7 @@
                 const btn = e.target.closest('a, button');
                 if (!btn) return;
                 const text = btn.innerText?.toLowerCase();
-                const intentKeywords = ['pricing', 'audit', 'feature', 'solution', 'waitlist', 'get started'];
+                const intentKeywords = ['pricing', 'audit', 'feature', 'solution', 'prospect', 'get started'];
                 if (intentKeywords.some(kw => text.includes(kw))) {
                     this.dispatch('event', { 
                         event_type: 'intent_click', 
@@ -305,6 +334,8 @@
         }
     };
 
+    let enqueuePromise = Promise.resolve();
+
     /**
      * AuraOfflineQueue:
      * IndexedDB-based queue that stores telemetry events offline when connection is lost.
@@ -340,19 +371,29 @@
         
         async enqueue(endpoint, payload) {
             return new Promise((resolve) => {
-                if (!this.db) {
-                    resolve(false);
-                    return;
-                }
-                try {
-                    const transaction = this.db.transaction([this.storeName], 'readwrite');
-                    const store = transaction.objectStore(this.storeName);
-                    store.add({ endpoint, payload, timestamp: new Date().toISOString() });
-                    transaction.oncomplete = () => resolve(true);
-                    transaction.onerror = () => resolve(false);
-                } catch (e) {
-                    resolve(false);
-                }
+                enqueuePromise = enqueuePromise.then(async () => {
+                    if (!this.db) {
+                        resolve(false);
+                        return;
+                    }
+                    try {
+                        const events = await this.getQueuedEvents();
+                        if (events.length >= 100) {
+                            // Drop the oldest event (first one in queue) to prevent memory leak/bloat
+                            await this.removeEvent(events[0].id);
+                        }
+                        const transaction = this.db.transaction([this.storeName], 'readwrite');
+                        const store = transaction.objectStore(this.storeName);
+                        store.add({ endpoint, payload, timestamp: new Date().toISOString(), attempts: 0 });
+                        transaction.oncomplete = () => {
+                            resolve(true);
+                            this.flush();
+                        };
+                        transaction.onerror = () => resolve(false);
+                    } catch (e) {
+                        resolve(false);
+                    }
+                });
             });
         },
         
@@ -392,6 +433,24 @@
             });
         },
 
+        async updateEvent(event) {
+            return new Promise((resolve) => {
+                if (!this.db) {
+                    resolve(false);
+                    return;
+                }
+                try {
+                    const transaction = this.db.transaction([this.storeName], 'readwrite');
+                    const store = transaction.objectStore(this.storeName);
+                    store.put(event);
+                    transaction.oncomplete = () => resolve(true);
+                    transaction.onerror = () => resolve(false);
+                } catch (e) {
+                    resolve(false);
+                }
+            });
+        },
+
         isFlushing: false,
         
         async flush(attempt = 0) {
@@ -416,6 +475,17 @@
                         }
                     } catch (e) {
                         this.isFlushing = false;
+                        
+                        // Increment retry attempts and cap them to prevent infinite loops / memory leak
+                        const attempts = (event.attempts || 0) + 1;
+                        if (attempts >= 5) {
+                            await this.removeEvent(event.id);
+                            logWarn(`AuraWorks: Event exceeded max retries (5). Discarded.`, event);
+                        } else {
+                            event.attempts = attempts;
+                            await this.updateEvent(event);
+                        }
+
                         const delay = Math.min(1000 * Math.pow(2, attempt), 60000);
                         setTimeout(() => this.flush(attempt + 1), delay);
                         return;
@@ -450,11 +520,11 @@
                 config = await response.json();
             }
         } catch (e) {
-            console.warn("AuraWorks: Failed to fetch remote config.", e);
+            logWarn("AuraWorks: Failed to fetch remote config.", e);
         }
         
         if (config && config.is_active === false) {
-            console.warn("AuraWorks: Client license inactive. Tracking halted.");
+            logWarn("AuraWorks: Client license inactive. Tracking halted.");
             return;
         }
 
@@ -528,6 +598,11 @@
             }));
         }
     };
+
+    if (isLocalDev || window.__AURA_TESTING__) {
+        window.__AURA_QUEUE__ = AuraOfflineQueue;
+        window.__AURA_TRACKER__ = AuraTracker;
+    }
 
     if (document.readyState === 'complete' || document.readyState === 'interactive') startAura();
     else window.addEventListener('load', startAura);

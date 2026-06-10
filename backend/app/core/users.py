@@ -45,8 +45,9 @@ cookie_transport = CookieTransport(
     cookie_name="aurahq_auth",
     cookie_max_age=3600,
     cookie_httponly=True,
-    cookie_secure=False,  # Set to True in production
-    cookie_samesite="lax"
+    cookie_secure=settings.ENVIRONMENT == "production",
+    cookie_samesite="lax",
+    cookie_domain=settings.COOKIE_DOMAIN
 )
 
 class RedirectCookieTransport(CookieTransport):
@@ -65,8 +66,9 @@ oauth_cookie_transport = RedirectCookieTransport(
     cookie_name="aurahq_auth",
     cookie_max_age=3600,
     cookie_httponly=True,
-    cookie_secure=False,  # Set to True in production
-    cookie_samesite="lax"
+    cookie_secure=settings.ENVIRONMENT == "production",
+    cookie_samesite="lax",
+    cookie_domain=settings.COOKIE_DOMAIN
 )
 
 def get_jwt_strategy() -> JWTStrategy:

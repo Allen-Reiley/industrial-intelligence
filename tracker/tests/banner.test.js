@@ -39,6 +39,10 @@ describe('banner.js consent banner', () => {
   });
 
   afterAll(() => {
+    listeners.forEach(({ target, type, listener, options }) => {
+      target.removeEventListener(type, listener, options);
+    });
+    listeners = [];
     Element.prototype.attachShadow = originalAttachShadow;
     window.addEventListener = originalWindowAddEventListener;
     document.addEventListener = originalDocumentAddEventListener;

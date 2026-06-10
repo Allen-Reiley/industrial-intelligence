@@ -176,3 +176,63 @@ async def test_track_event_without_url_and_null_aura_id():
         assert response.status_code == 200
         assert response.json() == {"status": "event_logged"}
 
+@pytest.mark.anyio
+async def test_track_event_validation_relaxation():
+    client_id = uuid4()
+    async with async_session_maker() as sess:
+        client = Client(
+            id=client_id,
+            company_name="AuraWorks Test Inc",
+            domain="auraworks.test.co.za",
+            is_active=True
+        )
+        sess.add(client)
+        
+        visit = Visit(
+            client_id=client_id,
+            aura_id=str(client_id),
+            ip_address="196.25.1.1",
+            connection_type="corporate",
+            is_b2b=True,
+            high_intent=False,
+            is_consented=False
+        )
+        sess.add(visit)
+        await sess.commit()
+
+    async with await get_test_client() as client:
+        # Test 1: Flexible metadata structure (custom properties) -> 200 OK
+        payload = {
+            "client_id": str(client_id),
+            "event_name": "custom_lead_click",
+            "properties": {
+                "button_color": "blue",
+                "nested_data": {
+                    "nested_key": "nested_value"
+                }
+            }
+        }
+        response = await client.post("/v1/track/event", json=payload)
+        assert response.status_code == 200
+        assert response.json() == {"status": "event_logged"}
+
+        # Test 2: Missing client_id -> 400 Bad Request
+        bad_payload_missing_client = {
+            "event_name": "custom_lead_click",
+            "properties": {"foo": "bar"}
+        }
+        response = await client.post("/v1/track/event", json=bad_payload_missing_client)
+        assert response.status_code == 400
+
+        # Test 3: Legacy event_type fallback -> 200 OK
+        legacy_payload = {
+            "client_id": str(client_id),
+            "event_type": "intent_click",
+            "intent_cluster": "Pricing",
+            "properties": {"foo": "bar"}
+        }
+        response = await client.post("/v1/track/event", json=legacy_payload)
+        assert response.status_code == 200
+        assert response.json() == {"status": "event_logged"}
+
+

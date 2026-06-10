@@ -305,7 +305,7 @@ Updates the matching Prospect or Visit record's vsl_completion_percentage and vs
 * **Copy Deployment Snippet**: Modal dynamically interpolates the registered client UUID into a production HTML script tag, with a copy-to-clipboard mechanism.
 * **Telemetry Verification Indicator**: Active status component polls `GET /api/v1/clients/{client_id}/verify` to trace visits linked to the tenant UUID. Once a visit is detected, the status transitions to "Installed & Active" and triggers a leads table refresh.
 
-
-
-
-
+12.5 Cross-Subdomain Session & Telemetry Validation (Phase 16):
+* **Cross-Subdomain Cookies**: FastAPI-Users authentication utilizes `CookieTransport` configured with `cookie_domain = "auraworks.co.za"`, `cookie_secure = True`, and `cookie_samesite = "lax"`. This ensures authentication credentials flow seamlessly between `api.auraworks.co.za` and `www.auraworks.co.za`.
+* **Flexible Telemetry Payload**: The `/v1/track/event` endpoint accepts a flexible Pydantic schema with `properties: Dict[str, Any] = Field(default_factory=dict)` to ingest dynamic client-side tracking parameters without raising 422 errors.
+* **Unified Terminology & Robustness**: Legacy waitlist references are completely replaced by the prospect engine across client-side scripts. The client-side tracker utilizes a capped retry queue to handle failed dispatches silently.

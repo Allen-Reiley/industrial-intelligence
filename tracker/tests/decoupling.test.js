@@ -51,6 +51,10 @@ describe('Event Decoupling Integration', () => {
   });
 
   afterAll(() => {
+    listeners.forEach(({ target, type, listener, options }) => {
+      target.removeEventListener(type, listener, options);
+    });
+    listeners = [];
     Element.prototype.attachShadow = originalAttachShadow;
     HTMLHeadElement.prototype.appendChild = originalAppendChild;
     window.addEventListener = originalWindowAddEventListener;
@@ -67,6 +71,8 @@ describe('Event Decoupling Integration', () => {
     delete window.AURA_BANNER_INITIALIZED;
     delete window.AURA_UID;
     delete window.AURA_START_TIME;
+    delete window.AURA_CONFIG;
+    delete window.AURA_AGENCY_ID;
     localStorage.clear();
 
     // Mock document.cookie
@@ -106,7 +112,7 @@ describe('Event Decoupling Integration', () => {
       }
     };
 
-    global.indexedDB = {
+    const mockIndexedDB = {
       open: jest.fn(() => {
         const req = {
           onupgradeneeded: null,
@@ -121,6 +127,12 @@ describe('Event Decoupling Integration', () => {
         return req;
       })
     };
+    global.indexedDB = mockIndexedDB;
+    Object.defineProperty(window, 'indexedDB', {
+      value: mockIndexedDB,
+      configurable: true,
+      writable: true
+    });
   });
 
   test('aura.js boots banner.js, intercepts aura_warm_lead event, appends telemetry, and dispatches to track endpoint', async () => {

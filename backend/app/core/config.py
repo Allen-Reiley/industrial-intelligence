@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: Optional[str] = None
     GOOGLE_CLIENT_SECRET: Optional[str] = None
     OAUTH_REDIRECT_URI: Optional[str] = None
+    COOKIE_DOMAIN: Optional[str] = "auraworks.co.za"
 
     
     # --- DATABASE ---

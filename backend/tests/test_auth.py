@@ -234,8 +234,14 @@ async def test_google_oauth_callback_production():
     mock_id_email = ("google-oauth-id-54321", "oauth-user-prod@auraworks.co.za")
 
     # Force production settings for the request duration
+    from app.core.users import cookie_transport, oauth_cookie_transport
     with patch.object(settings, "ENVIRONMENT", "production"), \
          patch.object(settings, "API_DOMAIN", "api.auraworks.co.za"), \
+         patch.object(settings, "COOKIE_DOMAIN", "auraworks.co.za"), \
+         patch.object(cookie_transport, "cookie_secure", True), \
+         patch.object(oauth_cookie_transport, "cookie_secure", True), \
+         patch.object(cookie_transport, "cookie_domain", "auraworks.co.za"), \
+         patch.object(oauth_cookie_transport, "cookie_domain", "auraworks.co.za"), \
          patch("app.core.users.google_oauth_client.get_access_token", new_callable=AsyncMock) as mock_get_token, \
          patch("app.core.users.google_oauth_client.get_id_email", new_callable=AsyncMock) as mock_get_email:
          
@@ -257,4 +263,8 @@ async def test_google_oauth_callback_production():
         
         assert response.status_code == 302
         assert response.headers["Location"] == "https://auraworks.co.za/aurahq"
-        assert "aurahq_auth" in response.cookies
+        cookie_header = response.headers.get("set-cookie", "")
+        assert "aurahq_auth" in cookie_header
+        assert "domain=auraworks.co.za" in cookie_header.lower()
+        assert "secure" in cookie_header.lower()
+        assert "samesite=lax" in cookie_header.lower()

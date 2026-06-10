@@ -151,6 +151,32 @@ async def global_exception_handler(request: Request, exc: Exception):
         headers=headers
     )
 
+from fastapi.exceptions import RequestValidationError
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    logger.error(f"Validation Error: {exc.errors()}")
+    
+    headers = {}
+    origin = request.headers.get("origin")
+    if origin in settings.ALLOWED_ORIGINS:
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
+        headers["Access-Control-Allow-Methods"] = "*"
+        headers["Access-Control-Allow-Headers"] = "*"
+    else:
+        headers["Access-Control-Allow-Origin"] = "https://www.auraworks.co.za"
+        headers["Access-Control-Allow-Credentials"] = "true"
+        headers["Access-Control-Allow-Methods"] = "*"
+        headers["Access-Control-Allow-Headers"] = "*"
+        
+    return JSONResponse(
+        status_code=400,
+        content={"detail": exc.errors()},
+        headers=headers
+    )
+
+
 # --- CORS CONFIGURATION ---
 app.add_middleware(
     CORSMiddleware,

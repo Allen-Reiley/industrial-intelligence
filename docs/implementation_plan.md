@@ -189,3 +189,15 @@ Perform a global conversion of public page calls-to-action ("Book a Call", "Get 
 Task 16.3: Quiet Premium Theme Partitioning [COMPLETED]
 Remove dark mode from public pages. Forcefully default public views to light mode and strip all dark: utility classes from public UI files. Ensure admin/dashboard layouts retain their custom dark styling.
 
+Phase 16 Stabilization: Production Telemetry & Auth Stabilization [IN PROGRESS]
+This sub-phase stabilizes tracking telemetry validation, implements secure cross-subdomain cookie session storage, and hardens the client-side edge tracker script.
+Task 16.4: Event Payload Relaxation
+Update Pydantic event schema validation on the backend `/v1/track/event` route to support dynamic custom attributes through a flexible `properties: Dict[str, Any]` field.
+Task 16.5: Cross-Subdomain Cookies
+Configure `FastAPI-Users` to use secure, Lax SameSite session cookies targeting the apex domain (`auraworks.co.za`) to resolve cross-subdomain authentication loops.
+Task 16.6: `aura.js` Data Sync & Terminology
+Refactor event payload compilation in the edge tracker, enforce `client_id` parameter injection, and purge all legacy "waitlist" terminology in favor of the active "prospect" engine.
+Task 16.7: `aura.js` Resilience
+Add a silent, capped offline/retry mechanism for failed tracking requests in the client script, preventing infinite loops or memory leaks.
+
+
