@@ -1,0 +1,1314 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "track.py",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L1",
+      "id": "v1_track",
+      "community": 3,
+      "norm_label": "track.py"
+    },
+    {
+      "label": "ConsentPayload",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L27",
+      "id": "v1_track_consentpayload",
+      "community": 3,
+      "norm_label": "consentpayload"
+    },
+    {
+      "label": "BaseModel",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "basemodel",
+      "community": 3,
+      "norm_label": "basemodel"
+    },
+    {
+      "label": "IdentityPayload",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L32",
+      "id": "v1_track_identitypayload",
+      "community": 3,
+      "norm_label": "identitypayload"
+    },
+    {
+      "label": "process_entry_logic()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L43",
+      "id": "v1_track_process_entry_logic",
+      "community": 2,
+      "norm_label": "process_entry_logic()"
+    },
+    {
+      "label": "VisitCreate",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L43",
+      "id": "visitcreate",
+      "community": 2,
+      "norm_label": "visitcreate"
+    },
+    {
+      "label": "str",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L43",
+      "id": "backend_app_api_v1_track_py_str",
+      "community": 2,
+      "norm_label": "str"
+    },
+    {
+      "label": "process_exit_logic()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L150",
+      "id": "v1_track_process_exit_logic",
+      "community": 2,
+      "norm_label": "process_exit_logic()"
+    },
+    {
+      "label": "int",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L150",
+      "id": "int",
+      "community": 2,
+      "norm_label": "int"
+    },
+    {
+      "label": "bool",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L150",
+      "id": "bool",
+      "community": 2,
+      "norm_label": "bool"
+    },
+    {
+      "label": "track_entry()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L263",
+      "id": "v1_track_track_entry",
+      "community": 5,
+      "norm_label": "track_entry()"
+    },
+    {
+      "label": "Request",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L263",
+      "id": "backend_app_api_v1_track_py_request",
+      "community": 5,
+      "norm_label": "request"
+    },
+    {
+      "label": "BackgroundTasks",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L263",
+      "id": "backgroundtasks",
+      "community": 5,
+      "norm_label": "backgroundtasks"
+    },
+    {
+      "label": "track_identity()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L269",
+      "id": "v1_track_track_identity",
+      "community": 3,
+      "norm_label": "track_identity()"
+    },
+    {
+      "label": "AsyncSession",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L269",
+      "id": "backend_app_api_v1_track_py_asyncsession",
+      "community": 4,
+      "norm_label": "asyncsession"
+    },
+    {
+      "label": "track_event()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L328",
+      "id": "v1_track_track_event",
+      "community": 4,
+      "norm_label": "track_event()"
+    },
+    {
+      "label": "PageViewCreate",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L328",
+      "id": "pageviewcreate",
+      "community": 4,
+      "norm_label": "pageviewcreate"
+    },
+    {
+      "label": "track_consent()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L353",
+      "id": "v1_track_track_consent",
+      "community": 3,
+      "norm_label": "track_consent()"
+    },
+    {
+      "label": "track_exit()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L371",
+      "id": "v1_track_track_exit",
+      "community": 4,
+      "norm_label": "track_exit()"
+    },
+    {
+      "label": "IntentPayload",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L410",
+      "id": "v1_track_intentpayload",
+      "community": 3,
+      "norm_label": "intentpayload"
+    },
+    {
+      "label": "track_intent()",
+      "file_type": "code",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L418",
+      "id": "v1_track_track_intent",
+      "community": 5,
+      "norm_label": "track_intent()"
+    },
+    {
+      "label": "SILENT INGESTION ENGINE:     Records raw traffic trails and resolves firmographi",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L44",
+      "id": "v1_track_rationale_44",
+      "community": 2,
+      "norm_label": "silent ingestion engine:     records raw traffic trails and resolves firmographi"
+    },
+    {
+      "label": "THE BATCH PROCESSOR:     Fires exclusively upon departure. Evaluates identity da",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L151",
+      "id": "v1_track_rationale_151",
+      "community": 2,
+      "norm_label": "the batch processor:     fires exclusively upon departure. evaluates identity da"
+    },
+    {
+      "label": "Upgrades anonymous forensic profiles using volunteered banner form data.",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L273",
+      "id": "v1_track_rationale_273",
+      "community": 3,
+      "norm_label": "upgrades anonymous forensic profiles using volunteered banner form data."
+    },
+    {
+      "label": "Records session metrics upon departure and coordinates the batch analytical thre",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L376",
+      "id": "v1_track_rationale_376",
+      "community": 4,
+      "norm_label": "records session metrics upon departure and coordinates the batch analytical thre"
+    },
+    {
+      "label": "Tracks real-time prospect intent telemetry (e.g. VSL completion percentage).",
+      "file_type": "rationale",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L423",
+      "id": "v1_track_rationale_423",
+      "community": 5,
+      "norm_label": "tracks real-time prospect intent telemetry (e.g. vsl completion percentage)."
+    },
+    {
+      "label": "config.py",
+      "file_type": "code",
+      "source_file": "backend/app/core/config.py",
+      "source_location": "L1",
+      "id": "core_config",
+      "community": 8,
+      "norm_label": "config.py"
+    },
+    {
+      "label": "Settings",
+      "file_type": "code",
+      "source_file": "backend/app/core/config.py",
+      "source_location": "L9",
+      "id": "core_config_settings",
+      "community": 8,
+      "norm_label": "settings"
+    },
+    {
+      "label": "BaseSettings",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "basesettings",
+      "community": 8,
+      "norm_label": "basesettings"
+    },
+    {
+      "label": "main.py",
+      "file_type": "code",
+      "source_file": "backend/app/main.py",
+      "source_location": "L1",
+      "id": "app_main",
+      "community": 0,
+      "norm_label": "main.py"
+    },
+    {
+      "label": "verify_admin_token()",
+      "file_type": "code",
+      "source_file": "backend/app/main.py",
+      "source_location": "L30",
+      "id": "app_main_verify_admin_token",
+      "community": 6,
+      "norm_label": "verify_admin_token()"
+    },
+    {
+      "label": "str",
+      "file_type": "code",
+      "source_file": "backend/app/main.py",
+      "source_location": "L30",
+      "id": "backend_app_main_py_str",
+      "community": 6,
+      "norm_label": "str"
+    },
+    {
+      "label": "User",
+      "file_type": "code",
+      "source_file": "backend/app/main.py",
+      "source_location": "L30",
+      "id": "user",
+      "community": 6,
+      "norm_label": "user"
+    },
+    {
+      "label": "run_janitor_loop()",
+      "file_type": "code",
+      "source_file": "backend/app/main.py",
+      "source_location": "L52",
+      "id": "app_main_run_janitor_loop",
+      "community": 0,
+      "norm_label": "run_janitor_loop()"
+    },
+    {
+      "label": "lifespan()",
+      "file_type": "code",
+      "source_file": "backend/app/main.py",
+      "source_location": "L68",
+      "id": "app_main_lifespan",
+      "community": 0,
+      "norm_label": "lifespan()"
+    },
+    {
+      "label": "FastAPI",
+      "file_type": "code",
+      "source_file": "backend/app/main.py",
+      "source_location": "L68",
+      "id": "fastapi",
+      "community": 0,
+      "norm_label": "fastapi"
+    },
+    {
+      "label": "db_exception_handler()",
+      "file_type": "code",
+      "source_file": "backend/app/main.py",
+      "source_location": "L107",
+      "id": "app_main_db_exception_handler",
+      "community": 0,
+      "norm_label": "db_exception_handler()"
+    },
+    {
+      "label": "Request",
+      "file_type": "code",
+      "source_file": "backend/app/main.py",
+      "source_location": "L107",
+      "id": "backend_app_main_py_request",
+      "community": 0,
+      "norm_label": "request"
+    },
+    {
+      "label": "SQLAlchemyError",
+      "file_type": "code",
+      "source_file": "backend/app/main.py",
+      "source_location": "L107",
+      "id": "sqlalchemyerror",
+      "community": 0,
+      "norm_label": "sqlalchemyerror"
+    },
+    {
+      "label": "global_exception_handler()",
+      "file_type": "code",
+      "source_file": "backend/app/main.py",
+      "source_location": "L131",
+      "id": "app_main_global_exception_handler",
+      "community": 0,
+      "norm_label": "global_exception_handler()"
+    },
+    {
+      "label": "Exception",
+      "file_type": "code",
+      "source_file": "backend/app/main.py",
+      "source_location": "L131",
+      "id": "exception",
+      "community": 0,
+      "norm_label": "exception"
+    },
+    {
+      "label": "override_proxy_headers()",
+      "file_type": "code",
+      "source_file": "backend/app/main.py",
+      "source_location": "L167",
+      "id": "app_main_override_proxy_headers",
+      "community": 0,
+      "norm_label": "override_proxy_headers()"
+    },
+    {
+      "label": "health_check()",
+      "file_type": "code",
+      "source_file": "backend/app/main.py",
+      "source_location": "L208",
+      "id": "app_main_health_check",
+      "community": 0,
+      "norm_label": "health_check()"
+    },
+    {
+      "label": "get_admin_summary()",
+      "file_type": "code",
+      "source_file": "backend/app/main.py",
+      "source_location": "L223",
+      "id": "app_main_get_admin_summary",
+      "community": 7,
+      "norm_label": "get_admin_summary()"
+    },
+    {
+      "label": "AsyncSession",
+      "file_type": "code",
+      "source_file": "backend/app/main.py",
+      "source_location": "L223",
+      "id": "backend_app_main_py_asyncsession",
+      "community": 7,
+      "norm_label": "asyncsession"
+    },
+    {
+      "label": "Hardens debug and admin routes.      Rejects any request missing the correct ADM",
+      "file_type": "rationale",
+      "source_file": "backend/app/main.py",
+      "source_location": "L34",
+      "id": "app_main_rationale_34",
+      "community": 6,
+      "norm_label": "hardens debug and admin routes.      rejects any request missing the correct adm"
+    },
+    {
+      "label": "Background worker that executes the 48-hour sweep every 6 hours.     Protects th",
+      "file_type": "rationale",
+      "source_file": "backend/app/main.py",
+      "source_location": "L53",
+      "id": "app_main_rationale_53",
+      "community": 0,
+      "norm_label": "background worker that executes the 48-hour sweep every 6 hours.     protects th"
+    },
+    {
+      "label": "The AuraWorks OS Lifecycle Manager.",
+      "file_type": "rationale",
+      "source_file": "backend/app/main.py",
+      "source_location": "L69",
+      "id": "app_main_rationale_69",
+      "community": 0,
+      "norm_label": "the auraworks os lifecycle manager."
+    },
+    {
+      "label": "Provides a high-level overview of the Industrial OS performance.     Combines Le",
+      "file_type": "rationale",
+      "source_file": "backend/app/main.py",
+      "source_location": "L224",
+      "id": "app_main_rationale_224",
+      "community": 7,
+      "norm_label": "provides a high-level overview of the industrial os performance.     combines le"
+    },
+    {
+      "label": "tasks.md",
+      "file_type": "document",
+      "source_file": "tasks.md",
+      "source_location": "L1",
+      "id": "tasks",
+      "community": 1,
+      "norm_label": "tasks.md"
+    },
+    {
+      "label": "AuraWorks Next.js Frontend Integration & UI Overhaul Log (Phase 16)",
+      "file_type": "document",
+      "source_file": "tasks.md",
+      "source_location": "L1",
+      "id": "tasks_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "community": 1,
+      "norm_label": "auraworks next.js frontend integration & ui overhaul log (phase 16)"
+    },
+    {
+      "label": "1. Edge Tracker Integration (Public Layout)",
+      "file_type": "document",
+      "source_file": "tasks.md",
+      "source_location": "L5",
+      "id": "tasks_1_edge_tracker_integration_public_layout",
+      "community": 1,
+      "norm_label": "1. edge tracker integration (public layout)"
+    },
+    {
+      "label": "2. Global VSL CTA Migration",
+      "file_type": "document",
+      "source_file": "tasks.md",
+      "source_location": "L15",
+      "id": "tasks_2_global_vsl_cta_migration",
+      "community": 1,
+      "norm_label": "2. global vsl cta migration"
+    },
+    {
+      "label": "3. VSL Page Aesthetic Overhaul",
+      "file_type": "document",
+      "source_file": "tasks.md",
+      "source_location": "L29",
+      "id": "tasks_3_vsl_page_aesthetic_overhaul",
+      "community": 1,
+      "norm_label": "3. vsl page aesthetic overhaul"
+    },
+    {
+      "label": "4. Theme Partitioning & Public UI Dark Class Stripping",
+      "file_type": "document",
+      "source_file": "tasks.md",
+      "source_location": "L42",
+      "id": "tasks_4_theme_partitioning_public_ui_dark_class_stripping",
+      "community": 1,
+      "norm_label": "4. theme partitioning & public ui dark class stripping"
+    },
+    {
+      "label": "5. Google OAuth Callback Routing Audit & Host Remediation",
+      "file_type": "document",
+      "source_file": "tasks.md",
+      "source_location": "L53",
+      "id": "tasks_5_google_oauth_callback_routing_audit_host_remediation",
+      "community": 1,
+      "norm_label": "5. google oauth callback routing audit & host remediation"
+    },
+    {
+      "label": "6. Edge Tracker Event Telemetry 500 & CORS Remediation",
+      "file_type": "document",
+      "source_file": "tasks.md",
+      "source_location": "L66",
+      "id": "tasks_6_edge_tracker_event_telemetry_500_cors_remediation",
+      "community": 1,
+      "norm_label": "6. edge tracker event telemetry 500 & cors remediation"
+    },
+    {
+      "label": "7. ASGI Proxy Headers & Scheme Override Middleware",
+      "file_type": "document",
+      "source_file": "tasks.md",
+      "source_location": "L77",
+      "id": "tasks_7_asgi_proxy_headers_scheme_override_middleware",
+      "community": 1,
+      "norm_label": "7. asgi proxy headers & scheme override middleware"
+    },
+    {
+      "label": "8. Hardened Global Exception Handling & Endpoint Safety Guard",
+      "file_type": "document",
+      "source_file": "tasks.md",
+      "source_location": "L86",
+      "id": "tasks_8_hardened_global_exception_handling_endpoint_safety_guard",
+      "community": 1,
+      "norm_label": "8. hardened global exception handling & endpoint safety guard"
+    }
+  ],
+  "links": [
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "fastapi",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_consentpayload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_identitypayload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L410",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_intentpayload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_process_entry_logic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L150",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_process_exit_logic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L353",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_track_consent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L263",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_track_entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L328",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_track_event",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L371",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_track_exit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L269",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_track_identity",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L418",
+      "weight": 1.0,
+      "source": "v1_track",
+      "target": "v1_track_track_intent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "v1_track_consentpayload",
+      "target": "basemodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L353",
+      "weight": 1.0,
+      "source": "v1_track_track_consent",
+      "target": "v1_track_consentpayload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "v1_track_identitypayload",
+      "target": "basemodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L410",
+      "weight": 1.0,
+      "source": "v1_track_intentpayload",
+      "target": "basemodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L269",
+      "weight": 1.0,
+      "source": "v1_track_track_identity",
+      "target": "v1_track_identitypayload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "v1_track_process_entry_logic",
+      "target": "backend_app_api_v1_track_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "v1_track_process_entry_logic",
+      "target": "visitcreate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L44",
+      "weight": 1.0,
+      "source": "v1_track_rationale_44",
+      "target": "v1_track_process_entry_logic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L263",
+      "weight": 1.0,
+      "source": "v1_track_track_entry",
+      "target": "visitcreate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L150",
+      "weight": 1.0,
+      "source": "v1_track_process_exit_logic",
+      "target": "backend_app_api_v1_track_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L150",
+      "weight": 1.0,
+      "source": "v1_track_process_exit_logic",
+      "target": "bool",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L150",
+      "weight": 1.0,
+      "source": "v1_track_process_exit_logic",
+      "target": "int",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L151",
+      "weight": 1.0,
+      "source": "v1_track_rationale_151",
+      "target": "v1_track_process_exit_logic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L263",
+      "weight": 1.0,
+      "source": "v1_track_track_entry",
+      "target": "backend_app_api_v1_track_py_request",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L263",
+      "weight": 1.0,
+      "source": "v1_track_track_entry",
+      "target": "backgroundtasks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L371",
+      "weight": 1.0,
+      "source": "v1_track_track_exit",
+      "target": "backgroundtasks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L418",
+      "weight": 1.0,
+      "source": "v1_track_track_intent",
+      "target": "backgroundtasks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L273",
+      "weight": 1.0,
+      "source": "v1_track_rationale_273",
+      "target": "v1_track_track_identity",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L269",
+      "weight": 1.0,
+      "source": "v1_track_track_identity",
+      "target": "backend_app_api_v1_track_py_asyncsession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L353",
+      "weight": 1.0,
+      "source": "v1_track_track_consent",
+      "target": "backend_app_api_v1_track_py_asyncsession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L328",
+      "weight": 1.0,
+      "source": "v1_track_track_event",
+      "target": "backend_app_api_v1_track_py_asyncsession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L371",
+      "weight": 1.0,
+      "source": "v1_track_track_exit",
+      "target": "backend_app_api_v1_track_py_asyncsession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L418",
+      "weight": 1.0,
+      "source": "v1_track_track_intent",
+      "target": "backend_app_api_v1_track_py_asyncsession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L328",
+      "weight": 1.0,
+      "source": "v1_track_track_event",
+      "target": "pageviewcreate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L371",
+      "weight": 1.0,
+      "source": "v1_track_track_exit",
+      "target": "pageviewcreate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L376",
+      "weight": 1.0,
+      "source": "v1_track_rationale_376",
+      "target": "v1_track_track_exit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L418",
+      "weight": 1.0,
+      "source": "v1_track_track_intent",
+      "target": "v1_track_intentpayload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/api/v1/track.py",
+      "source_location": "L423",
+      "weight": 1.0,
+      "source": "v1_track_rationale_423",
+      "target": "v1_track_track_intent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/config.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "core_config",
+      "target": "core_config_settings",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/config.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "core_config_settings",
+      "target": "basesettings",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L107",
+      "weight": 1.0,
+      "source": "app_main",
+      "target": "app_main_db_exception_handler",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L223",
+      "weight": 1.0,
+      "source": "app_main",
+      "target": "app_main_get_admin_summary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L131",
+      "weight": 1.0,
+      "source": "app_main",
+      "target": "app_main_global_exception_handler",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L208",
+      "weight": 1.0,
+      "source": "app_main",
+      "target": "app_main_health_check",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "app_main",
+      "target": "app_main_lifespan",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L167",
+      "weight": 1.0,
+      "source": "app_main",
+      "target": "app_main_override_proxy_headers",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "app_main",
+      "target": "app_main_run_janitor_loop",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "app_main",
+      "target": "app_main_verify_admin_token",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "app_main",
+      "target": "fastapi",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "app_main_rationale_34",
+      "target": "app_main_verify_admin_token",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "app_main_verify_admin_token",
+      "target": "backend_app_main_py_str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "app_main_verify_admin_token",
+      "target": "user",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L83",
+      "weight": 1.0,
+      "source": "app_main_lifespan",
+      "target": "app_main_run_janitor_loop",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "app_main_rationale_53",
+      "target": "app_main_run_janitor_loop",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "app_main_lifespan",
+      "target": "fastapi",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L69",
+      "weight": 1.0,
+      "source": "app_main_rationale_69",
+      "target": "app_main_lifespan",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L107",
+      "weight": 1.0,
+      "source": "app_main_db_exception_handler",
+      "target": "backend_app_main_py_request",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L107",
+      "weight": 1.0,
+      "source": "app_main_db_exception_handler",
+      "target": "sqlalchemyerror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L131",
+      "weight": 1.0,
+      "source": "app_main_global_exception_handler",
+      "target": "backend_app_main_py_request",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L167",
+      "weight": 1.0,
+      "source": "app_main_override_proxy_headers",
+      "target": "backend_app_main_py_request",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L131",
+      "weight": 1.0,
+      "source": "app_main_global_exception_handler",
+      "target": "exception",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L223",
+      "weight": 1.0,
+      "source": "app_main_get_admin_summary",
+      "target": "backend_app_main_py_asyncsession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/main.py",
+      "source_location": "L224",
+      "weight": 1.0,
+      "source": "app_main_rationale_224",
+      "target": "app_main_get_admin_summary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tasks.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "tasks",
+      "target": "tasks_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tasks.md",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "tasks_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "target": "tasks_1_edge_tracker_integration_public_layout",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tasks.md",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "tasks_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "target": "tasks_2_global_vsl_cta_migration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tasks.md",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "tasks_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "target": "tasks_3_vsl_page_aesthetic_overhaul",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tasks.md",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "tasks_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "target": "tasks_4_theme_partitioning_public_ui_dark_class_stripping",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tasks.md",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "tasks_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "target": "tasks_5_google_oauth_callback_routing_audit_host_remediation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tasks.md",
+      "source_location": "L66",
+      "weight": 1.0,
+      "source": "tasks_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "target": "tasks_6_edge_tracker_event_telemetry_500_cors_remediation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tasks.md",
+      "source_location": "L77",
+      "weight": 1.0,
+      "source": "tasks_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "target": "tasks_7_asgi_proxy_headers_scheme_override_middleware",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tasks.md",
+      "source_location": "L86",
+      "weight": 1.0,
+      "source": "tasks_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "target": "tasks_8_hardened_global_exception_handling_endpoint_safety_guard",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "built_at_commit": "e3472a269ae5fd9a10b5068588c64737cacd1d72"
+}
