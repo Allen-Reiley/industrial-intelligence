@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "AuraWorks Industrial Intelligence OS"
     VERSION: str = "3.2.1"  # Forensic v3.2.1 Async Support
     API_V1_STR: str = "/api/v1"
+    ENVIRONMENT: str = "development"
+    API_DOMAIN: Optional[str] = None
 
     # --- SECURITY & AUTH ---
     # Formal authentication for the industrial dashboard

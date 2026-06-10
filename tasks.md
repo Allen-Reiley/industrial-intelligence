@@ -73,3 +73,20 @@ This log details the execution, design decisions, and completed steps for Phase 
   - Wrapped the fallback `payload.client_id` in `str()` inside `track_event` route in `backend/app/api/v1/track.py` to coerce it to a string, preventing database comparison failures.
   - Added the `test_track_event_without_url_and_null_aura_id` integration test simulating the bad payload, verifying it resolves and returns `200 OK`.
   - Verified all 78 backend tests and 24 frontend tests pass successfully.
+
+## 7. ASGI Proxy Headers & Scheme Override Middleware
+- **Diagnostic Findings**:
+  - The production deployment experienced proxy header stripping (likely by reverse proxy/load balancers), resulting in FastAPI generating oauth redirect URIs with `http://localhost:8000` (since it fell back to internal ASGI server parameters).
+- **Actions Taken**:
+  - Refactored `backend/app/core/config.py` to add `ENVIRONMENT` and `API_DOMAIN` configurations.
+  - Injected `ProxyHeadersMiddleware` from `uvicorn.middleware.proxy_headers` into `backend/app/main.py`.
+  - Implemented an ASGI/HTTP middleware `override_proxy_headers` in `backend/app/main.py` that intercepts requests in production, forces `request.scope["scheme"] = "https"`, and overrides the server/host details using the configured `API_DOMAIN`.
+  - Verified that all 78 backend tests continue to compile and pass successfully.
+
+## 8. Hardened Global Exception Handling & Endpoint Safety Guard
+- **Diagnostic Findings**:
+  - Unhandled errors (like database connection issues or syntax exceptions) during execution bypassed the standard Starlette CORS middleware response pipeline, stripping headers and masking the true errors in the browser console.
+- **Actions Taken**:
+  - Registered custom global exception handlers for `Exception` and `SQLAlchemyError` using `@app.exception_handler()` in `backend/app/main.py`. These handlers log full tracebacks to the server log and return `JSONResponse` objects with explicitly injected CORS headers for allowed origins (allowing `https://www.auraworks.co.za`).
+  - Wrapped database operations in `/v1/track/event` (`backend/app/api/v1/track.py`) in a `try...except` block catching `IntegrityError` to safely capture and return `400 Bad Request` ("Invalid or missing client_id") instead of crashing the process.
+  - Verified all 78 backend tests continue to compile and pass successfully.

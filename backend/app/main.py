@@ -3,9 +3,13 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException, Depends, Header
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from sqlmodel import select, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import SQLAlchemyError
+import traceback
 from datetime import datetime, timezone
 
 from app.core.config import settings
@@ -97,6 +101,56 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# --- GLOBAL EXCEPTION HANDLERS WITH CORS PRESERVATION ---
+
+@app.exception_handler(SQLAlchemyError)
+async def db_exception_handler(request: Request, exc: SQLAlchemyError):
+    logger.error(f"Database Exception: {exc}\n{traceback.format_exc()}")
+    
+    headers = {}
+    origin = request.headers.get("origin")
+    if origin in settings.ALLOWED_ORIGINS:
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
+        headers["Access-Control-Allow-Methods"] = "*"
+        headers["Access-Control-Allow-Headers"] = "*"
+    else:
+        # Fallback to force allow production domain
+        headers["Access-Control-Allow-Origin"] = "https://www.auraworks.co.za"
+        headers["Access-Control-Allow-Credentials"] = "true"
+        headers["Access-Control-Allow-Methods"] = "*"
+        headers["Access-Control-Allow-Headers"] = "*"
+        
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Database Error occurred", "error_type": type(exc).__name__},
+        headers=headers
+    )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled Exception: {exc}\n{traceback.format_exc()}")
+    
+    headers = {}
+    origin = request.headers.get("origin")
+    if origin in settings.ALLOWED_ORIGINS:
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
+        headers["Access-Control-Allow-Methods"] = "*"
+        headers["Access-Control-Allow-Headers"] = "*"
+    else:
+        # Fallback to force allow production domain
+        headers["Access-Control-Allow-Origin"] = "https://www.auraworks.co.za"
+        headers["Access-Control-Allow-Credentials"] = "true"
+        headers["Access-Control-Allow-Methods"] = "*"
+        headers["Access-Control-Allow-Headers"] = "*"
+        
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal Server Error", "error_type": type(exc).__name__},
+        headers=headers
+    )
+
 # --- CORS CONFIGURATION ---
 app.add_middleware(
     CORSMiddleware,
@@ -105,6 +159,37 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- PROXY HEADER STACK ---
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
+
+@app.middleware("http")
+async def override_proxy_headers(request: Request, call_next):
+    if settings.ENVIRONMENT == "production" and settings.API_DOMAIN:
+        # Force HTTPS scheme
+        request.scope["scheme"] = "https"
+        
+        # Parse host and port from API_DOMAIN setting
+        domain = settings.API_DOMAIN.replace("https://", "").replace("http://", "")
+        if ":" in domain:
+            host, port_str = domain.split(":", 1)
+            port = int(port_str)
+        else:
+            host = domain
+            port = 443
+            
+        request.scope["server"] = (host, port)
+        
+        # Override HTTP Host header in request.scope["headers"]
+        new_headers = []
+        for k, v in request.scope.get("headers", []):
+            if k == b"host":
+                new_headers.append((b"host", host.encode("latin1")))
+            else:
+                new_headers.append((k, v))
+        request.scope["headers"] = new_headers
+
+    return await call_next(request)
 
 # --- ROUTE REGISTRATION ---
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["authentication"])

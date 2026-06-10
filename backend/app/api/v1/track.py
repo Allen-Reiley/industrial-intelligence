@@ -329,18 +329,24 @@ async def track_event(
     payload: PageViewCreate,
     session: AsyncSession = Depends(get_async_session)
 ):
+    from sqlalchemy.exc import IntegrityError
     target_aura_id = payload.aura_id if getattr(payload, "aura_id", None) else str(payload.client_id)
-    res = await session.execute(
-        select(Visit).where(
-            Visit.aura_id == target_aura_id
-        ).order_by(Visit.created_at.desc())
-    )
-    visit = res.scalars().first()
-    if visit:
-        if getattr(payload, "event_type", None) == "intent_click":
-            visit.intent_cluster = getattr(payload, "intent_cluster", "General")
-        await session.commit()
-        return {"status": "event_logged"}
+    try:
+        res = await session.execute(
+            select(Visit).where(
+                Visit.aura_id == target_aura_id
+            ).order_by(Visit.created_at.desc())
+        )
+        visit = res.scalars().first()
+        if visit:
+            if getattr(payload, "event_type", None) == "intent_click":
+                visit.intent_cluster = getattr(payload, "intent_cluster", "General")
+            await session.commit()
+            return {"status": "event_logged"}
+    except IntegrityError as e:
+        await session.rollback()
+        raise HTTPException(status_code=400, detail="Invalid or missing client_id")
+        
     return {"status": "pending_entry"}
 
 @router.post("/consent")
