@@ -77,7 +77,8 @@ class Settings(BaseSettings):
         "https://industrial-intelligence-git-main-allen-reileys-projects.vercel.app",
         "https://industrial-intelligence-lttxeot8z-allen-reileys-projects.vercel.app",
         "https://api.auraworks.co.za",
-        "https://banner.auraworks.co.za"
+        "https://banner.auraworks.co.za",
+        "https://api.auraworks.co.za/v1/track/event"
     ]
 
     # Modern Pydantic V2 Configuration
