@@ -81,12 +81,12 @@ export default function Pricing() {
 
                                     <div className="flex justify-center w-full">
                                         <AnimatedGroup variants={transitionVariants} className="w-full md:w-auto">
-                                            <Button
-                                                asChild
-                                                size="lg"
-                                                className="w-full md:w-auto px-10 py-7 text-base md:text-lg font-medium tracking-tight shadow-xl">
-                                                <Link href="/vsl">Watch Video</Link>
-                                            </Button>
+                                             <Button
+                                                 asChild
+                                                 size="lg"
+                                                 className="w-full md:w-auto px-10 py-7 text-base md:text-lg font-medium tracking-tight shadow-xl">
+                                                 <Link href="/book-demo">Request Enterprise Access</Link>
+                                             </Button>
                                         </AnimatedGroup>
                                     </div>
 

@@ -3,6 +3,7 @@
 import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Shield, Lock, User, AlertTriangle, ArrowRight } from 'lucide-react';
+import { navigateToUrl } from '@/lib/utils';
 
 function LoginForm() {
   const router = useRouter();
@@ -28,7 +29,7 @@ function LoginForm() {
       
       const data = await res.json();
       if (data.authorization_url) {
-        window.location.href = data.authorization_url;
+        navigateToUrl(data.authorization_url);
       } else {
         throw new Error('Authorization URL missing in response payload.');
       }

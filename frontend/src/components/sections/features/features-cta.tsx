@@ -18,8 +18,8 @@ export function FeaturesCTA() {
                         asChild
                         size="lg"
                         className="rounded-xl px-10 shadow-xl shadow-primary/10">
-                        <Link href="/vsl">
-                            <span>Watch Video</span>
+                        <Link href="/book-demo">
+                            <span>Book Demo</span>
                         </Link>
                     </Button>
 

@@ -30,11 +30,12 @@ class ConsentPayload(BaseModel):
     status: str 
 
 class IdentityPayload(BaseModel):
-    client_id: str
+    client_id: UUID
     aura_id: str
     email: Optional[str] = None
     company_name: Optional[str] = None
     department: Optional[str] = None
+
     position: Optional[str] = None
     capture_source: Optional[str] = "authorized_blur"
     signature: Optional[Dict[str, Any]] = None
@@ -285,7 +286,8 @@ async def track_identity(
         sig = payload.signature
         visit.canvas_hash = sig.get("canvas")
         visit.webgl_renderer = sig.get("webgl")
-        visit.clock_drift = sig.get("drift")
+        drift_val = sig.get("drift")
+        visit.clock_drift = str(drift_val) if drift_val is not None else None
         net = sig.get("network")
         if isinstance(net, dict):
             visit.effective_connection_type = net.get("type")

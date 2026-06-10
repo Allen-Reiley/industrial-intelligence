@@ -50,10 +50,13 @@ The backend is built on **FastAPI** (Python 3.12) and **SQLModel** (Pydantic + S
 The administrative and client-facing web application, built with **Next.js 14+** (App Router) and **TypeScript**.
 
 * **`src/app/`**: Application routing paths.
-  * `(auth)/`: Magic-link authentication gates powered by NextAuth.js.
-  * `admin/`: Internal administration portal to coordinate 200 client instances and audit aggregate traffic logs.
-  * `dashboard/`: B2B client dashboard displaying unmasked visit feeds and script installations.
-  * `apply/`: Multi-stage qualifying form (A/B testing) designed to filter inbound sales prospects based on company scale.
+  * (authenticated)/aurahq/: Unified layout and navigation frame (AuraHQ).
+    * admin/: Internal administration portal to coordinate 200 client instances and audit aggregate traffic logs.
+    * dashboard/: B2B client dashboard displaying unmasked visit feeds and script installations.
+  * login/: Next.js login page containing the Google OAuth authentication trigger.
+    * callback/: Handles Google redirect, exchanging state with FastAPI backend.
+  * apply/: Multi-stage qualifying form (A/B testing) designed to filter inbound sales prospects based on company scale.
+
 * **`components/`**: Muted-theme, high-end visual dashboard components leveraging Tailwind CSS and **Shadcn/UI**.
 * **`hooks/`**: Custom React context hooks managing session logic and data revalidation queries (SWR).
 * **`lib/`**: Validator modules (Zod schemas), API clients, and text-parsing utils.
@@ -107,10 +110,14 @@ Orchestration, environment variables, and Docker configurations.
 ├── frontend/               # Next.js Application
 │   ├── src/
 │   │   ├── app/            # Next.js App Router Pages
-│   │   │   ├── (auth)/     # Magic Link Auth
-│   │   │   ├── admin/      # Admin Control Panels
-│   │   │   ├── dashboard/  # Client Analytics Portals
+│   │   │   ├── (authenticated)/
+│   │   │   │   └── aurahq/ # Unified dashboard command center (AuraHQ)
+│   │   │   │       ├── admin/      # Admin Control Panels
+│   │   │   │       └── dashboard/  # Client Analytics Portals
+│   │   │   ├── login/      # Google OAuth login gate
+│   │   │   │   └── callback/ # OAuth callback processor
 │   │   │   └── apply/      # Qualifying Funnel Forms
+
 │   │   ├── components/     # Shadcn/UI Elements
 │   │   ├── hooks/          # React hooks & SWR fetches
 │   │   └── lib/            # Zod validation & API utility proxies

@@ -29,7 +29,11 @@ def calculate_identity_match(new_sig: dict, existing_visit: Visit) -> float:
         score += 0.30
         
     # 2. Precision Clock Drift (20%)
-    drift_diff = abs(new_sig.get('drift', 0) - (existing_visit.clock_drift or 0))
+    try:
+        existing_drift = int(existing_visit.clock_drift) if existing_visit.clock_drift is not None else 0
+    except (ValueError, TypeError):
+        existing_drift = 0
+    drift_diff = abs(new_sig.get('drift', 0) - existing_drift)
     if drift_diff <= 1:
         score += 0.20
         
@@ -101,7 +105,8 @@ async def resolve_identity(
     if existing_visit:
         # Refresh forensic markers for the current visit
         existing_visit.canvas_hash = signature.get('canvas')
-        existing_visit.clock_drift = signature.get('drift')
+        drift_val = signature.get('drift')
+        existing_visit.clock_drift = str(drift_val) if drift_val is not None else None
         existing_visit.webgl_renderer = signature.get('webgl')
         
         net = signature.get('network', {})

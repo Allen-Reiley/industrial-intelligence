@@ -15,6 +15,11 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
+jest.mock('@/lib/utils', () => ({
+  ...jest.requireActual('@/lib/utils'),
+  navigateToUrl: jest.fn(),
+}));
+
 describe('LoginPage Component Tests', () => {
   let cookieVal = '';
 
@@ -76,16 +81,7 @@ describe('LoginPage Component Tests', () => {
       json: async () => ({ authorization_url: 'https://accounts.google.com/o/oauth2/auth?state=123' }),
     });
 
-    const originalLocation = window.location;
-    const mockLocation = {
-      href: '',
-      origin: 'http://localhost:3000',
-    };
-    Object.defineProperty(window, 'location', {
-      value: mockLocation,
-      writable: true,
-      configurable: true,
-    });
+    const { navigateToUrl } = require('@/lib/utils');
 
     render(<LoginPage />);
 
@@ -98,13 +94,7 @@ describe('LoginPage Component Tests', () => {
     });
 
     await waitFor(() => {
-      expect(window.location.href).toBe('https://accounts.google.com/o/oauth2/auth?state=123');
-    });
-
-    Object.defineProperty(window, 'location', {
-      value: originalLocation,
-      writable: true,
-      configurable: true,
+      expect(navigateToUrl).toHaveBeenCalledWith('https://accounts.google.com/o/oauth2/auth?state=123');
     });
   });
 

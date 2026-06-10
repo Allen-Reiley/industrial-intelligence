@@ -301,11 +301,12 @@ Phase 13 establishes the internal console for managing multi-tenant client deplo
 * Adds a constructor override on instantiation to preserve backward compatibility, translating the legacy singular `domain` string to `whitelisted_domains` arrays, and vice versa.
 * Includes flags `require_consent_banner` and `collect_personal_data` to govern edge tracker configurations.
 
-### 10.2 Admin Authentication (JWT Engine)
-* **Login Gateway**: `/api/v1/auth/login` accepts admin credentials, validates against system secrets, and returns short-lived access and refresh tokens.
-* **Token Protection**: FastAPI endpoints are protected via `get_current_admin` dependencies checking the JWT signature, validity, and expiration.
-* **Fallback Verification**: Backend telemetry proxies accept authentication from either legacy `X-Aura-Token` header key strings or modern `Authorization: Bearer [JWT]` headers to secure administrative API routes.
-* **Routing Middleware**: Next.js custom middleware guards all `/admin/*` routes, checking the presence of a secure `admin_access_token` cookie and redirecting unauthenticated visitors to `/login`.
+### 10.2 Admin Authentication (FastAPI-Users & Google OAuth)
+* **Auth Backend & Transport**: Authentication is powered by `FastAPI-Users` using `CookieTransport` (storing the JWT session in the HttpOnly `aurahq_auth` cookie).
+* **Google OAuth Handshake**: Integrates `httpx-oauth` to expose `/api/v1/auth/google/authorize` and `/api/v1/auth/google/callback`, mapping Google profiles to backend database records.
+* **Token Protection**: FastAPI endpoints are protected via `get_current_admin` dependencies checking active user sessions, with a backward-compatible fallback decoding legacy Bearer JWT signatures.
+* **Routing Middleware**: Next.js custom middleware guards all `/aurahq/*` routes, checking the presence of a secure `aurahq_auth` cookie and redirecting unauthenticated visitors to `/login` (supporting automatic redirects from legacy `/admin/*` and `/dashboard/*` paths).
+
 
 ### 10.3 Two-Tier High-Speed Config Cache
 * **Tier 1 (Redis)**: Tries to read/write JSON-serialized client configurations from a Redis instance for sub-millisecond edge resolution.

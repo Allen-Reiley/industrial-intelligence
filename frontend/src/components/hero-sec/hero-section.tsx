@@ -141,6 +141,15 @@ export default function HeroSection() {
                                         asChild
                                         size="lg"
                                         className="rounded-xl px-8 text-base shadow-xl shadow-primary/20">
+                                        <Link href="/book-demo">
+                                            <span className="text-nowrap">Book Demo</span>
+                                        </Link>
+                                    </Button>
+                                    <Button
+                                        asChild
+                                        size="lg"
+                                        variant="ghost"
+                                        className="rounded-xl px-8 text-base">
                                         <Link href="/vsl">
                                             <span className="text-nowrap">Watch Video</span>
                                         </Link>

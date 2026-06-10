@@ -81,13 +81,22 @@ export const HeroHeader = () => {
                             </div>
                             
                             <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
-                                {/* Only show the Watch Video button in the expanded menu or the top-of-page header */}
+                                {/* Only show these two buttons in the expanded menu or the top-of-page header */}
                                 <Button
                                     asChild
+                                    variant="outline"
                                     size="sm"
                                     className={cn(isScrolled && 'lg:hidden')}>
                                     <Link href="/vsl">
                                         <span>Watch Video</span>
+                                    </Link>
+                                </Button>
+                                <Button
+                                    asChild
+                                    size="sm"
+                                    className={cn(isScrolled && 'lg:hidden')}>
+                                    <Link href="/book-demo">
+                                        <span>Book Demo</span>
                                     </Link>
                                 </Button>
  
@@ -97,8 +106,8 @@ export const HeroHeader = () => {
                                         asChild
                                         size="sm"
                                         className="hidden lg:inline-flex">
-                                        <Link href="/vsl">
-                                            <span>Watch Video</span>
+                                        <Link href="/book-demo">
+                                            <span>Book Demo</span>
                                         </Link>
                                     </Button>
                                 )}
