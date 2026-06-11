@@ -268,3 +268,45 @@ async def test_google_oauth_callback_production():
         assert "domain=auraworks.co.za" in cookie_header.lower()
         assert "secure" in cookie_header.lower()
         assert "samesite=lax" in cookie_header.lower()
+
+async def test_username_login():
+    """
+    Tests logging in with a custom username rather than email using FastAPI-Users.
+    """
+    client = await get_test_client()
+    from fastapi_users.password import PasswordHelper
+    password_helper = PasswordHelper()
+    
+    test_email = "test-user-username-login@auraworks.co.za"
+    test_username = "custom_auth_username_123"
+    test_password = "secure_password_username_123"
+    hashed_pwd = password_helper.hash(test_password)
+    
+    async for session in get_async_session():
+        stmt_cleanup = select(User).where((User.email == test_email) | (User.username == test_username))
+        res_cleanup = await session.execute(stmt_cleanup)
+        existing_users = res_cleanup.unique().scalars().all()
+        for existing_user in existing_users:
+            await session.delete(existing_user)
+        await session.commit()
+            
+        user = User(
+            id=uuid.uuid4(),
+            email=test_email,
+            username=test_username,
+            hashed_password=hashed_pwd,
+            is_active=True,
+            is_verified=True,
+            is_superuser=False
+        )
+        session.add(user)
+        await session.commit()
+        break
+        
+    # Login using custom username instead of email via POST /api/v1/auth/login (as form data)
+    response_login = await client.post(
+        f"{settings.API_V1_STR}/auth/login",
+        data={"username": test_username, "password": test_password}
+    )
+    assert response_login.status_code in [200, 204]
+    assert "aurahq_auth" in response_login.cookies

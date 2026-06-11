@@ -53,11 +53,20 @@ function LoginForm() {
       });
 
       if (!res.ok) {
-        if (res.status === 400 || res.status === 401) {
-          throw new Error('Invalid administrative credentials.');
-        } else {
-          throw new Error('Failed to connect to authentication gateway.');
+        let errorMsg = 'Invalid administrative credentials.';
+        try {
+          const errData = await res.json();
+          if (errData && errData.detail) {
+            if (errData.detail === 'LOGIN_BAD_CREDENTIALS') {
+              errorMsg = 'Invalid administrative credentials.';
+            } else {
+              errorMsg = errData.detail;
+            }
+          }
+        } catch (e) {
+          // ignore parsing error, use default
         }
+        throw new Error(errorMsg);
       }
 
       // FastAPI-Users login sets HttpOnly cookie "aurahq_auth" on success.
@@ -130,14 +139,14 @@ function LoginForm() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Username Input */}
               <div className="space-y-2">
-                <label htmlFor="username" className="text-[10px] font-bold uppercase tracking-widest text-zinc-550 block">System Username</label>
+                <label htmlFor="username" className="text-[10px] font-bold uppercase tracking-widest text-zinc-550 block">Email or Username</label>
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
                   <input 
                     id="username"
                     type="text"
                     required
-                    placeholder="admin"
+                    placeholder="Email or Username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     className="w-full bg-zinc-950/50 border border-zinc-850 focus:border-indigo-500/40 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none rounded-lg py-3 pl-11 pr-4 text-sm text-zinc-200 placeholder-zinc-700 transition-all"

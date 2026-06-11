@@ -3,6 +3,7 @@ import uuid
 from typing import Optional
 from fastapi import Depends, Request, Response
 from fastapi.responses import RedirectResponse
+from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_users import BaseUserManager, FastAPIUsers, UUIDIDMixin
 from fastapi_users.authentication import (
     AuthenticationBackend,
@@ -23,6 +24,42 @@ async def get_user_db(session: AsyncSession = Depends(get_async_session)):
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     reset_password_token_secret = settings.SECRET_KEY or "dev-secret-key-12345678901234567890123456789012"
     verification_token_secret = settings.SECRET_KEY or "dev-secret-key-12345678901234567890123456789012"
+
+    async def authenticate(
+        self, credentials: OAuth2PasswordRequestForm
+    ) -> Optional[User]:
+        from fastapi_users import exceptions
+        from sqlmodel import select
+        
+        user = None
+        # 1. Attempt lookup by email
+        try:
+            user = await self.get_by_email(credentials.username)
+        except exceptions.UserNotExists:
+            pass
+
+        # 2. Attempt lookup by username if email lookup failed
+        if not user:
+            stmt = select(User).where(User.username == credentials.username)
+            res = await self.user_db.session.execute(stmt)
+            user = res.scalars().first()
+
+        if not user:
+            # Hash to mitigate timing attacks
+            self.password_helper.hash(credentials.password)
+            return None
+
+        # 3. Perform credentials check
+        verified, updated_password_hash = self.password_helper.verify_and_update(
+            credentials.password, user.hashed_password
+        )
+        if not verified:
+            return None
+            
+        if updated_password_hash is not None:
+            await self.user_db.update(user, {"hashed_password": updated_password_hash})
+
+        return user
 
     async def on_after_register(self, user: User, request: Optional[Request] = None):
         pass

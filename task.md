@@ -217,3 +217,13 @@ This log details the execution, design decisions, and completed steps for Phase 
     ```
   - Implemented the `try...except Exception as e` safety net in `/v1/track/event` endpoint to log explicit tracebacks and raise structured `400 Bad Request` exceptions.
   - Ran the test suite via `PYTHONPATH=. uv run pytest` and verified 79 unit tests passed successfully.
+
+## 11. Dual-Column Auth & Form-Encoding Refactor
+- **Actions Taken**:
+  - Refactored [backend/app/models/user.py](file:///home/allenreiley7/projects/industrial-intelligence/backend/app/models/user.py) to add custom `username` field support to SQLModel `User` entity and matching Pydantic schema structures.
+  - Implemented database migration under [backend/async_migrations/versions/a8b27c34ef56_add_username_to_user_table.py](file:///home/allenreiley7/projects/industrial-intelligence/backend/async_migrations/versions/a8b27c34ef56_add_username_to_user_table.py) and applied the change.
+  - Overrode the `authenticate` method inside [UserManager](file:///home/allenreiley7/projects/industrial-intelligence/backend/app/core/users.py#L23) in [backend/app/core/users.py](file:///home/allenreiley7/projects/industrial-intelligence/backend/app/core/users.py) to allow querying by either `email` or the custom `username` field.
+  - Refactored frontend login portal [frontend/src/app/login/page.tsx](file:///home/allenreiley7/projects/industrial-intelligence/frontend/src/app/login/page.tsx) input label and placeholder to explicitly prompt for "Email or Username".
+  - Upgraded frontend login form handler in [frontend/src/app/login/page.tsx](file:///home/allenreiley7/projects/industrial-intelligence/frontend/src/app/login/page.tsx) to serialize credentials using `URLSearchParams` as `application/x-www-form-urlencoded` format.
+  - Improved error handling in frontend catch blocks to correctly read and show rich error details from JSON responses.
+  - Added new integration test `test_username_login` to [backend/tests/test_auth.py](file:///home/allenreiley7/projects/industrial-intelligence/backend/tests/test_auth.py) verifying login by custom username, and verified all 80 tests pass successfully.

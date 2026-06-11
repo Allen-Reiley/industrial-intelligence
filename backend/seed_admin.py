@@ -19,19 +19,21 @@ async def seed_admin():
     
     async with async_session_maker() as session:
         # 1. Seed the FastAPI-Users User table
-        stmt_user = select(User).where(User.email == username)
+        stmt_user = select(User).where((User.email == username) | (User.username == username))
         res_user = await session.execute(stmt_user)
         existing_user = res_user.scalars().first()
         
         if existing_user:
-            print(f"User {username} already exists in user table. Updating password...")
+            print(f"User {username} already exists in user table. Updating password and username...")
             existing_user.hashed_password = hashed_pwd
+            existing_user.username = username
             session.add(existing_user)
         else:
             print(f"Creating default user {username} in user table...")
             new_user = User(
                 id=uuid.uuid4(),
                 email=username,
+                username=username,
                 hashed_password=hashed_pwd,
                 is_active=True,
                 is_verified=True,
