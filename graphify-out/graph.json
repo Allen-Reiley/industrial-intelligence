@@ -1,0 +1,1556 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "users.py",
+      "file_type": "code",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L1",
+      "id": "core_users",
+      "community": 5,
+      "norm_label": "users.py"
+    },
+    {
+      "label": "get_user_db()",
+      "file_type": "code",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L21",
+      "id": "core_users_get_user_db",
+      "community": 3,
+      "norm_label": "get_user_db()"
+    },
+    {
+      "label": "AsyncSession",
+      "file_type": "code",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L21",
+      "id": "asyncsession",
+      "community": 3,
+      "norm_label": "asyncsession"
+    },
+    {
+      "label": "UserManager",
+      "file_type": "code",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L24",
+      "id": "core_users_usermanager",
+      "community": 5,
+      "norm_label": "usermanager"
+    },
+    {
+      "label": "UUIDIDMixin",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "uuididmixin",
+      "community": 5,
+      "norm_label": "uuididmixin"
+    },
+    {
+      "label": ".authenticate()",
+      "file_type": "code",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L28",
+      "id": "core_users_usermanager_authenticate",
+      "community": 9,
+      "norm_label": ".authenticate()"
+    },
+    {
+      "label": "OAuth2PasswordRequestForm",
+      "file_type": "code",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L28",
+      "id": "oauth2passwordrequestform",
+      "community": 9,
+      "norm_label": "oauth2passwordrequestform"
+    },
+    {
+      "label": "User",
+      "file_type": "code",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L28",
+      "id": "user",
+      "community": 4,
+      "norm_label": "user"
+    },
+    {
+      "label": ".on_after_register()",
+      "file_type": "code",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L64",
+      "id": "core_users_usermanager_on_after_register",
+      "community": 4,
+      "norm_label": ".on_after_register()"
+    },
+    {
+      "label": "Request",
+      "file_type": "code",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L64",
+      "id": "request",
+      "community": 4,
+      "norm_label": "request"
+    },
+    {
+      "label": ".on_after_forgot_password()",
+      "file_type": "code",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L67",
+      "id": "core_users_usermanager_on_after_forgot_password",
+      "community": 4,
+      "norm_label": ".on_after_forgot_password()"
+    },
+    {
+      "label": "str",
+      "file_type": "code",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L67",
+      "id": "str",
+      "community": 4,
+      "norm_label": "str"
+    },
+    {
+      "label": ".on_after_request_verify()",
+      "file_type": "code",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L72",
+      "id": "core_users_usermanager_on_after_request_verify",
+      "community": 4,
+      "norm_label": ".on_after_request_verify()"
+    },
+    {
+      "label": "get_user_manager()",
+      "file_type": "code",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L77",
+      "id": "core_users_get_user_manager",
+      "community": 5,
+      "norm_label": "get_user_manager()"
+    },
+    {
+      "label": "RedirectCookieTransport",
+      "file_type": "code",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L90",
+      "id": "core_users_redirectcookietransport",
+      "community": 2,
+      "norm_label": "redirectcookietransport"
+    },
+    {
+      "label": "CookieTransport",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "cookietransport",
+      "community": 2,
+      "norm_label": "cookietransport"
+    },
+    {
+      "label": ".get_login_response()",
+      "file_type": "code",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L91",
+      "id": "core_users_redirectcookietransport_get_login_response",
+      "community": 2,
+      "norm_label": ".get_login_response()"
+    },
+    {
+      "label": "Response",
+      "file_type": "code",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L91",
+      "id": "response",
+      "community": 2,
+      "norm_label": "response"
+    },
+    {
+      "label": "get_jwt_strategy()",
+      "file_type": "code",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L111",
+      "id": "core_users_get_jwt_strategy",
+      "community": 3,
+      "norm_label": "get_jwt_strategy()"
+    },
+    {
+      "label": "JWTStrategy",
+      "file_type": "code",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L111",
+      "id": "jwtstrategy",
+      "community": 3,
+      "norm_label": "jwtstrategy"
+    },
+    {
+      "label": "user.py",
+      "file_type": "code",
+      "source_file": "backend/app/models/user.py",
+      "source_location": "L1",
+      "id": "models_user",
+      "community": 2,
+      "norm_label": "user.py"
+    },
+    {
+      "label": "Base",
+      "file_type": "code",
+      "source_file": "backend/app/models/user.py",
+      "source_location": "L10",
+      "id": "models_user_base",
+      "community": 2,
+      "norm_label": "base"
+    },
+    {
+      "label": "DeclarativeBase",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "declarativebase",
+      "community": 2,
+      "norm_label": "declarativebase"
+    },
+    {
+      "label": "OAuthAccount",
+      "file_type": "code",
+      "source_file": "backend/app/models/user.py",
+      "source_location": "L13",
+      "id": "models_user_oauthaccount",
+      "community": 2,
+      "norm_label": "oauthaccount"
+    },
+    {
+      "label": "SQLAlchemyBaseOAuthAccountTableUUID",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "sqlalchemybaseoauthaccounttableuuid",
+      "community": 2,
+      "norm_label": "sqlalchemybaseoauthaccounttableuuid"
+    },
+    {
+      "label": "User",
+      "file_type": "code",
+      "source_file": "backend/app/models/user.py",
+      "source_location": "L16",
+      "id": "models_user_user",
+      "community": 3,
+      "norm_label": "user"
+    },
+    {
+      "label": "SQLAlchemyBaseUserTableUUID",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "sqlalchemybaseusertableuuid",
+      "community": 3,
+      "norm_label": "sqlalchemybaseusertableuuid"
+    },
+    {
+      "label": "UserRead",
+      "file_type": "code",
+      "source_file": "backend/app/models/user.py",
+      "source_location": "L23",
+      "id": "models_user_userread",
+      "community": 2,
+      "norm_label": "userread"
+    },
+    {
+      "label": "UserCreate",
+      "file_type": "code",
+      "source_file": "backend/app/models/user.py",
+      "source_location": "L26",
+      "id": "models_user_usercreate",
+      "community": 2,
+      "norm_label": "usercreate"
+    },
+    {
+      "label": "UserUpdate",
+      "file_type": "code",
+      "source_file": "backend/app/models/user.py",
+      "source_location": "L29",
+      "id": "models_user_userupdate",
+      "community": 2,
+      "norm_label": "userupdate"
+    },
+    {
+      "label": "a8b27c34ef56_add_username_to_user_table.py",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/a8b27c34ef56_add_username_to_user_table.py",
+      "source_location": "L1",
+      "id": "versions_a8b27c34ef56_add_username_to_user_table",
+      "community": 7,
+      "norm_label": "a8b27c34ef56_add_username_to_user_table.py"
+    },
+    {
+      "label": "upgrade()",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/a8b27c34ef56_add_username_to_user_table.py",
+      "source_location": "L21",
+      "id": "versions_a8b27c34ef56_add_username_to_user_table_upgrade",
+      "community": 7,
+      "norm_label": "upgrade()"
+    },
+    {
+      "label": "downgrade()",
+      "file_type": "code",
+      "source_file": "backend/async_migrations/versions/a8b27c34ef56_add_username_to_user_table.py",
+      "source_location": "L32",
+      "id": "versions_a8b27c34ef56_add_username_to_user_table_downgrade",
+      "community": 7,
+      "norm_label": "downgrade()"
+    },
+    {
+      "label": "seed_admin.py",
+      "file_type": "code",
+      "source_file": "backend/seed_admin.py",
+      "source_location": "L1",
+      "id": "backend_seed_admin",
+      "community": 8,
+      "norm_label": "seed_admin.py"
+    },
+    {
+      "label": "seed_admin()",
+      "file_type": "code",
+      "source_file": "backend/seed_admin.py",
+      "source_location": "L14",
+      "id": "backend_seed_admin_seed_admin",
+      "community": 8,
+      "norm_label": "seed_admin()"
+    },
+    {
+      "label": "test_auth.py",
+      "file_type": "code",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L1",
+      "id": "tests_test_auth",
+      "community": 1,
+      "norm_label": "test_auth.py"
+    },
+    {
+      "label": "get_test_client()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L15",
+      "id": "tests_test_auth_get_test_client",
+      "community": 1,
+      "norm_label": "get_test_client()"
+    },
+    {
+      "label": "test_google_oauth_authorize()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L23",
+      "id": "tests_test_auth_test_google_oauth_authorize",
+      "community": 1,
+      "norm_label": "test_google_oauth_authorize()"
+    },
+    {
+      "label": "test_google_oauth_callback_success()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L37",
+      "id": "tests_test_auth_test_google_oauth_callback_success",
+      "community": 1,
+      "norm_label": "test_google_oauth_callback_success()"
+    },
+    {
+      "label": "test_standard_login_and_logout()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L102",
+      "id": "tests_test_auth_test_standard_login_and_logout",
+      "community": 1,
+      "norm_label": "test_standard_login_and_logout()"
+    },
+    {
+      "label": "test_admin_summary_route_protection()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L150",
+      "id": "tests_test_auth_test_admin_summary_route_protection",
+      "community": 1,
+      "norm_label": "test_admin_summary_route_protection()"
+    },
+    {
+      "label": "test_google_oauth_callback_production()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L208",
+      "id": "tests_test_auth_test_google_oauth_callback_production",
+      "community": 1,
+      "norm_label": "test_google_oauth_callback_production()"
+    },
+    {
+      "label": "test_username_login()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L272",
+      "id": "tests_test_auth_test_username_login",
+      "community": 1,
+      "norm_label": "test_username_login()"
+    },
+    {
+      "label": "Verifies that the Google OAuth authorization redirection URL generation works.",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L24",
+      "id": "tests_test_auth_rationale_24",
+      "community": 1,
+      "norm_label": "verifies that the google oauth authorization redirection url generation works."
+    },
+    {
+      "label": "Verifies that the Google OAuth callback endpoint processes the code and state,",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L38",
+      "id": "tests_test_auth_rationale_38",
+      "community": 1,
+      "norm_label": "verifies that the google oauth callback endpoint processes the code and state,"
+    },
+    {
+      "label": "Tests standard email/password login and logout using FastAPI-Users.",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L103",
+      "id": "tests_test_auth_rationale_103",
+      "community": 1,
+      "norm_label": "tests standard email/password login and logout using fastapi-users."
+    },
+    {
+      "label": "Asserts that the admin summary route is protected and permits access with legacy",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L151",
+      "id": "tests_test_auth_rationale_151",
+      "community": 1,
+      "norm_label": "asserts that the admin summary route is protected and permits access with legacy"
+    },
+    {
+      "label": "Verifies that under production scheme / proxy headers, the callback endpoint",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L209",
+      "id": "tests_test_auth_rationale_209",
+      "community": 1,
+      "norm_label": "verifies that under production scheme / proxy headers, the callback endpoint"
+    },
+    {
+      "label": "Tests logging in with a custom username rather than email using FastAPI-Users.",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L273",
+      "id": "tests_test_auth_rationale_273",
+      "community": 1,
+      "norm_label": "tests logging in with a custom username rather than email using fastapi-users."
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "frontend/src/app/login/page.tsx",
+      "source_location": "L1",
+      "id": "login_page",
+      "community": 6,
+      "norm_label": "page.tsx"
+    },
+    {
+      "label": "LoginForm()",
+      "file_type": "code",
+      "source_file": "frontend/src/app/login/page.tsx",
+      "source_location": "L8",
+      "id": "login_page_loginform",
+      "community": 6,
+      "norm_label": "loginform()"
+    },
+    {
+      "label": "LoginPage()",
+      "file_type": "code",
+      "source_file": "frontend/src/app/login/page.tsx",
+      "source_location": "L206",
+      "id": "login_page_loginpage",
+      "community": 6,
+      "norm_label": "loginpage()"
+    },
+    {
+      "label": "task.md",
+      "file_type": "document",
+      "source_file": "task.md",
+      "source_location": "L1",
+      "id": "task",
+      "community": 0,
+      "norm_label": "task.md"
+    },
+    {
+      "label": "AuraWorks Industrial Intelligence Engine Progress Checklist",
+      "file_type": "document",
+      "source_file": "task.md",
+      "source_location": "L1",
+      "id": "task_auraworks_industrial_intelligence_engine_progress_checklist",
+      "community": 0,
+      "norm_label": "auraworks industrial intelligence engine progress checklist"
+    },
+    {
+      "label": "AuraWorks Next.js Frontend Integration & UI Overhaul Log (Phase 16)",
+      "file_type": "document",
+      "source_file": "task.md",
+      "source_location": "L105",
+      "id": "task_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "community": 0,
+      "norm_label": "auraworks next.js frontend integration & ui overhaul log (phase 16)"
+    },
+    {
+      "label": "1. Edge Tracker Integration (Public Layout)",
+      "file_type": "document",
+      "source_file": "task.md",
+      "source_location": "L109",
+      "id": "task_1_edge_tracker_integration_public_layout",
+      "community": 0,
+      "norm_label": "1. edge tracker integration (public layout)"
+    },
+    {
+      "label": "2. Global VSL CTA Migration",
+      "file_type": "document",
+      "source_file": "task.md",
+      "source_location": "L119",
+      "id": "task_2_global_vsl_cta_migration",
+      "community": 0,
+      "norm_label": "2. global vsl cta migration"
+    },
+    {
+      "label": "3. VSL Page Aesthetic Overhaul",
+      "file_type": "document",
+      "source_file": "task.md",
+      "source_location": "L133",
+      "id": "task_3_vsl_page_aesthetic_overhaul",
+      "community": 0,
+      "norm_label": "3. vsl page aesthetic overhaul"
+    },
+    {
+      "label": "4. Theme Partitioning & Public UI Dark Class Stripping",
+      "file_type": "document",
+      "source_file": "task.md",
+      "source_location": "L146",
+      "id": "task_4_theme_partitioning_public_ui_dark_class_stripping",
+      "community": 0,
+      "norm_label": "4. theme partitioning & public ui dark class stripping"
+    },
+    {
+      "label": "5. Google OAuth Callback Routing Audit & Host Remediation",
+      "file_type": "document",
+      "source_file": "task.md",
+      "source_location": "L157",
+      "id": "task_5_google_oauth_callback_routing_audit_host_remediation",
+      "community": 0,
+      "norm_label": "5. google oauth callback routing audit & host remediation"
+    },
+    {
+      "label": "6. Edge Tracker Event Telemetry 500 & CORS Remediation",
+      "file_type": "document",
+      "source_file": "task.md",
+      "source_location": "L170",
+      "id": "task_6_edge_tracker_event_telemetry_500_cors_remediation",
+      "community": 0,
+      "norm_label": "6. edge tracker event telemetry 500 & cors remediation"
+    },
+    {
+      "label": "7. ASGI Proxy Headers & Scheme Override Middleware",
+      "file_type": "document",
+      "source_file": "task.md",
+      "source_location": "L181",
+      "id": "task_7_asgi_proxy_headers_scheme_override_middleware",
+      "community": 0,
+      "norm_label": "7. asgi proxy headers & scheme override middleware"
+    },
+    {
+      "label": "8. Hardened Global Exception Handling & Endpoint Safety Guard",
+      "file_type": "document",
+      "source_file": "task.md",
+      "source_location": "L190",
+      "id": "task_8_hardened_global_exception_handling_endpoint_safety_guard",
+      "community": 0,
+      "norm_label": "8. hardened global exception handling & endpoint safety guard"
+    },
+    {
+      "label": "9. Google OAuth Redirect Alignment & Integration Testing",
+      "file_type": "document",
+      "source_file": "task.md",
+      "source_location": "L198",
+      "id": "task_9_google_oauth_redirect_alignment_integration_testing",
+      "community": 0,
+      "norm_label": "9. google oauth redirect alignment & integration testing"
+    },
+    {
+      "label": "10. Audit and Repair of `/v1/track/event` Endpoint",
+      "file_type": "document",
+      "source_file": "task.md",
+      "source_location": "L207",
+      "id": "task_10_audit_and_repair_of_v1_track_event_endpoint",
+      "community": 0,
+      "norm_label": "10. audit and repair of `/v1/track/event` endpoint"
+    },
+    {
+      "label": "11. Dual-Column Auth & Form-Encoding Refactor",
+      "file_type": "document",
+      "source_file": "task.md",
+      "source_location": "L221",
+      "id": "task_11_dual_column_auth_form_encoding_refactor",
+      "community": 0,
+      "norm_label": "11. dual-column auth & form-encoding refactor"
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L111",
+      "weight": 1.0,
+      "source": "core_users",
+      "target": "core_users_get_jwt_strategy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "core_users",
+      "target": "core_users_get_user_db",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L77",
+      "weight": 1.0,
+      "source": "core_users",
+      "target": "core_users_get_user_manager",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L90",
+      "weight": 1.0,
+      "source": "core_users",
+      "target": "core_users_redirectcookietransport",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "core_users",
+      "target": "core_users_usermanager",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "core_users_get_user_db",
+      "target": "asyncsession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L19",
+      "weight": 0.8,
+      "source": "asyncsession",
+      "target": "models_user_oauthaccount",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L19",
+      "weight": 0.8,
+      "source": "asyncsession",
+      "target": "models_user_user",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L78",
+      "weight": 1.0,
+      "source": "core_users_get_user_manager",
+      "target": "core_users_usermanager",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "core_users_usermanager",
+      "target": "core_users_usermanager_authenticate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "core_users_usermanager",
+      "target": "core_users_usermanager_on_after_forgot_password",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L64",
+      "weight": 1.0,
+      "source": "core_users_usermanager",
+      "target": "core_users_usermanager_on_after_register",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L72",
+      "weight": 1.0,
+      "source": "core_users_usermanager",
+      "target": "core_users_usermanager_on_after_request_verify",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L19",
+      "weight": 0.8,
+      "source": "core_users_usermanager",
+      "target": "models_user_oauthaccount",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L19",
+      "weight": 0.8,
+      "source": "core_users_usermanager",
+      "target": "models_user_user",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "core_users_usermanager",
+      "target": "uuididmixin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "core_users_usermanager_authenticate",
+      "target": "oauth2passwordrequestform",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "core_users_usermanager_authenticate",
+      "target": "user",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L19",
+      "weight": 0.8,
+      "source": "oauth2passwordrequestform",
+      "target": "models_user_oauthaccount",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L19",
+      "weight": 0.8,
+      "source": "oauth2passwordrequestform",
+      "target": "models_user_user",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "core_users_usermanager_on_after_forgot_password",
+      "target": "user",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L64",
+      "weight": 1.0,
+      "source": "core_users_usermanager_on_after_register",
+      "target": "user",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L72",
+      "weight": 1.0,
+      "source": "core_users_usermanager_on_after_request_verify",
+      "target": "user",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L19",
+      "weight": 0.8,
+      "source": "user",
+      "target": "models_user_oauthaccount",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L19",
+      "weight": 0.8,
+      "source": "user",
+      "target": "models_user_user",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L64",
+      "weight": 1.0,
+      "source": "core_users_usermanager_on_after_register",
+      "target": "request",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "core_users_usermanager_on_after_forgot_password",
+      "target": "request",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L72",
+      "weight": 1.0,
+      "source": "core_users_usermanager_on_after_request_verify",
+      "target": "request",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L19",
+      "weight": 0.8,
+      "source": "request",
+      "target": "models_user_oauthaccount",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L19",
+      "weight": 0.8,
+      "source": "request",
+      "target": "models_user_user",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "core_users_usermanager_on_after_forgot_password",
+      "target": "str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L91",
+      "weight": 1.0,
+      "source": "core_users_redirectcookietransport_get_login_response",
+      "target": "str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L72",
+      "weight": 1.0,
+      "source": "core_users_usermanager_on_after_request_verify",
+      "target": "str",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L19",
+      "weight": 0.8,
+      "source": "str",
+      "target": "models_user_oauthaccount",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L19",
+      "weight": 0.8,
+      "source": "str",
+      "target": "models_user_user",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L90",
+      "weight": 1.0,
+      "source": "core_users_redirectcookietransport",
+      "target": "cookietransport",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L91",
+      "weight": 1.0,
+      "source": "core_users_redirectcookietransport",
+      "target": "core_users_redirectcookietransport_get_login_response",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L19",
+      "weight": 0.8,
+      "source": "core_users_redirectcookietransport",
+      "target": "models_user_oauthaccount",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L19",
+      "weight": 0.8,
+      "source": "core_users_redirectcookietransport",
+      "target": "models_user_user",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L91",
+      "weight": 1.0,
+      "source": "core_users_redirectcookietransport_get_login_response",
+      "target": "response",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L19",
+      "weight": 0.8,
+      "source": "response",
+      "target": "models_user_oauthaccount",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L19",
+      "weight": 0.8,
+      "source": "response",
+      "target": "models_user_user",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L111",
+      "weight": 1.0,
+      "source": "core_users_get_jwt_strategy",
+      "target": "jwtstrategy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L19",
+      "weight": 0.8,
+      "source": "jwtstrategy",
+      "target": "models_user_oauthaccount",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "backend/app/core/users.py",
+      "source_location": "L19",
+      "weight": 0.8,
+      "source": "jwtstrategy",
+      "target": "models_user_user",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/user.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "models_user",
+      "target": "models_user_base",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/user.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "models_user",
+      "target": "models_user_oauthaccount",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/user.py",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "models_user",
+      "target": "models_user_user",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/user.py",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "models_user",
+      "target": "models_user_usercreate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/user.py",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "models_user",
+      "target": "models_user_userread",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/user.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "models_user",
+      "target": "models_user_userupdate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/user.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "models_user_base",
+      "target": "declarativebase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/user.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "models_user_oauthaccount",
+      "target": "models_user_base",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/user.py",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "models_user_user",
+      "target": "models_user_base",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/user.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "models_user_oauthaccount",
+      "target": "sqlalchemybaseoauthaccounttableuuid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/app/models/user.py",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "models_user_user",
+      "target": "sqlalchemybaseusertableuuid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/a8b27c34ef56_add_username_to_user_table.py",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "versions_a8b27c34ef56_add_username_to_user_table",
+      "target": "versions_a8b27c34ef56_add_username_to_user_table_downgrade",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/async_migrations/versions/a8b27c34ef56_add_username_to_user_table.py",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "versions_a8b27c34ef56_add_username_to_user_table",
+      "target": "versions_a8b27c34ef56_add_username_to_user_table_upgrade",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/seed_admin.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "backend_seed_admin",
+      "target": "backend_seed_admin_seed_admin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "tests_test_auth",
+      "target": "tests_test_auth_get_test_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L150",
+      "weight": 1.0,
+      "source": "tests_test_auth",
+      "target": "tests_test_auth_test_admin_summary_route_protection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "tests_test_auth",
+      "target": "tests_test_auth_test_google_oauth_authorize",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L208",
+      "weight": 1.0,
+      "source": "tests_test_auth",
+      "target": "tests_test_auth_test_google_oauth_callback_production",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L37",
+      "weight": 1.0,
+      "source": "tests_test_auth",
+      "target": "tests_test_auth_test_google_oauth_callback_success",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L102",
+      "weight": 1.0,
+      "source": "tests_test_auth",
+      "target": "tests_test_auth_test_standard_login_and_logout",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L272",
+      "weight": 1.0,
+      "source": "tests_test_auth",
+      "target": "tests_test_auth_test_username_login",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L155",
+      "weight": 1.0,
+      "source": "tests_test_auth_test_admin_summary_route_protection",
+      "target": "tests_test_auth_get_test_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "tests_test_auth_test_google_oauth_authorize",
+      "target": "tests_test_auth_get_test_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L213",
+      "weight": 1.0,
+      "source": "tests_test_auth_test_google_oauth_callback_production",
+      "target": "tests_test_auth_get_test_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "tests_test_auth_test_google_oauth_callback_success",
+      "target": "tests_test_auth_get_test_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L106",
+      "weight": 1.0,
+      "source": "tests_test_auth_test_standard_login_and_logout",
+      "target": "tests_test_auth_get_test_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L276",
+      "weight": 1.0,
+      "source": "tests_test_auth_test_username_login",
+      "target": "tests_test_auth_get_test_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "tests_test_auth_rationale_24",
+      "target": "tests_test_auth_test_google_oauth_authorize",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "tests_test_auth_rationale_38",
+      "target": "tests_test_auth_test_google_oauth_callback_success",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L103",
+      "weight": 1.0,
+      "source": "tests_test_auth_rationale_103",
+      "target": "tests_test_auth_test_standard_login_and_logout",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L151",
+      "weight": 1.0,
+      "source": "tests_test_auth_rationale_151",
+      "target": "tests_test_auth_test_admin_summary_route_protection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L209",
+      "weight": 1.0,
+      "source": "tests_test_auth_rationale_209",
+      "target": "tests_test_auth_test_google_oauth_callback_production",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_auth.py",
+      "source_location": "L273",
+      "weight": 1.0,
+      "source": "tests_test_auth_rationale_273",
+      "target": "tests_test_auth_test_username_login",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/app/login/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "login_page",
+      "target": "login_page_loginform",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/app/login/page.tsx",
+      "source_location": "L206",
+      "weight": 1.0,
+      "source": "login_page",
+      "target": "login_page_loginpage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "task.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "task",
+      "target": "task_auraworks_industrial_intelligence_engine_progress_checklist",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "task.md",
+      "source_location": "L105",
+      "weight": 1.0,
+      "source": "task",
+      "target": "task_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "task.md",
+      "source_location": "L207",
+      "weight": 1.0,
+      "source": "task_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "target": "task_10_audit_and_repair_of_v1_track_event_endpoint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "task.md",
+      "source_location": "L221",
+      "weight": 1.0,
+      "source": "task_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "target": "task_11_dual_column_auth_form_encoding_refactor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "task.md",
+      "source_location": "L109",
+      "weight": 1.0,
+      "source": "task_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "target": "task_1_edge_tracker_integration_public_layout",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "task.md",
+      "source_location": "L119",
+      "weight": 1.0,
+      "source": "task_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "target": "task_2_global_vsl_cta_migration",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "task.md",
+      "source_location": "L133",
+      "weight": 1.0,
+      "source": "task_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "target": "task_3_vsl_page_aesthetic_overhaul",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "task.md",
+      "source_location": "L146",
+      "weight": 1.0,
+      "source": "task_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "target": "task_4_theme_partitioning_public_ui_dark_class_stripping",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "task.md",
+      "source_location": "L157",
+      "weight": 1.0,
+      "source": "task_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "target": "task_5_google_oauth_callback_routing_audit_host_remediation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "task.md",
+      "source_location": "L170",
+      "weight": 1.0,
+      "source": "task_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "target": "task_6_edge_tracker_event_telemetry_500_cors_remediation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "task.md",
+      "source_location": "L181",
+      "weight": 1.0,
+      "source": "task_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "target": "task_7_asgi_proxy_headers_scheme_override_middleware",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "task.md",
+      "source_location": "L190",
+      "weight": 1.0,
+      "source": "task_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "target": "task_8_hardened_global_exception_handling_endpoint_safety_guard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "task.md",
+      "source_location": "L198",
+      "weight": 1.0,
+      "source": "task_auraworks_next_js_frontend_integration_ui_overhaul_log_phase_16",
+      "target": "task_9_google_oauth_redirect_alignment_integration_testing",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "built_at_commit": "3cf37db7aa4432e122756a70d0f9d07fa7fdf4f2"
+}
