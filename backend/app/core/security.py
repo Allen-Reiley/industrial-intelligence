@@ -75,15 +75,15 @@ def decrypt_field(encrypted_data_b64: str) -> str:
 from typing import Any, Optional
 from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
-from passlib.context import CryptContext
+from fastapi_users.password import PasswordHelper
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+password_helper = PasswordHelper()
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    return password_helper.verify(plain_password, hashed_password)
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    return password_helper.hash(password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
