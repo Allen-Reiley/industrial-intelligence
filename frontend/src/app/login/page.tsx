@@ -9,7 +9,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  const [username, setUsername] = useState('');
+  const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -49,19 +49,16 @@ function LoginForm() {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: new URLSearchParams({ username, password }),
+        body: new URLSearchParams({ username: emailOrUsername, password: password }).toString(),
       });
 
       if (!res.ok) {
         let errorMsg = 'Invalid administrative credentials.';
         try {
-          const errData = await res.json();
-          if (errData && errData.detail) {
-            if (errData.detail === 'LOGIN_BAD_CREDENTIALS') {
-              errorMsg = 'Invalid administrative credentials.';
-            } else {
-              errorMsg = errData.detail;
-            }
+          const errorData = await res.json();
+          console.error("Auth Failure Detail:", errorData.detail);
+          if (errorData && errorData.detail) {
+            errorMsg = errorData.detail;
           }
         } catch (e) {
           // ignore parsing error, use default
@@ -147,8 +144,8 @@ function LoginForm() {
                     type="text"
                     required
                     placeholder="Email or Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    value={emailOrUsername}
+                    onChange={(e) => setEmailOrUsername(e.target.value)}
                     className="w-full bg-zinc-950/50 border border-zinc-850 focus:border-indigo-500/40 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none rounded-lg py-3 pl-11 pr-4 text-sm text-zinc-200 placeholder-zinc-700 transition-all"
                   />
                 </div>
