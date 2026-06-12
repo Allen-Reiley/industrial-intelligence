@@ -309,3 +309,12 @@ Updates the matching Prospect or Visit record's vsl_completion_percentage and vs
 * **Cross-Subdomain Cookies**: FastAPI-Users authentication utilizes `CookieTransport` configured with `cookie_domain = "auraworks.co.za"`, `cookie_secure = True`, and `cookie_samesite = "lax"`. This ensures authentication credentials flow seamlessly between `api.auraworks.co.za` and `www.auraworks.co.za`.
 * **Flexible Telemetry Payload**: The `/v1/track/event` endpoint accepts a flexible Pydantic schema with `properties: Dict[str, Any] = Field(default_factory=dict)` to ingest dynamic client-side tracking parameters without raising 422 errors.
 * **Unified Terminology & Robustness**: Legacy waitlist references are completely replaced by the prospect engine across client-side scripts. The client-side tracker utilizes a capped retry queue to handle failed dispatches silently.
+
+13. Phase 17: Database State Recovery & Pipeline Synchronization Specifications
+13.1 Alembic Schema Consolidation & RLS Baseline:
+* Migration history is consolidated into a single unified schema baseline (`ed255488d937_phase_17_baseline.py`) registering all SQLModel models (Client, Transaction, User, Visit, PageView, Prospect, etc.) and explicitly establishing Row-Level Security (RLS) tenant isolation policies on the `visit`, `page_view`, `prospect`, and `company` tables.
+13.2 Resilient Container Startup Sequence:
+* The production deployment boot script (`start.sh`) runs database migrations programmatically via `alembic upgrade head` wrapped in a defensive shell trap that intercepts errors, preventing startup crash cascades and ensuring ASGI server boot even in out-of-sync db states.
+13.3 Programmatic Admin Seeder:
+* Seed script (`seed_admin.py`) programmatically registers and hashes the default administrator superuser (`ReitumetseF`) using the configured `UserManager` password hashing helper, injecting users into both standard `user` and legacy `admin_user` tables safely.
+
