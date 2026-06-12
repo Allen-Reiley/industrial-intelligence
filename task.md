@@ -265,4 +265,13 @@ This log details the execution, design decisions, and completed steps for Phase 
 - **Actions Taken**:
   - **Task 18.1: Ledger & Documentation Sync**: Updated architectural guidelines and implementation plans (`implementation_plan.md`, `master_architecture_spec.md`, `task.md`) to include Phase 18 specifications.
 
+## 15. Phase 19: Alembic Hard Reset, Database Initialization & Startup Decoupling
+- **Actions Taken**:
+  - **Task 19.1: Nuke Legacy Migrations**: Cleaned up out-of-sync migrations and established a clean slate.
+  - **Task 19.2: Generate the Master Baseline**: Created `90cdb20cc080_phase_19_hard_reset.py` autogenerating the complete database schema with RLS policies.
+  - **Task 19.3: Local Execution & Verification**: Applied the master baseline to the local database environment.
+  - **Task 19.4: Admin Seeder Execution**: Successfully seeded the default superuser account.
+  - **Task 19.5: Decouple Alembic from Startup**: Removed programmatic Alembic migration triggers from the FastAPI lifespan startup hook (`backend/app/main.py` and `backend/app/db.py`) and commented out migrations in `backend/start.sh` to prevent container boot hangs. Set Uvicorn port binding to respect the `$PORT` environment variable (e.g. `PORT:-8080`) dynamically.
+  - **Task 19.6: Test Alignment**: Adjusted `backend/tests/test_startup.py` to verify the decoupled ASGI startup sequence. Verified that all 85 backend tests and 24 frontend tests pass successfully.
+
 

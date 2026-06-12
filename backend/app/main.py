@@ -71,13 +71,15 @@ async def lifespan(app: FastAPI):
     """
     logger.info(f"🚀 {settings.PROJECT_NAME} v{settings.VERSION}: Initializing...")
     
-    if settings.DATABASE_URL:
-        try:
-            init_db()
-        except Exception as e:
-            logger.error(f"❌ Database Ledger: Failed to initialize. {e}")
-    else:
-        logger.warning("⚠️ Database Ledger: DATABASE_URL missing.")
+    # Database schema checks/migrations are fully decoupled from application startup.
+    # The ASGI startup sequence only boots the FastAPI context and starts background helpers.
+    # if settings.DATABASE_URL:
+    #     try:
+    #         init_db()
+    #     except Exception as e:
+    #         logger.error(f"❌ Database Ledger: Failed to initialize. {e}")
+    # else:
+    #     logger.warning("⚠️ Database Ledger: DATABASE_URL missing.")
 
     # 1. Start the DB Janitor
     janitor_task = asyncio.create_task(run_janitor_loop())

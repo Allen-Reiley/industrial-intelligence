@@ -32,7 +32,6 @@ def test_startup_script_execution():
     )
     
     booted_server = False
-    migration_ran = False
     
     start_time = time.time()
     timeout = 15  # 15 seconds timeout
@@ -48,10 +47,6 @@ def test_startup_script_execution():
                 
             print(f"STDOUT: {line.strip()}")
             
-            if "Running database migrations" in line:
-                migration_ran = True
-            if "Database migrations successfully applied" in line or "Database migrations failed to apply" in line:
-                migration_ran = True
             if "Starting ASGI server" in line or "Uvicorn running on" in line:
                 booted_server = True
                 break
@@ -67,5 +62,4 @@ def test_startup_script_execution():
         except Exception:
             pass
             
-    assert migration_ran, "Migrations step did not run in start.sh"
     assert booted_server, "ASGI server did not trigger in start.sh"
