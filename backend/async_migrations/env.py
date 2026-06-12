@@ -18,14 +18,23 @@ from sqlmodel import SQLModel
 from app.core.config import settings
 
 # Import all models to register them on SQLModel.metadata
-from app.models.client import Client
-from app.models.company import Company
-from app.models.department import Department
-from app.models.visit import Visit
-from app.models.pageview import PageView
-from app.models.prospect import Prospect
-from app.models.enrichment_queue import EnrichmentQueue, FailedEnrichment
-from app.models.notification_throttle import NotificationThrottle
+from app.models import (
+    Client,
+    Company,
+    Department,
+    Visit,
+    PageView,
+    Prospect,
+    EnrichmentQueue,
+    FailedEnrichment,
+    NotificationThrottle,
+    CrmDeadLetter,
+    InboundMessage,
+    Transaction,
+    AdminUser,
+    User,
+    OAuthAccount
+)
 
 target_metadata = SQLModel.metadata
 
