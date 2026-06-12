@@ -38,10 +38,26 @@ function LoginForm() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    const form = e.currentTarget;
+    const usernameEl = (
+      form.elements.namedItem('username') || 
+      form.elements.namedItem('email') || 
+      document.getElementById('username') || 
+      document.getElementById('email')
+    ) as HTMLInputElement | null;
+    
+    const passwordEl = (
+      form.elements.namedItem('password') || 
+      document.getElementById('password')
+    ) as HTMLInputElement | null;
+
+    const targetUsername = usernameEl ? usernameEl.value : emailOrUsername;
+    const targetPassword = passwordEl ? passwordEl.value : password;
 
     try {
       const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/auth/login`, {
@@ -49,7 +65,7 @@ function LoginForm() {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: new URLSearchParams({ username: emailOrUsername, password: password }).toString(),
+        body: new URLSearchParams({ username: targetUsername, password: targetPassword }),
       });
 
       if (!res.ok) {
@@ -136,14 +152,15 @@ function LoginForm() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Username Input */}
               <div className="space-y-2">
-                <label htmlFor="username" className="text-[10px] font-bold uppercase tracking-widest text-zinc-550 block">Email or Username</label>
+                <label htmlFor="username" className="text-[10px] font-bold uppercase tracking-widest text-zinc-550 block">System Username</label>
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
                   <input 
                     id="username"
+                    name="username"
                     type="text"
                     required
-                    placeholder="Email or Username"
+                    placeholder="admin"
                     value={emailOrUsername}
                     onChange={(e) => setEmailOrUsername(e.target.value)}
                     className="w-full bg-zinc-950/50 border border-zinc-850 focus:border-indigo-500/40 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none rounded-lg py-3 pl-11 pr-4 text-sm text-zinc-200 placeholder-zinc-700 transition-all"

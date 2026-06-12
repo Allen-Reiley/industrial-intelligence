@@ -12,7 +12,8 @@ from app.db import get_async_session
 from app.models.client import Client, SubscriptionStatus
 from app.services.payment import IkhokhaClient
 
-from app.api.v1.auth import get_current_admin
+from app.api.v1.auth import get_current_admin, get_current_admin_user
+from app.models.user import User
 
 router = APIRouter()
 logger = logging.getLogger("auraworks.billing")
@@ -30,12 +31,18 @@ async def billing_setup(
     payload: BillingSetupPayload,
     request: Request,
     session: AsyncSession = Depends(get_async_session),
-    admin: str = Depends(get_current_admin)
+    current_user: User = Depends(get_current_admin_user)
 ):
     """
     Initiates the billing card setup flow by creating a payment intent on Ikhokha,
     validating T&C acceptance, and updating the client to free trial status.
     """
+    if not current_user.is_superuser:
+        if current_user.client_id is None or current_user.client_id != payload.client_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Forbidden: Tenant data access violation. You are not assigned to this client."
+            )
     if not payload.tc_accepted:
         raise HTTPException(status_code=400, detail="Terms & Conditions must be accepted to complete checkout")
 
@@ -85,11 +92,18 @@ async def billing_setup(
 async def get_transactions(
     client_id: UUID,
     session: AsyncSession = Depends(get_async_session),
-    admin: str = Depends(get_current_admin)
+    current_user: User = Depends(get_current_admin_user)
 ):
     """
     Exposes the transaction history data table query endpoint.
     """
+    if not current_user.is_superuser:
+        if current_user.client_id is None or current_user.client_id != client_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Forbidden: Tenant data access violation. You are not assigned to this client."
+            )
+
     from app.models.transaction import Transaction
     stmt = select(Transaction).where(Transaction.client_id == client_id).order_by(Transaction.created_at.desc())
     res = await session.execute(stmt)
@@ -156,12 +170,18 @@ class SimulateWebhookPayload(BaseModel):
 async def simulate_webhook(
     payload: SimulateWebhookPayload,
     session: AsyncSession = Depends(get_async_session),
-    admin: str = Depends(get_current_admin)
+    current_user: User = Depends(get_current_admin_user)
 ):
     """
     Testing utility that simulates an Ikhokha webhook event delivery,
     recording a ledger entry and performing client activation side-effects.
     """
+    if not current_user.is_superuser:
+        if current_user.client_id is None or current_user.client_id != payload.client_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Forbidden: Tenant data access violation. You are not assigned to this client."
+            )
     from app.models.transaction import Transaction, TransactionStatus
     from app.models.client import SubscriptionStatus
     import uuid

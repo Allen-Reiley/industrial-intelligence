@@ -1,15 +1,18 @@
 # backend/tests/test_billing.py
 import pytest
+import uuid
 from uuid import uuid4
 import httpx
 from unittest.mock import patch
 
 from app.main import app
 from app.core.config import settings
-from app.core.security import create_access_token
 from app.db import async_session_maker
 from app.models.client import Client
-
+from app.models.user import User
+from sqlmodel import select
+from fastapi_users.password import PasswordHelper
+from app.core.users import get_jwt_strategy
 
 pytestmark = pytest.mark.anyio
 
@@ -24,6 +27,29 @@ async def get_test_client():
     except AttributeError:
         return httpx.AsyncClient(app=app, base_url="http://test")
 
+async def get_auth_cookies(session):
+    test_email = "admin-billing-test@auraworks.co.za"
+    stmt = select(User).where(User.email == test_email)
+    res = await session.execute(stmt)
+    user = res.scalars().first()
+    if not user:
+        password_helper = PasswordHelper()
+        user = User(
+            id=uuid.uuid4(),
+            email=test_email,
+            hashed_password=password_helper.hash("admin_pass_123"),
+            is_active=True,
+            is_verified=True,
+            is_superuser=True
+        )
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
+    
+    jwt_strategy = get_jwt_strategy()
+    token = await jwt_strategy.write_token(user)
+    return {"aurahq_auth": token}
+
 async def test_billing_setup_unauthorized():
     client = await get_test_client()
     payload = {
@@ -35,7 +61,7 @@ async def test_billing_setup_unauthorized():
         "tc_accepted_ip": "127.0.0.1"
     }
     
-    # 1. No authorization header should be rejected (returns 401 for get_current_admin)
+    # 1. No authorization cookie should be rejected (returns 401 for get_current_admin)
     response = await client.post(
         f"{settings.API_V1_STR}/billing/setup",
         json=payload
@@ -53,13 +79,13 @@ async def test_billing_setup_tc_rejected():
         "tc_accepted_ip": "127.0.0.1"
     }
     
-    token = create_access_token(data={"sub": "admin"})
-    headers = {"Authorization": f"Bearer {token}"}
+    async with async_session_maker() as session:
+        cookies = await get_auth_cookies(session)
     
     response = await client.post(
         f"{settings.API_V1_STR}/billing/setup",
         json=payload,
-        headers=headers
+        cookies=cookies
     )
     assert response.status_code == 400
     assert "Terms & Conditions must be accepted" in response.json()["detail"]
@@ -75,13 +101,13 @@ async def test_billing_setup_client_not_found():
         "tc_accepted_ip": "127.0.0.1"
     }
     
-    token = create_access_token(data={"sub": "admin"})
-    headers = {"Authorization": f"Bearer {token}"}
+    async with async_session_maker() as session:
+        cookies = await get_auth_cookies(session)
     
     response = await client.post(
         f"{settings.API_V1_STR}/billing/setup",
         json=payload,
-        headers=headers
+        cookies=cookies
     )
     assert response.status_code == 404
     assert response.json()["detail"] == "Client not found"
@@ -100,6 +126,7 @@ async def test_billing_setup_success():
         )
         session.add(client_row)
         await session.commit()
+        cookies = await get_auth_cookies(session)
 
     payload = {
         "client_id": str(client_uuid),
@@ -109,9 +136,6 @@ async def test_billing_setup_success():
         "tc_accepted": True,
         "tc_accepted_ip": "192.168.1.55"
     }
-    
-    token = create_access_token(data={"sub": "admin"})
-    headers = {"Authorization": f"Bearer {token}"}
     
     # Mock only Ikhokha Client call
     with patch("app.services.payment.IkhokhaClient.create_payment_intent") as mock_create_intent:
@@ -123,7 +147,7 @@ async def test_billing_setup_success():
         response = await client.post(
             f"{settings.API_V1_STR}/billing/setup",
             json=payload,
-            headers=headers
+            cookies=cookies
         )
         
         assert response.status_code == 200
@@ -169,10 +193,8 @@ async def test_client_patch_success():
         )
         session.add(client_row)
         await session.commit()
+        cookies = await get_auth_cookies(session)
 
-    token = create_access_token(data={"sub": "admin"})
-    headers = {"Authorization": f"Bearer {token}"}
-    
     payload = {
         "custom_monthly_amount": 1500000,
         "subscription_status": "active"
@@ -181,7 +203,7 @@ async def test_client_patch_success():
     response = await client.patch(
         f"{settings.API_V1_STR}/clients/{client_uuid}",
         json=payload,
-        headers=headers
+        cookies=cookies
     )
     
     assert response.status_code == 200
@@ -231,13 +253,11 @@ async def test_get_transactions_success():
         session.add(tx1)
         session.add(tx2)
         await session.commit()
+        cookies = await get_auth_cookies(session)
 
-    token = create_access_token(data={"sub": "admin"})
-    headers = {"Authorization": f"Bearer {token}"}
-    
     response = await client.get(
         f"{settings.API_V1_STR}/billing/transactions?client_id={client_uuid}",
-        headers=headers
+        cookies=cookies
     )
     
     assert response.status_code == 200
@@ -263,10 +283,8 @@ async def test_simulate_webhook_success():
         )
         session.add(client_row)
         await session.commit()
+        cookies = await get_auth_cookies(session)
 
-    token = create_access_token(data={"sub": "admin"})
-    headers = {"Authorization": f"Bearer {token}"}
-    
     payload = {
         "client_id": str(client_uuid),
         "status": "successful",
@@ -276,7 +294,7 @@ async def test_simulate_webhook_success():
     response = await client.post(
         f"{settings.API_V1_STR}/billing/simulate-webhook",
         json=payload,
-        headers=headers
+        cookies=cookies
     )
     
     assert response.status_code == 200
@@ -300,4 +318,3 @@ async def test_simulate_webhook_success():
         assert len(txs) == 1
         assert txs[0].amount == 2500000
         assert txs[0].status == "successful"
-

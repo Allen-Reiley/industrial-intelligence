@@ -32,34 +32,20 @@ router.include_router(
     prefix="/google",
 )
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login", auto_error=False)
-
-# 3. Expose the security dependency get_current_admin (with legacy Bearer JWT fallback)
+# 3. Expose the security dependency get_current_admin (relying strictly on cookie auth backend)
 async def get_current_admin(
-    token: Optional[str] = Depends(oauth2_scheme),
-    user: Optional[User] = Depends(fastapi_users_instance.current_user(optional=True, active=True))
+    user: User = Depends(fastapi_users_instance.current_user(active=True, get_enabled_backends=lambda: [auth_backend]))
 ) -> str:
     """
     Dependency to get the current authenticated active user.
-    Supports both FastAPI-Users cookie/JWT session AND legacy Bearer JWT tokens.
+    Rely strictly on fastapi_users_instance.current_user(active=True) mapped to the cookie backend.
     """
-    # A. Check if FastAPI-Users session is active
-    if user and user.is_active:
-        return user.email
+    return user.email
 
-    # B. Fallback to decoding custom legacy JWT tokens
-    if token:
-        try:
-            secret = settings.SECRET_KEY or "dev-secret-key-12345678901234567890123456789012"
-            payload = jwt.decode(token, secret, algorithms=["HS256"])
-            username: str = payload.get("sub")
-            if username and payload.get("type") != "refresh":
-                return username
-        except JWTError:
-            pass
-
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Not authenticated",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+async def get_current_admin_user(
+    user: User = Depends(fastapi_users_instance.current_user(active=True, get_enabled_backends=lambda: [auth_backend]))
+) -> User:
+    """
+    Dependency to get the full authenticated active User object.
+    """
+    return user

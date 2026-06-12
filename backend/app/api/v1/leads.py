@@ -6,6 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from app.db import get_async_session
 from app.models import Prospect, Company, Visit
+from app.models.user import User
+from app.api.v1.auth import get_current_admin_user
+from uuid import UUID
 import logging
 
 router = APIRouter()
@@ -15,12 +18,21 @@ logger = logging.getLogger("uvicorn")
 async def get_leads(
     client_id: str = Query(...),
     limit: int = Query(default=50, le=100),
-    session: AsyncSession = Depends(get_async_session)
+    session: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(get_current_admin_user)
 ):
     """
     Industrial Ledger: Retrieves leads and prioritizes 'Warm Leads' (those with volunteered data).
     Joins with Company data to show total corporate engagement.
     """
+    # Tenant Isolation Gate
+    if not current_user.is_superuser:
+        if current_user.client_id is None or str(current_user.client_id) != client_id:
+            raise HTTPException(
+                status_code=403, 
+                detail="Forbidden: Tenant data access violation. You are not assigned to this client."
+            )
+
     try:
         # 1. Build the Query: Order by creation but prioritize records with emails/positions
         # This surfaces 'Warm Leads' who interacted with the banner/waitlist first
@@ -59,6 +71,8 @@ async def get_leads(
             
         return leads_data
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"🚨 Lead Retrieval Failure: {e}")
         raise HTTPException(status_code=500, detail="Internal Ledger Error")
@@ -66,7 +80,8 @@ async def get_leads(
 @router.get("/intelligence")
 async def get_lead_intelligence(
     aura_id: str, 
-    session: AsyncSession = Depends(get_async_session)
+    session: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(get_current_admin_user)
 ):
     """
     Provides the forensic audit for a specific lead, including their 
@@ -80,6 +95,14 @@ async def get_lead_intelligence(
         
         if not lead:
             raise HTTPException(status_code=404, detail="Lead signature not found.")
+
+        # Tenant Isolation Gate
+        if not current_user.is_superuser:
+            if current_user.client_id is None or current_user.client_id != lead.client_id:
+                raise HTTPException(
+                    status_code=403, 
+                    detail="Forbidden: Tenant data access violation. You are not assigned to this client."
+                )
 
         # 2. Resolve Company Forensic Data
         company = None

@@ -211,5 +211,19 @@ Refactor the deployment startup script (`start.sh`) to gracefully handle Alembic
 Task 17.4: Admin Seeder Execution
 Finalize and execute `seed_admin.py` to securely insert the default superuser account.
 
+Phase 18: Full-Stack Authentication & Security Overhaul [IN PROGRESS]
+This phase resolves logical login failures, secures cookie transport, patches OAuth callbacks, and hardens the tenant authorization perimeter.
+Task 18.1: Ledger & Documentation Sync
+Consolidate tasks and roadmap documentation to reflect the inclusion of Phase 18.
+Task 18.2: Backend Core Auth
+Remove legacy JWT fallback. Refactor `RedirectCookieTransport` for dynamic URIs. Update `COOKIE_DOMAIN` config logic.
+Task 18.3: Dual-Login Patch
+Update `UserManager.authenticate` with case-insensitive `func.lower()` resolution. Remove double-hashing from `seed_admin.py`.
+Task 18.4: Frontend Login & Callback Alignment
+Fix URL parameter extraction in Next.js login form. Remove fetching from OAuth callback page.
+Task 18.5: Tenant Authorization
+Add explicit client permission check to routes accepting `client_id`.
+
+
 
 

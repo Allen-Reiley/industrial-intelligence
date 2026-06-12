@@ -318,3 +318,18 @@ Updates the matching Prospect or Visit record's vsl_completion_percentage and vs
 13.3 Programmatic Admin Seeder:
 * Seed script (`seed_admin.py`) programmatically registers and hashes the default administrator superuser (`ReitumetseF`) using the configured `UserManager` password hashing helper, injecting users into both standard `user` and legacy `admin_user` tables safely.
 
+14. Phase 18: Full-Stack Authentication & Security Overhaul Specifications
+14.1 Backend Session Cookie Security:
+* The insecure legacy JWT token fallback decoder in `get_current_admin` is deprecated and deleted. The system enforces strict cookie-only authentication via FastAPI-Users session cookies (`FastAPIUsers.current_user`).
+* The `RedirectCookieTransport` is dynamically adjusted to avoid hardcoding production domains, resolving redirect loops across localized test settings.
+* `COOKIE_DOMAIN` resolves to `None` under local environment contexts and strictly `.auraworks.co.za` in production.
+14.2 Dual-Login Case Insensitivity:
+* Email lookup in `UserManager.authenticate` queries the user record using SQLAlchemy `func.lower()` matching against the username/email input, ensuring case-insensitive authentication handles login payloads correctly.
+* The administrative database seeder `seed_admin.py` registers the default admin superuser using the raw plaintext password, delegating the hashing process to the `UserManager` context to avoid double-hashing states.
+14.3 Frontend Login Form & Callback Routing:
+* Next.js manual credentials login page parses fields to prevent compiling empty/null attributes.
+* Next.js Google OAuth callback component removes duplicate authorization requests and acts as a lightweight pass-through forwarding users directly to the secure command dashboard.
+14.4 Tenant Authorization Perimeter Gates:
+* Client-specific query endpoints (e.g. `/api/v1/leads`) explicitly check permission rules, validating that the authenticated admin user possesses direct query mapping permissions for the requested `client_id` parameter to deny cross-tenant context leaks.
+
+

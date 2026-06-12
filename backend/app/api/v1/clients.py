@@ -168,19 +168,27 @@ async def get_client_config(
 
     return response_data
 
-from app.api.v1.auth import get_current_admin
+from app.api.v1.auth import get_current_admin, get_current_admin_user
+from app.models.user import User
 from sqlalchemy import func
 from typing import List
 
 @router.get("/", response_model=List[ClientPublic])
 async def list_clients(
     session: AsyncSession = Depends(get_async_session),
-    admin: str = Depends(get_current_admin)
+    current_user: User = Depends(get_current_admin_user)
 ):
     """
-    Lists all registered clients in the tenant ledger.
+    Lists registered clients in the tenant ledger.
+    Superusers can view all, non-superusers can only view their own assigned client.
     """
-    stmt = select(Client)
+    if not current_user.is_superuser:
+        if current_user.client_id is None:
+            return []
+        stmt = select(Client).where(Client.id == current_user.client_id)
+    else:
+        stmt = select(Client)
+        
     res = await session.execute(stmt)
     return res.scalars().all()
 
@@ -188,12 +196,19 @@ async def list_clients(
 async def verify_client_installation(
     client_id: UUID,
     session: AsyncSession = Depends(get_async_session),
-    admin: str = Depends(get_current_admin)
+    current_user: User = Depends(get_current_admin_user)
 ):
     """
     Queries the Visit table to check if a tracking payload containing the specific client_id
     has been received, confirming successful installation.
     """
+    if not current_user.is_superuser:
+        if current_user.client_id is None or current_user.client_id != client_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Forbidden: Tenant data access violation. You are not assigned to this client."
+            )
+
     from app.models.visit import Visit
     stmt = select(func.count(Visit.id)).where(Visit.client_id == client_id)
     res = await session.execute(stmt)
@@ -216,11 +231,18 @@ async def update_client(
     client_id: UUID,
     payload: ClientUpdatePayload,
     session: AsyncSession = Depends(get_async_session),
-    admin: str = Depends(get_current_admin)
+    current_user: User = Depends(get_current_admin_user)
 ):
     """
     Updates a client tenant profile's configurations and fields.
     """
+    if not current_user.is_superuser:
+        if current_user.client_id is None or current_user.client_id != client_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Forbidden: Tenant data access violation. You are not assigned to this client."
+            )
+
     from app.models.client import SubscriptionStatus
 
     client = await session.get(Client, client_id)

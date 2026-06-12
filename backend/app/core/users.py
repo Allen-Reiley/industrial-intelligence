@@ -17,6 +17,9 @@ from httpx_oauth.clients.google import GoogleOAuth2
 from app.core.config import settings
 from app.db import get_async_session
 from app.models.user import User, OAuthAccount
+from contextvars import ContextVar
+
+current_request: ContextVar[Optional[Request]] = ContextVar("current_request", default=None)
 
 async def get_user_db(session: AsyncSession = Depends(get_async_session)):
     yield SQLAlchemyUserDatabase(session, User, OAuthAccount)
@@ -30,19 +33,17 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     ) -> Optional[User]:
         from fastapi_users import exceptions
         from sqlmodel import select
+        from sqlalchemy import or_, func
         
-        user = None
-        # 1. Attempt lookup by email
-        try:
-            user = await self.get_by_email(credentials.username)
-        except exceptions.UserNotExists:
-            pass
-
-        # 2. Attempt lookup by username if email lookup failed
-        if not user:
-            stmt = select(User).where(User.username == credentials.username)
-            res = await self.user_db.session.execute(stmt)
-            user = res.scalars().first()
+        # Unified lookup by case-insensitive email or username
+        stmt = select(User).where(
+            or_(
+                func.lower(User.email) == credentials.username.lower(),
+                User.username == credentials.username
+            )
+        )
+        res = await self.user_db.session.execute(stmt)
+        user = res.scalars().first()
 
         if not user:
             # Hash to mitigate timing attacks
@@ -89,11 +90,31 @@ cookie_transport = CookieTransport(
 
 class RedirectCookieTransport(CookieTransport):
     async def get_login_response(self, token: str) -> Response:
-        # Default to production redirect; fallback to localhost ONLY if ENVIRONMENT is explicitly local dev.
-        if settings.ENVIRONMENT in ["development", "dev", "local"]:
-            redirect_url = "http://localhost:3000/aurahq"
+        request = current_request.get()
+        redirect_url = None
+        if request:
+            redirect_uri = request.query_params.get("redirect_uri")
+            if redirect_uri:
+                from urllib.parse import urlparse
+                parsed = urlparse(redirect_uri)
+                if parsed.scheme and parsed.netloc:
+                    redirect_url = f"{parsed.scheme}://{parsed.netloc}/aurahq"
+            
+            if not redirect_url:
+                host = request.headers.get("x-forwarded-host") or request.headers.get("host", "")
+                if "localhost" in host or "127.0.0.1" in host:
+                    redirect_url = "http://localhost:3000/aurahq"
+                else:
+                    scheme = request.headers.get("x-forwarded-proto") or request.url.scheme
+                    frontend_host = host
+                    if host.startswith("api."):
+                        frontend_host = host[4:]
+                    redirect_url = f"{scheme}://{frontend_host}/aurahq"
         else:
-            redirect_url = "https://auraworks.co.za/aurahq"
+            if settings.ENVIRONMENT in ["development", "dev", "local"]:
+                redirect_url = "http://localhost:3000/aurahq"
+            else:
+                redirect_url = "https://auraworks.co.za/aurahq"
             
         response = RedirectResponse(url=redirect_url, status_code=302)
         self._set_login_cookie(response, token)

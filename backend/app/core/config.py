@@ -92,4 +92,11 @@ class Settings(BaseSettings):
         extra="ignore"  # Prevents crash if extra metadata env vars are passed by Railway
     )
 
+    def __init__(self, **data):
+        super().__init__(**data)
+        if self.ENVIRONMENT in ["development", "dev", "local"]:
+            self.COOKIE_DOMAIN = None
+        else:
+            self.COOKIE_DOMAIN = ".auraworks.co.za"
+
 settings = Settings()

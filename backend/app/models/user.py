@@ -16,15 +16,19 @@ class OAuthAccount(SQLAlchemyBaseOAuthAccountTableUUID, Base):
 class User(SQLAlchemyBaseUserTableUUID, Base):
     __allow_unmapped__ = True
     username: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, unique=True, index=True)
+    client_id: Mapped[Optional[uuid.UUID]] = mapped_column(nullable=True, index=True)
     oauth_accounts: Mapped[List[OAuthAccount]] = relationship(
         "OAuthAccount", lazy="joined", cascade="all, delete-orphan"
     )
 
 class UserRead(schemas.BaseUser[uuid.UUID]):
     username: Optional[str] = None
+    client_id: Optional[uuid.UUID] = None
 
 class UserCreate(schemas.BaseUserCreate):
     username: Optional[str] = None
+    client_id: Optional[uuid.UUID] = None
 
 class UserUpdate(schemas.BaseUserUpdate):
     username: Optional[str] = None
+    client_id: Optional[uuid.UUID] = None

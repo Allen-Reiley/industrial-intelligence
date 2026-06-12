@@ -189,6 +189,17 @@ app.add_middleware(
 # --- PROXY HEADER STACK ---
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
+from app.core.users import current_request
+
+@app.middleware("http")
+async def set_current_request_context(request: Request, call_next):
+    token = current_request.set(request)
+    try:
+        response = await call_next(request)
+        return response
+    finally:
+        current_request.reset(token)
+
 @app.middleware("http")
 async def override_proxy_headers(request: Request, call_next):
     if settings.ENVIRONMENT == "production" and settings.API_DOMAIN:
