@@ -140,6 +140,12 @@
     - [x] Task 22.4: Frontend Test Coverage
     - [x] Task 22.5: Full Suite Verification
 
+- [x] **PHASE 23: OAUTH CLIENT EXPOSURE & SECURITY ALIGNMENT**
+    - [x] Task 23.1: Documentation Sync
+    - [x] Task 23.2: Codebase Search & Replace
+    - [x] Task 23.3: Local Environment Patch
+    - [x] Task 23.4: Static Build & Test Verification
+
 
 
 
@@ -319,4 +325,11 @@ This log details the execution, design decisions, and completed steps for Phase 
   - **Task 22.3: Fetch Response Handling Patch**: Open the Next.js login component. Locate the fetch call to `/api/v1/auth/login`. Ensure `e.preventDefault()` is called. Remove any `res.json()` calls, as a `204` response has no body and will crash the script. Wrap the redirect logic in an `if (res.ok)` or `if (res.status === 204)` block, and use `router.push()`.
   - **Task 22.4: Frontend Test Coverage**: Write or update React testing components to simulate a successful `204` login response and verify router.push is called.
   - **Task 22.5: Full Suite Verification**: Run the frontend test suite to ensure 100% coverage.
+
+## 19. Phase 23: OAuth Client Exposure & Security Alignment
+- **Actions Taken**:
+  - **Task 23.1: Documentation Sync**: Consolidate checklists, update `/docs`, and set up the progress tracking ledger for Phase 23.
+  - **Task 23.2: Codebase Search & Replace**: Scan the `frontend/` directory for any references to `process.env.GOOGLE_CLIENT_ID` and replace them strictly with `process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
+  - **Task 23.3: Local Environment Patch**: Update local environment files (`frontend/.env` or `frontend/.env.local`), changing `GOOGLE_CLIENT_ID` key to `NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
+  - **Task 23.4: Static Build & Test Verification**: Run the frontend test suite and execute a dry-run build (`npm run build`) to ensure successful compilation.
 

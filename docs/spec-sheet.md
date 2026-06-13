@@ -380,3 +380,9 @@ Phase 13 establishes the internal console for managing multi-tenant client deplo
 ## 19. Phase 22: Frontend Authentication Handoff Resolution Specifications
 * **Fetch Response Handling Patch**: Prevents body parsing crashes on `204 No Content` responses by removing `await res.json()` calls upon successful logins, verifying the successful code and programmatically routing to `/aurahq/dashboard`.
 * **Testing Coverage**: Writes unit tests simulating successful `204 No Content` responses to verify router push functions execute successfully.
+
+---
+
+## 20. Phase 23: OAuth Client Exposure & Security Alignment Specifications
+* **Public Client Variable Exposure**: Prefix Google Client ID environment variable in the client bundle with `NEXT_PUBLIC_` (i.e. `NEXT_PUBLIC_GOOGLE_CLIENT_ID`) to ensure Next.js exposes it to client components.
+* **Build Validation**: Validates the static build process (`npm run build`) to ensure client configurations resolve without errors.

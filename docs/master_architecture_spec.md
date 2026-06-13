@@ -359,3 +359,9 @@ Updates the matching Prospect or Visit record's vsl_completion_percentage and vs
 * Prevents empty-body JSON parsing errors by removing `await res.json()` calls upon successful logins (which return `204 No Content`), instead directly executing programmatic redirection to `/aurahq/dashboard`.
 18.2 Frontend Testing Coverage:
 * Implements Jest tests verifying that the login form correctly handles a `204 No Content` response and calls `router.push` with the intended path.
+
+19. Phase 23: OAuth Client Exposure & Security Alignment Specifications
+19.1 Frontend Environment Expose:
+* Next.js requires environment variables accessed on the client-side to be prefixed with `NEXT_PUBLIC_` to prevent them from being hidden as server-side secrets. The Google Client ID variable is updated to `NEXT_PUBLIC_GOOGLE_CLIENT_ID` across the frontend repository and environment configurations.
+19.2 Build Validation:
+* Runs next build dry-run configurations to ensure static bundle generation operates successfully with the updated public environment settings.

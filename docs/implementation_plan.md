@@ -273,3 +273,14 @@ Task 22.4: Frontend Test Coverage
 Write unit tests for the login page component to verify that 204 successful auth calls execute proper router push calls.
 Task 22.5: Full Suite Verification
 Run the frontend and backend verification tests to achieve full coverage and correctness.
+
+Phase 23: OAuth Client Exposure & Security Alignment [COMPLETED]
+This phase resolves an issue where the Next.js frontend is failing to render or authorize the Google Login component because the Google Client ID environment variable is missing the required `NEXT_PUBLIC_` prefix, causing Next.js to silently strip it from the client bundle.
+Task 23.1: Documentation Sync
+Consolidate roadmaps, checklists, and specs inside the /docs directory and root task.md to track Phase 23 progress.
+Task 23.2: Codebase Search & Replace
+Search the `frontend/` directory for `process.env.GOOGLE_CLIENT_ID` and replace it with `process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
+Task 23.3: Local Environment Patch
+Update `frontend/.env` or `frontend/.env.local` to rename `GOOGLE_CLIENT_ID` to `NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
+Task 23.4: Static Build & Test Verification
+Verify the frontend test suite and execute `npm run build` to confirm compiling of the frontend build bundle.
