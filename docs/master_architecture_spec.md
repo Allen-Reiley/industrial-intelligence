@@ -337,3 +337,10 @@ Updates the matching Prospect or Visit record's vsl_completion_percentage and vs
 * Integrates PostgreSQL Row-Level Security (RLS) policies and forces them on multitenant tables (visit, page_view, prospect, company) within the baseline migration script.
 15.2 Programmatic DB Initialization:
 * Ensures clean setup of tables and schema elements, with automated seeder injection of the default superuser ReitumetseF account via UserManager.
+
+16. Phase 20: Cloud Gateway & Container Binding Stabilization Specifications
+16.1 Container Host Binding & Dynamic Port:
+* Enforces explicit Uvicorn binding to `0.0.0.0` instead of the local loopback `127.0.0.1` to enable proper routing through the Railway edge proxy.
+* Runs Uvicorn inside a shell execution context (`sh -c`) in order to resolve the dynamic environment variable `$PORT` (defaulting to 8000 if absent) as an integer.
+16.2 Database Driver Auto-Correction:
+* Upgrades the database session engine setup to check incoming `DATABASE_URL` strings and replace `postgresql://` protocol prefixes with `postgresql+asyncpg://` to prevent runtime crashes caused by incompatible synchronous drivers.

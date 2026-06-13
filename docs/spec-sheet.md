@@ -362,6 +362,8 @@ Phase 13 establishes the internal console for managing multi-tenant client deplo
 * **RLS Policy Deployment**: Deploys Row-Level Security policies restricting interactions on multitenant tables (visit, page_view, prospect, company) matching the request-scoped `current_client_id` context.
 * **Programmatic Initialization & Seeding**: Applies database schemas to a blank state and invokes the admin seeder to initialize the default `ReitumetseF` account securely.
 
+---
 
-
-
+## 17. Phase 20: Cloud Gateway & Container Binding Stabilization Specifications
+* **Container Host Binding**: Binds Uvicorn to `0.0.0.0` inside a shell execution context to support proper port dynamic mapping via Railway proxies.
+* **Database Driver Auto-Correction**: Sanitizes DB URLs on startup to translate `postgresql://` into `postgresql+asyncpg://`, protecting the async engine context.

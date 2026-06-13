@@ -63,3 +63,103 @@ def test_startup_script_execution():
             pass
             
     assert booted_server, "ASGI server did not trigger in start.sh"
+
+
+def test_startup_script_port_fallback():
+    """
+    Tests that if the PORT environment variable is not present,
+    the startup script gracefully falls back to port 8000.
+    """
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    start_sh_path = os.path.abspath(os.path.join(current_dir, "..", "start.sh"))
+    backend_root = os.path.abspath(os.path.join(current_dir, ".."))
+    
+    env = os.environ.copy()
+    if "PORT" in env:
+        del env["PORT"]
+        
+    process = subprocess.Popen(
+        [start_sh_path],
+        cwd=backend_root,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        preexec_fn=os.setsid,
+        env=env
+    )
+    
+    booted_on_correct_port = False
+    start_time = time.time()
+    timeout = 15
+    
+    try:
+        while True:
+            if time.time() - start_time > timeout:
+                break
+            line = process.stdout.readline()
+            if not line:
+                break
+            print(f"FALLBACK STDOUT: {line.strip()}")
+            if "0.0.0.0:8000" in line:
+                booted_on_correct_port = True
+                break
+            if process.poll() is not None:
+                break
+    finally:
+        try:
+            os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+            process.wait(timeout=2)
+        except Exception:
+            pass
+            
+    assert booted_on_correct_port, "Uvicorn did not bind to default fallback port 8000"
+
+
+def test_startup_script_port_custom():
+    """
+    Tests that if the PORT environment variable is present,
+    the startup script binds to the custom port.
+    """
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    start_sh_path = os.path.abspath(os.path.join(current_dir, "..", "start.sh"))
+    backend_root = os.path.abspath(os.path.join(current_dir, ".."))
+    
+    env = os.environ.copy()
+    env["PORT"] = "8099"
+        
+    process = subprocess.Popen(
+        [start_sh_path],
+        cwd=backend_root,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        preexec_fn=os.setsid,
+        env=env
+    )
+    
+    booted_on_correct_port = False
+    start_time = time.time()
+    timeout = 15
+    
+    try:
+        while True:
+            if time.time() - start_time > timeout:
+                break
+            line = process.stdout.readline()
+            if not line:
+                break
+            print(f"CUSTOM STDOUT: {line.strip()}")
+            if "0.0.0.0:8099" in line:
+                booted_on_correct_port = True
+                break
+            if process.poll() is not None:
+                break
+    finally:
+        try:
+            os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+            process.wait(timeout=2)
+        except Exception:
+            pass
+            
+    assert booted_on_correct_port, "Uvicorn did not bind to custom port 8099"
+

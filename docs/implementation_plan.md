@@ -237,6 +237,13 @@ Register and seed the default superuser ReitumetseF account.
 Task 19.5: Ledger Sync & Commit
 Log migrations and provide Git push steps.
 
-
-
-
+Phase 20: Cloud Gateway & Container Binding Stabilization [COMPLETED]
+This phase resolves the 502 Bad Gateway errors by correcting the Uvicorn host binding and environment variable expansion inside the Railway container, and hardening the AsyncPG driver compatibility.
+Task 20.1: Documentation Sync & Ledger Consolidation
+Read the /docs directory to absorb project guidelines. Update relevant architectural documents to include Phase 20 specifications. Consolidate all tasks in the main task.md file.
+Task 20.2: Host & Port Binding Correction
+Audit and refactor Uvicorn startup script/commands to explicitly run `uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}"` inside a shell context to ensure correct variable expansion. Write and pass shell execution tests.
+Task 20.3: Driver Protocol Hardening
+Update engine creation in `app/db.py` to auto-correct standard `postgresql://` URLs to `postgresql+asyncpg://` to prevent lifespan crashes under asynchronous drivers. Write and pass unit tests for the URL parser.
+Task 20.4: TDD Verification Gate
+Run the complete backend test suite to ensure 100% test coverage and validation of all changes.

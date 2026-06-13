@@ -9,18 +9,33 @@ logger = logging.getLogger("uvicorn")
 
 # --- ENGINE INITIALIZATION ---
 
+def get_sanitized_db_url(url: str, is_async: bool = False) -> str:
+    """
+    Sanitizes the database connection URL:
+    - Resolves 'postgres://' to 'postgresql://' to prevent SQLAlchemy dialect lookup crashes.
+    - If is_async is True, enforces the 'postgresql+asyncpg://' driver protocol.
+    - If is_async is False, enforces the standard 'postgresql://' driver protocol.
+    """
+    if not url:
+        return url
+    
+    # Handle the legacy/common postgres:// prefix
+    if url.startswith("postgres://"):
+        url = "postgresql://" + url[len("postgres://"):]
+        
+    if is_async:
+        if url.startswith("postgresql://"):
+            url = "postgresql+asyncpg://" + url[len("postgresql://"):]
+    else:
+        if url.startswith("postgresql+asyncpg://"):
+            url = "postgresql://" + url[len("postgresql+asyncpg://"):]
+            
+    return url
+
 # 1. Synchronous Engine (For Migrations and Admin Dashboards)
-# Standardizes connection URL to standard postgresql protocol if it contains the asyncpg schema identifier.
-sync_url = settings.DATABASE_URL
-if sync_url and "postgresql+asyncpg://" in sync_url:
-    sync_url = sync_url.replace("postgresql+asyncpg://", "postgresql://")
+sync_url = get_sanitized_db_url(settings.DATABASE_URL, is_async=False)
 
 if sync_url:
-    # pool_pre_ping=True: Issues a lightweight 'SELECT 1' test query on checkout to identify and discard 
-    # dead connections. Crucial for serverless environments (Railway/Neon) which silently drop idle sockets.
-    # pool_size=10: The permanent connection pool size.
-    # max_overflow=20: The maximum number of temporary connections that can be opened beyond pool_size 
-    # to handle high concurrent traffic spikes.
     engine = create_engine(
         sync_url,
         echo=False,
@@ -33,11 +48,7 @@ else:
     engine = None
 
 # 2. Asynchronous Engine (For Forensic Tracking, Janitor Cycles & Identity API)
-# Standardizes connection URL to use the required postgresql+asyncpg driver explicitly.
-# Asyncpg provides non-blocking networking socket support for high-concurrency ingestion routes.
-async_url = settings.DATABASE_URL
-if async_url and async_url.startswith("postgresql://"):
-    async_url = async_url.replace("postgresql://", "postgresql+asyncpg://")
+async_url = get_sanitized_db_url(settings.DATABASE_URL, is_async=True)
 
 if async_url:
     async_engine = create_async_engine(
@@ -53,6 +64,7 @@ if async_url:
 else:
     async_engine = None
     async_session_maker = None
+
 
 
 from typing import Optional
