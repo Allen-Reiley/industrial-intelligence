@@ -329,7 +329,7 @@ This log details the execution, design decisions, and completed steps for Phase 
 ## 19. Phase 23: OAuth Client Exposure & Security Alignment
 - **Actions Taken**:
   - **Task 23.1: Documentation Sync**: Consolidate checklists, update `/docs`, and set up the progress tracking ledger for Phase 23.
-  - **Task 23.2: Codebase Search & Replace**: Scan the `frontend/` directory for any references to `process.env.GOOGLE_CLIENT_ID` and replace them strictly with `process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
+  - **Task 23.2: Codebase Search & Replace**: Scan the `frontend/` directory for any references to `process.env.GOOGLE_CLIENT_ID` and replace them strictly with `process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID`. Patched the Google login button inside [frontend/src/app/login/page.tsx](file:///home/allenreiley7/projects/industrial-intelligence/frontend/src/app/login/page.tsx) to force the client ID using `clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}`.
   - **Task 23.3: Local Environment Patch**: Update local environment files (`frontend/.env` or `frontend/.env.local`), changing `GOOGLE_CLIENT_ID` key to `NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
   - **Task 23.4: Static Build & Test Verification**: Run the frontend test suite and execute a dry-run build (`npm run build`) to ensure successful compilation.
 

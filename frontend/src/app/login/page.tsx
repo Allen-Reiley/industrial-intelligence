@@ -134,6 +134,8 @@ function LoginForm() {
             <button
               type="button"
               onClick={handleGoogleLogin}
+              // @ts-ignore
+              clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}
               className="w-full bg-[#0f0f11] hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-750 text-zinc-100 font-semibold text-[10px] uppercase tracking-widest py-3.5 rounded-lg transition-all duration-150 flex items-center justify-center gap-3 cursor-pointer"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
