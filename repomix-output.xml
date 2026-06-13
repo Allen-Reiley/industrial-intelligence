@@ -108,6 +108,7 @@ backend/
   README.md
   reset_db.py
   seed_admin.py
+  seed_client.py
   start.sh
 docs/
   implementation_plan.md
@@ -318,6 +319,14 @@ task.md
 <files>
 This section contains the contents of the repository's files.
 
+<file path="backend/app/api/v1/__init__.py">
+# backend/app/api/v1/__init__.py
+"""
+AuraWorks API v1 Namespace.
+Routes are explicitly registered in app/main.py to prevent circular dependency cycles.
+"""
+</file>
+
 <file path="backend/app/api/Documentation.md">
 
 </file>
@@ -403,188 +412,117 @@ class AirtableEngine:
 airtable_engine = AirtableEngine()
 </file>
 
-<file path="backend/.python-version">
-3.12
+<file path="backend/app/services/contacts.py">
+# backend/app/services/contacts.py
+import httpx
+import logging
+from typing import Optional, List, Dict, Any
+from datetime import datetime, timedelta, timezone
+from app.core.config import settings  # Use centralized settings
+from sqlmodel import Session, select
+from app.db import engine
+from app.models.company import Company
+
+logger = logging.getLogger("uvicorn")
+
+# Keywords to strictly avoid for "Call Center" filtering
+EXCLUDED_KEYWORDS = ["support", "help", "customer", "service", "complaints", "info", "reception", "noreply"]
+
+async def get_corporate_contacts(domain: str, client_id: str) -> Dict[str, Any]:
+    """
+    Fetches HQ phone and professional contacts via Apollo People API.
+    Includes a local cache check to prevent redundant credit consumption.
+    Now uses multi-tenant client_id to scope cache lookups.
+    """
+    if not domain or domain in ["Unknown", "unknown.com", "n/a"]:
+        return {"hq_phone": None, "corp_emails": [], "linkedin_url": None}
+
+    # 1. Local Cache Check (Audit Layer)
+    # Scoped to domain AND client_id to ensure agency-specific data integrity
+    with Session(engine) as session:
+        statement = select(Company).where(
+            Company.domain == domain,
+            Company.client_id == client_id
+        )
+        cached_company = session.exec(statement).first()
+        
+        # Check if cache is fresh (30 days)
+        if cached_company and cached_company.hq_phone:
+            # Handle timezone-aware comparison
+            now = datetime.now(timezone.utc)
+            updated_at = cached_company.updated_at
+            if updated_at.tzinfo is None:
+                updated_at = updated_at.replace(tzinfo=timezone.utc)
+                
+            if updated_at > (now - timedelta(days=30)):
+                logger.info(f"♻️  Using cached industrial data for {domain}")
+                return {
+                    "hq_phone": cached_company.hq_phone,
+                    "corp_emails": [], 
+                    "linkedin_url": f"https://www.linkedin.com/company/{domain.split('.')[0]}"
+                }
+
+    # 2. External Enrichment (Apollo V2 Implementation)
+    # Technical Debt Fixed: Using settings.APOLLO_API_KEY instead of os.getenv
+    apollo_key = settings.APOLLO_API_KEY
+    if not apollo_key:
+        logger.warning("⚠️  APOLLO_API_KEY missing in settings. Skipping deep enrichment.")
+        return {"hq_phone": "Manual Audit Required", "corp_emails": []}
+
+    async with httpx.AsyncClient() as client:
+        try:
+            url = "https://api.apollo.io/v1/people/match"
+            payload = {
+                "api_key": apollo_key,
+                "domain": domain,
+                "reveal_personal_emails": False 
+            }
+            
+            response = await client.post(url, json=payload, timeout=10.0)
+            
+            if response.status_code == 200:
+                data = response.json()
+                person = data.get("person", {})
+                org = person.get("organization", {})
+                
+                hq_phone = org.get("primary_phone") or org.get("phone")
+                linkedin_url = org.get("linkedin_url") or f"https://www.linkedin.com/company/{domain.split('.')[0]}"
+                
+                logger.info(f"🧬 Apollo Match Success: Resolved {domain} to {org.get('name')}")
+                
+                return {
+                    "hq_phone": hq_phone,
+                    "linkedin_url": linkedin_url,
+                    "industry": org.get("industry"),
+                    "employee_count": org.get("estimated_num_employees")
+                }
+                
+            elif response.status_code == 429:
+                logger.error("🚫 Apollo Rate Limit Exceeded. Check Credit Balance.")
+            else:
+                logger.warning(f"⚠️  Apollo returned {response.status_code} for {domain}")
+                
+        except Exception as e:
+            logger.error(f"❌ Apollo V2 Enrichment Failure: {str(e)}")
+
+    return {
+        "hq_phone": None, 
+        "corp_emails": [], 
+        "linkedin_url": f"https://www.linkedin.com/company/{domain.split('.')[0]}"
+    }
+
+def filter_business_contacts(contacts: List[Dict]) -> List[Dict]:
+    """
+    Strips out generic support/info emails to maintain 'Quiet Premium' lead quality.
+    """
+    return [
+        c for c in contacts 
+        if not any(word in c.get("email", "").lower() for word in EXCLUDED_KEYWORDS)
+    ]
 </file>
 
-<file path="backend/backend-container.md">
-# 🏭 Industrial Intelligence Backend
-
-⚠️ Proprietary Software Notice: This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited.
-
-This is the core tracking engine and API for the Industrial Intelligence platform. It uses **FastAPI**, **SQLModel**, and **PostgreSQL** (running in Docker).
-
-## 🚀 How to Run
-
-### 1. Start the Database (Docker)
-
-Ensure Docker Desktop is running. This starts the PostgreSQL engine in the background.
-
-```bash
-docker compose up -d
-
-```
-
-*The `-d` flag runs it in "detached" mode so it stays alive after you close the terminal.*
-
-### 2. Start the Backend (Python/WSL)
-
-In your WSL terminal, navigate to the `backend` folder and use `uv` to start the development server:
-
-```bash
-cd backend
-uv run uvicorn app.main:app --reload
-
-```
-
-* **API Docs:** [http://localhost:8000/docs](https://www.google.com/search?q=http://localhost:8000/docs)
-* **Base URL:** `http://localhost:8000/v1`
-
----
-
-## 🛑 How to Stop
-
-### Stop the Backend
-
-In the terminal where Uvicorn is running, press:
-`Ctrl + C`
-
-### Stop the Database
-
-To stop the background Postgres container without deleting your data:
-
-```bash
-docker compose stop
-
-```
-
-### Complete Reset (Warning: Wipes Data)
-
-To stop the containers and delete the database volumes (starting from scratch):
-
-```bash
-docker compose down -v
-
-```
-
----
-
-## 🚢 Deployment (Railway / VPS)
-
-When you are ready to go live, follow these steps:
-
-### 1. Environment Variables
-
-Ensure the following variables are set in your production environment (e.g., Railway Dashboard):
-
-* `DATABASE_URL`: Your production Postgres connection string.
-* `ENVIRONMENT`: `production`
-* `CORS_ORIGINS`: `["https://your-site.com"]`
-
-### 2. The Dockerfile
-
-Your `Dockerfile` in the project root should look like this:
-
-```dockerfile
-FROM ghcr.io/astral-sh/uv:python3.12-alpine
-
-WORKDIR /app
-COPY . .
-
-# Install dependencies using uv
-RUN uv sync --frozen
-
-# Start the application
-CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.1", "--port", "8080"]
-
-```
-
-### 3. Deploy Command
-
-If using a CLI for deployment:
-
-```bash
-# Example for Railway
-railway up
-
-```
-
----
-
-## 🚀 Deployment (Render.com)
-
-### 1. Database Setup
-
-* Create a **New PostgreSQL** database on Render.
-* Once created, copy the **Internal Database URL** (for the backend) and the **External Database URL** (for local migrations).
-
-### 2. Backend Service
-
-* Create a **New Web Service** and connect your GitHub repository.
-* **Environment:** `Python 3` (Render will detect your `pyproject.toml` if using the `uv` build provider).
-* **Build Command:**
-```bash
-pip install uv && uv sync --frozen
-
-```
-
-
-* **Start Command:**
-```bash
-uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
-
-```
-
-
-
-### 3. Environment Variables
-
-In the Render dashboard, add these under **Environment**:
-
-* `DATABASE_URL`: (Paste your Render PostgreSQL URL)
-* `ENVIRONMENT`: `production`
-* `PYTHON_VERSION`: `3.12`
-
----
-
-## 🛠️ The "Local Test" (Final Check)
-
-Since everything is back up and running, let's verify the **`test_tracker.html`** works. This confirms that your `tracker.js` can talk to the database before you push it to production.
-
-1. **Open the file:** Drag `test_tracker.html` into your browser.
-2. **Check the logs:** Look at your VS Code terminal. You should see:
-`INFO: 127.0.0.1:XXXX - "POST /v1/track/ HTTP/1.1" 200 OK`
-3. **Confirm in DB:**
-```bash
-docker exec -it industrial_db_container psql -U postgres -d industrial_db -c "SELECT * FROM visit;"
-
-```
-
-
-
-### One quick Render tip:
-
-Render's **Free Tier** for Web Services "spins down" (goes to sleep) after 15 minutes of inactivity. This means your first tracking ping of the day might take 30 seconds to wake up the server. For a tracker, you might eventually want their **Starter** plan ($7/mo) to keep it "always on" so you don't miss any hits.
-
-
----
-
-## 🛠️ Database Maintenance
-
-To look inside the running database container:
-
-```bash
-docker exec -it industrial_db_container psql -U postgres -d industrial_db
-
-```
-
----
-
-## ⚖️ License & Proprietary Notice
-
-**Copyright (c) 2026 AuraWorks Pty (ltd). All Rights Reserved.**
-
-This tracker script is proprietary software. Unauthorized copying, modification, or redistribution is strictly prohibited. Use is granted only to active subscribers of the Industrial Intelligence Engine managed service.
+<file path="backend/.python-version">
+3.12
 </file>
 
 <file path="frontend/src/app/(pages)/500.tsx">
@@ -2123,6 +2061,68 @@ function Label({
 }
 
 export { Label }
+</file>
+
+<file path="frontend/src/components/ui/logo.tsx">
+// frontend/src/components/brand/Logo.tsx
+import Image from 'next/image'
+import { cn } from '@/lib/utils' // Using the @ alias for cleaner imports
+
+interface LogoProps {
+    className?: string;
+    priority?: boolean;
+}
+
+export const Logo = ({ className, priority = true }: LogoProps) => {
+    return (
+        /* Constraint: Added fixed aspect-ratio container to prevent Layout Shift.
+           The min-w values are calibrated for 'Quiet Premium' spacing.
+        */
+        <div className={cn('relative h-8 w-auto min-w-[40px] lg:min-w-[150px] aspect-[797/220]', className)}>
+            {/* DESKTOP LOGO 
+                Optimized for 85mm realism aesthetics: h-full w-auto ensures scaling 
+                maintains industrial sophistication without pixelation.
+            */}
+            <Image
+                src="/logo.svg"
+                alt="AuraWorks Logo"
+                width={797}
+                height={220}
+                className="hidden lg:block h-full w-auto object-contain"
+                priority={priority}
+            />
+
+            {/* MOBILE LOGO 
+                Uses the same aspect ratio to ensure consistent touch-targets.
+            */}
+            <Image
+                src="/logo-mobile.svg" 
+                alt="AuraWorks Logo Mobile"
+                width={220} // Adjusted to a smaller base width for mobile performance
+                height={220}
+                className="block lg:hidden h-full w-auto object-contain"
+                priority={priority}
+            />
+        </div>
+    )
+}
+
+export const LogoIcon = ({ className }: { className?: string }) => {
+    return (
+        /* Icon variant for navigation sidebars and favicon-style UI elements.
+           Replaced .ico with .svg for technical authority and crisp rendering.
+        */
+        <div className={cn('relative size-8', className)}>
+            <Image
+                src="/logo-mobile.svg" 
+                alt="AuraWorks Icon"
+                fill
+                className="object-contain"
+                priority
+            />
+        </div>
+    )
+}
 </file>
 
 <file path="frontend/src/components/ui/page-not-found.tsx">
@@ -3851,12 +3851,155 @@ No part of this software, including source code, assets, and documentation, may 
 Any unauthorized use will be prosecuted to the fullest extent of the law.
 </file>
 
-<file path="backend/app/api/v1/__init__.py">
-# backend/app/api/v1/__init__.py
-"""
-AuraWorks API v1 Namespace.
-Routes are explicitly registered in app/main.py to prevent circular dependency cycles.
-"""
+<file path="backend/app/api/v1/identity.py">
+# backend/app/api/v1/identity.py
+import logging
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from cachetools import TTLCache
+
+from app.db import get_async_session
+from app.models.visit import Visit
+
+router = APIRouter()
+logger = logging.getLogger("uvicorn")
+
+# --- INDUSTRIAL CACHE LAYER ---
+# Prevents O(N) database scans for returning high-frequency visitors
+# Key: Forensic Fingerprint | Value: aura_id
+identity_cache = TTLCache(maxsize=1000, ttl=3600)
+
+def calculate_identity_match(new_sig: dict, existing_visit: Visit) -> float:
+    """
+    Weighted probability algorithm for forensic identity resolution.
+    Calibrated for B2B clusters (Gauteng Industrial Hubs).
+    """
+    score = 0.0
+    
+    # 1. Hardware Rendering (30%)
+    if new_sig.get('canvas') == existing_visit.canvas_hash:
+        score += 0.30
+        
+    # 2. Precision Clock Drift (20%)
+    try:
+        existing_drift = int(existing_visit.clock_drift) if existing_visit.clock_drift is not None else 0
+    except (ValueError, TypeError):
+        existing_drift = 0
+    drift_diff = abs(new_sig.get('drift', 0) - existing_drift)
+    if drift_diff <= 1:
+        score += 0.20
+        
+    # 3. GPU Signature (10%)
+    if new_sig.get('webgl') == existing_visit.webgl_renderer:
+        score += 0.10
+        
+    # 4. Network Signal (40%) - Identifying Corporate Gateways
+    net = new_sig.get('network', {})
+    if isinstance(net, dict):
+        if net.get('type') == existing_visit.effective_connection_type:
+            score += 0.15
+            
+        rtt_match = abs(net.get('rtt', 0) - (existing_visit.rtt or 0)) <= 20
+        downlink_match = abs(net.get('downlink', 0) - (existing_visit.downlink_speed or 0)) < 0.5
+        
+        if rtt_match and downlink_match:
+            score += 0.25
+            
+    return score
+
+async def merge_sessions_async(new_id: str, original_id: str):
+    """
+    Background Task: Unifies fragmented forensic IDs across the ledger.
+    Using a dedicated session to prevent main request blocking.
+    """
+    from app.db import async_session_maker
+    async with async_session_maker() as session:
+        try:
+            statement = select(Visit).where(Visit.aura_id == new_id)
+            result = await session.execute(statement)
+            visits_to_update = result.scalars().all()
+            
+            for visit in visits_to_update:
+                visit.aura_id = original_id
+                session.add(visit)
+            
+            await session.commit()
+            logger.info(f"🔗 Forensic Stitch Success: {new_id} -> {original_id}")
+        except Exception as e:
+            logger.error(f"❌ Session Merge Failure: {e}")
+
+@router.post("/resolve")
+async def resolve_identity(
+    payload: dict, 
+    background_tasks: BackgroundTasks,
+    session: AsyncSession = Depends(get_async_session)
+):
+    aura_id = payload.get("aura_id")
+    signature = payload.get("signature", {})
+    
+    if not aura_id:
+        raise HTTPException(status_code=400, detail="Missing aura_id")
+
+    # --- STEP 0: THE FAST PATH (Cache) ---
+    sig_key = f"{signature.get('canvas')}:{signature.get('webgl')}:{signature.get('drift')}"
+    cached_id = identity_cache.get(sig_key)
+    
+    if cached_id and cached_id != aura_id:
+        logger.info(f"⚡ Cache Hit: Mapping {aura_id} to {cached_id}")
+        background_tasks.add_task(merge_sessions_async, aura_id, cached_id)
+        return {"status": "stitched", "stitched_id": cached_id, "confidence": 1.0}
+
+    # --- STEP 1: DIRECT ID LOCK ---
+    statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at.desc())
+    result = await session.execute(statement)
+    existing_visit = result.scalars().first()
+    
+    if existing_visit:
+        # Refresh forensic markers for the current visit
+        existing_visit.canvas_hash = signature.get('canvas')
+        drift_val = signature.get('drift')
+        existing_visit.clock_drift = str(drift_val) if drift_val is not None else None
+        existing_visit.webgl_renderer = signature.get('webgl')
+        
+        net = signature.get('network', {})
+        if isinstance(net, dict):
+            existing_visit.effective_connection_type = net.get('type')
+            existing_visit.downlink_speed = net.get('downlink')
+            existing_visit.rtt = net.get('rtt')
+            
+        session.add(existing_visit)
+        await session.commit()
+        
+        # Populate cache for future pings
+        identity_cache[sig_key] = aura_id
+        return {"status": "recognized", "method": "direct_id"}
+
+    # --- STEP 2: FORENSIC SCAN (High Entropy) ---
+    search_stmt = select(Visit).order_by(Visit.created_at.desc()).limit(200)
+    search_res = await session.execute(search_stmt)
+    all_recent = search_res.scalars().all()
+    
+    # Isolate unique forensic profiles from the last 200 signals
+    unique_profiles = {v.aura_id: v for v in all_recent}.values()
+    
+    for profile in unique_profiles:
+        match_probability = calculate_identity_match(signature, profile)
+        
+        if match_probability >= 0.80:
+            logger.info(f"🧵 Forensic Stitch Found! Conf: {match_probability*100}%")
+            
+            identity_cache[sig_key] = profile.aura_id
+            background_tasks.add_task(merge_sessions_async, aura_id, profile.aura_id)
+            
+            return {
+                "status": "stitched", 
+                "stitched_id": profile.aura_id, 
+                "confidence": match_probability
+            }
+
+    return {"status": "new_identity", "message": "Forensic profile initialized."}
 </file>
 
 <file path="backend/app/core/cache.py">
@@ -4047,115 +4190,6 @@ class Transaction(SQLModel, table=True):
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(DateTime(timezone=True), nullable=False)
     )
-</file>
-
-<file path="backend/app/services/contacts.py">
-# backend/app/services/contacts.py
-import httpx
-import logging
-from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta, timezone
-from app.core.config import settings  # Use centralized settings
-from sqlmodel import Session, select
-from app.db import engine
-from app.models.company import Company
-
-logger = logging.getLogger("uvicorn")
-
-# Keywords to strictly avoid for "Call Center" filtering
-EXCLUDED_KEYWORDS = ["support", "help", "customer", "service", "complaints", "info", "reception", "noreply"]
-
-async def get_corporate_contacts(domain: str, client_id: str) -> Dict[str, Any]:
-    """
-    Fetches HQ phone and professional contacts via Apollo People API.
-    Includes a local cache check to prevent redundant credit consumption.
-    Now uses multi-tenant client_id to scope cache lookups.
-    """
-    if not domain or domain in ["Unknown", "unknown.com", "n/a"]:
-        return {"hq_phone": None, "corp_emails": [], "linkedin_url": None}
-
-    # 1. Local Cache Check (Audit Layer)
-    # Scoped to domain AND client_id to ensure agency-specific data integrity
-    with Session(engine) as session:
-        statement = select(Company).where(
-            Company.domain == domain,
-            Company.client_id == client_id
-        )
-        cached_company = session.exec(statement).first()
-        
-        # Check if cache is fresh (30 days)
-        if cached_company and cached_company.hq_phone:
-            # Handle timezone-aware comparison
-            now = datetime.now(timezone.utc)
-            updated_at = cached_company.updated_at
-            if updated_at.tzinfo is None:
-                updated_at = updated_at.replace(tzinfo=timezone.utc)
-                
-            if updated_at > (now - timedelta(days=30)):
-                logger.info(f"♻️  Using cached industrial data for {domain}")
-                return {
-                    "hq_phone": cached_company.hq_phone,
-                    "corp_emails": [], 
-                    "linkedin_url": f"https://www.linkedin.com/company/{domain.split('.')[0]}"
-                }
-
-    # 2. External Enrichment (Apollo V2 Implementation)
-    # Technical Debt Fixed: Using settings.APOLLO_API_KEY instead of os.getenv
-    apollo_key = settings.APOLLO_API_KEY
-    if not apollo_key:
-        logger.warning("⚠️  APOLLO_API_KEY missing in settings. Skipping deep enrichment.")
-        return {"hq_phone": "Manual Audit Required", "corp_emails": []}
-
-    async with httpx.AsyncClient() as client:
-        try:
-            url = "https://api.apollo.io/v1/people/match"
-            payload = {
-                "api_key": apollo_key,
-                "domain": domain,
-                "reveal_personal_emails": False 
-            }
-            
-            response = await client.post(url, json=payload, timeout=10.0)
-            
-            if response.status_code == 200:
-                data = response.json()
-                person = data.get("person", {})
-                org = person.get("organization", {})
-                
-                hq_phone = org.get("primary_phone") or org.get("phone")
-                linkedin_url = org.get("linkedin_url") or f"https://www.linkedin.com/company/{domain.split('.')[0]}"
-                
-                logger.info(f"🧬 Apollo Match Success: Resolved {domain} to {org.get('name')}")
-                
-                return {
-                    "hq_phone": hq_phone,
-                    "linkedin_url": linkedin_url,
-                    "industry": org.get("industry"),
-                    "employee_count": org.get("estimated_num_employees")
-                }
-                
-            elif response.status_code == 429:
-                logger.error("🚫 Apollo Rate Limit Exceeded. Check Credit Balance.")
-            else:
-                logger.warning(f"⚠️  Apollo returned {response.status_code} for {domain}")
-                
-        except Exception as e:
-            logger.error(f"❌ Apollo V2 Enrichment Failure: {str(e)}")
-
-    return {
-        "hq_phone": None, 
-        "corp_emails": [], 
-        "linkedin_url": f"https://www.linkedin.com/company/{domain.split('.')[0]}"
-    }
-
-def filter_business_contacts(contacts: List[Dict]) -> List[Dict]:
-    """
-    Strips out generic support/info emails to maintain 'Quiet Premium' lead quality.
-    """
-    return [
-        c for c in contacts 
-        if not any(word in c.get("email", "").lower() for word in EXCLUDED_KEYWORDS)
-    ]
 </file>
 
 <file path="backend/app/services/notion.py">
@@ -4825,6 +4859,186 @@ formatter = generic
 [formatter_generic]
 format = %(levelname)-5.5s [%(name)s] %(message)s
 datefmt = %H:%M:%S
+</file>
+
+<file path="backend/backend-container.md">
+# 🏭 Industrial Intelligence Backend
+
+⚠️ Proprietary Software Notice: This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited.
+
+This is the core tracking engine and API for the Industrial Intelligence platform. It uses **FastAPI**, **SQLModel**, and **PostgreSQL** (running in Docker).
+
+## 🚀 How to Run
+
+### 1. Start the Database (Docker)
+
+Ensure Docker Desktop is running. This starts the PostgreSQL engine in the background.
+
+```bash
+docker compose up -d
+
+```
+
+*The `-d` flag runs it in "detached" mode so it stays alive after you close the terminal.*
+
+### 2. Start the Backend (Python/WSL)
+
+In your WSL terminal, navigate to the `backend` folder and use `uv` to start the development server:
+
+```bash
+cd backend
+uv run uvicorn app.main:app --reload
+
+```
+
+* **API Docs:** [http://localhost:8000/docs](https://www.google.com/search?q=http://localhost:8000/docs)
+* **Base URL:** `http://localhost:8000/v1`
+
+---
+
+## 🛑 How to Stop
+
+### Stop the Backend
+
+In the terminal where Uvicorn is running, press:
+`Ctrl + C`
+
+### Stop the Database
+
+To stop the background Postgres container without deleting your data:
+
+```bash
+docker compose stop
+
+```
+
+### Complete Reset (Warning: Wipes Data)
+
+To stop the containers and delete the database volumes (starting from scratch):
+
+```bash
+docker compose down -v
+
+```
+
+---
+
+## 🚢 Deployment (Railway / VPS)
+
+When you are ready to go live, follow these steps:
+
+### 1. Environment Variables
+
+Ensure the following variables are set in your production environment (e.g., Railway Dashboard):
+
+* `DATABASE_URL`: Your production Postgres connection string.
+* `ENVIRONMENT`: `production`
+* `CORS_ORIGINS`: `["https://your-site.com"]`
+
+### 2. The Dockerfile
+
+Your `Dockerfile` in the project root should look like this:
+
+```dockerfile
+FROM ghcr.io/astral-sh/uv:python3.12-alpine
+
+WORKDIR /app
+COPY . .
+
+# Install dependencies using uv
+RUN uv sync --frozen
+
+# Start the application
+CMD ["sh", "-c", "uv run uvicorn app.main:app --host 0.0.0.0 --port \"$PORT\""]
+
+```
+
+### 3. Deploy Command
+
+If using a CLI for deployment:
+
+```bash
+# Example for Railway
+railway up
+
+```
+
+---
+
+## 🚀 Deployment (Render.com)
+
+### 1. Database Setup
+
+* Create a **New PostgreSQL** database on Render.
+* Once created, copy the **Internal Database URL** (for the backend) and the **External Database URL** (for local migrations).
+
+### 2. Backend Service
+
+* Create a **New Web Service** and connect your GitHub repository.
+* **Environment:** `Python 3` (Render will detect your `pyproject.toml` if using the `uv` build provider).
+* **Build Command:**
+```bash
+pip install uv && uv sync --frozen
+
+```
+
+
+* **Start Command:**
+```bash
+uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
+
+```
+
+
+
+### 3. Environment Variables
+
+In the Render dashboard, add these under **Environment**:
+
+* `DATABASE_URL`: (Paste your Render PostgreSQL URL)
+* `ENVIRONMENT`: `production`
+* `PYTHON_VERSION`: `3.12`
+
+---
+
+## 🛠️ The "Local Test" (Final Check)
+
+Since everything is back up and running, let's verify the **`test_tracker.html`** works. This confirms that your `tracker.js` can talk to the database before you push it to production.
+
+1. **Open the file:** Drag `test_tracker.html` into your browser.
+2. **Check the logs:** Look at your VS Code terminal. You should see:
+`INFO: 127.0.0.1:XXXX - "POST /v1/track/ HTTP/1.1" 200 OK`
+3. **Confirm in DB:**
+```bash
+docker exec -it industrial_db_container psql -U postgres -d industrial_db -c "SELECT * FROM visit;"
+
+```
+
+
+
+### One quick Render tip:
+
+Render's **Free Tier** for Web Services "spins down" (goes to sleep) after 15 minutes of inactivity. This means your first tracking ping of the day might take 30 seconds to wake up the server. For a tracker, you might eventually want their **Starter** plan ($7/mo) to keep it "always on" so you don't miss any hits.
+
+
+---
+
+## 🛠️ Database Maintenance
+
+To look inside the running database container:
+
+```bash
+docker exec -it industrial_db_container psql -U postgres -d industrial_db
+
+```
+
+---
+
+## ⚖️ License & Proprietary Notice
+
+**Copyright (c) 2026 AuraWorks Pty (ltd). All Rights Reserved.**
+
+This tracker script is proprietary software. Unauthorized copying, modification, or redistribution is strictly prohibited. Use is granted only to active subscribers of the Industrial Intelligence Engine managed service.
 </file>
 
 <file path="backend/README.md">
@@ -8879,68 +9093,6 @@ function AnimatedGroup({
 export { AnimatedGroup };
 </file>
 
-<file path="frontend/src/components/ui/logo.tsx">
-// frontend/src/components/brand/Logo.tsx
-import Image from 'next/image'
-import { cn } from '@/lib/utils' // Using the @ alias for cleaner imports
-
-interface LogoProps {
-    className?: string;
-    priority?: boolean;
-}
-
-export const Logo = ({ className, priority = true }: LogoProps) => {
-    return (
-        /* Constraint: Added fixed aspect-ratio container to prevent Layout Shift.
-           The min-w values are calibrated for 'Quiet Premium' spacing.
-        */
-        <div className={cn('relative h-8 w-auto min-w-[40px] lg:min-w-[150px] aspect-[797/220]', className)}>
-            {/* DESKTOP LOGO 
-                Optimized for 85mm realism aesthetics: h-full w-auto ensures scaling 
-                maintains industrial sophistication without pixelation.
-            */}
-            <Image
-                src="/logo.svg"
-                alt="AuraWorks Logo"
-                width={797}
-                height={220}
-                className="hidden lg:block h-full w-auto object-contain"
-                priority={priority}
-            />
-
-            {/* MOBILE LOGO 
-                Uses the same aspect ratio to ensure consistent touch-targets.
-            */}
-            <Image
-                src="/logo-mobile.svg" 
-                alt="AuraWorks Logo Mobile"
-                width={220} // Adjusted to a smaller base width for mobile performance
-                height={220}
-                className="block lg:hidden h-full w-auto object-contain"
-                priority={priority}
-            />
-        </div>
-    )
-}
-
-export const LogoIcon = ({ className }: { className?: string }) => {
-    return (
-        /* Icon variant for navigation sidebars and favicon-style UI elements.
-           Replaced .ico with .svg for technical authority and crisp rendering.
-        */
-        <div className={cn('relative size-8', className)}>
-            <Image
-                src="/logo-mobile.svg" 
-                alt="AuraWorks Icon"
-                fill
-                className="object-contain"
-                priority
-            />
-        </div>
-    )
-}
-</file>
-
 <file path="frontend/src/components/vsl/vsl-funnel.test.tsx">
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -10625,157 +10777,6 @@ npm run dev
 Unauthorized copying, modification, or redistribution of this repository is strictly prohibited. Use is granted solely to active subscribers of the Industrial Intelligence Engine.
 </file>
 
-<file path="backend/app/api/v1/identity.py">
-# backend/app/api/v1/identity.py
-import logging
-from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
-from sqlmodel import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from cachetools import TTLCache
-
-from app.db import get_async_session
-from app.models.visit import Visit
-
-router = APIRouter()
-logger = logging.getLogger("uvicorn")
-
-# --- INDUSTRIAL CACHE LAYER ---
-# Prevents O(N) database scans for returning high-frequency visitors
-# Key: Forensic Fingerprint | Value: aura_id
-identity_cache = TTLCache(maxsize=1000, ttl=3600)
-
-def calculate_identity_match(new_sig: dict, existing_visit: Visit) -> float:
-    """
-    Weighted probability algorithm for forensic identity resolution.
-    Calibrated for B2B clusters (Gauteng Industrial Hubs).
-    """
-    score = 0.0
-    
-    # 1. Hardware Rendering (30%)
-    if new_sig.get('canvas') == existing_visit.canvas_hash:
-        score += 0.30
-        
-    # 2. Precision Clock Drift (20%)
-    try:
-        existing_drift = int(existing_visit.clock_drift) if existing_visit.clock_drift is not None else 0
-    except (ValueError, TypeError):
-        existing_drift = 0
-    drift_diff = abs(new_sig.get('drift', 0) - existing_drift)
-    if drift_diff <= 1:
-        score += 0.20
-        
-    # 3. GPU Signature (10%)
-    if new_sig.get('webgl') == existing_visit.webgl_renderer:
-        score += 0.10
-        
-    # 4. Network Signal (40%) - Identifying Corporate Gateways
-    net = new_sig.get('network', {})
-    if isinstance(net, dict):
-        if net.get('type') == existing_visit.effective_connection_type:
-            score += 0.15
-            
-        rtt_match = abs(net.get('rtt', 0) - (existing_visit.rtt or 0)) <= 20
-        downlink_match = abs(net.get('downlink', 0) - (existing_visit.downlink_speed or 0)) < 0.5
-        
-        if rtt_match and downlink_match:
-            score += 0.25
-            
-    return score
-
-async def merge_sessions_async(new_id: str, original_id: str):
-    """
-    Background Task: Unifies fragmented forensic IDs across the ledger.
-    Using a dedicated session to prevent main request blocking.
-    """
-    from app.db import async_session_maker
-    async with async_session_maker() as session:
-        try:
-            statement = select(Visit).where(Visit.aura_id == new_id)
-            result = await session.execute(statement)
-            visits_to_update = result.scalars().all()
-            
-            for visit in visits_to_update:
-                visit.aura_id = original_id
-                session.add(visit)
-            
-            await session.commit()
-            logger.info(f"🔗 Forensic Stitch Success: {new_id} -> {original_id}")
-        except Exception as e:
-            logger.error(f"❌ Session Merge Failure: {e}")
-
-@router.post("/resolve")
-async def resolve_identity(
-    payload: dict, 
-    background_tasks: BackgroundTasks,
-    session: AsyncSession = Depends(get_async_session)
-):
-    aura_id = payload.get("aura_id")
-    signature = payload.get("signature", {})
-    
-    if not aura_id:
-        raise HTTPException(status_code=400, detail="Missing aura_id")
-
-    # --- STEP 0: THE FAST PATH (Cache) ---
-    sig_key = f"{signature.get('canvas')}:{signature.get('webgl')}:{signature.get('drift')}"
-    cached_id = identity_cache.get(sig_key)
-    
-    if cached_id and cached_id != aura_id:
-        logger.info(f"⚡ Cache Hit: Mapping {aura_id} to {cached_id}")
-        background_tasks.add_task(merge_sessions_async, aura_id, cached_id)
-        return {"status": "stitched", "stitched_id": cached_id, "confidence": 1.0}
-
-    # --- STEP 1: DIRECT ID LOCK ---
-    statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at.desc())
-    result = await session.execute(statement)
-    existing_visit = result.scalars().first()
-    
-    if existing_visit:
-        # Refresh forensic markers for the current visit
-        existing_visit.canvas_hash = signature.get('canvas')
-        drift_val = signature.get('drift')
-        existing_visit.clock_drift = str(drift_val) if drift_val is not None else None
-        existing_visit.webgl_renderer = signature.get('webgl')
-        
-        net = signature.get('network', {})
-        if isinstance(net, dict):
-            existing_visit.effective_connection_type = net.get('type')
-            existing_visit.downlink_speed = net.get('downlink')
-            existing_visit.rtt = net.get('rtt')
-            
-        session.add(existing_visit)
-        await session.commit()
-        
-        # Populate cache for future pings
-        identity_cache[sig_key] = aura_id
-        return {"status": "recognized", "method": "direct_id"}
-
-    # --- STEP 2: FORENSIC SCAN (High Entropy) ---
-    search_stmt = select(Visit).order_by(Visit.created_at.desc()).limit(200)
-    search_res = await session.execute(search_stmt)
-    all_recent = search_res.scalars().all()
-    
-    # Isolate unique forensic profiles from the last 200 signals
-    unique_profiles = {v.aura_id: v for v in all_recent}.values()
-    
-    for profile in unique_profiles:
-        match_probability = calculate_identity_match(signature, profile)
-        
-        if match_probability >= 0.80:
-            logger.info(f"🧵 Forensic Stitch Found! Conf: {match_probability*100}%")
-            
-            identity_cache[sig_key] = profile.aura_id
-            background_tasks.add_task(merge_sessions_async, aura_id, profile.aura_id)
-            
-            return {
-                "status": "stitched", 
-                "stitched_id": profile.aura_id, 
-                "confidence": match_probability
-            }
-
-    return {"status": "new_identity", "message": "Forensic profile initialized."}
-</file>
-
 <file path="backend/app/api/v1/prospects.py">
 # backend/app/api/v1/prospects.py
 import logging
@@ -11496,22 +11497,97 @@ def downgrade() -> None:
     ${downgrades if downgrades else "pass"}
 </file>
 
-<file path="backend/start.sh">
-#!/bin/sh
+<file path="backend/seed_client.py">
+# backend/seed_client.py
+import asyncio
+import uuid
+from app.db import async_session_maker
+from app.models.client import Client, ClientCategory, SubscriptionStatus
+from sqlmodel import select
+from dotenv import load_dotenv
 
-# backend/start.sh
+# Load local environment variables
+load_dotenv()
 
-# Migrations decoupled from application startup to avoid blocking port binding on Railway.
-# Database schema updates should be executed independently during deployment tasks.
-# echo "🏗️ Running database migrations..."
-# if uv run alembic upgrade head; then
-#     echo "✅ Database migrations successfully applied."
-# else
-#     echo "⚠️ Database migrations failed to apply, but proceeding to start ASGI server..."
-# fi
+async def seed_client():
+    client_id = uuid.UUID("c4a6c9b1-8355-4de2-985d-a04f4dcd63a0")
+    async with async_session_maker() as session:
+        stmt = select(Client).where(Client.id == client_id)
+        res = await session.execute(stmt)
+        existing_client = res.scalars().first()
+        
+        if existing_client:
+            print(f"Client {client_id} already exists. Updating domain and activation...")
+            existing_client.company_name = "AuraWorks HQ"
+            existing_client.domain = "auraworks.co.za"
+            existing_client.whitelisted_domains = ["auraworks.co.za", "www.auraworks.co.za", "localhost", "testclient.co.za"]
+            existing_client.is_active = True
+            existing_client.subscription_status = SubscriptionStatus.ACTIVE
+            session.add(existing_client)
+        else:
+            print(f"Client {client_id} not found. Creating new...")
+            new_client = Client(
+                id=client_id,
+                company_name="AuraWorks HQ",
+                domain="auraworks.co.za",
+                whitelisted_domains=["auraworks.co.za", "www.auraworks.co.za", "localhost", "testclient.co.za"],
+                category=ClientCategory.COMMERCIAL,
+                client_product_description="AuraWorks default configuration",
+                subscription_status=SubscriptionStatus.ACTIVE,
+                payment_plan="monthly",
+                setup_fee_paid=True,
+                is_active=True
+            )
+            session.add(new_client)
+            
+        # 1. Explicitly create and commit the parent Client record first
+        await session.commit()
+        print("Parent Client committed successfully.")
 
-echo "🚀 Starting ASGI server..."
-exec uv run uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}
+        # 2. Ensure the ClientConfig creation happens sequentially AFTER the Client is committed.
+        ClientConfig = None
+        for module_name in ["app.models.client", "app.models", "app.models.client_config"]:
+            try:
+                mod = __import__(module_name, fromlist=["ClientConfig"])
+                ClientConfig = getattr(mod, "ClientConfig", None)
+                if ClientConfig:
+                    break
+            except ImportError:
+                continue
+
+        if ClientConfig:
+            print("ClientConfig model found. Checking for existing config...")
+            try:
+                # Query ClientConfig using the appropriate client_id attribute
+                client_id_attr = getattr(ClientConfig, "client_id", None) or getattr(ClientConfig, "id", None)
+                if client_id_attr is not None:
+                    stmt_cfg = select(ClientConfig).where(client_id_attr == client_id)
+                    res_cfg = await session.execute(stmt_cfg)
+                    existing_cfg = res_cfg.scalars().first()
+                    
+                    if not existing_cfg:
+                        print(f"Creating ClientConfig record for client {client_id}...")
+                        kwargs = {}
+                        if hasattr(ClientConfig, "client_id"):
+                            kwargs["client_id"] = client_id
+                        if hasattr(ClientConfig, "id"):
+                            kwargs["id"] = client_id
+                        
+                        new_cfg = ClientConfig(**kwargs)
+                        session.add(new_cfg)
+                        await session.commit()
+                        print("ClientConfig seeded successfully sequentially AFTER Client commit.")
+                    else:
+                        print("ClientConfig already exists.")
+            except Exception as cfg_err:
+                print(f"Failed to seed ClientConfig dynamically: {cfg_err}")
+                await session.rollback()
+                raise cfg_err
+        else:
+            print("ClientConfig model not found in the current codebase environment. Skipping ClientConfig seeding step.")
+
+if __name__ == "__main__":
+    asyncio.run(seed_client())
 </file>
 
 <file path="docs/prompt.md">
@@ -13406,6 +13482,24 @@ async def send_weekly_report_email(recipient_email: str, download_link: str) -> 
     )
 </file>
 
+<file path="backend/start.sh">
+#!/bin/sh
+
+# backend/start.sh
+
+# Migrations decoupled from application startup to avoid blocking port binding on Railway.
+# Database schema updates should be executed independently during deployment tasks.
+# echo "🏗️ Running database migrations..."
+# if uv run alembic upgrade head; then
+#     echo "✅ Database migrations successfully applied."
+# else
+#     echo "⚠️ Database migrations failed to apply, but proceeding to start ASGI server..."
+# fi
+
+echo "🚀 Starting ASGI server..."
+exec uv run uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}"
+</file>
+
 <file path="docs/structure.md">
 # 📂 Project Directory Structure & Blueprint (v2.0)
 
@@ -13559,129 +13653,6 @@ Orchestration, environment variables, and Docker configurations.
 
 **Copyright (c) 2026 AuraWorks Pty (ltd). All Rights Reserved.**
 Unauthorized copying, modification, or redistribution of this software is strictly prohibited.
-</file>
-
-<file path="frontend/src/app/login/login.test.tsx">
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import LoginPage from './page';
-
-// Mock next/navigation
-const mockPush = jest.fn();
-const mockGet = jest.fn().mockReturnValue(null);
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
-  useSearchParams: () => ({
-    get: mockGet,
-  }),
-}));
-
-jest.mock('@/lib/utils', () => ({
-  ...jest.requireActual('@/lib/utils'),
-  navigateToUrl: jest.fn(),
-}));
-
-describe('LoginPage Component Tests', () => {
-  let cookieVal = '';
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    cookieVal = '';
-    Object.defineProperty(document, 'cookie', {
-      get: () => cookieVal,
-      set: (val) => {
-        cookieVal = val;
-      },
-      configurable: true,
-    });
-    global.fetch = jest.fn();
-  });
-
-  test('renders login form elements correctly', () => {
-    render(<LoginPage />);
-    
-    expect(screen.getByText('AuraHQ Portal')).toBeInTheDocument();
-    expect(screen.getByText('Login with Google')).toBeInTheDocument();
-    expect(screen.getByLabelText(/System Username/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Security Key/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Initialize Console/i })).toBeInTheDocument();
-  });
-
-  test('handles successful credentials login with redirect', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({}),
-    });
-
-    render(<LoginPage />);
-
-    fireEvent.change(screen.getByPlaceholderText('admin'), { target: { value: 'admin' } });
-    fireEvent.change(screen.getByPlaceholderText('••••••••••••'), { target: { value: 'secretkey' } });
-    
-    fireEvent.click(screen.getByRole('button', { name: /Initialize Console/i }));
-
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v1/auth/login'),
-        expect.objectContaining({
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: expect.any(URLSearchParams),
-        })
-      );
-    });
-
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/aurahq/dashboard');
-    });
-  });
-
-  test('handles Login with Google button click', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ authorization_url: 'https://accounts.google.com/o/oauth2/auth?state=123' }),
-    });
-
-    const { navigateToUrl } = require('@/lib/utils');
-
-    render(<LoginPage />);
-
-    fireEvent.click(screen.getByRole('button', { name: /Login with Google/i }));
-
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v1/auth/google/authorize?redirect_uri=')
-      );
-    });
-
-    await waitFor(() => {
-      expect(navigateToUrl).toHaveBeenCalledWith('https://accounts.google.com/o/oauth2/auth?state=123');
-    });
-  });
-
-
-  test('handles login failure and displays error alert', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: false,
-      status: 401,
-    });
-
-    render(<LoginPage />);
-
-    fireEvent.change(screen.getByPlaceholderText('admin'), { target: { value: 'admin' } });
-    fireEvent.change(screen.getByPlaceholderText('••••••••••••'), { target: { value: 'wrongkey' } });
-    
-    fireEvent.click(screen.getByRole('button', { name: /Initialize Console/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText('Invalid administrative credentials.')).toBeInTheDocument();
-      expect(mockPush).not.toHaveBeenCalled();
-    });
-  });
-});
 </file>
 
 <file path="frontend/src/app/page.tsx">
@@ -15366,6 +15337,33 @@ class NotificationThrottle(SQLModel, table=True):
     )
 </file>
 
+<file path="backend/app/models/pageview.py">
+# backend/app/models/pageview.py
+from typing import Optional, TYPE_CHECKING
+from datetime import datetime, timezone
+from uuid import UUID, uuid4
+from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
+
+if TYPE_CHECKING:
+    from app.models.visit import Visit
+
+class PageView(SQLModel, table=True):
+    __tablename__ = "page_view"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    client_id: UUID = Field(foreign_key="client.id", index=True)
+    visit_id: UUID = Field(foreign_key="visit.id", index=True)
+    url_path: str = Field(index=True)
+    referrer: Optional[str] = Field(default=None)
+    duration: int = Field(default=0)
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
+
+    visit: Optional["Visit"] = Relationship(back_populates="page_views")
+</file>
+
 <file path="backend/async_migrations/env.py">
 from logging.config import fileConfig
 
@@ -15471,6 +15469,46 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
+</file>
+
+<file path="backend/pyproject.toml">
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.18.4",
+    "apscheduler>=3.11.2",
+    "asyncpg>=0.31.0",
+    "beautifulsoup4>=4.14.3",
+    "cachetools>=7.0.5",
+    "dotenv>=0.9.9",
+    "fastapi-users[sqlalchemy]>=15.0.5",
+    "fastapi[all,standard]>=0.128.7",
+    "greenlet>=3.3.1",
+    "httpx>=0.28.1",
+    "httpx-oauth>=0.17.0",
+    "notion-client>=3.0.0",
+    "passlib[bcrypt]>=1.7.4",
+    "psycopg2-binary>=2.9.11",
+    "pyairtable>=3.3.0",
+    "pydantic-settings>=2.12.0",
+    "python-jose[cryptography]>=3.5.0",
+    "python-multipart>=0.0.22",
+    "redis>=8.0.0",
+    "reportlab>=4.5.1",
+    "resend>=2.26.0",
+    "sqlmodel>=0.0.32",
+    "uvicorn[standard]>=0.40.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "pytest-asyncio>=1.4.0",
+]
 </file>
 
 <file path="backend/reset_db.py">
@@ -16567,6 +16605,176 @@ async def sync_to_notion(prospect_data: Dict[str, Any], journey: Dict[str, Any])
                 logger.error(f"❌ Notion Sync Failed ({response.status_code}): {response.text}")
         except Exception as e:
             logger.error(f"🚨 Notion Transport Error: {e}")
+</file>
+
+<file path="frontend/src/app/login/login.test.tsx">
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import LoginPage from './page';
+
+// Mock next/navigation
+const mockPush = jest.fn();
+const mockGet = jest.fn().mockReturnValue(null);
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+  }),
+  useSearchParams: () => ({
+    get: mockGet,
+  }),
+}));
+
+jest.mock('@/lib/utils', () => ({
+  ...jest.requireActual('@/lib/utils'),
+  navigateToUrl: jest.fn(),
+}));
+
+describe('LoginPage Component Tests', () => {
+  let cookieVal = '';
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    cookieVal = '';
+    Object.defineProperty(document, 'cookie', {
+      get: () => cookieVal,
+      set: (val) => {
+        cookieVal = val;
+      },
+      configurable: true,
+    });
+    global.fetch = jest.fn();
+  });
+
+  test('renders login form elements correctly', () => {
+    render(<LoginPage />);
+    
+    expect(screen.getByText('AuraHQ Portal')).toBeInTheDocument();
+    expect(screen.getByText('Login with Google')).toBeInTheDocument();
+    expect(screen.getByLabelText(/System Username/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Security Key/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Initialize Console/i })).toBeInTheDocument();
+  });
+
+  test('handles successful credentials login with redirect', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({}),
+    });
+
+    render(<LoginPage />);
+
+    fireEvent.change(screen.getByPlaceholderText('admin'), { target: { value: 'admin' } });
+    fireEvent.change(screen.getByPlaceholderText('••••••••••••'), { target: { value: 'secretkey' } });
+    
+    fireEvent.click(screen.getByRole('button', { name: /Initialize Console/i }));
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/auth/login'),
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: expect.any(URLSearchParams),
+        })
+      );
+    });
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith('/aurahq/dashboard');
+    });
+  });
+
+  test('handles successful 204 No Content login with redirect', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      status: 204,
+    });
+
+    render(<LoginPage />);
+
+    fireEvent.change(screen.getByPlaceholderText('admin'), { target: { value: 'admin' } });
+    fireEvent.change(screen.getByPlaceholderText('••••••••••••'), { target: { value: 'secretkey' } });
+    
+    fireEvent.click(screen.getByRole('button', { name: /Initialize Console/i }));
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/auth/login'),
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: expect.any(URLSearchParams),
+        })
+      );
+    });
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith('/aurahq/dashboard');
+    });
+  });
+
+  test('handles Login with Google button click', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ authorization_url: 'https://accounts.google.com/o/oauth2/auth?state=123' }),
+    });
+
+    const { navigateToUrl } = require('@/lib/utils');
+
+    render(<LoginPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Login with Google/i }));
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/auth/google/authorize?redirect_uri=')
+      );
+    });
+
+    await waitFor(() => {
+      expect(navigateToUrl).toHaveBeenCalledWith('https://accounts.google.com/o/oauth2/auth?state=123');
+    });
+  });
+
+
+  test('handles login failure and displays error alert', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+    });
+
+    render(<LoginPage />);
+
+    fireEvent.change(screen.getByPlaceholderText('admin'), { target: { value: 'admin' } });
+    fireEvent.change(screen.getByPlaceholderText('••••••••••••'), { target: { value: 'wrongkey' } });
+    
+    fireEvent.click(screen.getByRole('button', { name: /Initialize Console/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Invalid administrative credentials.')).toBeInTheDocument();
+      expect(mockPush).not.toHaveBeenCalled();
+    });
+  });
+
+  test('prevents default form submission event behavior', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({}),
+    });
+
+    render(<LoginPage />);
+
+    const form = screen.getByPlaceholderText('admin').closest('form');
+    expect(form).toBeInTheDocument();
+
+    const preventDefaultSpy = jest.spyOn(Event.prototype, 'preventDefault');
+    fireEvent.submit(form!);
+
+    expect(preventDefaultSpy).toHaveBeenCalled();
+    preventDefaultSpy.mockRestore();
+  });
+});
 </file>
 
 <file path="frontend/src/components/consent-banner/consent-banner.tsx">
@@ -18356,412 +18564,6 @@ async def cleanup_unverified_visits():
             logger.error(f"🚨 Janitor Failure: {e}")
 </file>
 
-<file path="backend/pyproject.toml">
-[project]
-name = "backend"
-version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
-    "alembic>=1.18.4",
-    "apscheduler>=3.11.2",
-    "asyncpg>=0.31.0",
-    "beautifulsoup4>=4.14.3",
-    "cachetools>=7.0.5",
-    "dotenv>=0.9.9",
-    "fastapi-users[sqlalchemy]>=15.0.5",
-    "fastapi[all,standard]>=0.128.7",
-    "greenlet>=3.3.1",
-    "httpx>=0.28.1",
-    "httpx-oauth>=0.17.0",
-    "notion-client>=3.0.0",
-    "passlib[bcrypt]>=1.7.4",
-    "psycopg2-binary>=2.9.11",
-    "pyairtable>=3.3.0",
-    "pydantic-settings>=2.12.0",
-    "python-jose[cryptography]>=3.5.0",
-    "python-multipart>=0.0.22",
-    "redis>=8.0.0",
-    "reportlab>=4.5.1",
-    "resend>=2.26.0",
-    "sqlmodel>=0.0.32",
-    "uvicorn[standard]>=0.40.0",
-]
-
-[dependency-groups]
-dev = [
-    "pytest>=9.0.3",
-    "pytest-asyncio>=1.4.0",
-]
-</file>
-
-<file path="docs/spec-sheet.md">
-# 🏗️ Technical Specification: Industrial Intelligence Engine (v2.0)
-
-> [!WARNING]
-> **Proprietary Software Notice:** This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited. All rights reserved.
-
-**Project Goal:** To build a privacy-first, B2B intent tracking and sales intelligence system that deanonymizes SADC corporate website traffic and routes High-Intent leads to industrial clients.
-
-**Core Stack:** Next.js 14+ App Router, FastAPI (Python 3.12), SQLModel, PostgreSQL (Neon Serverless + RLS), Redis, Cloudflare R2, PayGenius API, Resend.
-
----
-
-## 1. System Architecture Overview
-
-The system follows a high-performance **Decoupled Monolith** architecture:
-
-```mermaid
-graph TD
-    A[Forensic Tracker: aura.js] -->|Telemetry Ingestion| B[FastAPI Core API Engine]
-    B -->|Neon Serverless Storage| C[PostgreSQL Database with RLS]
-    B -->|Caching & Throttling| D[Redis Cache]
-    E[Next.js App Portal] -->|Client & Admin Views| B
-    F[PayGenius API] -->|Checkout Webhooks| B
-```
-
-### 1.1 The Three Pillars
-1. **The Edge (Forensic Tracker):** A lightweight (`<1KB`) script hosted via Cloudflare R2 with optimized caching (`max-age=86400`). Features an offline cache (`AuraOfflineQueue`) built on IndexedDB to handle network dropouts in SADC mining/manufacturing districts.
-2. **The Core (FastAPI Engine):** An async Python server handling high-volume ingestion, enrichment, RLS authentication context, billing hook validation, and reporting tasks.
-3. **The Interface (Web Portal):** An App Router Next.js dashboard containing client analytics, onboarding funnels, and internal administrative controls.
-
----
-
-## 2. Legal Topography (Two-Tier POPIA Identity Model)
-
-To guarantee compliance with the South African Protection of Personal Information Act (POPIA), data subjects are processed across two strict logical boundaries:
-
-| Feature / Metric | Tier 1: The Juristic Layer | Tier 2: The Personal Layer |
-| --- | --- | --- |
-| **Data Subject Class** | Juristic Persons (Companies, Mines, Corporations) | Natural Persons (Individual human visitors) |
-| **Core Elements** | Company Name, Domain, Industry, City/Region, ASNs | First/Last Name, Personal Email, Direct Phone, Clear Fingerprints |
-| **POPIA Status** | Legitimate Business Interest (No upfront consent required) | Explicit Opt-In Gated (Consent mandatory) |
-| **Retention Window** | Permanent, immutable ledger tracking | 48-Hour conditional window (Scrubbed if unverified) |
-| **Janitor Execution** | Protected from scrubbing cascades | Automatically anonymized/zeroed out if unverified |
-| **Enrichment Triggers** | Immediate asynchronous IPinfo + Apollo extraction | Gated until prospect form submission or manual banner opt-in |
-
----
-
-## 3. Persistent Database Schema (SQLModel Models)
-
-The following database models specify the schema layout implemented via SQLModel abstractions:
-
-### 3.1 Client & Subscription Management
-```python
-from enum import Enum
-from typing import Optional, List, Any
-from datetime import datetime, timezone
-from uuid import UUID, uuid4
-from sqlmodel import SQLModel, Field, Column, DateTime
-from sqlalchemy import ARRAY, String, JSON
-
-class ClientCategory(str, Enum):
-    INDUSTRIAL = "industrial"
-    COMMERCIAL = "commercial"
-
-class SubscriptionStatus(str, Enum):
-    TRIAL = "trial"
-    ACTIVE = "active"
-    SUSPENDED = "suspended"
-
-class ClientBase(SQLModel):
-    company_name: str = Field(index=True)
-    domain: Optional[str] = Field(default=None, index=True, nullable=True)
-    whitelisted_domains: List[str] = Field(
-        default=[],
-        sa_column=Column(ARRAY(String).with_variant(JSON, "sqlite"), nullable=False)
-    )
-    category: ClientCategory = Field(default=ClientCategory.COMMERCIAL)
-    client_product_description: str = Field(default="")
-    subscription_status: SubscriptionStatus = Field(default=SubscriptionStatus.SUSPENDED)
-    payment_plan: str = Field(default="monthly")
-    setup_fee_paid: bool = Field(default=False)
-    contract_signed_at: Optional[datetime] = Field(
-        default=None,
-        sa_column=Column(DateTime(timezone=True), nullable=True)
-    )
-    payment_provider_id: Optional[str] = Field(default=None, nullable=True)
-    is_active: bool = Field(default=False)
-    collect_personal_data: bool = Field(default=False)
-    require_consent_banner: bool = Field(default=False)
-
-    def __init__(self, **data: Any):
-        domain = data.get("domain")
-        whitelisted = data.get("whitelisted_domains")
-        if domain and not whitelisted:
-            data["whitelisted_domains"] = [domain]
-        elif whitelisted and not domain:
-            data["domain"] = whitelisted[0]
-        super().__init__(**data)
-
-class Client(ClientBase, table=True):
-    __tablename__ = "client"
-    
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
-        sa_column=Column(DateTime(timezone=True), nullable=False)
-    )
-    auto_classified_at: Optional[datetime] = Field(
-        default=None,
-        sa_column=Column(DateTime(timezone=True), nullable=True)
-    )
-```
-
-### 3.2 Enterprise Directory Core
-```python
-class Company(SQLModel, table=True):
-    __tablename__ = "company"
-    
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    domain: str = Field(index=True)
-    company_name: str = Field(index=True)
-    industry: Optional[str] = Field(default=None, index=True)
-    parent_company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", nullable=True)
-    is_headquarters: bool = Field(default=False)
-    intent_summary: Optional[str] = Field(default=None, nullable=True)
-    last_enrichment_attempt: Optional[datetime] = Field(default=None, nullable=True)
-    cipc_verified: bool = Field(default=False)
-    cipc_registration_number: Optional[str] = Field(default=None, nullable=True)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class Department(SQLModel, table=True):
-    __tablename__ = "department"
-    
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    company_id: UUID = Field(foreign_key="company.id", index=True)
-    contact_name: str
-    role_title: str = Field(index=True)
-    email: str
-    phone: Optional[str] = Field(default=None)
-    linkedin_url: Optional[str] = Field(default=None)
-    priority_score: int = Field(default=1, ge=1, le=5, index=True)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-```
-
-### 3.3 Multi-Tenant Interaction Telemetry (RLS Gated)
-```python
-class VerificationStatus(str, Enum):
-    VERIFYING = "verifying"
-    VERIFIED = "verified"
-    ANONYMIZED_CORPORATE = "anonymized_corporate"
-
-class Visit(SQLModel, table=True):
-    __tablename__ = "visit"
-    
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    client_id: UUID = Field(index=True)
-    company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", index=True, nullable=True)
-    aura_id: str = Field(index=True)
-    ip_address: str = Field(index=True)
-    connection_type: str = Field(default="corporate")
-    is_b2b: bool = Field(default=True, index=True)
-    high_intent: bool = Field(default=False, index=True)
-    verification_status: VerificationStatus = Field(default=VerificationStatus.VERIFYING, index=True)
-    is_consented: bool = Field(default=False, index=True)
-    fingerprint_hash: Optional[str] = Field(default=None, index=True, nullable=True)
-    duration: int = Field(default=0)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class PageView(SQLModel, table=True):
-    __tablename__ = "page_view"
-    
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    client_id: UUID = Field(index=True)
-    visit_id: UUID = Field(foreign_key="visit.id", index=True)
-    url_path: str = Field(index=True)
-    referrer: Optional[str] = Field(default=None)
-    duration: int = Field(default=0)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-```
-
----
-
-## 4. Edge Telemetry Loop & Interactive Layout Phases
-
-### 4.1 Script Delivery & Caching
-* Compiles down to `<1KB` using the Terser package pipeline.
-* Served from optimized CDN buckets with `Cache-Control` headers set to `public, max-age=86400`.
-* Local caching via `AuraOfflineQueue` on **IndexedDB** keeps telemetry intact when cellular networks in industrial zones drop out, syncing back on connection recovery.
-
-### 4.2 The 4 Interactive Capture Phases
-* **Phase 01:** 2.5-second initial delay triggers a subtle bottom-right slide-in prompting enterprise email input.
-* **Phase 02:** Crossing a **50% scrolling ceiling** on technical specification sheets transforms the banner into a multi-column role/phone acquisition slide.
-* **Phase 03:** Upward mouse acceleration triggers **exit-intent pop-ups** offering specialized parameter calculations.
-* **Phase 04:** Fetching high-value schematics, blueprints, or CAD models prompts a strict download gate, forcing corporate email validation before releasing assets.
-
----
-
-## 5. API Contract & Core Logic
-
-### 5.1 Public Ingestion Protocols
-* `POST /v1/track/entry`
-  * **Input:** `{client_id, url_path, referrer, screen_res}`
-  * **Process:** Verifies active subscriber status, maps network topologies, queries IPinfo asynchronously for new IPs, and creates `Visit` session entries.
-* `POST /v1/track/exit`
-  * **Input:** `{aura_id, duration, client_id, has_downloaded_asset}`
-  * **Process:** Updates `PageView` dwell timings. Integrates the unconsented juristic loop (`track.py`) to bypass personal consent gates on purely company data:
-  ```python
-  lead = await get_lead_by_aura_id(payload.aura_id, session)
-  company = await get_company_by_aura_id(payload.aura_id, session)
-  
-  if not lead and company:
-      journey = await get_visitor_journey(payload.aura_id, session)
-      if payload.total_duration >= 15 or payload.has_downloaded_asset:
-          await handle_juristic_only_alert(company, journey, payload.client_id)
-      return {"status": "processed_juristic"}
-  ```
-
-### 5.2 Janitor Selective Anonymization Cascade (`janitor.py`)
-To comply with POPIA's natural person constraints, unconsented Tier 2 metrics are purged while Tier 1 B2B aggregates are permanently kept:
-```python
-async def execute_janitor_scrub_cascade(session: AsyncSession):
-    time_threshold = datetime.now(timezone.utc) - timedelta(hours=48)
-    stmt = (
-        update(Visit)
-        .where(Visit.is_consented == False)
-        .where(Visit.verification_status == VerificationStatus.VERIFYING)
-        .where(Visit.created_at < time_threshold)
-        .values(
-            email=None,
-            visitor_name=None,
-            fingerprint_hash=None,
-            verification_status=VerificationStatus.ANONYMIZED_CORPORATE,
-            updated_at=datetime.now(timezone.utc)
-        )
-    )
-    await session.execute(stmt)
-    await session.commit()
-```
-
----
-
-## 6. Financial Onboarding & Tenant Isolation
-
-### 6.1 Onboarding Pipeline
-1. Client checkout is processed via **PayGenius API** integration.
-2. Webhooks received at `/api/v1/webhook/paygenius` launch background tasks.
-3. Compiles a customized formal Service Agreement PDF using `reportlab`, cryptographically signs it, and sends it via **Resend** alongside onboarding setup scripts.
-
-### 6.2 Database Tenant Isolation (RLS)
-PostgreSQL enforces strict Row-Level Security rules to isolate interaction data between tenants:
-```sql
-ALTER TABLE visit ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY tenant_isolation_policy ON visit
-FOR ALL
-USING (client_id = current_setting('app.current_client_id', True)::uuid);
-```
-
----
-
-## 7. Hosting & Deployment Topology
-
-* **FastAPI Core Service:** Run in Docker (`python:3.12-slim`) deployed to a **Railway Starter Plane** instance to circumvent scale-to-zero telemetry cold starts.
-* **Database Cluster:** Deployed on **Neon Serverless PostgreSQL** infrastructure.
-* **Notifications:** Slack real-time alerts fire on High-Intent milestones, gated by an hourly throttle (`NotificationThrottle` model) permitting a maximum of 1 notification per hour per company entity.
-
----
-
-## 8. Video Sales Letter (VSL) Funnel Specification (Phase 10)
-
-A dedicated, distraction-free `/vsl` landing page featuring an optimized ImageKit-hosted HTML5 video player.
-
-- **Delayed Reveal**: Hides all conversion elements ("Book Demo" CTA and micro-copy) until playback ends. Uses Framer Motion for entrance animations.
-- **Subtle Navigation**: Replaces global header/footer with a minimal "Go Back" button.
-- **Playback Telemetry**: Sends telemetry pings to `POST /api/v1/track/intent` at 25%, 50%, 75%, and 100% completion milestones.
-- **Warm Abandonment**: Triggers a 10-second timer after playback ends. If the CTA is not clicked within 10 seconds, pings the backend with `vsl_abandoned=True`.
-- **Intelligence Routing**: Sends real-time Slack alerts to `#prospects` if a known company completes the VSL.
-
----
-
-## 9. Advanced Banner Data Flow & Entity Stitching Specification (Phase 11)
-
-Enhance telemetry multi-tenancy and data isolation, execute immediate firmographic enrichment, and resolve entities deterministically with DeepSeek fallbacks.
-
-- **Multi-Tenancy Isolation**: Explicitly support `client_id` on telemetry records (Visit, Company, Prospect) with scoped queries for tenant sandboxing.
-- **Immediate Enrichment Dispatch**: Submit immediate IPinfo/Apollo enrichment tasks as background tasks on banner submission rather than batch queues.
-- **Deterministic Entity Stitching with DeepSeek Fallback**: 
-  - 1st Tier: Substring match check between user company name and enriched company name.
-  - 2nd Tier: Fast DeepSeek JSON prompting to evaluate entity sameness and verify if the enriched company is actually an ISP.
-  - 3rd Tier: ISP Discarding. If the enriched entity is classified as an ISP, promote the user-provided name to the head entity instead.
-- **Real-Time Surge Alerting**: Monitor cluster density. If 3 or more unique forensic IDs from the same company visit within a predefined window, fire an immediate "Account Surge" alert to the client.
-
----
-
-## 10. Provisioning Dashboard & Admin Console (Phase 13)
-
-Phase 13 establishes the internal console for managing multi-tenant client deployments, administrative authentication via JSON Web Tokens (JWT), high-speed configuration handshakes using a fallback-resilient two-tier cache, and visual installation/telemetry verification.
-
-### 10.1 Multi-Tenant Client Ledger (Client Model)
-* Extends the `Client` table with list-based `whitelisted_domains` arrays (PostgreSQL `ARRAY` datatype with a fallback to `JSON` for SQLite tests).
-* Adds a constructor override on instantiation to preserve backward compatibility, translating the legacy singular `domain` string to `whitelisted_domains` arrays, and vice versa.
-* Includes flags `require_consent_banner` and `collect_personal_data` to govern edge tracker configurations.
-
-### 10.2 Admin Authentication (FastAPI-Users & Google OAuth)
-* **Auth Backend & Transport**: Authentication is powered by `FastAPI-Users` using `CookieTransport` (storing the JWT session in the HttpOnly `aurahq_auth` cookie).
-* **Google OAuth Handshake**: Integrates `httpx-oauth` to expose `/api/v1/auth/google/authorize` and `/api/v1/auth/google/callback`, mapping Google profiles to backend database records.
-* **Token Protection**: FastAPI endpoints are protected via `get_current_admin` dependencies checking active user sessions, with a backward-compatible fallback decoding legacy Bearer JWT signatures.
-* **Routing Middleware**: Next.js custom middleware guards all `/aurahq/*` routes, checking the presence of a secure `aurahq_auth` cookie and redirecting unauthenticated visitors to `/login` (supporting automatic redirects from legacy `/admin/*` and `/dashboard/*` paths).
-
-
-### 10.3 Two-Tier High-Speed Config Cache
-* **Tier 1 (Redis)**: Tries to read/write JSON-serialized client configurations from a Redis instance for sub-millisecond edge resolution.
-* **Tier 2 (In-Memory Fallback)**: Automatically falls back to a Python LRU cache (`cachetools.TTLCache`) with a 5-minute TTL if Redis is offline or unreachable. Connection failures degrade silently without raising HTTP 500 errors.
-* **Config Resolution Route**: `GET /v1/clients/config` resolves matching client whitelisted domains against request origins to authorize tracking handshakes.
-
-### 10.4 Snippet Generation & Verification Console
-* **Administration Panel**: High-fidelity dark mode dashboard with active tenant switcher, client registration modal, and live leads feed.
-* **Copy Deployment Snippet**: Modal dynamically interpolates the registered client UUID into a production HTML script tag, with a copy-to-clipboard mechanism.
-* **Telemetry Verification Indicator**: Active status component polls `GET /api/v1/clients/{client_id}/verify` to trace visits linked to the tenant UUID. Once a visit is detected, the status transitions to "Installed & Active" and triggers a leads table refresh.
-
----
-
-## 11. Phase 14: Payment Gateway Integration Specifications
-* **Database Ledger**: Integrates `Transaction` model tracking payment intents, currencies, status enums, and references. Extends `Client` model with payment tokens.
-* **Ikhokha Gateway Integration**: Integrates Ikhokha custom checkout setup endpoint `POST /api/v1/billing/setup` and signature/HMAC webhook verification at `POST /api/v1/webhooks/ikhokha`.
-* **Billing Administration**: Next.js admin view displaying current ledger status, monthly billing amount overrides, and billing trigger tests.
-
----
-
-## 12. Phase 15: Automated Checkout, Proration & Trial Specifications
-* **Trial Period Management**: Clients initialize with a standard 14-day trial period (`trial_ends_at`). Includes background warning emails dispatched 48 hours prior to trial expiration.
-* **Proration Mathematics Engine**: Implements early, mid, and late-month calculation strategies mapping pro-rata charges on subscription changes or setup phases.
-* **Grace Period & Collection Cron**: Automated cron executor triggering monthly billing transactions and managing grace-period suspension boundaries.
-
----
-
-## 13. Phase 16: Frontend Integration & UI Overhaul Specifications
-* **Edge Tracker CDN Integration**: Public page layout embeds a unified `<script src="https://cdn.auraworks.co.za/aura.js" ...>` tracking tag.
-* **Global VSL CTA Migration**: Converts all booking and pricing CTAs into Watch Video links pointing directly to the `/vsl` path.
-* **Quiet Premium Theme Partitioning**: Public views render exclusively in light mode, stripping all dark-mode selectors to establish a premium clean design.
-* **Edge Telemetry Robustness**: Implements event payload relaxation supporting dynamic client-side variables, cookie apex domain scopes, and offline request retries.
-
----
-
-## 14. Phase 17: Database State Recovery Specifications
-* **Alembic History Reset**: Clears corrupted/tangled migration folders and establishes a single consolidated baseline migration (`ed255488d937_phase_17_baseline.py`) mapping all SQLAlchemy/SQLModel models.
-* **RLS In-Migration Configuration**: Integrates PostgreSQL Row-Level Security policy initialization strings natively in the baseline migration upgrade block.
-* **Resilient Container Boot**: Wraps Alembic migration runs in a startup wrapper to prevent boot crashes if database configurations are out-of-sync.
-* **Superuser Seeder**: Implements `seed_admin.py` utilizing `UserManager` to securely hash and register the default superuser credentials.
-
----
-
-## 15. Phase 18: Full-Stack Authentication & Security Overhaul Specifications
-* **Cookie Transport Deprecation**: Deprecates insecure legacy JWT token checks, enforcing cookie-only session management via FastAPI-Users HttpOnly cookies.
-* **Dual-Login Case Insensitivity**: Queries users using case-insensitive SQL matching, resolving authentications by either email or custom usernames.
-* **Tenant Authorization Gates**: Scopes multi-tenant data routes to verify that the authenticated administrator possesses permissions mapping to the requested `client_id`.
-
----
-
-## 16. Phase 19: Alembic Hard Reset & Database Initialization Specifications
-* **Master Baseline Consolidation**: Replaces historical migrations with a single autogenerated master migration script capturing the complete SQLModel schema.
-* **RLS Policy Deployment**: Deploys Row-Level Security policies restricting interactions on multitenant tables (visit, page_view, prospect, company) matching the request-scoped `current_client_id` context.
-* **Programmatic Initialization & Seeding**: Applies database schemas to a blank state and invokes the admin seeder to initialize the default `ReitumetseF` account securely.
-</file>
-
 <file path="tracker/src/public/aura.js">
 /**
  * AuraWorks Industrial Intelligence Engine - Decoupled Edge Tracker
@@ -19374,264 +19176,23 @@ Phase 13 establishes the internal console for managing multi-tenant client deplo
 })();
 </file>
 
-<file path="backend/app/models/pageview.py">
-# backend/app/models/pageview.py
-from typing import Optional, TYPE_CHECKING
-from datetime import datetime, timezone
-from uuid import UUID, uuid4
-from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
+<file path="backend/app/models/__init__.py">
+# backend/app/models/__init__.py
+from .client import Client, ClientCategory, SubscriptionStatus
+from .company import Company
+from .department import Department
+from .visit import Visit, VerificationStatus
+from .pageview import PageView
+from .prospect import Prospect
+from .enrichment_queue import EnrichmentQueue, FailedEnrichment, QueueType
+from .notification_throttle import NotificationThrottle
+from .crm_dead_letter import CrmDeadLetter
+from .inbound_message import InboundMessage, MessageStatus
+from .transaction import Transaction, TransactionStatus
+from .admin_user import AdminUser
+from .user import User, OAuthAccount
 
-if TYPE_CHECKING:
-    from app.models.visit import Visit
-
-class PageView(SQLModel, table=True):
-    __tablename__ = "page_view"
-    
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    client_id: UUID = Field(foreign_key="client.id", index=True)
-    visit_id: UUID = Field(foreign_key="visit.id", index=True)
-    url_path: str = Field(index=True)
-    referrer: Optional[str] = Field(default=None)
-    duration: int = Field(default=0)
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
-        sa_column=Column(DateTime(timezone=True), nullable=False)
-    )
-
-    visit: Optional["Visit"] = Relationship(back_populates="page_views")
-</file>
-
-<file path="frontend/src/app/login/page.tsx">
-"use client";
-
-import React, { useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Shield, Lock, User, AlertTriangle, ArrowRight } from 'lucide-react';
-import { navigateToUrl } from '@/lib/utils';
-
-function LoginForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  
-  const [emailOrUsername, setEmailOrUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
-  const handleGoogleLogin = async () => {
-    setError('');
-    try {
-      const redirectUri = `${window.location.origin}/login/callback`;
-      const authorizeUrl = `${API_BASE.replace(/\/$/, '')}/api/v1/auth/google/authorize?redirect_uri=${encodeURIComponent(redirectUri)}`;
-      
-      const res = await fetch(authorizeUrl);
-      if (!res.ok) {
-        throw new Error('Failed to initialize Google authentication handshake.');
-      }
-      
-      const data = await res.json();
-      if (data.authorization_url) {
-        navigateToUrl(data.authorization_url);
-      } else {
-        throw new Error('Authorization URL missing in response payload.');
-      }
-    } catch (err: any) {
-      setError(err.message || 'An error occurred initiating Google login.');
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    const form = e.currentTarget;
-    const usernameEl = (
-      form.elements.namedItem('username') || 
-      form.elements.namedItem('email') || 
-      document.getElementById('username') || 
-      document.getElementById('email')
-    ) as HTMLInputElement | null;
-    
-    const passwordEl = (
-      form.elements.namedItem('password') || 
-      document.getElementById('password')
-    ) as HTMLInputElement | null;
-
-    const targetUsername = usernameEl ? usernameEl.value : emailOrUsername;
-    const targetPassword = passwordEl ? passwordEl.value : password;
-
-    try {
-      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({ username: targetUsername, password: targetPassword }),
-      });
-
-      if (!res.ok) {
-        let errorMsg = 'Invalid administrative credentials.';
-        try {
-          const errorData = await res.json();
-          console.error("Auth Failure Detail:", errorData.detail);
-          if (errorData && errorData.detail) {
-            errorMsg = errorData.detail;
-          }
-        } catch (e) {
-          // ignore parsing error, use default
-        }
-        throw new Error(errorMsg);
-      }
-
-      // FastAPI-Users login sets HttpOnly cookie "aurahq_auth" on success.
-      // Set dummy localStorage tokens for backward compatibility if components check them
-      localStorage.setItem('admin_token', 'session_cookie_active');
-      localStorage.setItem('admin_refresh_token', 'session_cookie_active');
-
-      const redirectPath = searchParams.get('from') || '/aurahq/dashboard';
-      router.push(redirectPath);
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-[#070708] text-zinc-100 font-sans px-4 overflow-hidden relative">
-      {/* Background Decorative Elements */}
-      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-indigo-500/5 blur-[150px]" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-amber-500/5 blur-[150px]" />
-      
-      <div className="w-full max-w-md z-10">
-        {/* Brand Header */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="h-12 w-12 rounded-xl bg-zinc-900 border border-zinc-880 flex items-center justify-center text-zinc-100 shadow-[0_0_30px_rgba(99,102,241,0.15)] mb-4 animate-pulse">
-            <Shield className="h-6 w-6 text-indigo-400" />
-          </div>
-          <h1 className="text-xl font-light tracking-[0.2em] text-center uppercase">AuraHQ Portal</h1>
-          <p className="text-[10px] text-zinc-500 uppercase tracking-[0.3em] mt-1.5 font-semibold text-center">Administrative Command Gateway</p>
-        </div>
-
-        {/* Login Card */}
-        <div className="bg-[#0c0c0e]/80 border border-zinc-850 backdrop-blur-xl rounded-2xl p-8 shadow-2xl relative overflow-hidden group hover:border-zinc-800/80 transition-all duration-300">
-          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent" />
-          
-          <div className="space-y-6">
-            {/* Error Message */}
-            {error && (
-              <div className="flex items-start gap-3 p-3.5 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-400 leading-normal">
-                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            {/* Google Login Button */}
-            <button
-              type="button"
-              onClick={handleGoogleLogin}
-              className="w-full bg-[#0f0f11] hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-750 text-zinc-100 font-semibold text-[10px] uppercase tracking-widest py-3.5 rounded-lg transition-all duration-150 flex items-center justify-center gap-3 cursor-pointer"
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21.35,11.1H12v2.7h5.38c-0.24,1.28 -0.96,2.37 -2.04,3.1v2.58h3.3c1.93,-1.78 3.04,-4.4 3.04,-7.4C21.68,11.83 21.56,11.45 21.35,11.1z" fill="#4285F4" />
-                <path d="M12,20.6c2.43,0 4.47,-0.8 5.96,-2.18l-3.3,-2.58c-0.9,0.6 -2.07,0.98 -3.3,0.98 -2.34,0 -4.33,-1.58 -5.04,-3.7H2.92v2.66C4.4,18.88 8.02,20.6 12,20.6z" fill="#34A853" />
-                <path d="M6.96,13.2c-0.18,-0.54 -0.28,-1.12 -0.28,-1.7c0,-0.58 0.1,-1.16 0.28,-1.7V7.14H2.92C2.3,8.37 2,9.78 2,11.5c0,1.72 0.3,3.13 0.92,4.36L6.96,13.2z" fill="#FBBC05" />
-                <path d="M12,5.4c1.32,0 2.5,0.45 3.44,1.35l2.58,-2.58C16.46,2.72 14.43,2 12,2 8.02,2 4.4,3.72 2.92,6.7L6.96,9.36C7.67,7.24 9.66,5.4 12,5.4z" fill="#EA4335" />
-              </svg>
-              <span>Login with Google</span>
-            </button>
-
-            {/* Divider */}
-            <div className="relative flex items-center justify-center my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-zinc-850" />
-              </div>
-              <span className="relative px-3 text-[9px] uppercase tracking-widest text-zinc-650 bg-[#0c0c0e] font-bold">Or continue with credentials</span>
-            </div>
-
-            {/* Standard Credentials Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Username Input */}
-              <div className="space-y-2">
-                <label htmlFor="username" className="text-[10px] font-bold uppercase tracking-widest text-zinc-550 block">System Username</label>
-                <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
-                  <input 
-                    id="username"
-                    name="username"
-                    type="text"
-                    required
-                    placeholder="admin"
-                    value={emailOrUsername}
-                    onChange={(e) => setEmailOrUsername(e.target.value)}
-                    className="w-full bg-zinc-950/50 border border-zinc-850 focus:border-indigo-500/40 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none rounded-lg py-3 pl-11 pr-4 text-sm text-zinc-200 placeholder-zinc-700 transition-all"
-                  />
-                </div>
-              </div>
-
-              {/* Password Input */}
-              <div className="space-y-2">
-                <label htmlFor="password" className="text-[10px] font-bold uppercase tracking-widest text-zinc-550 block">Security Key</label>
-                <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
-                  <input 
-                    id="password"
-                    type="password"
-                    required
-                    placeholder="••••••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-zinc-950/50 border border-zinc-850 focus:border-indigo-500/40 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none rounded-lg py-3 pl-11 pr-4 text-sm text-zinc-200 placeholder-zinc-700 transition-all"
-                  />
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-semibold text-[10px] uppercase tracking-widest py-3.5 rounded-lg transition-all duration-150 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(79,70,229,0.2)] disabled:opacity-50 disabled:cursor-not-allowed group-hover:shadow-[0_0_25px_rgba(79,70,229,0.3)] cursor-pointer"
-              >
-                {loading ? (
-                  <>
-                    <div className="h-3.5 w-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                    <span>Authenticating...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Initialize Console</span>
-                    <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
-        </div>
-
-        {/* Footer info */}
-        <p className="text-center text-[10px] text-zinc-600 mt-8 leading-normal">
-          Authorized administrative access only.<br />
-          IP logs and terminal actions are cryptographically ledgered.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen bg-[#070708] text-zinc-100 font-sans px-4">
-        <div className="h-8 w-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-      </div>
-    }>
-      <LoginForm />
-    </Suspense>
-  );
-}
+# Do NOT include router logic here
 </file>
 
 <file path="backend/app/models/client.py">
@@ -20384,25 +19945,6 @@ async def post_cancellation_pending_to_slack(client_id: UUID, company_name: str)
             logger.error(f"🚨 post_cancellation_pending_to_slack Failure: {e}")
 </file>
 
-<file path="backend/app/models/__init__.py">
-# backend/app/models/__init__.py
-from .client import Client, ClientCategory, SubscriptionStatus
-from .company import Company
-from .department import Department
-from .visit import Visit, VerificationStatus
-from .pageview import PageView
-from .prospect import Prospect
-from .enrichment_queue import EnrichmentQueue, FailedEnrichment, QueueType
-from .notification_throttle import NotificationThrottle
-from .crm_dead_letter import CrmDeadLetter
-from .inbound_message import InboundMessage, MessageStatus
-from .transaction import Transaction, TransactionStatus
-from .admin_user import AdminUser
-from .user import User, OAuthAccount
-
-# Do NOT include router logic here
-</file>
-
 <file path="backend/app/services/intelligence.py">
 # backend/app/services/intelligence.py
 import httpx
@@ -20983,6 +20525,635 @@ async def resolve_entity_stitching(volunteered_name: str, enriched_name: str) ->
     return volunteered_name
 </file>
 
+<file path="frontend/src/app/login/page.tsx">
+"use client";
+
+import React, { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Shield, Lock, User, AlertTriangle, ArrowRight } from 'lucide-react';
+import { navigateToUrl } from '@/lib/utils';
+
+function LoginForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  const [emailOrUsername, setEmailOrUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+  const handleGoogleLogin = async () => {
+    setError('');
+    try {
+      const redirectUri = `${window.location.origin}/login/callback`;
+      const authorizeUrl = `${API_BASE.replace(/\/$/, '')}/api/v1/auth/google/authorize?redirect_uri=${encodeURIComponent(redirectUri)}`;
+      
+      const res = await fetch(authorizeUrl);
+      if (!res.ok) {
+        throw new Error('Failed to initialize Google authentication handshake.');
+      }
+      
+      const data = await res.json();
+      if (data.authorization_url) {
+        navigateToUrl(data.authorization_url);
+      } else {
+        throw new Error('Authorization URL missing in response payload.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'An error occurred initiating Google login.');
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    // Explicitly prevent default form submission at the very beginning to avoid page reloads
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    const form = e.currentTarget;
+    const usernameEl = (
+      form.elements.namedItem('username') || 
+      form.elements.namedItem('email') || 
+      document.getElementById('username') || 
+      document.getElementById('email')
+    ) as HTMLInputElement | null;
+    
+    const passwordEl = (
+      form.elements.namedItem('password') || 
+      document.getElementById('password')
+    ) as HTMLInputElement | null;
+
+    const targetUsername = usernameEl ? usernameEl.value : emailOrUsername;
+    const targetPassword = passwordEl ? passwordEl.value : password;
+
+    try {
+      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({ username: targetUsername, password: targetPassword }),
+      });
+
+      // Handle the redirect only if response is ok or explicitly a 204 status (success with no body)
+      if (res.ok || res.status === 204) {
+        // FastAPI-Users login sets HttpOnly cookie "aurahq_auth" on success.
+        // Set dummy localStorage tokens for backward compatibility if components check them
+        localStorage.setItem('admin_token', 'session_cookie_active');
+        localStorage.setItem('admin_refresh_token', 'session_cookie_active');
+
+        const redirectPath = searchParams.get('from') || '/aurahq/dashboard';
+        router.push(redirectPath);
+      } else {
+        let errorMsg = 'Invalid administrative credentials.';
+        // Do not attempt to parse JSON on 204 status responses to avoid crashes
+        if (res.status !== 204) {
+          try {
+            const errorData = await res.json();
+            console.error("Auth Failure Detail:", errorData.detail);
+            if (errorData && errorData.detail) {
+              errorMsg = errorData.detail;
+            }
+          } catch (e) {
+            // Ignore parsing error, fallback to default
+          }
+        }
+        throw new Error(errorMsg);
+      }
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-[#070708] text-zinc-100 font-sans px-4 overflow-hidden relative">
+      {/* Background Decorative Elements */}
+      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-indigo-500/5 blur-[150px]" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-amber-500/5 blur-[150px]" />
+      
+      <div className="w-full max-w-md z-10">
+        {/* Brand Header */}
+        <div className="flex flex-col items-center mb-8">
+          <div className="h-12 w-12 rounded-xl bg-zinc-900 border border-zinc-880 flex items-center justify-center text-zinc-100 shadow-[0_0_30px_rgba(99,102,241,0.15)] mb-4 animate-pulse">
+            <Shield className="h-6 w-6 text-indigo-400" />
+          </div>
+          <h1 className="text-xl font-light tracking-[0.2em] text-center uppercase">AuraHQ Portal</h1>
+          <p className="text-[10px] text-zinc-500 uppercase tracking-[0.3em] mt-1.5 font-semibold text-center">Administrative Command Gateway</p>
+        </div>
+
+        {/* Login Card */}
+        <div className="bg-[#0c0c0e]/80 border border-zinc-850 backdrop-blur-xl rounded-2xl p-8 shadow-2xl relative overflow-hidden group hover:border-zinc-800/80 transition-all duration-300">
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent" />
+          
+          <div className="space-y-6">
+            {/* Error Message */}
+            {error && (
+              <div className="flex items-start gap-3 p-3.5 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-400 leading-normal">
+                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Google Login Button */}
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              className="w-full bg-[#0f0f11] hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-750 text-zinc-100 font-semibold text-[10px] uppercase tracking-widest py-3.5 rounded-lg transition-all duration-150 flex items-center justify-center gap-3 cursor-pointer"
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21.35,11.1H12v2.7h5.38c-0.24,1.28 -0.96,2.37 -2.04,3.1v2.58h3.3c1.93,-1.78 3.04,-4.4 3.04,-7.4C21.68,11.83 21.56,11.45 21.35,11.1z" fill="#4285F4" />
+                <path d="M12,20.6c2.43,0 4.47,-0.8 5.96,-2.18l-3.3,-2.58c-0.9,0.6 -2.07,0.98 -3.3,0.98 -2.34,0 -4.33,-1.58 -5.04,-3.7H2.92v2.66C4.4,18.88 8.02,20.6 12,20.6z" fill="#34A853" />
+                <path d="M6.96,13.2c-0.18,-0.54 -0.28,-1.12 -0.28,-1.7c0,-0.58 0.1,-1.16 0.28,-1.7V7.14H2.92C2.3,8.37 2,9.78 2,11.5c0,1.72 0.3,3.13 0.92,4.36L6.96,13.2z" fill="#FBBC05" />
+                <path d="M12,5.4c1.32,0 2.5,0.45 3.44,1.35l2.58,-2.58C16.46,2.72 14.43,2 12,2 8.02,2 4.4,3.72 2.92,6.7L6.96,9.36C7.67,7.24 9.66,5.4 12,5.4z" fill="#EA4335" />
+              </svg>
+              <span>Login with Google</span>
+            </button>
+
+            {/* Divider */}
+            <div className="relative flex items-center justify-center my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-zinc-850" />
+              </div>
+              <span className="relative px-3 text-[9px] uppercase tracking-widest text-zinc-650 bg-[#0c0c0e] font-bold">Or continue with credentials</span>
+            </div>
+
+            {/* Standard Credentials Form */}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Username Input */}
+              <div className="space-y-2">
+                <label htmlFor="username" className="text-[10px] font-bold uppercase tracking-widest text-zinc-550 block">System Username</label>
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
+                  <input 
+                    id="username"
+                    name="username"
+                    type="text"
+                    required
+                    placeholder="admin"
+                    value={emailOrUsername}
+                    onChange={(e) => setEmailOrUsername(e.target.value)}
+                    className="w-full bg-zinc-950/50 border border-zinc-850 focus:border-indigo-500/40 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none rounded-lg py-3 pl-11 pr-4 text-sm text-zinc-200 placeholder-zinc-700 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Password Input */}
+              <div className="space-y-2">
+                <label htmlFor="password" className="text-[10px] font-bold uppercase tracking-widest text-zinc-550 block">Security Key</label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
+                  <input 
+                    id="password"
+                    type="password"
+                    required
+                    placeholder="••••••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full bg-zinc-950/50 border border-zinc-850 focus:border-indigo-500/40 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none rounded-lg py-3 pl-11 pr-4 text-sm text-zinc-200 placeholder-zinc-700 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-semibold text-[10px] uppercase tracking-widest py-3.5 rounded-lg transition-all duration-150 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(79,70,229,0.2)] disabled:opacity-50 disabled:cursor-not-allowed group-hover:shadow-[0_0_25px_rgba(79,70,229,0.3)] cursor-pointer"
+              >
+                {loading ? (
+                  <>
+                    <div className="h-3.5 w-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                    <span>Authenticating...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Initialize Console</span>
+                    <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {/* Footer info */}
+        <p className="text-center text-[10px] text-zinc-600 mt-8 leading-normal">
+          Authorized administrative access only.<br />
+          IP logs and terminal actions are cryptographically ledgered.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen bg-[#070708] text-zinc-100 font-sans px-4">
+        <div className="h-8 w-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
+  );
+}
+</file>
+
+<file path="docs/spec-sheet.md">
+# 🏗️ Technical Specification: Industrial Intelligence Engine (v2.0)
+
+> [!WARNING]
+> **Proprietary Software Notice:** This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited. All rights reserved.
+
+**Project Goal:** To build a privacy-first, B2B intent tracking and sales intelligence system that deanonymizes SADC corporate website traffic and routes High-Intent leads to industrial clients.
+
+**Core Stack:** Next.js 14+ App Router, FastAPI (Python 3.12), SQLModel, PostgreSQL (Neon Serverless + RLS), Redis, Cloudflare R2, PayGenius API, Resend.
+
+---
+
+## 1. System Architecture Overview
+
+The system follows a high-performance **Decoupled Monolith** architecture:
+
+```mermaid
+graph TD
+    A[Forensic Tracker: aura.js] -->|Telemetry Ingestion| B[FastAPI Core API Engine]
+    B -->|Neon Serverless Storage| C[PostgreSQL Database with RLS]
+    B -->|Caching & Throttling| D[Redis Cache]
+    E[Next.js App Portal] -->|Client & Admin Views| B
+    F[PayGenius API] -->|Checkout Webhooks| B
+```
+
+### 1.1 The Three Pillars
+1. **The Edge (Forensic Tracker):** A lightweight (`<1KB`) script hosted via Cloudflare R2 with optimized caching (`max-age=86400`). Features an offline cache (`AuraOfflineQueue`) built on IndexedDB to handle network dropouts in SADC mining/manufacturing districts.
+2. **The Core (FastAPI Engine):** An async Python server handling high-volume ingestion, enrichment, RLS authentication context, billing hook validation, and reporting tasks.
+3. **The Interface (Web Portal):** An App Router Next.js dashboard containing client analytics, onboarding funnels, and internal administrative controls.
+
+---
+
+## 2. Legal Topography (Two-Tier POPIA Identity Model)
+
+To guarantee compliance with the South African Protection of Personal Information Act (POPIA), data subjects are processed across two strict logical boundaries:
+
+| Feature / Metric | Tier 1: The Juristic Layer | Tier 2: The Personal Layer |
+| --- | --- | --- |
+| **Data Subject Class** | Juristic Persons (Companies, Mines, Corporations) | Natural Persons (Individual human visitors) |
+| **Core Elements** | Company Name, Domain, Industry, City/Region, ASNs | First/Last Name, Personal Email, Direct Phone, Clear Fingerprints |
+| **POPIA Status** | Legitimate Business Interest (No upfront consent required) | Explicit Opt-In Gated (Consent mandatory) |
+| **Retention Window** | Permanent, immutable ledger tracking | 48-Hour conditional window (Scrubbed if unverified) |
+| **Janitor Execution** | Protected from scrubbing cascades | Automatically anonymized/zeroed out if unverified |
+| **Enrichment Triggers** | Immediate asynchronous IPinfo + Apollo extraction | Gated until prospect form submission or manual banner opt-in |
+
+---
+
+## 3. Persistent Database Schema (SQLModel Models)
+
+The following database models specify the schema layout implemented via SQLModel abstractions:
+
+### 3.1 Client & Subscription Management
+```python
+from enum import Enum
+from typing import Optional, List, Any
+from datetime import datetime, timezone
+from uuid import UUID, uuid4
+from sqlmodel import SQLModel, Field, Column, DateTime
+from sqlalchemy import ARRAY, String, JSON
+
+class ClientCategory(str, Enum):
+    INDUSTRIAL = "industrial"
+    COMMERCIAL = "commercial"
+
+class SubscriptionStatus(str, Enum):
+    TRIAL = "trial"
+    ACTIVE = "active"
+    SUSPENDED = "suspended"
+
+class ClientBase(SQLModel):
+    company_name: str = Field(index=True)
+    domain: Optional[str] = Field(default=None, index=True, nullable=True)
+    whitelisted_domains: List[str] = Field(
+        default=[],
+        sa_column=Column(ARRAY(String).with_variant(JSON, "sqlite"), nullable=False)
+    )
+    category: ClientCategory = Field(default=ClientCategory.COMMERCIAL)
+    client_product_description: str = Field(default="")
+    subscription_status: SubscriptionStatus = Field(default=SubscriptionStatus.SUSPENDED)
+    payment_plan: str = Field(default="monthly")
+    setup_fee_paid: bool = Field(default=False)
+    contract_signed_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    payment_provider_id: Optional[str] = Field(default=None, nullable=True)
+    is_active: bool = Field(default=False)
+    collect_personal_data: bool = Field(default=False)
+    require_consent_banner: bool = Field(default=False)
+
+    def __init__(self, **data: Any):
+        domain = data.get("domain")
+        whitelisted = data.get("whitelisted_domains")
+        if domain and not whitelisted:
+            data["whitelisted_domains"] = [domain]
+        elif whitelisted and not domain:
+            data["domain"] = whitelisted[0]
+        super().__init__(**data)
+
+class Client(ClientBase, table=True):
+    __tablename__ = "client"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
+    auto_classified_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+```
+
+### 3.2 Enterprise Directory Core
+```python
+class Company(SQLModel, table=True):
+    __tablename__ = "company"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    domain: str = Field(index=True)
+    company_name: str = Field(index=True)
+    industry: Optional[str] = Field(default=None, index=True)
+    parent_company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", nullable=True)
+    is_headquarters: bool = Field(default=False)
+    intent_summary: Optional[str] = Field(default=None, nullable=True)
+    last_enrichment_attempt: Optional[datetime] = Field(default=None, nullable=True)
+    cipc_verified: bool = Field(default=False)
+    cipc_registration_number: Optional[str] = Field(default=None, nullable=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class Department(SQLModel, table=True):
+    __tablename__ = "department"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    company_id: UUID = Field(foreign_key="company.id", index=True)
+    contact_name: str
+    role_title: str = Field(index=True)
+    email: str
+    phone: Optional[str] = Field(default=None)
+    linkedin_url: Optional[str] = Field(default=None)
+    priority_score: int = Field(default=1, ge=1, le=5, index=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+```
+
+### 3.3 Multi-Tenant Interaction Telemetry (RLS Gated)
+```python
+class VerificationStatus(str, Enum):
+    VERIFYING = "verifying"
+    VERIFIED = "verified"
+    ANONYMIZED_CORPORATE = "anonymized_corporate"
+
+class Visit(SQLModel, table=True):
+    __tablename__ = "visit"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    client_id: UUID = Field(index=True)
+    company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", index=True, nullable=True)
+    aura_id: str = Field(index=True)
+    ip_address: str = Field(index=True)
+    connection_type: str = Field(default="corporate")
+    is_b2b: bool = Field(default=True, index=True)
+    high_intent: bool = Field(default=False, index=True)
+    verification_status: VerificationStatus = Field(default=VerificationStatus.VERIFYING, index=True)
+    is_consented: bool = Field(default=False, index=True)
+    fingerprint_hash: Optional[str] = Field(default=None, index=True, nullable=True)
+    duration: int = Field(default=0)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PageView(SQLModel, table=True):
+    __tablename__ = "page_view"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    client_id: UUID = Field(index=True)
+    visit_id: UUID = Field(foreign_key="visit.id", index=True)
+    url_path: str = Field(index=True)
+    referrer: Optional[str] = Field(default=None)
+    duration: int = Field(default=0)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+```
+
+---
+
+## 4. Edge Telemetry Loop & Interactive Layout Phases
+
+### 4.1 Script Delivery & Caching
+* Compiles down to `<1KB` using the Terser package pipeline.
+* Served from optimized CDN buckets with `Cache-Control` headers set to `public, max-age=86400`.
+* Local caching via `AuraOfflineQueue` on **IndexedDB** keeps telemetry intact when cellular networks in industrial zones drop out, syncing back on connection recovery.
+
+### 4.2 The 4 Interactive Capture Phases
+* **Phase 01:** 2.5-second initial delay triggers a subtle bottom-right slide-in prompting enterprise email input.
+* **Phase 02:** Crossing a **50% scrolling ceiling** on technical specification sheets transforms the banner into a multi-column role/phone acquisition slide.
+* **Phase 03:** Upward mouse acceleration triggers **exit-intent pop-ups** offering specialized parameter calculations.
+* **Phase 04:** Fetching high-value schematics, blueprints, or CAD models prompts a strict download gate, forcing corporate email validation before releasing assets.
+
+---
+
+## 5. API Contract & Core Logic
+
+### 5.1 Public Ingestion Protocols
+* `POST /v1/track/entry`
+  * **Input:** `{client_id, url_path, referrer, screen_res}`
+  * **Process:** Verifies active subscriber status, maps network topologies, queries IPinfo asynchronously for new IPs, and creates `Visit` session entries.
+* `POST /v1/track/exit`
+  * **Input:** `{aura_id, duration, client_id, has_downloaded_asset}`
+  * **Process:** Updates `PageView` dwell timings. Integrates the unconsented juristic loop (`track.py`) to bypass personal consent gates on purely company data:
+  ```python
+  lead = await get_lead_by_aura_id(payload.aura_id, session)
+  company = await get_company_by_aura_id(payload.aura_id, session)
+  
+  if not lead and company:
+      journey = await get_visitor_journey(payload.aura_id, session)
+      if payload.total_duration >= 15 or payload.has_downloaded_asset:
+          await handle_juristic_only_alert(company, journey, payload.client_id)
+      return {"status": "processed_juristic"}
+  ```
+
+### 5.2 Janitor Selective Anonymization Cascade (`janitor.py`)
+To comply with POPIA's natural person constraints, unconsented Tier 2 metrics are purged while Tier 1 B2B aggregates are permanently kept:
+```python
+async def execute_janitor_scrub_cascade(session: AsyncSession):
+    time_threshold = datetime.now(timezone.utc) - timedelta(hours=48)
+    stmt = (
+        update(Visit)
+        .where(Visit.is_consented == False)
+        .where(Visit.verification_status == VerificationStatus.VERIFYING)
+        .where(Visit.created_at < time_threshold)
+        .values(
+            email=None,
+            visitor_name=None,
+            fingerprint_hash=None,
+            verification_status=VerificationStatus.ANONYMIZED_CORPORATE,
+            updated_at=datetime.now(timezone.utc)
+        )
+    )
+    await session.execute(stmt)
+    await session.commit()
+```
+
+---
+
+## 6. Financial Onboarding & Tenant Isolation
+
+### 6.1 Onboarding Pipeline
+1. Client checkout is processed via **PayGenius API** integration.
+2. Webhooks received at `/api/v1/webhook/paygenius` launch background tasks.
+3. Compiles a customized formal Service Agreement PDF using `reportlab`, cryptographically signs it, and sends it via **Resend** alongside onboarding setup scripts.
+
+### 6.2 Database Tenant Isolation (RLS)
+PostgreSQL enforces strict Row-Level Security rules to isolate interaction data between tenants:
+```sql
+ALTER TABLE visit ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation_policy ON visit
+FOR ALL
+USING (client_id = current_setting('app.current_client_id', True)::uuid);
+```
+
+---
+
+## 7. Hosting & Deployment Topology
+
+* **FastAPI Core Service:** Run in Docker (`python:3.12-slim`) deployed to a **Railway Starter Plane** instance to circumvent scale-to-zero telemetry cold starts.
+* **Database Cluster:** Deployed on **Neon Serverless PostgreSQL** infrastructure.
+* **Notifications:** Slack real-time alerts fire on High-Intent milestones, gated by an hourly throttle (`NotificationThrottle` model) permitting a maximum of 1 notification per hour per company entity.
+
+---
+
+## 8. Video Sales Letter (VSL) Funnel Specification (Phase 10)
+
+A dedicated, distraction-free `/vsl` landing page featuring an optimized ImageKit-hosted HTML5 video player.
+
+- **Delayed Reveal**: Hides all conversion elements ("Book Demo" CTA and micro-copy) until playback ends. Uses Framer Motion for entrance animations.
+- **Subtle Navigation**: Replaces global header/footer with a minimal "Go Back" button.
+- **Playback Telemetry**: Sends telemetry pings to `POST /api/v1/track/intent` at 25%, 50%, 75%, and 100% completion milestones.
+- **Warm Abandonment**: Triggers a 10-second timer after playback ends. If the CTA is not clicked within 10 seconds, pings the backend with `vsl_abandoned=True`.
+- **Intelligence Routing**: Sends real-time Slack alerts to `#prospects` if a known company completes the VSL.
+
+---
+
+## 9. Advanced Banner Data Flow & Entity Stitching Specification (Phase 11)
+
+Enhance telemetry multi-tenancy and data isolation, execute immediate firmographic enrichment, and resolve entities deterministically with DeepSeek fallbacks.
+
+- **Multi-Tenancy Isolation**: Explicitly support `client_id` on telemetry records (Visit, Company, Prospect) with scoped queries for tenant sandboxing.
+- **Immediate Enrichment Dispatch**: Submit immediate IPinfo/Apollo enrichment tasks as background tasks on banner submission rather than batch queues.
+- **Deterministic Entity Stitching with DeepSeek Fallback**: 
+  - 1st Tier: Substring match check between user company name and enriched company name.
+  - 2nd Tier: Fast DeepSeek JSON prompting to evaluate entity sameness and verify if the enriched company is actually an ISP.
+  - 3rd Tier: ISP Discarding. If the enriched entity is classified as an ISP, promote the user-provided name to the head entity instead.
+- **Real-Time Surge Alerting**: Monitor cluster density. If 3 or more unique forensic IDs from the same company visit within a predefined window, fire an immediate "Account Surge" alert to the client.
+
+---
+
+## 10. Provisioning Dashboard & Admin Console (Phase 13)
+
+Phase 13 establishes the internal console for managing multi-tenant client deployments, administrative authentication via JSON Web Tokens (JWT), high-speed configuration handshakes using a fallback-resilient two-tier cache, and visual installation/telemetry verification.
+
+### 10.1 Multi-Tenant Client Ledger (Client Model)
+* Extends the `Client` table with list-based `whitelisted_domains` arrays (PostgreSQL `ARRAY` datatype with a fallback to `JSON` for SQLite tests).
+* Adds a constructor override on instantiation to preserve backward compatibility, translating the legacy singular `domain` string to `whitelisted_domains` arrays, and vice versa.
+* Includes flags `require_consent_banner` and `collect_personal_data` to govern edge tracker configurations.
+
+### 10.2 Admin Authentication (FastAPI-Users & Google OAuth)
+* **Auth Backend & Transport**: Authentication is powered by `FastAPI-Users` using `CookieTransport` (storing the JWT session in the HttpOnly `aurahq_auth` cookie).
+* **Google OAuth Handshake**: Integrates `httpx-oauth` to expose `/api/v1/auth/google/authorize` and `/api/v1/auth/google/callback`, mapping Google profiles to backend database records.
+* **Token Protection**: FastAPI endpoints are protected via `get_current_admin` dependencies checking active user sessions, with a backward-compatible fallback decoding legacy Bearer JWT signatures.
+* **Routing Middleware**: Next.js custom middleware guards all `/aurahq/*` routes, checking the presence of a secure `aurahq_auth` cookie and redirecting unauthenticated visitors to `/login` (supporting automatic redirects from legacy `/admin/*` and `/dashboard/*` paths).
+
+
+### 10.3 Two-Tier High-Speed Config Cache
+* **Tier 1 (Redis)**: Tries to read/write JSON-serialized client configurations from a Redis instance for sub-millisecond edge resolution.
+* **Tier 2 (In-Memory Fallback)**: Automatically falls back to a Python LRU cache (`cachetools.TTLCache`) with a 5-minute TTL if Redis is offline or unreachable. Connection failures degrade silently without raising HTTP 500 errors.
+* **Config Resolution Route**: `GET /v1/clients/config` resolves matching client whitelisted domains against request origins to authorize tracking handshakes.
+
+### 10.4 Snippet Generation & Verification Console
+* **Administration Panel**: High-fidelity dark mode dashboard with active tenant switcher, client registration modal, and live leads feed.
+* **Copy Deployment Snippet**: Modal dynamically interpolates the registered client UUID into a production HTML script tag, with a copy-to-clipboard mechanism.
+* **Telemetry Verification Indicator**: Active status component polls `GET /api/v1/clients/{client_id}/verify` to trace visits linked to the tenant UUID. Once a visit is detected, the status transitions to "Installed & Active" and triggers a leads table refresh.
+
+---
+
+## 11. Phase 14: Payment Gateway Integration Specifications
+* **Database Ledger**: Integrates `Transaction` model tracking payment intents, currencies, status enums, and references. Extends `Client` model with payment tokens.
+* **Ikhokha Gateway Integration**: Integrates Ikhokha custom checkout setup endpoint `POST /api/v1/billing/setup` and signature/HMAC webhook verification at `POST /api/v1/webhooks/ikhokha`.
+* **Billing Administration**: Next.js admin view displaying current ledger status, monthly billing amount overrides, and billing trigger tests.
+
+---
+
+## 12. Phase 15: Automated Checkout, Proration & Trial Specifications
+* **Trial Period Management**: Clients initialize with a standard 14-day trial period (`trial_ends_at`). Includes background warning emails dispatched 48 hours prior to trial expiration.
+* **Proration Mathematics Engine**: Implements early, mid, and late-month calculation strategies mapping pro-rata charges on subscription changes or setup phases.
+* **Grace Period & Collection Cron**: Automated cron executor triggering monthly billing transactions and managing grace-period suspension boundaries.
+
+---
+
+## 13. Phase 16: Frontend Integration & UI Overhaul Specifications
+* **Edge Tracker CDN Integration**: Public page layout embeds a unified `<script src="https://cdn.auraworks.co.za/aura.js" ...>` tracking tag.
+* **Global VSL CTA Migration**: Converts all booking and pricing CTAs into Watch Video links pointing directly to the `/vsl` path.
+* **Quiet Premium Theme Partitioning**: Public views render exclusively in light mode, stripping all dark-mode selectors to establish a premium clean design.
+* **Edge Telemetry Robustness**: Implements event payload relaxation supporting dynamic client-side variables, cookie apex domain scopes, and offline request retries.
+
+---
+
+## 14. Phase 17: Database State Recovery Specifications
+* **Alembic History Reset**: Clears corrupted/tangled migration folders and establishes a single consolidated baseline migration (`ed255488d937_phase_17_baseline.py`) mapping all SQLAlchemy/SQLModel models.
+* **RLS In-Migration Configuration**: Integrates PostgreSQL Row-Level Security policy initialization strings natively in the baseline migration upgrade block.
+* **Resilient Container Boot**: Wraps Alembic migration runs in a startup wrapper to prevent boot crashes if database configurations are out-of-sync.
+* **Superuser Seeder**: Implements `seed_admin.py` utilizing `UserManager` to securely hash and register the default superuser credentials.
+
+---
+
+## 15. Phase 18: Full-Stack Authentication & Security Overhaul Specifications
+* **Cookie Transport Deprecation**: Deprecates insecure legacy JWT token checks, enforcing cookie-only session management via FastAPI-Users HttpOnly cookies.
+* **Dual-Login Case Insensitivity**: Queries users using case-insensitive SQL matching, resolving authentications by either email or custom usernames.
+* **Tenant Authorization Gates**: Scopes multi-tenant data routes to verify that the authenticated administrator possesses permissions mapping to the requested `client_id`.
+
+---
+
+## 16. Phase 19: Alembic Hard Reset & Database Initialization Specifications
+* **Master Baseline Consolidation**: Replaces historical migrations with a single autogenerated master migration script capturing the complete SQLModel schema.
+* **RLS Policy Deployment**: Deploys Row-Level Security policies restricting interactions on multitenant tables (visit, page_view, prospect, company) matching the request-scoped `current_client_id` context.
+* **Programmatic Initialization & Seeding**: Applies database schemas to a blank state and invokes the admin seeder to initialize the default `ReitumetseF` account securely.
+
+---
+
+## 17. Phase 20: Cloud Gateway & Container Binding Stabilization Specifications
+* **Container Host Binding**: Binds Uvicorn to `0.0.0.0` inside a shell execution context to support proper port dynamic mapping via Railway proxies.
+* **Database Driver Auto-Correction**: Sanitizes DB URLs on startup to translate `postgresql://` into `postgresql+asyncpg://`, protecting the async engine context.
+
+---
+
+## 18. Phase 21: Frontend Handoff & Client Initialization Specifications
+* **Frontend Form Handoff**: Form submission explicitly calls `e.preventDefault()` and strictly resolves routing redirection upon successful status codes.
+* **Cookie Domain Alignment**: Backend drops authentication cookies with a leading dot domain (`.auraworks.co.za`) in production to support multi-subdomain routing.
+* **Telemetry Seeding**: Adds database initialization scripts to securely seed baseline telemetry configurations to prevent tracker 404 response errors.
+
+---
+
+## 19. Phase 22: Frontend Authentication Handoff Resolution Specifications
+* **Fetch Response Handling Patch**: Prevents body parsing crashes on `204 No Content` responses by removing `await res.json()` calls upon successful logins, verifying the successful code and programmatically routing to `/aurahq/dashboard`.
+* **Testing Coverage**: Writes unit tests simulating successful `204 No Content` responses to verify router push functions execute successfully.
+
+---
+
+## 20. Phase 23: OAuth Client Exposure & Security Alignment Specifications
+* **Public Client Variable Exposure**: Prefix Google Client ID environment variable in the client bundle with `NEXT_PUBLIC_` (i.e. `NEXT_PUBLIC_GOOGLE_CLIENT_ID`) to ensure Next.js exposes it to client components.
+* **Build Validation**: Validates the static build process (`npm run build`) to ensure client configurations resolve without errors.
+</file>
+
 <file path="backend/app/models/visit.py">
 # backend/app/models/visit.py
 from enum import Enum
@@ -21089,348 +21260,6 @@ class EventCreate(BaseModel):
         return data
 </file>
 
-<file path="docs/master_architecture_spec.md">
-AuraWorks Industrial Intelligence Engine (v1.0)
-Comprehensive Master Project Specification & Scope Documentation
-Document Version: 2.0 (Production-Freeze)
-Date: May 30, 2026
-Classification: Proprietary Operational Blueprint — AuraWorks (Pty) Ltd
-Target Technical Stack: Python 3.12, FastAPI, SQLModel, PostgreSQL (Neon Serverless + RLS), Redis, Next.js 14+ (App Router), Cloudflare R2, PayGenius API
-1. Executive Summary & Strategic Core
-The AuraWorks Industrial Intelligence Engine is a high-performance B2B traffic de-anonymization and sales intelligence platform. It is engineered specifically for long-sales-cycle heavy industry, mining, manufacturing, construction, and engineering infrastructure operations within the Southern African Development Community (SADC) region.
-The primary business mechanism is the Identity Bridge Protocol: converting anonymous web telemetry, network routing topologies, and device attributes into authenticated juristic persons (registered companies) actively inspecting high-intent digital assets (e.g., technical specification sheets, blueprint files, CAD models, and tender parameters) before they explicitly enter a formal procurement workflow. Natural person context gathering (consented email and phone details) acts as a high-friction premium conversion layer but does not gate or interrupt the continuous background tracking and de-anonymization of enterprise network footprints.
-2. Legal Architecture & POPIA Compliance Topography
-The engine operates strictly under the legal frameworks of the South African Protection of Personal Information Act (POPIA), No. 4 of 2013, by physically and logically segregating data processing boundaries into a Two-Tier Identity Model based on Section 1 data subject criteria:
-Feature / Metric
-Tier 1: The Juristic Layer
-Tier 2: The Personal Layer
- 
-Data Subject Class
-Juristic Persons (Companies, Mines, Corporations)
-Natural Persons (Individual human visitors)
-Core Elements
-Company Name, Domain, Industry, City/Region, ASNs
-First/Last Name, Personal Email, Direct Phone, Clear Fingerprints
-POPIA Status
-Legitimate Business Interest (No upfront consent required)
-Explicit Opt-In Gated (Consent mandatory)
-Retention Window
-Permanent, immutable ledger tracking
-48-Hour conditional window (Scrubbed if unverified)
-Janitor Execution
-Protected from scrubbing cascades
-Automatically anonymized/zeroed out if unverified
-Enrichment Triggers
-Immediate asynchronous IPinfo + Apollo extraction
-Gated until prospect form submission or manual banner opt-in
-
-3. Comprehensive Database Schema & Data Models
-The following structural configurations define the persistent database schema layers implemented via SQLModel abstractions.
-3.1 Core Client & Tenant Management Schema
-from enum import Enum
-from typing import Optional, List, Any
-from datetime import datetime, timezone
-from uuid import UUID, uuid4
-from sqlmodel import SQLModel, Field, Column, DateTime
-from sqlalchemy import ARRAY, String, JSON
-
-class ClientCategory(str, Enum):
-    INDUSTRIAL = "industrial"
-    COMMERCIAL = "commercial"
-
-class SubscriptionStatus(str, Enum):
-    TRIAL = "trial"
-    ACTIVE = "active"
-    SUSPENDED = "suspended"
-    CANCELLATION_PENDING = "cancellation_pending"
-
-class ClientBase(SQLModel):
-    company_name: str = Field(index=True)
-    domain: Optional[str] = Field(default=None, index=True, nullable=True)
-    whitelisted_domains: List[str] = Field(
-        default=[],
-        sa_column=Column(ARRAY(String).with_variant(JSON, "sqlite"), nullable=False)
-    )
-    category: ClientCategory = Field(default=ClientCategory.COMMERCIAL)
-    client_product_description: str = Field(default="")
-    subscription_status: SubscriptionStatus = Field(default=SubscriptionStatus.SUSPENDED)
-    payment_plan: str = Field(default="monthly")
-    setup_fee_paid: bool = Field(default=False)
-    contract_signed_at: Optional[datetime] = Field(
-        default=None,
-        sa_column=Column(DateTime(timezone=True), nullable=True)
-    )
-    payment_provider_id: Optional[str] = Field(default=None, nullable=True)
-    is_active: bool = Field(default=False)
-    collect_personal_data: bool = Field(default=False)
-    require_consent_banner: bool = Field(default=False)
-    payment_method_token: Optional[str] = Field(default=None, nullable=True)
-    custom_monthly_amount: Optional[int] = Field(default=None, nullable=True)
-    billing_cycle: str = Field(default="monthly", nullable=False)
-    trial_ends_at: Optional[datetime] = Field(
-        default=None,
-        sa_column=Column(DateTime(timezone=True), nullable=True)
-    )
-    tc_accepted_at: Optional[datetime] = Field(
-        default=None,
-        sa_column=Column(DateTime(timezone=True), nullable=True)
-    )
-    tc_accepted_ip: Optional[str] = Field(default=None, nullable=True)
-    cancellation_requested: bool = Field(default=False, nullable=False)
-    trial_warning_sent: bool = Field(default=False, nullable=False)
-
-    def __init__(self, **data: Any):
-        domain = data.get("domain")
-        whitelisted = data.get("whitelisted_domains")
-        if domain and not whitelisted:
-            data["whitelisted_domains"] = [domain]
-        elif whitelisted and not domain:
-            data["domain"] = whitelisted[0]
-        super().__init__(**data)
-
-class Client(ClientBase, table=True):
-    __tablename__ = "client"
-    
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
-        sa_column=Column(DateTime(timezone=True), nullable=False)
-    )
-    auto_classified_at: Optional[datetime] = Field(
-        default=None,
-        sa_column=Column(DateTime(timezone=True), nullable=True)
-    )
-
-
-3.2 Enterprise & Departmental Directory Core Pool
-class Company(SQLModel, table=True):
-    __tablename__ = "company"
-    
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    domain: str = Field(index=True)
-    company_name: str = Field(index=True)
-    industry: Optional[str] = Field(default=None, index=True)
-    parent_company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", nullable=True)
-    is_headquarters: bool = Field(default=False)
-    intent_summary: Optional[str] = Field(default=None, nullable=True)
-    last_enrichment_attempt: Optional[datetime] = Field(default=None, nullable=True)
-    cipc_verified: bool = Field(default=False)
-    cipc_registration_number: Optional[str] = Field(default=None, nullable=True)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class Department(SQLModel, table=True):
-    __tablename__ = "department"
-    
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    company_id: UUID = Field(foreign_key="company.id", index=True)
-    contact_name: str
-    role_title: str = Field(index=True)
-    email: str
-    phone: Optional[str] = Field(default=None)
-    linkedin_url: Optional[str] = Field(default=None)
-    priority_score: int = Field(default=1, ge=1, le=5, index=True)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-3.3 Multi-Tenant Telemetry & Interaction Schemas (RLS Gated)
-class VerificationStatus(str, Enum):
-    VERIFYING = "verifying"
-    VERIFIED = "verified"
-    ANONYMIZED_CORPORATE = "anonymized_corporate"
-
-class Visit(SQLModel, table=True):
-    __tablename__ = "visit"
-    
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    client_id: UUID = Field(index=True)
-    company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", index=True, nullable=True)
-    aura_id: str = Field(index=True)
-    ip_address: str = Field(index=True)
-    connection_type: str = Field(default="corporate")
-    is_b2b: bool = Field(default=True, index=True)
-    high_intent: bool = Field(default=False, index=True)
-    verification_status: VerificationStatus = Field(default=VerificationStatus.VERIFYING, index=True)
-    is_consented: bool = Field(default=False, index=True)
-    fingerprint_hash: Optional[str] = Field(default=None, index=True, nullable=True)
-    duration: int = Field(default=0)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class PageView(SQLModel, table=True):
-    __tablename__ = "page_view"
-    
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    client_id: UUID = Field(index=True)
-    visit_id: UUID = Field(foreign_key="visit.id", index=True)
-    url_path: str = Field(index=True)
-    referrer: Optional[str] = Field(default=None)
-    duration: int = Field(default=0)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-4. Ingestion Pipeline & Client-Side Telemetry Loop
-4.1 Script Infrastructure (`aura.js`): Distributed globally via Cloudflare R2 object storage buckets with optimized caching directives (`Cache-Control: public, max-age=86400`). To protect tracking integrity on remote, connectivity-sparse South African mining and heavy industry operations, the client script integrates an internal AuraOfflineQueue engine built atop browser-native IndexedDB configurations. Payloads are cached locally when connections fail and are flushed recursively using an exponential backoff loop upon recovery.
-4.2 Interactive Layout Capture Layers: Tracking metrics capture telemetry non-intrusively based on user activity milestones:
-Phase 01: 2.5-second initial delay triggers a subtle bottom-right slide-in framework prompting an enterprise email link.
-Phase 02: Crossing a 50% scrolling ceiling on technical data tables or machinery specifications transforms the banner interface into a multi-column contact slide, acquiring corporate role descriptions and optional direct-line telephone metadata.
-Phase 03: Upward mouse acceleration mapping triggers exit-intent technical pop-ups offering personalized calculation parameters.
-Phase 04: Binary access paths targeting high-value schematics, blueprints, or CAD files introduce a strict overlay gate forcing enterprise work email validation before releasing downloads.
-5. System Processing Core & Code Patch Specifications
-5.1 Disabling the Exit Consent Gate (`track.py`)
-Refactor process_exit_logic() within app/api/v1/endpoints/track.py to completely discard the lead validation lock, allowing unconsented juristic page metrics to propagate to analytical background loops:
-# Remediated Logic Structure
-lead = await get_lead_by_aura_id(payload.aura_id, session)
-company = await get_company_by_aura_id(payload.aura_id, session)
-
-if not lead and company:
-    journey = await get_visitor_journey(payload.aura_id, session)
-    if payload.total_duration >= 15 or payload.has_downloaded_asset:
-        await handle_juristic_only_alert(company, journey, payload.client_id)
-    return {"status": "processed_juristic"}
-
-
-5.2 Restructuring the Janitor Purge Engine (`janitor.py`)
-Convert the destructive SQL row erasure sequence into a selective column anonymization cascade, preserving permanent corporate aggregation fields:
-async def execute_janitor_scrub_cascade(session: AsyncSession):
-    time_threshold = datetime.now(timezone.utc) - timedelta(hours=48)
-    stmt = (
-        update(Visit)
-        .where(Visit.is_consented == False)
-        .where(Visit.verification_status == VerificationStatus.VERIFYING)
-        .where(Visit.created_at < time_threshold)
-        .values(
-            email=None,
-            visitor_name=None,
-            fingerprint_hash=None,
-            verification_status=VerificationStatus.ANONYMIZED_CORPORATE,
-            updated_at=datetime.now(timezone.utc)
-        )
-    )
-    await session.execute(stmt)
-    await session.commit()
-
-
-6. Financial Onboarding & Multi-Tenant Isolation Rules
-6.1 Onboarding Pipeline: Platform checkout pathways tie securely to the PayGenius API. Successful webhooks received via /api/v1/webhook/paygenius launch asynchronous background tasks compiling formal digital service agreements via reportlab, signs them cryptographically, and dispatches them via Resend alongside onboarding requirement scripts.
-6.2 Row-Level Security Rules: While company entity tracking nodes occupy shared data pools to prevent double-spending on enrichment credits, interaction matrices apply absolute multi-tenant restrictions via native PostgreSQL configurations:
-ALTER TABLE visit ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY tenant_isolation_policy ON visit
-FOR ALL
-USING (client_id == current_setting('app.current_client_id', True)::uuid);
-
-
-7. Intelligence Delivery & Deployment Specifications
-7.1 Notification Management: Actionable corporate leads meeting High-Intent markers broadcast compact, button-driven payloads directly to client Slack instances inside a 60-second window. Alerts utilize an automated hourly throttle filter via a NotificationThrottle model, restricting matching entities to a single instant push per hour to insulate channels from tracking flood events.
-7.2 Production Hosting Strategy: Core FastAPI routers operate inside a dedicated Docker container utilizing a python:3.12-slim image layer deployed to an active Railway Starter Plane instance to circumvent telemetry cold-start delays. Analytical data clusters communicate exclusively with the serverless production Neon PostgreSQL architecture.
-
-
-8. Phase 9: Inbound Email Routing & Processing Specifications
-8.1 Inbound Processing Engine: Webhook ingest endpoint POST /api/v1/webhooks/inbound-email. Receives email payloads sent to legal@, privacy@, and customer@ via Resend Inbound Webhooks.
-8.2 InboundMessage Schema:
-  - id: UUID (primary key)
-  - sender_email: str
-  - recipient_alias: str
-  - subject: str
-  - text_body: Optional[str]
-  - html_body: Optional[str]
-  - status: MessageStatus Enum (unread, in_progress, resolved)
-  - created_at: datetime
-8.3 Routing & Notifications: Route messages based on alias to compliance (#compliance) or support (#support) Slack channels with sender details, subject, a 150-char snippet, and an admin thread CTA.
-8.4 Auto-Responder: Contextual outbound email template sent via Resend immediately on successful DB commit to confirm receipt.
-
-
-9. Phase 10: VSL Conversion Funnel Specifications
-9.1 Video Player Integration: Next.js landing page at /vsl containing custom HTML5 video component streaming from ImageKit.io.
-9.2 Delayed CTA Reveal: Omit global navigation and footer elements on the layout. Hide CTA buttons and micro-copy until the ended event is dispatched, utilizing Framer Motion for exit/entry animations.
-9.3 Inbound Intent Telemetry API: POST /api/v1/track/intent payload structure:
-  - aura_id: str
-  - email: Optional[str]
-  - completion_percentage: int
-  - is_completed: bool
-  - client_id: UUID
-Updates the matching Prospect or Visit record's vsl_completion_percentage and vsl_completed_at values.
-9.4 Slack Intelligence Routing: Triggers alert to #prospects channel when a known company reaches 100% VSL completion.
-
-
-10. Phase 11: Advanced Banner Data Flow & Entity Stitching Specifications
-10.1 Multi-Tenant DB: Ensure `client_id` (UUID) is present and scoped across Visit, Company, and Prospect tables to enforce data isolation.
-10.2 Immediate Enrichment Background Workers: Instantly trigger IPinfo and Apollo API enrichment tasks in background on banner form submission.
-10.3 Stitching Engine: Implement deterministic and AI-powered entity stitching protocol:
-  - Substring matching checks if user-provided banner name is inside enriched name.
-  - Fast DeepSeek verification handles matching evaluation and ISP check fallback.
-  - Discard ISP name and fallback to banner name if LLM marks enriched record as ISP.
-10.4 Surge Alerting: Trigger real-time alert to client when visitor count threshold for a single company is crossed (e.g., 3 unique forensic IDs).
-
-11. Phase 12: Decoupled Edge Architecture Specifications
-11.1 Client Installation: Clients integrate a single tag: `<script src="https://cdn.auraworks.co.za/aura.js" data-client-id="[UUID]" defer></script>`.
-11.2 Handshake: `aura.js` parses the `data-client-id` and checks remote configuration: `GET https://api.auraworks.co.za/v1/clients/config?client_id=[UUID]&tz=[TZ]`.
-11.3 Dynamic Script Injection: If the backend configuration signals `require_consent_banner === true`, the client script dynamically appends a new script tag loading `banner.js` from `https://banner.auraworks.co.za/banner.js`.
-11.4 Shadow DOM UI Isolation: `banner.js` builds the 4-phase consent banner entirely in Vanilla JavaScript inside an isolated Shadow DOM Root container to prevent client CSS styling bleeding or script collision.
-11.5 Decoupled CustomEvent Architecture:
-  - Communication is strictly event-driven:
-  - `aura.js` dispatches `aura:ready` containing `auraId`, `clientId`, and `config`.
-  - `banner.js` listens to `aura:ready` to bootstrap the banner, and dispatches `aura_warm_lead` event on form submissions.
-  - `aura.js` captures `aura_warm_lead`, stamps UTMs, session ID, and telemetry, then dispatches the payload to the backend ingestion endpoint.
-11.6 Edge Deployment: All files inside the tracking bundle (`aura.js`, `banner.js`) are minified via Terser locally and synced to edge buckets with `Cache-Control: public, max-age=86400`.
-
-12. Phase 13: Provisioning Dashboard & Admin Console Specifications
-
-12.1 Multi-Tenant Client Ledger Schema:
-* Extends the `Client` table with list-based `whitelisted_domains` arrays (PostgreSQL `ARRAY` datatype with a fallback to `JSON` for SQLite tests).
-* Adds a constructor override on instantiation to preserve backward compatibility, translating the legacy singular `domain` string to `whitelisted_domains` arrays, and vice versa.
-* Includes flags `require_consent_banner` and `collect_personal_data` to govern edge tracker configurations.
-
-12.2 Admin Authentication (JWT Engine):
-* **Login Gateway**: `/api/v1/auth/login` accepts admin credentials, validates against system secrets, and returns short-lived access and refresh tokens.
-* **Token Protection**: FastAPI endpoints are protected via `get_current_admin` dependencies checking the JWT signature, validity, and expiration.
-* **Fallback Verification**: Backend telemetry proxies accept authentication from either legacy `X-Aura-Token` header key strings or modern `Authorization: Bearer [JWT]` headers to secure administrative API routes.
-* **Routing Middleware**: Next.js custom middleware guards all `/admin/*` routes, checking the presence of a secure `admin_access_token` cookie and redirecting unauthenticated visitors to `/login`.
-
-12.3 Two-Tier High-Speed Config Cache:
-* **Tier 1 (Redis)**: Tries to read/write JSON-serialized client configurations from a Redis instance for sub-millisecond edge resolution.
-* **Tier 2 (In-Memory Fallback)**: Automatically falls back to a Python LRU cache (`cachetools.TTLCache`) with a 5-minute TTL if Redis is offline or unreachable. Connection failures degrade silently without raising HTTP 500 errors.
-* **Config Resolution Route**: `GET /v1/clients/config` resolves matching client whitelisted domains against request origins to authorize tracking handshakes.
-
-12.4 Snippet Generation & Verification Console:
-* **Administration Panel**: High-fidelity dark mode dashboard with active tenant switcher, client registration modal, and live leads feed.
-* **Copy Deployment Snippet**: Modal dynamically interpolates the registered client UUID into a production HTML script tag, with a copy-to-clipboard mechanism.
-* **Telemetry Verification Indicator**: Active status component polls `GET /api/v1/clients/{client_id}/verify` to trace visits linked to the tenant UUID. Once a visit is detected, the status transitions to "Installed & Active" and triggers a leads table refresh.
-
-12.5 Cross-Subdomain Session & Telemetry Validation (Phase 16):
-* **Cross-Subdomain Cookies**: FastAPI-Users authentication utilizes `CookieTransport` configured with `cookie_domain = "auraworks.co.za"`, `cookie_secure = True`, and `cookie_samesite = "lax"`. This ensures authentication credentials flow seamlessly between `api.auraworks.co.za` and `www.auraworks.co.za`.
-* **Flexible Telemetry Payload**: The `/v1/track/event` endpoint accepts a flexible Pydantic schema with `properties: Dict[str, Any] = Field(default_factory=dict)` to ingest dynamic client-side tracking parameters without raising 422 errors.
-* **Unified Terminology & Robustness**: Legacy waitlist references are completely replaced by the prospect engine across client-side scripts. The client-side tracker utilizes a capped retry queue to handle failed dispatches silently.
-
-13. Phase 17: Database State Recovery & Pipeline Synchronization Specifications
-13.1 Alembic Schema Consolidation & RLS Baseline:
-* Migration history is consolidated into a single unified schema baseline (`ed255488d937_phase_17_baseline.py`) registering all SQLModel models (Client, Transaction, User, Visit, PageView, Prospect, etc.) and explicitly establishing Row-Level Security (RLS) tenant isolation policies on the `visit`, `page_view`, `prospect`, and `company` tables.
-13.2 Resilient Container Startup Sequence:
-* The production deployment boot script (`start.sh`) runs database migrations programmatically via `alembic upgrade head` wrapped in a defensive shell trap that intercepts errors, preventing startup crash cascades and ensuring ASGI server boot even in out-of-sync db states.
-13.3 Programmatic Admin Seeder:
-* Seed script (`seed_admin.py`) programmatically registers and hashes the default administrator superuser (`ReitumetseF`) using the configured `UserManager` password hashing helper, injecting users into both standard `user` and legacy `admin_user` tables safely.
-
-14. Phase 18: Full-Stack Authentication & Security Overhaul Specifications
-14.1 Backend Session Cookie Security:
-* The insecure legacy JWT token fallback decoder in `get_current_admin` is deprecated and deleted. The system enforces strict cookie-only authentication via FastAPI-Users session cookies (`FastAPIUsers.current_user`).
-* The `RedirectCookieTransport` is dynamically adjusted to avoid hardcoding production domains, resolving redirect loops across localized test settings.
-* `COOKIE_DOMAIN` resolves to `None` under local environment contexts and strictly `.auraworks.co.za` in production.
-14.2 Dual-Login Case Insensitivity:
-* Email lookup in `UserManager.authenticate` queries the user record using SQLAlchemy `func.lower()` matching against the username/email input, ensuring case-insensitive authentication handles login payloads correctly.
-* The administrative database seeder `seed_admin.py` registers the default admin superuser using the raw plaintext password, delegating the hashing process to the `UserManager` context to avoid double-hashing states.
-14.3 Frontend Login Form & Callback Routing:
-* Next.js manual credentials login page parses fields to prevent compiling empty/null attributes.
-* Next.js Google OAuth callback component removes duplicate authorization requests and acts as a lightweight pass-through forwarding users directly to the secure command dashboard.
-14.4 Tenant Authorization Perimeter Gates:
-* Client-specific query endpoints (e.g. `/api/v1/leads`) explicitly check permission rules, validating that the authenticated admin user possesses direct query mapping permissions for the requested `client_id` parameter to deny cross-tenant context leaks.
-15. Phase 19: Alembic Hard Reset & Database Initialization Specifications
-15.1 Baseline Migration Consolidation:
-* Clears all old, tangled, and legacy migrations from the versions history and establishes a single autogenerated baseline migration capturing the complete SQLModel schema.
-* Integrates PostgreSQL Row-Level Security (RLS) policies and forces them on multitenant tables (visit, page_view, prospect, company) within the baseline migration script.
-15.2 Programmatic DB Initialization:
-* Ensures clean setup of tables and schema elements, with automated seeder injection of the default superuser ReitumetseF account via UserManager.
-</file>
-
 <file path="backend/app/db.py">
 # backend/app/db.py
 import logging
@@ -21443,18 +21272,33 @@ logger = logging.getLogger("uvicorn")
 
 # --- ENGINE INITIALIZATION ---
 
+def get_sanitized_db_url(url: str, is_async: bool = False) -> str:
+    """
+    Sanitizes the database connection URL:
+    - Resolves 'postgres://' to 'postgresql://' to prevent SQLAlchemy dialect lookup crashes.
+    - If is_async is True, enforces the 'postgresql+asyncpg://' driver protocol.
+    - If is_async is False, enforces the standard 'postgresql://' driver protocol.
+    """
+    if not url:
+        return url
+    
+    # Handle the legacy/common postgres:// prefix
+    if url.startswith("postgres://"):
+        url = "postgresql://" + url[len("postgres://"):]
+        
+    if is_async:
+        if url.startswith("postgresql://"):
+            url = "postgresql+asyncpg://" + url[len("postgresql://"):]
+    else:
+        if url.startswith("postgresql+asyncpg://"):
+            url = "postgresql://" + url[len("postgresql+asyncpg://"):]
+            
+    return url
+
 # 1. Synchronous Engine (For Migrations and Admin Dashboards)
-# Standardizes connection URL to standard postgresql protocol if it contains the asyncpg schema identifier.
-sync_url = settings.DATABASE_URL
-if sync_url and "postgresql+asyncpg://" in sync_url:
-    sync_url = sync_url.replace("postgresql+asyncpg://", "postgresql://")
+sync_url = get_sanitized_db_url(settings.DATABASE_URL, is_async=False)
 
 if sync_url:
-    # pool_pre_ping=True: Issues a lightweight 'SELECT 1' test query on checkout to identify and discard 
-    # dead connections. Crucial for serverless environments (Railway/Neon) which silently drop idle sockets.
-    # pool_size=10: The permanent connection pool size.
-    # max_overflow=20: The maximum number of temporary connections that can be opened beyond pool_size 
-    # to handle high concurrent traffic spikes.
     engine = create_engine(
         sync_url,
         echo=False,
@@ -21467,11 +21311,7 @@ else:
     engine = None
 
 # 2. Asynchronous Engine (For Forensic Tracking, Janitor Cycles & Identity API)
-# Standardizes connection URL to use the required postgresql+asyncpg driver explicitly.
-# Asyncpg provides non-blocking networking socket support for high-concurrency ingestion routes.
-async_url = settings.DATABASE_URL
-if async_url and async_url.startswith("postgresql://"):
-    async_url = async_url.replace("postgresql://", "postgresql+asyncpg://")
+async_url = get_sanitized_db_url(settings.DATABASE_URL, is_async=True)
 
 if async_url:
     async_engine = create_async_engine(
@@ -21487,6 +21327,7 @@ if async_url:
 else:
     async_engine = None
     async_session_maker = None
+
 
 
 from typing import Optional
@@ -21916,6 +21757,481 @@ async def get_admin_summary(session: AsyncSession = Depends(get_async_session)):
     }
 </file>
 
+<file path="backend/app/core/config.py">
+# backend/app/core/config.py
+from dotenv import load_dotenv
+load_dotenv()
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional, List
+
+
+class Settings(BaseSettings):
+    # --- APP SETTINGS ---
+    PROJECT_NAME: str = "AuraWorks Industrial Intelligence OS"
+    VERSION: str = "3.2.1"  # Forensic v3.2.1 Async Support
+    API_V1_STR: str = "/api/v1"
+    ENVIRONMENT: str = "development"
+    API_DOMAIN: Optional[str] = None
+
+    # --- SECURITY & AUTH ---
+    # Formal authentication for the industrial dashboard
+    ADMIN_API_KEY: str = "change-me-in-production" 
+    SECRET_KEY: Optional[str] = None  
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 11520  # 8 days (matches long-cycle industrial procurement)
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
+    OAUTH_REDIRECT_URI: Optional[str] = None
+    COOKIE_DOMAIN: Optional[str] = "auraworks.co.za"
+
+    
+    # --- DATABASE ---
+    # Set to Optional to prevent build-time crashes on platforms like Railway
+    DATABASE_URL: Optional[str] = None 
+    REDIS_URL: Optional[str] = None
+    PAYGENIUS_WEBHOOK_SECRET: Optional[str] = None
+    
+    # --- IKHOKHA PAYMENT INTEGRATION ---
+    IKHOKHA_API_URL: str = "https://api.ikhokha.com"
+    IKHOKHA_CLIENT_ID: Optional[str] = None
+    IKHOKHA_CLIENT_SECRET: Optional[str] = None
+    IKHOKHA_WEBHOOK_SECRET: Optional[str] = None
+    
+    # --- ENRICHMENT TRIAD (National Scaling) ---
+    IPINFO_TOKEN: Optional[str] = None 
+    APOLLO_API_KEY: Optional[str] = None 
+    
+    # --- INTELLIGENCE BRAIN ---
+    DEEPSEEK_API_KEY: Optional[str] = None 
+    
+    # --- THE VAULT (Airtable Sink) ---
+    AIRTABLE_BASE_ID: Optional[str] = None 
+    AIRTABLE_API_KEY: Optional[str] = None
+    AIRTABLE_TABLE_NAME: str = "Forensic_Leads" 
+    
+    # --- PROJECT SPACE (Notion) ---
+    NOTION_DATABASE_ID: Optional[str] = None 
+    NOTION_TOKEN: Optional[str] = None
+
+    # --- NOTIFICATIONS & DISPATCH ---
+    SLACK_WEBHOOK_URL: Optional[str] = None        
+    SLACK_VISIT_WEBHOOK_URL: Optional[str] = None  
+    SLACK_COMPLIANCE_WEBHOOK_URL: Optional[str] = None
+    SLACK_SUPPORT_WEBHOOK_URL: Optional[str] = None
+    
+    # --- EXCLUSIVE RESEND EMAIL DISPATCH ENGINE ---
+    RESEND_API_KEY: Optional[str] = None
+    RESEND_FROM_EMAIL: str = "AuraWorks <onboarding@auraworks.co.za>"
+    CALENDLY_LINK: str = "https://calendly.com/auraworks/demo"
+    CALENDLY_WEBHOOK_SECRET: Optional[str] = None
+    RESEND_WEBHOOK_SECRET: Optional[str] = None
+
+    # --- EXTERNAL INTEGRATIONS ---
+    NEXT_PUBLIC_WAITLIST_API_KEY: Optional[str] = None
+    NEXT_PUBLIC_WAITLIST_ID: Optional[str] = None
+
+    # --- CORS SETTINGS (Industrial Perimeter) ---
+    ALLOWED_ORIGINS: List[str] = [
+        "https://industrial-intelligence-xi.vercel.app", 
+        "http://localhost:3000",
+        "https://auraworks.co.za",
+        "https://www.auraworks.co.za",
+        "https://cdn.auraworks.co.za",
+        "https://dynamic-flow-production-a5d6.up.railway.app",
+        "https://industrial-intelligence-git-main-allen-reileys-projects.vercel.app",
+        "https://industrial-intelligence-lttxeot8z-allen-reileys-projects.vercel.app",
+        "https://api.auraworks.co.za",
+        "https://banner.auraworks.co.za",
+        "https://api.auraworks.co.za/v1/track/event"
+    ]
+
+    # Modern Pydantic V2 Configuration
+    model_config = SettingsConfigDict(
+        env_file=None, # Prevents local .env from overriding production environment vars
+        case_sensitive=True,
+        extra="ignore"  # Prevents crash if extra metadata env vars are passed by Railway
+    )
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        if self.ENVIRONMENT in ["development", "dev", "local"]:
+            self.COOKIE_DOMAIN = None
+        else:
+            self.COOKIE_DOMAIN = ".auraworks.co.za"
+
+settings = Settings()
+</file>
+
+<file path="docs/master_architecture_spec.md">
+AuraWorks Industrial Intelligence Engine (v1.0)
+Comprehensive Master Project Specification & Scope Documentation
+Document Version: 2.0 (Production-Freeze)
+Date: May 30, 2026
+Classification: Proprietary Operational Blueprint — AuraWorks (Pty) Ltd
+Target Technical Stack: Python 3.12, FastAPI, SQLModel, PostgreSQL (Neon Serverless + RLS), Redis, Next.js 14+ (App Router), Cloudflare R2, PayGenius API
+1. Executive Summary & Strategic Core
+The AuraWorks Industrial Intelligence Engine is a high-performance B2B traffic de-anonymization and sales intelligence platform. It is engineered specifically for long-sales-cycle heavy industry, mining, manufacturing, construction, and engineering infrastructure operations within the Southern African Development Community (SADC) region.
+The primary business mechanism is the Identity Bridge Protocol: converting anonymous web telemetry, network routing topologies, and device attributes into authenticated juristic persons (registered companies) actively inspecting high-intent digital assets (e.g., technical specification sheets, blueprint files, CAD models, and tender parameters) before they explicitly enter a formal procurement workflow. Natural person context gathering (consented email and phone details) acts as a high-friction premium conversion layer but does not gate or interrupt the continuous background tracking and de-anonymization of enterprise network footprints.
+2. Legal Architecture & POPIA Compliance Topography
+The engine operates strictly under the legal frameworks of the South African Protection of Personal Information Act (POPIA), No. 4 of 2013, by physically and logically segregating data processing boundaries into a Two-Tier Identity Model based on Section 1 data subject criteria:
+Feature / Metric
+Tier 1: The Juristic Layer
+Tier 2: The Personal Layer
+ 
+Data Subject Class
+Juristic Persons (Companies, Mines, Corporations)
+Natural Persons (Individual human visitors)
+Core Elements
+Company Name, Domain, Industry, City/Region, ASNs
+First/Last Name, Personal Email, Direct Phone, Clear Fingerprints
+POPIA Status
+Legitimate Business Interest (No upfront consent required)
+Explicit Opt-In Gated (Consent mandatory)
+Retention Window
+Permanent, immutable ledger tracking
+48-Hour conditional window (Scrubbed if unverified)
+Janitor Execution
+Protected from scrubbing cascades
+Automatically anonymized/zeroed out if unverified
+Enrichment Triggers
+Immediate asynchronous IPinfo + Apollo extraction
+Gated until prospect form submission or manual banner opt-in
+
+3. Comprehensive Database Schema & Data Models
+The following structural configurations define the persistent database schema layers implemented via SQLModel abstractions.
+3.1 Core Client & Tenant Management Schema
+from enum import Enum
+from typing import Optional, List, Any
+from datetime import datetime, timezone
+from uuid import UUID, uuid4
+from sqlmodel import SQLModel, Field, Column, DateTime
+from sqlalchemy import ARRAY, String, JSON
+
+class ClientCategory(str, Enum):
+    INDUSTRIAL = "industrial"
+    COMMERCIAL = "commercial"
+
+class SubscriptionStatus(str, Enum):
+    TRIAL = "trial"
+    ACTIVE = "active"
+    SUSPENDED = "suspended"
+    CANCELLATION_PENDING = "cancellation_pending"
+
+class ClientBase(SQLModel):
+    company_name: str = Field(index=True)
+    domain: Optional[str] = Field(default=None, index=True, nullable=True)
+    whitelisted_domains: List[str] = Field(
+        default=[],
+        sa_column=Column(ARRAY(String).with_variant(JSON, "sqlite"), nullable=False)
+    )
+    category: ClientCategory = Field(default=ClientCategory.COMMERCIAL)
+    client_product_description: str = Field(default="")
+    subscription_status: SubscriptionStatus = Field(default=SubscriptionStatus.SUSPENDED)
+    payment_plan: str = Field(default="monthly")
+    setup_fee_paid: bool = Field(default=False)
+    contract_signed_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    payment_provider_id: Optional[str] = Field(default=None, nullable=True)
+    is_active: bool = Field(default=False)
+    collect_personal_data: bool = Field(default=False)
+    require_consent_banner: bool = Field(default=False)
+    payment_method_token: Optional[str] = Field(default=None, nullable=True)
+    custom_monthly_amount: Optional[int] = Field(default=None, nullable=True)
+    billing_cycle: str = Field(default="monthly", nullable=False)
+    trial_ends_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    tc_accepted_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    tc_accepted_ip: Optional[str] = Field(default=None, nullable=True)
+    cancellation_requested: bool = Field(default=False, nullable=False)
+    trial_warning_sent: bool = Field(default=False, nullable=False)
+
+    def __init__(self, **data: Any):
+        domain = data.get("domain")
+        whitelisted = data.get("whitelisted_domains")
+        if domain and not whitelisted:
+            data["whitelisted_domains"] = [domain]
+        elif whitelisted and not domain:
+            data["domain"] = whitelisted[0]
+        super().__init__(**data)
+
+class Client(ClientBase, table=True):
+    __tablename__ = "client"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
+    auto_classified_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+
+
+3.2 Enterprise & Departmental Directory Core Pool
+class Company(SQLModel, table=True):
+    __tablename__ = "company"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    domain: str = Field(index=True)
+    company_name: str = Field(index=True)
+    industry: Optional[str] = Field(default=None, index=True)
+    parent_company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", nullable=True)
+    is_headquarters: bool = Field(default=False)
+    intent_summary: Optional[str] = Field(default=None, nullable=True)
+    last_enrichment_attempt: Optional[datetime] = Field(default=None, nullable=True)
+    cipc_verified: bool = Field(default=False)
+    cipc_registration_number: Optional[str] = Field(default=None, nullable=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class Department(SQLModel, table=True):
+    __tablename__ = "department"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    company_id: UUID = Field(foreign_key="company.id", index=True)
+    contact_name: str
+    role_title: str = Field(index=True)
+    email: str
+    phone: Optional[str] = Field(default=None)
+    linkedin_url: Optional[str] = Field(default=None)
+    priority_score: int = Field(default=1, ge=1, le=5, index=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+3.3 Multi-Tenant Telemetry & Interaction Schemas (RLS Gated)
+class VerificationStatus(str, Enum):
+    VERIFYING = "verifying"
+    VERIFIED = "verified"
+    ANONYMIZED_CORPORATE = "anonymized_corporate"
+
+class Visit(SQLModel, table=True):
+    __tablename__ = "visit"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    client_id: UUID = Field(index=True)
+    company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", index=True, nullable=True)
+    aura_id: str = Field(index=True)
+    ip_address: str = Field(index=True)
+    connection_type: str = Field(default="corporate")
+    is_b2b: bool = Field(default=True, index=True)
+    high_intent: bool = Field(default=False, index=True)
+    verification_status: VerificationStatus = Field(default=VerificationStatus.VERIFYING, index=True)
+    is_consented: bool = Field(default=False, index=True)
+    fingerprint_hash: Optional[str] = Field(default=None, index=True, nullable=True)
+    duration: int = Field(default=0)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PageView(SQLModel, table=True):
+    __tablename__ = "page_view"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    client_id: UUID = Field(index=True)
+    visit_id: UUID = Field(foreign_key="visit.id", index=True)
+    url_path: str = Field(index=True)
+    referrer: Optional[str] = Field(default=None)
+    duration: int = Field(default=0)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+4. Ingestion Pipeline & Client-Side Telemetry Loop
+4.1 Script Infrastructure (`aura.js`): Distributed globally via Cloudflare R2 object storage buckets with optimized caching directives (`Cache-Control: public, max-age=86400`). To protect tracking integrity on remote, connectivity-sparse South African mining and heavy industry operations, the client script integrates an internal AuraOfflineQueue engine built atop browser-native IndexedDB configurations. Payloads are cached locally when connections fail and are flushed recursively using an exponential backoff loop upon recovery.
+4.2 Interactive Layout Capture Layers: Tracking metrics capture telemetry non-intrusively based on user activity milestones:
+Phase 01: 2.5-second initial delay triggers a subtle bottom-right slide-in framework prompting an enterprise email link.
+Phase 02: Crossing a 50% scrolling ceiling on technical data tables or machinery specifications transforms the banner interface into a multi-column contact slide, acquiring corporate role descriptions and optional direct-line telephone metadata.
+Phase 03: Upward mouse acceleration mapping triggers exit-intent technical pop-ups offering personalized calculation parameters.
+Phase 04: Binary access paths targeting high-value schematics, blueprints, or CAD files introduce a strict overlay gate forcing enterprise work email validation before releasing downloads.
+5. System Processing Core & Code Patch Specifications
+5.1 Disabling the Exit Consent Gate (`track.py`)
+Refactor process_exit_logic() within app/api/v1/endpoints/track.py to completely discard the lead validation lock, allowing unconsented juristic page metrics to propagate to analytical background loops:
+# Remediated Logic Structure
+lead = await get_lead_by_aura_id(payload.aura_id, session)
+company = await get_company_by_aura_id(payload.aura_id, session)
+
+if not lead and company:
+    journey = await get_visitor_journey(payload.aura_id, session)
+    if payload.total_duration >= 15 or payload.has_downloaded_asset:
+        await handle_juristic_only_alert(company, journey, payload.client_id)
+    return {"status": "processed_juristic"}
+
+
+5.2 Restructuring the Janitor Purge Engine (`janitor.py`)
+Convert the destructive SQL row erasure sequence into a selective column anonymization cascade, preserving permanent corporate aggregation fields:
+async def execute_janitor_scrub_cascade(session: AsyncSession):
+    time_threshold = datetime.now(timezone.utc) - timedelta(hours=48)
+    stmt = (
+        update(Visit)
+        .where(Visit.is_consented == False)
+        .where(Visit.verification_status == VerificationStatus.VERIFYING)
+        .where(Visit.created_at < time_threshold)
+        .values(
+            email=None,
+            visitor_name=None,
+            fingerprint_hash=None,
+            verification_status=VerificationStatus.ANONYMIZED_CORPORATE,
+            updated_at=datetime.now(timezone.utc)
+        )
+    )
+    await session.execute(stmt)
+    await session.commit()
+
+
+6. Financial Onboarding & Multi-Tenant Isolation Rules
+6.1 Onboarding Pipeline: Platform checkout pathways tie securely to the PayGenius API. Successful webhooks received via /api/v1/webhook/paygenius launch asynchronous background tasks compiling formal digital service agreements via reportlab, signs them cryptographically, and dispatches them via Resend alongside onboarding requirement scripts.
+6.2 Row-Level Security Rules: While company entity tracking nodes occupy shared data pools to prevent double-spending on enrichment credits, interaction matrices apply absolute multi-tenant restrictions via native PostgreSQL configurations:
+ALTER TABLE visit ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation_policy ON visit
+FOR ALL
+USING (client_id == current_setting('app.current_client_id', True)::uuid);
+
+
+7. Intelligence Delivery & Deployment Specifications
+7.1 Notification Management: Actionable corporate leads meeting High-Intent markers broadcast compact, button-driven payloads directly to client Slack instances inside a 60-second window. Alerts utilize an automated hourly throttle filter via a NotificationThrottle model, restricting matching entities to a single instant push per hour to insulate channels from tracking flood events.
+7.2 Production Hosting Strategy: Core FastAPI routers operate inside a dedicated Docker container utilizing a python:3.12-slim image layer deployed to an active Railway Starter Plane instance to circumvent telemetry cold-start delays. Analytical data clusters communicate exclusively with the serverless production Neon PostgreSQL architecture.
+
+
+8. Phase 9: Inbound Email Routing & Processing Specifications
+8.1 Inbound Processing Engine: Webhook ingest endpoint POST /api/v1/webhooks/inbound-email. Receives email payloads sent to legal@, privacy@, and customer@ via Resend Inbound Webhooks.
+8.2 InboundMessage Schema:
+  - id: UUID (primary key)
+  - sender_email: str
+  - recipient_alias: str
+  - subject: str
+  - text_body: Optional[str]
+  - html_body: Optional[str]
+  - status: MessageStatus Enum (unread, in_progress, resolved)
+  - created_at: datetime
+8.3 Routing & Notifications: Route messages based on alias to compliance (#compliance) or support (#support) Slack channels with sender details, subject, a 150-char snippet, and an admin thread CTA.
+8.4 Auto-Responder: Contextual outbound email template sent via Resend immediately on successful DB commit to confirm receipt.
+
+
+9. Phase 10: VSL Conversion Funnel Specifications
+9.1 Video Player Integration: Next.js landing page at /vsl containing custom HTML5 video component streaming from ImageKit.io.
+9.2 Delayed CTA Reveal: Omit global navigation and footer elements on the layout. Hide CTA buttons and micro-copy until the ended event is dispatched, utilizing Framer Motion for exit/entry animations.
+9.3 Inbound Intent Telemetry API: POST /api/v1/track/intent payload structure:
+  - aura_id: str
+  - email: Optional[str]
+  - completion_percentage: int
+  - is_completed: bool
+  - client_id: UUID
+Updates the matching Prospect or Visit record's vsl_completion_percentage and vsl_completed_at values.
+9.4 Slack Intelligence Routing: Triggers alert to #prospects channel when a known company reaches 100% VSL completion.
+
+
+10. Phase 11: Advanced Banner Data Flow & Entity Stitching Specifications
+10.1 Multi-Tenant DB: Ensure `client_id` (UUID) is present and scoped across Visit, Company, and Prospect tables to enforce data isolation.
+10.2 Immediate Enrichment Background Workers: Instantly trigger IPinfo and Apollo API enrichment tasks in background on banner form submission.
+10.3 Stitching Engine: Implement deterministic and AI-powered entity stitching protocol:
+  - Substring matching checks if user-provided banner name is inside enriched name.
+  - Fast DeepSeek verification handles matching evaluation and ISP check fallback.
+  - Discard ISP name and fallback to banner name if LLM marks enriched record as ISP.
+10.4 Surge Alerting: Trigger real-time alert to client when visitor count threshold for a single company is crossed (e.g., 3 unique forensic IDs).
+
+11. Phase 12: Decoupled Edge Architecture Specifications
+11.1 Client Installation: Clients integrate a single tag: `<script src="https://cdn.auraworks.co.za/aura.js" data-client-id="[UUID]" defer></script>`.
+11.2 Handshake: `aura.js` parses the `data-client-id` and checks remote configuration: `GET https://api.auraworks.co.za/v1/clients/config?client_id=[UUID]&tz=[TZ]`.
+11.3 Dynamic Script Injection: If the backend configuration signals `require_consent_banner === true`, the client script dynamically appends a new script tag loading `banner.js` from `https://banner.auraworks.co.za/banner.js`.
+11.4 Shadow DOM UI Isolation: `banner.js` builds the 4-phase consent banner entirely in Vanilla JavaScript inside an isolated Shadow DOM Root container to prevent client CSS styling bleeding or script collision.
+11.5 Decoupled CustomEvent Architecture:
+  - Communication is strictly event-driven:
+  - `aura.js` dispatches `aura:ready` containing `auraId`, `clientId`, and `config`.
+  - `banner.js` listens to `aura:ready` to bootstrap the banner, and dispatches `aura_warm_lead` event on form submissions.
+  - `aura.js` captures `aura_warm_lead`, stamps UTMs, session ID, and telemetry, then dispatches the payload to the backend ingestion endpoint.
+11.6 Edge Deployment: All files inside the tracking bundle (`aura.js`, `banner.js`) are minified via Terser locally and synced to edge buckets with `Cache-Control: public, max-age=86400`.
+
+12. Phase 13: Provisioning Dashboard & Admin Console Specifications
+
+12.1 Multi-Tenant Client Ledger Schema:
+* Extends the `Client` table with list-based `whitelisted_domains` arrays (PostgreSQL `ARRAY` datatype with a fallback to `JSON` for SQLite tests).
+* Adds a constructor override on instantiation to preserve backward compatibility, translating the legacy singular `domain` string to `whitelisted_domains` arrays, and vice versa.
+* Includes flags `require_consent_banner` and `collect_personal_data` to govern edge tracker configurations.
+
+12.2 Admin Authentication (JWT Engine):
+* **Login Gateway**: `/api/v1/auth/login` accepts admin credentials, validates against system secrets, and returns short-lived access and refresh tokens.
+* **Token Protection**: FastAPI endpoints are protected via `get_current_admin` dependencies checking the JWT signature, validity, and expiration.
+* **Fallback Verification**: Backend telemetry proxies accept authentication from either legacy `X-Aura-Token` header key strings or modern `Authorization: Bearer [JWT]` headers to secure administrative API routes.
+* **Routing Middleware**: Next.js custom middleware guards all `/admin/*` routes, checking the presence of a secure `admin_access_token` cookie and redirecting unauthenticated visitors to `/login`.
+
+12.3 Two-Tier High-Speed Config Cache:
+* **Tier 1 (Redis)**: Tries to read/write JSON-serialized client configurations from a Redis instance for sub-millisecond edge resolution.
+* **Tier 2 (In-Memory Fallback)**: Automatically falls back to a Python LRU cache (`cachetools.TTLCache`) with a 5-minute TTL if Redis is offline or unreachable. Connection failures degrade silently without raising HTTP 500 errors.
+* **Config Resolution Route**: `GET /v1/clients/config` resolves matching client whitelisted domains against request origins to authorize tracking handshakes.
+
+12.4 Snippet Generation & Verification Console:
+* **Administration Panel**: High-fidelity dark mode dashboard with active tenant switcher, client registration modal, and live leads feed.
+* **Copy Deployment Snippet**: Modal dynamically interpolates the registered client UUID into a production HTML script tag, with a copy-to-clipboard mechanism.
+* **Telemetry Verification Indicator**: Active status component polls `GET /api/v1/clients/{client_id}/verify` to trace visits linked to the tenant UUID. Once a visit is detected, the status transitions to "Installed & Active" and triggers a leads table refresh.
+
+12.5 Cross-Subdomain Session & Telemetry Validation (Phase 16):
+* **Cross-Subdomain Cookies**: FastAPI-Users authentication utilizes `CookieTransport` configured with `cookie_domain = "auraworks.co.za"`, `cookie_secure = True`, and `cookie_samesite = "lax"`. This ensures authentication credentials flow seamlessly between `api.auraworks.co.za` and `www.auraworks.co.za`.
+* **Flexible Telemetry Payload**: The `/v1/track/event` endpoint accepts a flexible Pydantic schema with `properties: Dict[str, Any] = Field(default_factory=dict)` to ingest dynamic client-side tracking parameters without raising 422 errors.
+* **Unified Terminology & Robustness**: Legacy waitlist references are completely replaced by the prospect engine across client-side scripts. The client-side tracker utilizes a capped retry queue to handle failed dispatches silently.
+
+13. Phase 17: Database State Recovery & Pipeline Synchronization Specifications
+13.1 Alembic Schema Consolidation & RLS Baseline:
+* Migration history is consolidated into a single unified schema baseline (`ed255488d937_phase_17_baseline.py`) registering all SQLModel models (Client, Transaction, User, Visit, PageView, Prospect, etc.) and explicitly establishing Row-Level Security (RLS) tenant isolation policies on the `visit`, `page_view`, `prospect`, and `company` tables.
+13.2 Resilient Container Startup Sequence:
+* The production deployment boot script (`start.sh`) runs database migrations programmatically via `alembic upgrade head` wrapped in a defensive shell trap that intercepts errors, preventing startup crash cascades and ensuring ASGI server boot even in out-of-sync db states.
+13.3 Programmatic Admin Seeder:
+* Seed script (`seed_admin.py`) programmatically registers and hashes the default administrator superuser (`ReitumetseF`) using the configured `UserManager` password hashing helper, injecting users into both standard `user` and legacy `admin_user` tables safely.
+
+14. Phase 18: Full-Stack Authentication & Security Overhaul Specifications
+14.1 Backend Session Cookie Security:
+* The insecure legacy JWT token fallback decoder in `get_current_admin` is deprecated and deleted. The system enforces strict cookie-only authentication via FastAPI-Users session cookies (`FastAPIUsers.current_user`).
+* The `RedirectCookieTransport` is dynamically adjusted to avoid hardcoding production domains, resolving redirect loops across localized test settings.
+* `COOKIE_DOMAIN` resolves to `None` under local environment contexts and strictly `.auraworks.co.za` in production.
+14.2 Dual-Login Case Insensitivity:
+* Email lookup in `UserManager.authenticate` queries the user record using SQLAlchemy `func.lower()` matching against the username/email input, ensuring case-insensitive authentication handles login payloads correctly.
+* The administrative database seeder `seed_admin.py` registers the default admin superuser using the raw plaintext password, delegating the hashing process to the `UserManager` context to avoid double-hashing states.
+14.3 Frontend Login Form & Callback Routing:
+* Next.js manual credentials login page parses fields to prevent compiling empty/null attributes.
+* Next.js Google OAuth callback component removes duplicate authorization requests and acts as a lightweight pass-through forwarding users directly to the secure command dashboard.
+14.4 Tenant Authorization Perimeter Gates:
+* Client-specific query endpoints (e.g. `/api/v1/leads`) explicitly check permission rules, validating that the authenticated admin user possesses direct query mapping permissions for the requested `client_id` parameter to deny cross-tenant context leaks.
+15. Phase 19: Alembic Hard Reset & Database Initialization Specifications
+15.1 Baseline Migration Consolidation:
+* Clears all old, tangled, and legacy migrations from the versions history and establishes a single autogenerated baseline migration capturing the complete SQLModel schema.
+* Integrates PostgreSQL Row-Level Security (RLS) policies and forces them on multitenant tables (visit, page_view, prospect, company) within the baseline migration script.
+15.2 Programmatic DB Initialization:
+* Ensures clean setup of tables and schema elements, with automated seeder injection of the default superuser ReitumetseF account via UserManager.
+
+16. Phase 20: Cloud Gateway & Container Binding Stabilization Specifications
+16.1 Container Host Binding & Dynamic Port:
+* Enforces explicit Uvicorn binding to `0.0.0.0` instead of the local loopback `127.0.0.1` to enable proper routing through the Railway edge proxy.
+* Runs Uvicorn inside a shell execution context (`sh -c`) in order to resolve the dynamic environment variable `$PORT` (defaulting to 8000 if absent) as an integer.
+16.2 Database Driver Auto-Correction:
+* Upgrades the database session engine setup to check incoming `DATABASE_URL` strings and replace `postgresql://` protocol prefixes with `postgresql+asyncpg://` to prevent runtime crashes caused by incompatible synchronous drivers.
+
+17. Phase 21: Frontend Handoff & Client Initialization Specifications
+17.1 Frontend Login Form integrity:
+* Employs explicit `e.preventDefault()` at the beginning of the submit handler inside Next.js login to block browser refresh and fetch cancellation.
+* Enforces router redirection sequence only when the async login fetch successfully resolves.
+17.2 Cookie Subdomain Alignments:
+* Configures `COOKIE_DOMAIN` to support wildcard subdomains (`.auraworks.co.za`) in production, enabling seamless cross-domain session access.
+17.3 Client Configuration Seeding:
+* Implements database seed scripts to insert baseline telemetry configuration metadata for target telemetry IDs to prevent client tracking 404 responses.
+
+18. Phase 22: Frontend Authentication Handoff Resolution Specifications
+18.1 Frontend Login Form Redirection:
+* Prevents empty-body JSON parsing errors by removing `await res.json()` calls upon successful logins (which return `204 No Content`), instead directly executing programmatic redirection to `/aurahq/dashboard`.
+18.2 Frontend Testing Coverage:
+* Implements Jest tests verifying that the login form correctly handles a `204 No Content` response and calls `router.push` with the intended path.
+
+19. Phase 23: OAuth Client Exposure & Security Alignment Specifications
+19.1 Frontend Environment Expose:
+* Next.js requires environment variables accessed on the client-side to be prefixed with `NEXT_PUBLIC_` to prevent them from being hidden as server-side secrets. The Google Client ID variable is updated to `NEXT_PUBLIC_GOOGLE_CLIENT_ID` across the frontend repository and environment configurations.
+19.2 Build Validation:
+* Runs next build dry-run configurations to ensure static bundle generation operates successfully with the updated public environment settings.
+</file>
+
 <file path="docs/implementation_plan.md">
 AuraWorks Industrial Intelligence Engine (v1.0)
 Comprehensive Master Implementation Plan & Agentic Execution Roadmap
@@ -22155,111 +22471,54 @@ Task 19.4: Admin Seeder Execution
 Register and seed the default superuser ReitumetseF account.
 Task 19.5: Ledger Sync & Commit
 Log migrations and provide Git push steps.
-</file>
 
-<file path="backend/app/core/config.py">
-# backend/app/core/config.py
-from dotenv import load_dotenv
-load_dotenv()
+Phase 20: Cloud Gateway & Container Binding Stabilization [COMPLETED]
+This phase resolves the 502 Bad Gateway errors by correcting the Uvicorn host binding and environment variable expansion inside the Railway container, and hardening the AsyncPG driver compatibility.
+Task 20.1: Documentation Sync & Ledger Consolidation
+Read the /docs directory to absorb project guidelines. Update relevant architectural documents to include Phase 20 specifications. Consolidate all tasks in the main task.md file.
+Task 20.2: Host & Port Binding Correction
+Audit and refactor Uvicorn startup script/commands to explicitly run `uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}"` inside a shell context to ensure correct variable expansion. Write and pass shell execution tests.
+Task 20.3: Driver Protocol Hardening
+Update engine creation in `app/db.py` to auto-correct standard `postgresql://` URLs to `postgresql+asyncpg://` to prevent lifespan crashes under asynchronous drivers. Write and pass unit tests for the URL parser.
+Task 20.4: TDD Verification Gate
+Run the complete backend test suite to ensure 100% test coverage and validation of all changes.
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional, List
+Phase 21: Frontend Handoff & Client Initialization [COMPLETED]
+This phase resolves Next.js Fetch failures during login, alignment of subdomain authentication cookies, and seeds required client configuration data.
+Task 21.1: Documentation Sync & Ledger Consolidation
+Update roadmaps, checklists, spec-sheets, and task ledgers with Phase 21 plans.
+Task 21.2: Frontend Form Handoff Patch
+Add `e.preventDefault()` to the login form submit handler to prevent browser reloads from interrupting fetch calls, and strictly trigger redirects only on successful status codes.
+Task 21.3: Cookie Domain Verification
+Audit and enforce `.auraworks.co.za` domain parameter for production auth cookies to support seamless subdomain handoffs.
+Task 21.4: Telemetry Data Seeder
+Modify/create seeder script to programmatically write client configuration record to resolve 404 tracker errors.
+Task 21.5: TDD Verification Gate
+Execute frontend and backend tests to verify all functionality is fully correct.
 
+Phase 22: Frontend Authentication Handoff Resolution [COMPLETED]
+This phase resolves a critical bug where the backend successfully authenticates a user and returns a `204 No Content` status, but the Next.js frontend fails to redirect to the dashboard, likely due to a `.json()` parsing crash on an empty body or a missing programmatic router.
+Task 22.1: Documentation Sync
+Consolidate roadmaps, checklists, and specs inside the /docs directory and root task.md to track Phase 22 progress.
+Task 22.2: Route Destination Verification
+Verify the Next.js route directory hierarchy to confirm the exact location and path of the authenticated dashboard (e.g. `/aurahq/dashboard`).
+Task 22.3: Fetch Response Handling Patch
+Refactor the credentials login submit handler to bypass `.json()` parsing on successful responses (which return a 204 No Content state) and route programmatically using the App Router.
+Task 22.4: Frontend Test Coverage
+Write unit tests for the login page component to verify that 204 successful auth calls execute proper router push calls.
+Task 22.5: Full Suite Verification
+Run the frontend and backend verification tests to achieve full coverage and correctness.
 
-class Settings(BaseSettings):
-    # --- APP SETTINGS ---
-    PROJECT_NAME: str = "AuraWorks Industrial Intelligence OS"
-    VERSION: str = "3.2.1"  # Forensic v3.2.1 Async Support
-    API_V1_STR: str = "/api/v1"
-    ENVIRONMENT: str = "development"
-    API_DOMAIN: Optional[str] = None
-
-    # --- SECURITY & AUTH ---
-    # Formal authentication for the industrial dashboard
-    ADMIN_API_KEY: str = "change-me-in-production" 
-    SECRET_KEY: Optional[str] = None  
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 11520  # 8 days (matches long-cycle industrial procurement)
-    GOOGLE_CLIENT_ID: Optional[str] = None
-    GOOGLE_CLIENT_SECRET: Optional[str] = None
-    OAUTH_REDIRECT_URI: Optional[str] = None
-    COOKIE_DOMAIN: Optional[str] = "auraworks.co.za"
-
-    
-    # --- DATABASE ---
-    # Set to Optional to prevent build-time crashes on platforms like Railway
-    DATABASE_URL: Optional[str] = None 
-    REDIS_URL: Optional[str] = None
-    PAYGENIUS_WEBHOOK_SECRET: Optional[str] = None
-    
-    # --- IKHOKHA PAYMENT INTEGRATION ---
-    IKHOKHA_API_URL: str = "https://api.ikhokha.com"
-    IKHOKHA_CLIENT_ID: Optional[str] = None
-    IKHOKHA_CLIENT_SECRET: Optional[str] = None
-    IKHOKHA_WEBHOOK_SECRET: Optional[str] = None
-    
-    # --- ENRICHMENT TRIAD (National Scaling) ---
-    IPINFO_TOKEN: Optional[str] = None 
-    APOLLO_API_KEY: Optional[str] = None 
-    
-    # --- INTELLIGENCE BRAIN ---
-    DEEPSEEK_API_KEY: Optional[str] = None 
-    
-    # --- THE VAULT (Airtable Sink) ---
-    AIRTABLE_BASE_ID: Optional[str] = None 
-    AIRTABLE_API_KEY: Optional[str] = None
-    AIRTABLE_TABLE_NAME: str = "Forensic_Leads" 
-    
-    # --- PROJECT SPACE (Notion) ---
-    NOTION_DATABASE_ID: Optional[str] = None 
-    NOTION_TOKEN: Optional[str] = None
-
-    # --- NOTIFICATIONS & DISPATCH ---
-    SLACK_WEBHOOK_URL: Optional[str] = None        
-    SLACK_VISIT_WEBHOOK_URL: Optional[str] = None  
-    SLACK_COMPLIANCE_WEBHOOK_URL: Optional[str] = None
-    SLACK_SUPPORT_WEBHOOK_URL: Optional[str] = None
-    
-    # --- EXCLUSIVE RESEND EMAIL DISPATCH ENGINE ---
-    RESEND_API_KEY: Optional[str] = None
-    RESEND_FROM_EMAIL: str = "AuraWorks <onboarding@auraworks.co.za>"
-    CALENDLY_LINK: str = "https://calendly.com/auraworks/demo"
-    CALENDLY_WEBHOOK_SECRET: Optional[str] = None
-    RESEND_WEBHOOK_SECRET: Optional[str] = None
-
-    # --- EXTERNAL INTEGRATIONS ---
-    NEXT_PUBLIC_WAITLIST_API_KEY: Optional[str] = None
-    NEXT_PUBLIC_WAITLIST_ID: Optional[str] = None
-
-    # --- CORS SETTINGS (Industrial Perimeter) ---
-    ALLOWED_ORIGINS: List[str] = [
-        "https://industrial-intelligence-xi.vercel.app", 
-        "http://localhost:3000",
-        "https://auraworks.co.za",
-        "https://www.auraworks.co.za",
-        "https://cdn.auraworks.co.za",
-        "https://dynamic-flow-production-a5d6.up.railway.app",
-        "https://industrial-intelligence-git-main-allen-reileys-projects.vercel.app",
-        "https://industrial-intelligence-lttxeot8z-allen-reileys-projects.vercel.app",
-        "https://api.auraworks.co.za",
-        "https://banner.auraworks.co.za",
-        "https://api.auraworks.co.za/v1/track/event"
-    ]
-
-    # Modern Pydantic V2 Configuration
-    model_config = SettingsConfigDict(
-        env_file=None, # Prevents local .env from overriding production environment vars
-        case_sensitive=True,
-        extra="ignore"  # Prevents crash if extra metadata env vars are passed by Railway
-    )
-
-    def __init__(self, **data):
-        super().__init__(**data)
-        if self.ENVIRONMENT in ["development", "dev", "local"]:
-            self.COOKIE_DOMAIN = None
-        else:
-            self.COOKIE_DOMAIN = ".auraworks.co.za"
-
-settings = Settings()
+Phase 23: OAuth Client Exposure & Security Alignment [COMPLETED]
+This phase resolves an issue where the Next.js frontend is failing to render or authorize the Google Login component because the Google Client ID environment variable is missing the required `NEXT_PUBLIC_` prefix, causing Next.js to silently strip it from the client bundle.
+Task 23.1: Documentation Sync
+Consolidate roadmaps, checklists, and specs inside the /docs directory and root task.md to track Phase 23 progress.
+Task 23.2: Codebase Search & Replace
+Search the `frontend/` directory for `process.env.GOOGLE_CLIENT_ID` and replace it with `process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
+Task 23.3: Local Environment Patch
+Update `frontend/.env` or `frontend/.env.local` to rename `GOOGLE_CLIENT_ID` to `NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
+Task 23.4: Static Build & Test Verification
+Verify the frontend test suite and execute `npm run build` to confirm compiling of the frontend build bundle.
 </file>
 
 <file path="backend/app/api/v1/track.py">
@@ -22874,6 +23133,35 @@ async def track_intent(
     - [x] Task 19.4: Admin Seeder Execution
     - [x] Task 19.5: Ledger Sync & Commit
 
+- [x] **PHASE 20: CLOUD GATEWAY & CONTAINER BINDING STABILIZATION**
+    - [x] Task 20.1: Documentation Sync & Ledger Consolidation
+    - [x] Task 20.2: Host & Port Binding Correction
+    - [x] Task 20.3: Driver Protocol Hardening
+    - [x] Task 20.4: TDD Verification Gate
+
+- [x] **PHASE 21: FRONTEND HANDOFF & CLIENT INITIALIZATION**
+    - [x] Task 21.1: Documentation Sync & Ledger Consolidation
+    - [x] Task 21.2: Frontend Form Handoff Patch
+    - [x] Task 21.3: Cookie Domain Verification
+    - [x] Task 21.4: Telemetry Data Seeder
+    - [x] Task 21.5: TDD Verification Gate
+
+- [x] **PHASE 22: FRONTEND AUTHENTICATION HANDOFF RESOLUTION**
+    - [x] Task 22.1: Documentation Sync
+    - [x] Task 22.2: Route Destination Verification
+    - [x] Task 22.3: Fetch Response Handling Patch
+    - [x] Task 22.4: Frontend Test Coverage
+    - [x] Task 22.5: Full Suite Verification
+
+- [x] **PHASE 23: OAUTH CLIENT EXPOSURE & SECURITY ALIGNMENT**
+    - [x] Task 23.1: Documentation Sync
+    - [x] Task 23.2: Codebase Search & Replace
+    - [x] Task 23.3: Local Environment Patch
+    - [x] Task 23.4: Static Build & Test Verification
+
+
+
+
 
 # AuraWorks Next.js Frontend Integration & UI Overhaul Log (Phase 16)
 
@@ -23027,6 +23315,36 @@ This log details the execution, design decisions, and completed steps for Phase 
   - **Task 19.4: Admin Seeder Execution**: Successfully seeded the default superuser account.
   - **Task 19.5: Decouple Alembic from Startup**: Removed programmatic Alembic migration triggers from the FastAPI lifespan startup hook (`backend/app/main.py` and `backend/app/db.py`) and commented out migrations in `backend/start.sh` to prevent container boot hangs. Set Uvicorn port binding to respect the `$PORT` environment variable (e.g. `PORT:-8080`) dynamically.
   - **Task 19.6: Test Alignment**: Adjusted `backend/tests/test_startup.py` to verify the decoupled ASGI startup sequence. Verified that all 85 backend tests and 24 frontend tests pass successfully.
+
+## 16. Phase 20: Cloud Gateway & Container Binding Stabilization
+- **Actions Taken**:
+  - **Task 20.1: Documentation Sync & Ledger Consolidation**: Sync implementation plan, architectural specification, spec sheet, and task ledger.
+  - **Task 20.2: Host & Port Binding Correction**: Update `start.sh` to bind to `0.0.0.0` and correctly expand the `$PORT` environment variable. Add tests to verify Uvicorn binding settings.
+  - **Task 20.3: Driver Protocol Hardening**: Modify database engine setup in `app/db.py` to convert standard `postgresql://` URLs to `postgresql+asyncpg://` asynchronously. Add unit tests for database URL formatting.
+  - **Task 20.4: TDD Verification Gate**: Ensure all tests run and pass.
+
+## 17. Phase 21: Frontend Handoff & Client Initialization
+- **Actions Taken**:
+  - **Task 21.1: Documentation Sync & Ledger Consolidation**: Consolidated Phase 21 plans, spec-sheets, and roadmaps.
+  - **Task 21.2: Frontend Form Handoff Patch**: Inject `e.preventDefault()` into frontend login handler and strictly route on successful response.
+  - **Task 21.3: Cookie Domain Verification**: Audit backend config to verify `COOKIE_DOMAIN` resolves to `.auraworks.co.za` in production.
+  - **Task 21.4: Telemetry Data Seeder**: Create/modify Python seeder script to inject baseline client config. Patched `seed_client.py` to ensure the parent `Client` record (ID: `c4a6c9b1-8355-4de2-985d-a04f4dcd63a0`, Name: `AuraWorks HQ`) is explicitly created and committed sequentially BEFORE attempting to seed dependent telemetry configuration (ClientConfig) dynamically, preventing potential Foreign Key violations (`visit_client_id_fkey`).
+  - **Task 21.5: TDD Verification Gate**: Run the complete test suite and ensure 100% test coverage.
+
+## 18. Phase 22: Frontend Authentication Handoff Resolution
+- **Actions Taken**:
+  - **Task 22.1: Documentation Sync**: Consolidate checklists, update `/docs`, and set up the progress tracking ledger for Phase 22.
+  - **Task 22.2: Route Destination Verification**: Scan the Next.js frontend directory to confirm the exact file path and route for the authenticated dashboard.
+  - **Task 22.3: Fetch Response Handling Patch**: Open the Next.js login component. Locate the fetch call to `/api/v1/auth/login`. Ensure `e.preventDefault()` is called. Remove any `res.json()` calls, as a `204` response has no body and will crash the script. Wrap the redirect logic in an `if (res.ok)` or `if (res.status === 204)` block, and use `router.push()`.
+  - **Task 22.4: Frontend Test Coverage**: Write or update React testing components to simulate a successful `204` login response and verify router.push is called.
+  - **Task 22.5: Full Suite Verification**: Run the frontend test suite to ensure 100% coverage.
+
+## 19. Phase 23: OAuth Client Exposure & Security Alignment
+- **Actions Taken**:
+  - **Task 23.1: Documentation Sync**: Consolidate checklists, update `/docs`, and set up the progress tracking ledger for Phase 23.
+  - **Task 23.2: Codebase Search & Replace**: Scan the `frontend/` directory for any references to `process.env.GOOGLE_CLIENT_ID` and replace them strictly with `process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
+  - **Task 23.3: Local Environment Patch**: Update local environment files (`frontend/.env` or `frontend/.env.local`), changing `GOOGLE_CLIENT_ID` key to `NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
+  - **Task 23.4: Static Build & Test Verification**: Run the frontend test suite and execute a dry-run build (`npm run build`) to ensure successful compilation.
 </file>
 
 </files>

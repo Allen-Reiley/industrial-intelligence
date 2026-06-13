@@ -8,7 +8,7 @@ import { navigateToUrl } from '@/lib/utils';
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,12 +21,12 @@ function LoginForm() {
     try {
       const redirectUri = `${window.location.origin}/login/callback`;
       const authorizeUrl = `${API_BASE.replace(/\/$/, '')}/api/v1/auth/google/authorize?redirect_uri=${encodeURIComponent(redirectUri)}`;
-      
+
       const res = await fetch(authorizeUrl);
       if (!res.ok) {
         throw new Error('Failed to initialize Google authentication handshake.');
       }
-      
+
       const data = await res.json();
       if (data.authorization_url) {
         navigateToUrl(data.authorization_url);
@@ -39,21 +39,20 @@ function LoginForm() {
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    // Explicitly prevent default form submission at the very beginning to avoid page reloads
     e.preventDefault();
     setLoading(true);
     setError('');
 
     const form = e.currentTarget;
     const usernameEl = (
-      form.elements.namedItem('username') || 
-      form.elements.namedItem('email') || 
-      document.getElementById('username') || 
+      form.elements.namedItem('username') ||
+      form.elements.namedItem('email') ||
+      document.getElementById('username') ||
       document.getElementById('email')
     ) as HTMLInputElement | null;
-    
+
     const passwordEl = (
-      form.elements.namedItem('password') || 
+      form.elements.namedItem('password') ||
       document.getElementById('password')
     ) as HTMLInputElement | null;
 
@@ -69,31 +68,27 @@ function LoginForm() {
         body: new URLSearchParams({ username: targetUsername, password: targetPassword }),
       });
 
-      // Handle the redirect only if response is ok or explicitly a 204 status (success with no body)
-      if (res.ok || res.status === 204) {
-        // FastAPI-Users login sets HttpOnly cookie "aurahq_auth" on success.
-        // Set dummy localStorage tokens for backward compatibility if components check them
-        localStorage.setItem('admin_token', 'session_cookie_active');
-        localStorage.setItem('admin_refresh_token', 'session_cookie_active');
-
-        const redirectPath = searchParams.get('from') || '/aurahq/dashboard';
-        router.push(redirectPath);
-      } else {
+      if (!res.ok) {
         let errorMsg = 'Invalid administrative credentials.';
-        // Do not attempt to parse JSON on 204 status responses to avoid crashes
-        if (res.status !== 204) {
-          try {
-            const errorData = await res.json();
-            console.error("Auth Failure Detail:", errorData.detail);
-            if (errorData && errorData.detail) {
-              errorMsg = errorData.detail;
-            }
-          } catch (e) {
-            // Ignore parsing error, fallback to default
+        try {
+          const errorData = await res.json();
+          console.error("Auth Failure Detail:", errorData.detail);
+          if (errorData && errorData.detail) {
+            errorMsg = errorData.detail;
           }
+        } catch (e) {
+          // ignore parsing error, use default
         }
         throw new Error(errorMsg);
       }
+
+      // FastAPI-Users login sets HttpOnly cookie "aurahq_auth" on success.
+      // Set dummy localStorage tokens for backward compatibility if components check them
+      localStorage.setItem('admin_token', 'session_cookie_active');
+      localStorage.setItem('admin_refresh_token', 'session_cookie_active');
+
+      const redirectPath = searchParams.get('from') || '/aurahq/dashboard';
+      router.push(redirectPath);
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
     } finally {
@@ -106,7 +101,7 @@ function LoginForm() {
       {/* Background Decorative Elements */}
       <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-indigo-500/5 blur-[150px]" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-amber-500/5 blur-[150px]" />
-      
+
       <div className="w-full max-w-md z-10">
         {/* Brand Header */}
         <div className="flex flex-col items-center mb-8">
@@ -120,7 +115,7 @@ function LoginForm() {
         {/* Login Card */}
         <div className="bg-[#0c0c0e]/80 border border-zinc-850 backdrop-blur-xl rounded-2xl p-8 shadow-2xl relative overflow-hidden group hover:border-zinc-800/80 transition-all duration-300">
           <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent" />
-          
+
           <div className="space-y-6">
             {/* Error Message */}
             {error && (
@@ -134,8 +129,6 @@ function LoginForm() {
             <button
               type="button"
               onClick={handleGoogleLogin}
-              // @ts-ignore
-              clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}
               className="w-full bg-[#0f0f11] hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-750 text-zinc-100 font-semibold text-[10px] uppercase tracking-widest py-3.5 rounded-lg transition-all duration-150 flex items-center justify-center gap-3 cursor-pointer"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -162,7 +155,7 @@ function LoginForm() {
                 <label htmlFor="username" className="text-[10px] font-bold uppercase tracking-widest text-zinc-550 block">System Username</label>
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
-                  <input 
+                  <input
                     id="username"
                     name="username"
                     type="text"
@@ -180,7 +173,7 @@ function LoginForm() {
                 <label htmlFor="password" className="text-[10px] font-bold uppercase tracking-widest text-zinc-550 block">Security Key</label>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
-                  <input 
+                  <input
                     id="password"
                     type="password"
                     required
