@@ -344,3 +344,12 @@ Updates the matching Prospect or Visit record's vsl_completion_percentage and vs
 * Runs Uvicorn inside a shell execution context (`sh -c`) in order to resolve the dynamic environment variable `$PORT` (defaulting to 8000 if absent) as an integer.
 16.2 Database Driver Auto-Correction:
 * Upgrades the database session engine setup to check incoming `DATABASE_URL` strings and replace `postgresql://` protocol prefixes with `postgresql+asyncpg://` to prevent runtime crashes caused by incompatible synchronous drivers.
+
+17. Phase 21: Frontend Handoff & Client Initialization Specifications
+17.1 Frontend Login Form integrity:
+* Employs explicit `e.preventDefault()` at the beginning of the submit handler inside Next.js login to block browser refresh and fetch cancellation.
+* Enforces router redirection sequence only when the async login fetch successfully resolves.
+17.2 Cookie Subdomain Alignments:
+* Configures `COOKIE_DOMAIN` to support wildcard subdomains (`.auraworks.co.za`) in production, enabling seamless cross-domain session access.
+17.3 Client Configuration Seeding:
+* Implements database seed scripts to insert baseline telemetry configuration metadata for target telemetry IDs to prevent client tracking 404 responses.

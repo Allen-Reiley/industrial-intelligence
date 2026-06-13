@@ -247,3 +247,16 @@ Task 20.3: Driver Protocol Hardening
 Update engine creation in `app/db.py` to auto-correct standard `postgresql://` URLs to `postgresql+asyncpg://` to prevent lifespan crashes under asynchronous drivers. Write and pass unit tests for the URL parser.
 Task 20.4: TDD Verification Gate
 Run the complete backend test suite to ensure 100% test coverage and validation of all changes.
+
+Phase 21: Frontend Handoff & Client Initialization [COMPLETED]
+This phase resolves Next.js Fetch failures during login, alignment of subdomain authentication cookies, and seeds required client configuration data.
+Task 21.1: Documentation Sync & Ledger Consolidation
+Update roadmaps, checklists, spec-sheets, and task ledgers with Phase 21 plans.
+Task 21.2: Frontend Form Handoff Patch
+Add `e.preventDefault()` to the login form submit handler to prevent browser reloads from interrupting fetch calls, and strictly trigger redirects only on successful status codes.
+Task 21.3: Cookie Domain Verification
+Audit and enforce `.auraworks.co.za` domain parameter for production auth cookies to support seamless subdomain handoffs.
+Task 21.4: Telemetry Data Seeder
+Modify/create seeder script to programmatically write client configuration record to resolve 404 tracker errors.
+Task 21.5: TDD Verification Gate
+Execute frontend and backend tests to verify all functionality is fully correct.

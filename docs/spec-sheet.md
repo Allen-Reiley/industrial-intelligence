@@ -367,3 +367,10 @@ Phase 13 establishes the internal console for managing multi-tenant client deplo
 ## 17. Phase 20: Cloud Gateway & Container Binding Stabilization Specifications
 * **Container Host Binding**: Binds Uvicorn to `0.0.0.0` inside a shell execution context to support proper port dynamic mapping via Railway proxies.
 * **Database Driver Auto-Correction**: Sanitizes DB URLs on startup to translate `postgresql://` into `postgresql+asyncpg://`, protecting the async engine context.
+
+---
+
+## 18. Phase 21: Frontend Handoff & Client Initialization Specifications
+* **Frontend Form Handoff**: Form submission explicitly calls `e.preventDefault()` and strictly resolves routing redirection upon successful status codes.
+* **Cookie Domain Alignment**: Backend drops authentication cookies with a leading dot domain (`.auraworks.co.za`) in production to support multi-subdomain routing.
+* **Telemetry Seeding**: Adds database initialization scripts to securely seed baseline telemetry configurations to prevent tracker 404 response errors.

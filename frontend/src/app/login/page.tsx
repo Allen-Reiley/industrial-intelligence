@@ -39,6 +39,7 @@ function LoginForm() {
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    // Explicitly prevent default form submission at the very beginning to avoid page reloads
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -68,7 +69,17 @@ function LoginForm() {
         body: new URLSearchParams({ username: targetUsername, password: targetPassword }),
       });
 
-      if (!res.ok) {
+      // Strictly await fetch resolution and execute routing only if res.ok or a 204 No Content is returned
+      const isSuccess = res.ok || res.status === 204;
+      if (isSuccess) {
+        // FastAPI-Users login sets HttpOnly cookie "aurahq_auth" on success.
+        // Set dummy localStorage tokens for backward compatibility if components check them
+        localStorage.setItem('admin_token', 'session_cookie_active');
+        localStorage.setItem('admin_refresh_token', 'session_cookie_active');
+
+        const redirectPath = searchParams.get('from') || '/aurahq/dashboard';
+        router.push(redirectPath);
+      } else {
         let errorMsg = 'Invalid administrative credentials.';
         try {
           const errorData = await res.json();
@@ -81,14 +92,6 @@ function LoginForm() {
         }
         throw new Error(errorMsg);
       }
-
-      // FastAPI-Users login sets HttpOnly cookie "aurahq_auth" on success.
-      // Set dummy localStorage tokens for backward compatibility if components check them
-      localStorage.setItem('admin_token', 'session_cookie_active');
-      localStorage.setItem('admin_refresh_token', 'session_cookie_active');
-
-      const redirectPath = searchParams.get('from') || '/aurahq/dashboard';
-      router.push(redirectPath);
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
     } finally {

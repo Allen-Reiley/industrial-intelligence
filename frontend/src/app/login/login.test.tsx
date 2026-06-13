@@ -117,4 +117,24 @@ describe('LoginPage Component Tests', () => {
       expect(mockPush).not.toHaveBeenCalled();
     });
   });
+
+  test('prevents default form submission event behavior', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({}),
+    });
+
+    render(<LoginPage />);
+
+    const form = screen.getByPlaceholderText('admin').closest('form');
+    expect(form).toBeInTheDocument();
+
+    const preventDefaultSpy = jest.spyOn(Event.prototype, 'preventDefault');
+    fireEvent.submit(form!);
+
+    expect(preventDefaultSpy).toHaveBeenCalled();
+    preventDefaultSpy.mockRestore();
+  });
 });
+
+
