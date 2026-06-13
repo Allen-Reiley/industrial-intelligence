@@ -353,3 +353,9 @@ Updates the matching Prospect or Visit record's vsl_completion_percentage and vs
 * Configures `COOKIE_DOMAIN` to support wildcard subdomains (`.auraworks.co.za`) in production, enabling seamless cross-domain session access.
 17.3 Client Configuration Seeding:
 * Implements database seed scripts to insert baseline telemetry configuration metadata for target telemetry IDs to prevent client tracking 404 responses.
+
+18. Phase 22: Frontend Authentication Handoff Resolution Specifications
+18.1 Frontend Login Form Redirection:
+* Prevents empty-body JSON parsing errors by removing `await res.json()` calls upon successful logins (which return `204 No Content`), instead directly executing programmatic redirection to `/aurahq/dashboard`.
+18.2 Frontend Testing Coverage:
+* Implements Jest tests verifying that the login form correctly handles a `204 No Content` response and calls `router.push` with the intended path.

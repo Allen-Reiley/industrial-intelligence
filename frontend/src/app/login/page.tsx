@@ -69,9 +69,8 @@ function LoginForm() {
         body: new URLSearchParams({ username: targetUsername, password: targetPassword }),
       });
 
-      // Strictly await fetch resolution and execute routing only if res.ok or a 204 No Content is returned
-      const isSuccess = res.ok || res.status === 204;
-      if (isSuccess) {
+      // Handle the redirect only if response is ok or explicitly a 204 status (success with no body)
+      if (res.ok || res.status === 204) {
         // FastAPI-Users login sets HttpOnly cookie "aurahq_auth" on success.
         // Set dummy localStorage tokens for backward compatibility if components check them
         localStorage.setItem('admin_token', 'session_cookie_active');
@@ -81,14 +80,17 @@ function LoginForm() {
         router.push(redirectPath);
       } else {
         let errorMsg = 'Invalid administrative credentials.';
-        try {
-          const errorData = await res.json();
-          console.error("Auth Failure Detail:", errorData.detail);
-          if (errorData && errorData.detail) {
-            errorMsg = errorData.detail;
+        // Do not attempt to parse JSON on 204 status responses to avoid crashes
+        if (res.status !== 204) {
+          try {
+            const errorData = await res.json();
+            console.error("Auth Failure Detail:", errorData.detail);
+            if (errorData && errorData.detail) {
+              errorMsg = errorData.detail;
+            }
+          } catch (e) {
+            // Ignore parsing error, fallback to default
           }
-        } catch (e) {
-          // ignore parsing error, use default
         }
         throw new Error(errorMsg);
       }

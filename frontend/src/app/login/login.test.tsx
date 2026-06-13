@@ -75,6 +75,35 @@ describe('LoginPage Component Tests', () => {
     });
   });
 
+  test('handles successful 204 No Content login with redirect', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      status: 204,
+    });
+
+    render(<LoginPage />);
+
+    fireEvent.change(screen.getByPlaceholderText('admin'), { target: { value: 'admin' } });
+    fireEvent.change(screen.getByPlaceholderText('••••••••••••'), { target: { value: 'secretkey' } });
+    
+    fireEvent.click(screen.getByRole('button', { name: /Initialize Console/i }));
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/auth/login'),
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: expect.any(URLSearchParams),
+        })
+      );
+    });
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith('/aurahq/dashboard');
+    });
+  });
+
   test('handles Login with Google button click', async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
