@@ -23,7 +23,7 @@ async def test_seed_client_execution():
         
         assert client is not None, f"Seeded client {client_id} was not found in database."
         assert client.domain == "auraworks.co.za", "Seeded client domain is incorrect."
-        assert client.company_name == "AuraWorks", "Seeded client company name is incorrect."
+        assert client.company_name == "AuraWorks HQ", "Seeded client company name is incorrect."
         assert "auraworks.co.za" in client.whitelisted_domains, "Seeded client whitelisted domains are incorrect."
         assert client.subscription_status == SubscriptionStatus.ACTIVE, "Seeded client subscription status is incorrect."
         assert client.category == ClientCategory.COMMERCIAL, "Seeded client category is incorrect."

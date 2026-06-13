@@ -302,6 +302,6 @@ This log details the execution, design decisions, and completed steps for Phase 
   - **Task 21.1: Documentation Sync & Ledger Consolidation**: Consolidated Phase 21 plans, spec-sheets, and roadmaps.
   - **Task 21.2: Frontend Form Handoff Patch**: Inject `e.preventDefault()` into frontend login handler and strictly route on successful response.
   - **Task 21.3: Cookie Domain Verification**: Audit backend config to verify `COOKIE_DOMAIN` resolves to `.auraworks.co.za` in production.
-  - **Task 21.4: Telemetry Data Seeder**: Create/modify Python seeder script to inject baseline client config.
+  - **Task 21.4: Telemetry Data Seeder**: Create/modify Python seeder script to inject baseline client config. Patched `seed_client.py` to ensure the parent `Client` record (ID: `c4a6c9b1-8355-4de2-985d-a04f4dcd63a0`, Name: `AuraWorks HQ`) is explicitly created and committed sequentially BEFORE attempting to seed dependent telemetry configuration (ClientConfig) dynamically, preventing potential Foreign Key violations (`visit_client_id_fkey`).
   - **Task 21.5: TDD Verification Gate**: Run the complete test suite and ensure 100% test coverage.
 
