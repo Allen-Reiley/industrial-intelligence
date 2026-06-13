@@ -386,3 +386,11 @@ Phase 13 establishes the internal console for managing multi-tenant client deplo
 ## 20. Phase 23: OAuth Client Exposure & Security Alignment Specifications
 * **Public Client Variable Exposure**: Prefix Google Client ID environment variable in the client bundle with `NEXT_PUBLIC_` (i.e. `NEXT_PUBLIC_GOOGLE_CLIENT_ID`) to ensure Next.js exposes it to client components.
 * **Build Validation**: Validates the static build process (`npm run build`) to ensure client configurations resolve without errors.
+
+---
+
+## 21. Phase 24: Final Authentication & Proxy Resolution Specifications
+* **Frontend Credentials Directives**: Standard fetch configuration for administrative credentials login includes `credentials: 'include'` to allow standard cookie storage.
+* **OAuth Query Parameters Alignment**: Removes frontend-attached `redirect_uri` in authorization handshake endpoints to align with backend-controlled `RedirectCookieTransport` routing.
+* **Uvicorn Proxy Header Configuration**: Backend application server starts with `--proxy-headers` and `--forwarded-allow-ips "*"` options enabled to support forward-header resolution behind container proxies.
+* **Callback Directory Deprecation**: Deletes the obsolete client-side callback route `/login/callback`.

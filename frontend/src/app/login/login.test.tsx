@@ -65,6 +65,7 @@ describe('LoginPage Component Tests', () => {
         expect.objectContaining({
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          credentials: 'include',
           body: expect.any(URLSearchParams),
         })
       );
@@ -94,6 +95,7 @@ describe('LoginPage Component Tests', () => {
         expect.objectContaining({
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          credentials: 'include',
           body: expect.any(URLSearchParams),
         })
       );
@@ -118,7 +120,7 @@ describe('LoginPage Component Tests', () => {
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v1/auth/google/authorize?redirect_uri=')
+        expect.stringMatching(/\/api\/v1\/auth\/google\/authorize$/)
       );
     });
 

@@ -284,3 +284,18 @@ Task 23.3: Local Environment Patch
 Update `frontend/.env` or `frontend/.env.local` to rename `GOOGLE_CLIENT_ID` to `NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
 Task 23.4: Static Build & Test Verification
 Verify the frontend test suite and execute `npm run build` to confirm compiling of the frontend build bundle.
+
+Phase 24: Final Authentication & Proxy Resolution [IN PROGRESS]
+This phase resolves three critical authentication handoff failures: Cookie drop due to missing credentials directive, Google OAuth redirect URI mismatch, and Uvicorn proxy header blindness.
+Task 24.1: Documentation Sync & Consolidation
+Update roadmaps, checklists, and spec documents in `/docs` and the root `task.md` to include Phase 24 details.
+Task 24.2: Frontend Standard Login Patch
+Open `frontend/src/app/login/page.tsx` and add `credentials: 'include'` to the credentials login fetch call. Write and verify tests.
+Task 24.3: Frontend Google OAuth Patch
+Update `handleGoogleLogin` to fetch from the Google authorize endpoint directly without appending `?redirect_uri=...`. Write and verify tests.
+Task 24.4: Obsolete Route Cleanup
+Delete the `frontend/src/app/login/callback` directory as callback routing is handled natively by backend 302 redirects.
+Task 24.5: Backend Proxy Headers
+Update `backend/start.sh` to execute Uvicorn with `--proxy-headers` and `--forwarded-allow-ips "*"`.
+Task 24.6: Final Deployment Push
+Commit all changes and push to trigger production builds.

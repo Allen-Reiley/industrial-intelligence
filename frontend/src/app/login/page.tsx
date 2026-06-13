@@ -19,8 +19,7 @@ function LoginForm() {
   const handleGoogleLogin = async () => {
     setError('');
     try {
-      const redirectUri = `${window.location.origin}/login/callback`;
-      const authorizeUrl = `${API_BASE.replace(/\/$/, '')}/api/v1/auth/google/authorize?redirect_uri=${encodeURIComponent(redirectUri)}`;
+      const authorizeUrl = `${API_BASE.replace(/\/$/, '')}/api/v1/auth/google/authorize`;
 
       const res = await fetch(authorizeUrl);
       if (!res.ok) {
@@ -65,6 +64,7 @@ function LoginForm() {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
+        credentials: 'include',
         body: new URLSearchParams({ username: targetUsername, password: targetPassword }),
       });
 

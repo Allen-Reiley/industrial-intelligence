@@ -146,6 +146,14 @@
     - [x] Task 23.3: Local Environment Patch
     - [x] Task 23.4: Static Build & Test Verification
 
+- [ ] **PHASE 24: FINAL AUTHENTICATION & PROXY RESOLUTION**
+    - [x] Task 24.1: Documentation Sync & Consolidation
+    - [x] Task 24.2: Frontend Standard Login Patch
+    - [x] Task 24.3: Frontend Google OAuth Patch
+    - [x] Task 24.4: Obsolete Route Cleanup
+    - [x] Task 24.5: Backend Proxy Headers
+    - [x] Task 24.6: Final Deployment Push
+
 
 
 
@@ -332,4 +340,13 @@ This log details the execution, design decisions, and completed steps for Phase 
   - **Task 23.2: Codebase Search & Replace**: Scan the `frontend/` directory for any references to `process.env.GOOGLE_CLIENT_ID` and replace them strictly with `process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID`. Patched the Google login button inside [frontend/src/app/login/page.tsx](file:///home/allenreiley7/projects/industrial-intelligence/frontend/src/app/login/page.tsx) to force the client ID using `clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}`.
   - **Task 23.3: Local Environment Patch**: Update local environment files (`frontend/.env` or `frontend/.env.local`), changing `GOOGLE_CLIENT_ID` key to `NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
   - **Task 23.4: Static Build & Test Verification**: Run the frontend test suite and execute a dry-run build (`npm run build`) to ensure successful compilation.
+
+## 20. Phase 24: Final Authentication & Proxy Resolution
+- **Actions Taken**:
+  - **Task 24.1: Documentation Sync & Consolidation**: Consolidate roadmap and checklist documents in `/docs` and the root `task.md`.
+  - **Task 24.2: Frontend Standard Login Patch**: Patch standard login `fetch` call in `frontend/src/app/login/page.tsx` with `credentials: 'include'`.
+  - **Task 24.3: Frontend Google OAuth Patch**: Patch `handleGoogleLogin` call in `frontend/src/app/login/page.tsx` to call authorize endpoint exactly without a `?redirect_uri=` query parameter.
+  - **Task 24.4: Obsolete Route Cleanup**: Delete obsolete frontend callback directory `frontend/src/app/login/callback`.
+  - **Task 24.5: Backend Proxy Headers**: Update `backend/start.sh` to run Uvicorn with `--proxy-headers --forwarded-allow-ips "*"`.
+  - **Task 24.6: Final Deployment Push**: Push changes to trigger production builds.
 

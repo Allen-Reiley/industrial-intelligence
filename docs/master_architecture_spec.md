@@ -365,3 +365,13 @@ Updates the matching Prospect or Visit record's vsl_completion_percentage and vs
 * Next.js requires environment variables accessed on the client-side to be prefixed with `NEXT_PUBLIC_` to prevent them from being hidden as server-side secrets. The Google Client ID variable is updated to `NEXT_PUBLIC_GOOGLE_CLIENT_ID` across the frontend repository and environment configurations.
 19.2 Build Validation:
 * Runs next build dry-run configurations to ensure static bundle generation operates successfully with the updated public environment settings.
+
+20. Phase 24: Final Authentication & Proxy Resolution Specifications
+20.1 Frontend Fetch Credentials Directive:
+* The standard administrative credentials submit handler in the Next.js login page includes the `credentials: 'include'` fetch option to ensure cookies returned from the FastAPI backend are saved correctly in the browser.
+20.2 OAuth Alignment:
+* The Google login button click handler routes to `/api/v1/auth/google/authorize` exactly without client-side query parameters. The backend `RedirectCookieTransport` manages the callback redirections natively, avoiding callback conflicts.
+20.3 Uvicorn Proxy Header Trust:
+* The startup execution wrapper starts Uvicorn with `--proxy-headers` and `--forwarded-allow-ips "*"` options enabled to ensure dynamic redirect schemes evaluate correctly behind proxy environments.
+20.4 Callback Route Deprecation:
+* The obsolete client-side callback route folder `frontend/src/app/login/callback` is deleted since 302 redirections occur backend-side.
