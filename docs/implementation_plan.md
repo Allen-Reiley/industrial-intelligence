@@ -285,7 +285,7 @@ Update `frontend/.env` or `frontend/.env.local` to rename `GOOGLE_CLIENT_ID` to 
 Task 23.4: Static Build & Test Verification
 Verify the frontend test suite and execute `npm run build` to confirm compiling of the frontend build bundle.
 
-Phase 24: Final Authentication & Proxy Resolution [IN PROGRESS]
+Phase 24: Final Authentication & Proxy Resolution [COMPLETED]
 This phase resolves three critical authentication handoff failures: Cookie drop due to missing credentials directive, Google OAuth redirect URI mismatch, and Uvicorn proxy header blindness.
 Task 24.1: Documentation Sync & Consolidation
 Update roadmaps, checklists, and spec documents in `/docs` and the root `task.md` to include Phase 24 details.
@@ -299,3 +299,17 @@ Task 24.5: Backend Proxy Headers
 Update `backend/start.sh` to execute Uvicorn with `--proxy-headers` and `--forwarded-allow-ips "*"`.
 Task 24.6: Final Deployment Push
 Commit all changes and push to trigger production builds.
+
+Phase 25: Session Persistence & Cross-Origin Auth [COMPLETE]
+This phase resolves the 401 Unauthorized errors and cookie rejection issues preventing administrative access across subdomains.
+Task 25.1: Documentation Sync & Consolidation
+Consolidate tasks and roadmap documentation to reflect the inclusion of Phase 25. Initialize the tracking ledger in the root `task.md`.
+Task 25.2: Backend CORS Update
+Locate CORS middleware definition (in `backend/app/main.py`). Update `allow_origins` to explicitly allow `https://www.auraworks.co.za` and `https://auraworks.co.za`, and ensure `allow_credentials=True` is explicitly set. Write unit tests for the CORS headers.
+Task 25.3: Cookie Transport Hardening
+Open `backend/app/core/users.py`. Update `CookieTransport` and `RedirectCookieTransport` definitions. Set `cookie_samesite="none"` and ensure `cookie_secure=True`. Ensure these are only toggled for the `production` environment via `settings.ENVIRONMENT` checks. Write unit tests to verify the cookie headers generated on login.
+Task 25.4: Identity Bridge Integration
+Review the frontend Identity Bridge. Ensure that all `fetch` requests to `api.auraworks.co.za` now include `credentials: 'include'`. Verify that the browser is correctly receiving and sending the `aurahq_auth` cookie.
+Task 25.5: Final Verification & Deployment
+Run the full frontend and backend test suite. Once 100% coverage is confirmed, commit the changes and trigger the production build on Railway.
+

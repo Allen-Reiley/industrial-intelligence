@@ -96,3 +96,19 @@ async def test_tenant_gating_leads():
         cookies=cookies_superuser
     )
     assert res3.status_code == 200
+
+    # 4. User A queries leads WITHOUT client_id -> Expect 200 OK (resolves to Client A)
+    res4 = await client.get(
+        f"{settings.API_V1_STR}/leads/",
+        cookies=cookies_user_a
+    )
+    assert res4.status_code == 200
+
+    # 5. Superuser queries leads WITHOUT client_id -> Expect 400 Bad Request (since superuser has no client_id)
+    res5 = await client.get(
+        f"{settings.API_V1_STR}/leads/",
+        cookies=cookies_superuser
+    )
+    assert res5.status_code == 400
+    assert "client_id query parameter is required for superusers" in res5.json()["detail"]
+

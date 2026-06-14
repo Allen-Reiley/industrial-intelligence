@@ -375,3 +375,14 @@ Updates the matching Prospect or Visit record's vsl_completion_percentage and vs
 * The startup execution wrapper starts Uvicorn with `--proxy-headers` and `--forwarded-allow-ips "*"` options enabled to ensure dynamic redirect schemes evaluate correctly behind proxy environments.
 20.4 Callback Route Deprecation:
 * The obsolete client-side callback route folder `frontend/src/app/login/callback` is deleted since 302 redirections occur backend-side.
+
+21. Phase 25: Session Persistence & Cross-Origin Auth Specifications
+21.1 Origin/CORS Alignment:
+* Explicitly configures the CORS middleware on the backend to allow incoming requests from the production origins (`https://auraworks.co.za` and `https://www.auraworks.co.za`).
+* Enforces `allow_credentials=True` to allow cross-origin cookies.
+21.2 Cookie Transport Hardening:
+* Updates `CookieTransport` and `RedirectCookieTransport` to set `cookie_samesite="none"` and `cookie_secure=True` when running in the production environment.
+* Retains the default Lax settings in non-production environments to simplify local development and testing.
+21.3 Identity Bridge Integration:
+* Ensures all `fetch` requests initiated by the frontend Identity Bridge to the backend API explicitly specify `credentials: 'include'` to guarantee session cookie transmission.
+

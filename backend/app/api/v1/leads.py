@@ -16,7 +16,7 @@ logger = logging.getLogger("uvicorn")
 
 @router.get("/")
 async def get_leads(
-    client_id: str = Query(...),
+    client_id: Optional[str] = Query(default=None),
     limit: int = Query(default=50, le=100),
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(get_current_admin_user)
@@ -25,6 +25,21 @@ async def get_leads(
     Industrial Ledger: Retrieves leads and prioritizes 'Warm Leads' (those with volunteered data).
     Joins with Company data to show total corporate engagement.
     """
+    # Resolve client_id if not provided
+    if not client_id:
+        if current_user.client_id:
+            client_id = str(current_user.client_id)
+        elif current_user.is_superuser:
+            raise HTTPException(
+                status_code=400,
+                detail="client_id query parameter is required for superusers."
+            )
+        else:
+            raise HTTPException(
+                status_code=403,
+                detail="Forbidden: User is not assigned to any client."
+            )
+
     # Tenant Isolation Gate
     if not current_user.is_superuser:
         if current_user.client_id is None or str(current_user.client_id) != client_id:

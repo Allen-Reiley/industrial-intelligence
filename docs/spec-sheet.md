@@ -394,3 +394,11 @@ Phase 13 establishes the internal console for managing multi-tenant client deplo
 * **OAuth Query Parameters Alignment**: Removes frontend-attached `redirect_uri` in authorization handshake endpoints to align with backend-controlled `RedirectCookieTransport` routing.
 * **Uvicorn Proxy Header Configuration**: Backend application server starts with `--proxy-headers` and `--forwarded-allow-ips "*"` options enabled to support forward-header resolution behind container proxies.
 * **Callback Directory Deprecation**: Deletes the obsolete client-side callback route `/login/callback`.
+
+---
+
+## 22. Phase 25: Session Persistence & Cross-Origin Auth Specifications
+* **Origin/CORS Alignment**: Configures backend CORS middleware to explicitly allow `https://auraworks.co.za` and `https://www.auraworks.co.za` with `allow_credentials=True`.
+* **Cookie Transport Hardening**: Sets cookie transport parameters `cookie_samesite="none"` and `cookie_secure=True` in production environments (using `settings.ENVIRONMENT` check) to ensure browsers do not block cookies across different subdomains.
+* **Identity Bridge Integration**: Ensures all API fetch requests initiated by the frontend Identity Bridge specify `credentials: 'include'` to allow authentication cookie transfer.
+
