@@ -18,6 +18,17 @@ import {
 } from 'lucide-react';
 
 // --- DATA CONTRACTS ---
+interface Client {
+  id: string;
+  company_name: string;
+  domain?: string;
+  whitelisted_domains: string[];
+  subscription_status: 'trial' | 'active' | 'suspended';
+  require_consent_banner: boolean;
+  collect_personal_data: boolean;
+  is_active: boolean;
+}
+
 interface Lead {
   id: string;
   company_name: string | null;
@@ -43,6 +54,8 @@ interface GroupedEntity {
 
 export default function UnifiedDashboard() {
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [activeClient, setActiveClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [viewMode, setViewMode] = useState<'cards' | 'ledger'>('ledger');
@@ -83,10 +96,40 @@ export default function UnifiedDashboard() {
     );
   }, [leads]);
 
-  const fetchData = async () => {
+  const fetchClients = async () => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : '';
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/clients/`, {
+        headers,
+        credentials: 'include'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setClients(data);
+        if (data.length > 0) {
+          setActiveClient(data[0]);
+        } else {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error("AuraWorks Clients Retrieval Failure:", err);
+      setLoading(false);
+    }
+  };
+
+  const fetchData = async (clientId: string) => {
     setIsRefreshing(true);
     try {
-      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/leads`, {
+      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/leads/?client_id=${clientId}`, {
         credentials: 'include'
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -102,10 +145,16 @@ export default function UnifiedDashboard() {
   };
 
   useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 60000);
-    return () => clearInterval(interval);
+    fetchClients();
   }, []);
+
+  useEffect(() => {
+    if (activeClient) {
+      fetchData(activeClient.id);
+      const interval = setInterval(() => fetchData(activeClient.id), 60000);
+      return () => clearInterval(interval);
+    }
+  }, [activeClient]);
 
   const getPathname = (urlStr: string | null) => {
     if (!urlStr) return "/";
@@ -173,6 +222,25 @@ export default function UnifiedDashboard() {
             </div>
           </div>
 
+          {/* Client Switcher (Visible if multiple clients are present, e.g. superuser) */}
+          {clients.length > 0 && activeClient && (
+            <div className="flex items-center gap-2 bg-zinc-950 border border-zinc-850 px-3 py-1.5 rounded-lg text-xs">
+              <span className="text-[10px] font-black uppercase text-zinc-500 tracking-wider">Client:</span>
+              <select 
+                value={activeClient.id} 
+                onChange={(e) => {
+                  const client = clients.find(c => c.id === e.target.value);
+                  if (client) setActiveClient(client);
+                }}
+                className="bg-transparent border-none text-xs text-zinc-300 font-bold focus:ring-0 cursor-pointer max-w-[180px] outline-none"
+              >
+                {clients.map(c => (
+                  <option key={c.id} value={c.id} className="bg-zinc-950 text-zinc-300 font-bold">{c.company_name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="flex items-center gap-3">
             <div className="flex bg-zinc-900 rounded-lg p-1 mr-4 border border-zinc-800">
               <button 
@@ -188,7 +256,10 @@ export default function UnifiedDashboard() {
                 <LayoutGrid className="h-4 w-4" />
               </button>
             </div>
-            <button onClick={fetchData} className="p-2 hover:bg-zinc-900 rounded-full border border-zinc-800 transition-colors">
+            <button 
+              onClick={() => activeClient && fetchData(activeClient.id)} 
+              className="p-2 hover:bg-zinc-900 rounded-full border border-zinc-800 transition-colors"
+            >
               <RefreshCcw className={`h-4 w-4 text-zinc-400 ${isRefreshing ? 'animate-spin' : ''}`} />
             </button>
           </div>

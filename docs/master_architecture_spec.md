@@ -386,3 +386,11 @@ Updates the matching Prospect or Visit record's vsl_completion_percentage and vs
 21.3 Test Verification:
 * Verified via integration tests that mock cross-origin requests from `www.auraworks.co.za` to `api.auraworks.co.za` compile and authorize correctly.
 
+22. Phase 26: Superuser Context & Frontend Data-Fetching Patch Specifications
+22.1 Trailing Slash Enforcement:
+* All frontend API endpoints targeting FastAPI routers must explicitly terminate with a trailing slash (e.g. `/api/v1/leads/`) to prevent ASGI 307 temporary redirects and retain headers, methods, and payloads.
+22.2 Superuser Active Client Context:
+* Under superuser/admin authentication status, the frontend must dynamically resolve the active client ID from the dashboard shell context/state and append it as a query parameter (e.g. `?client_id=<uuid>`) when requesting multi-tenant leads resources.
+22.3 TDD Verification:
+* Frontend test suites must assert proper request URL formatting and query parameter appending.
+

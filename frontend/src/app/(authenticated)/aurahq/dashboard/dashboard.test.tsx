@@ -16,7 +16,19 @@ describe('UnifiedDashboard Component Tests', () => {
     jest.clearAllMocks();
   });
 
-  it('renders loading state initially and then fetches leads with credentials include', async () => {
+  it('renders loading state initially, fetches clients, and then fetches leads with client_id and trailing slash', async () => {
+    const mockClients = [
+      {
+        id: 'client-uuid-1',
+        company_name: 'Mining Corp Support',
+        whitelisted_domains: ['mining-corp.co.za'],
+        subscription_status: 'active',
+        require_consent_banner: true,
+        collect_personal_data: true,
+        is_active: true,
+      }
+    ];
+
     const mockLeads = [
       {
         id: 'lead-1',
@@ -39,10 +51,22 @@ describe('UnifiedDashboard Component Tests', () => {
       }
     ];
 
-    const mockFetch = jest.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => mockLeads,
+    const mockFetch = jest.fn((url: string, options?: any) => {
+      if (url.includes('/api/v1/clients/')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => mockClients,
+        });
+      }
+      if (url.includes('/api/v1/leads/')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => mockLeads,
+        });
+      }
+      return Promise.reject(new Error(`Unhandled URL: ${url}`));
     });
     global.fetch = mockFetch;
 
@@ -56,9 +80,17 @@ describe('UnifiedDashboard Component Tests', () => {
       expect(screen.getByText('Mining Corp')).toBeInTheDocument();
     });
 
-    // Check that fetch was called with credentials include
+    // Check that fetch was called for clients
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/v1/leads'),
+      expect.stringContaining('/api/v1/clients/'),
+      expect.objectContaining({
+        credentials: 'include'
+      })
+    );
+
+    // Verify trailing slash and query param on leads fetch call
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/v1/leads/?client_id=client-uuid-1'),
       expect.objectContaining({
         credentials: 'include'
       })

@@ -300,7 +300,7 @@ Update `backend/start.sh` to execute Uvicorn with `--proxy-headers` and `--forwa
 Task 24.6: Final Deployment Push
 Commit all changes and push to trigger production builds.
 
-Phase 25: Session Persistence & Cross-Origin Auth Execution [IN PROGRESS]
+Phase 25: Session Persistence & Cross-Origin Auth Execution [COMPLETE]
 This phase resolves the 401 Unauthorized errors and cookie rejection issues preventing administrative access across subdomains by configuring cross-subdomain wildcard cookies and CORS origins correctly.
 Task 25.1: Cookie Scope Expansion
 Open `backend/app/core/users.py`. Locate the `cookie_transport` and `oauth_cookie_transport` definitions. Set `cookie_domain=".auraworks.co.za"`, `cookie_samesite="lax"`, and `cookie_secure=True`.
@@ -310,4 +310,15 @@ Task 25.3: Test Verification
 Implement a new unit test in `backend/tests/` (`test_cross_origin_auth.py`) that mocks an authenticated request from `www.auraworks.co.za` to `api.auraworks.co.za` and verifies the cookie is correctly parsed.
 Task 25.4: Deploy & Monitor
 Push these changes to Railway.
+
+Phase 26: Superuser Context & Frontend Data-Fetching Patch [IN PROGRESS]
+This phase resolves the 307 Temporary Redirect and 400 Bad Request infinite loop occurring when administrative superusers attempt to view the leads dashboard.
+Task 26.1: Documentation Sync & Consolidation
+Consolidate task lists, update docs, and initialize the tracking ledger.
+Task 26.2: Frontend Data-Fetching Patch
+Locate the frontend data-fetching logic for the leads dashboard and update the endpoint URL to use a trailing slash `/api/v1/leads/`. Dynamically append the active client ID query parameter for superuser contexts.
+Task 26.3: Test Verification
+Write or update frontend tests to ensure the URL structure includes a trailing slash and mocks the parameter requirements successfully.
+Task 26.4: Deploy & Monitor
+Commit changes and push to GitHub repository.
 
