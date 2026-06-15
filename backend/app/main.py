@@ -180,14 +180,9 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 
 # --- CORS CONFIGURATION ---
-allowed_origins = list(settings.ALLOWED_ORIGINS) if settings.ALLOWED_ORIGINS else []
-for origin in ["https://www.auraworks.co.za", "https://auraworks.co.za"]:
-    if origin not in allowed_origins:
-        allowed_origins.append(origin)
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=["https://www.auraworks.co.za", "https://auraworks.co.za"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -79,15 +79,15 @@ async def get_user_manager(user_db=Depends(get_user_db)):
     yield UserManager(user_db)
 
 # Use CookieTransport for storing the JWT session token in HttpOnly cookie
-is_prod = settings.ENVIRONMENT == "production"
+target_cookie_domain = settings.COOKIE_DOMAIN
 
 cookie_transport = CookieTransport(
     cookie_name="aurahq_auth",
     cookie_max_age=3600,
     cookie_httponly=True,
-    cookie_secure=True if is_prod else False,
-    cookie_samesite="none" if is_prod else "lax",
-    cookie_domain=settings.COOKIE_DOMAIN
+    cookie_secure=True,
+    cookie_samesite="lax",
+    cookie_domain=target_cookie_domain
 )
 
 class RedirectCookieTransport(CookieTransport):
@@ -126,9 +126,9 @@ oauth_cookie_transport = RedirectCookieTransport(
     cookie_name="aurahq_auth",
     cookie_max_age=3600,
     cookie_httponly=True,
-    cookie_secure=True if is_prod else False,
-    cookie_samesite="none" if is_prod else "lax",
-    cookie_domain=settings.COOKIE_DOMAIN
+    cookie_secure=True,
+    cookie_samesite="lax",
+    cookie_domain=target_cookie_domain
 )
 
 def get_jwt_strategy() -> JWTStrategy:

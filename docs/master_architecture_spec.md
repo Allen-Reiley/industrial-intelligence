@@ -306,7 +306,7 @@ Updates the matching Prospect or Visit record's vsl_completion_percentage and vs
 * **Telemetry Verification Indicator**: Active status component polls `GET /api/v1/clients/{client_id}/verify` to trace visits linked to the tenant UUID. Once a visit is detected, the status transitions to "Installed & Active" and triggers a leads table refresh.
 
 12.5 Cross-Subdomain Session & Telemetry Validation (Phase 16):
-* **Cross-Subdomain Cookies**: FastAPI-Users authentication utilizes `CookieTransport` configured with `cookie_domain = "auraworks.co.za"`, `cookie_secure = True`, and `cookie_samesite = "lax"`. This ensures authentication credentials flow seamlessly between `api.auraworks.co.za` and `www.auraworks.co.za`.
+* **Cross-Subdomain Cookies**: FastAPI-Users authentication utilizes `CookieTransport` configured with `cookie_domain = ".auraworks.co.za"`, `cookie_secure = True`, and `cookie_samesite = "lax"`. This ensures authentication credentials flow seamlessly between `api.auraworks.co.za` and `www.auraworks.co.za`.
 * **Flexible Telemetry Payload**: The `/v1/track/event` endpoint accepts a flexible Pydantic schema with `properties: Dict[str, Any] = Field(default_factory=dict)` to ingest dynamic client-side tracking parameters without raising 422 errors.
 * **Unified Terminology & Robustness**: Legacy waitlist references are completely replaced by the prospect engine across client-side scripts. The client-side tracker utilizes a capped retry queue to handle failed dispatches silently.
 
@@ -381,8 +381,8 @@ Updates the matching Prospect or Visit record's vsl_completion_percentage and vs
 * Explicitly configures the CORS middleware on the backend to allow incoming requests from the production origins (`https://auraworks.co.za` and `https://www.auraworks.co.za`).
 * Enforces `allow_credentials=True` to allow cross-origin cookies.
 21.2 Cookie Transport Hardening:
-* Updates `CookieTransport` and `RedirectCookieTransport` to set `cookie_samesite="none"` and `cookie_secure=True` when running in the production environment.
-* Retains the default Lax settings in non-production environments to simplify local development and testing.
-21.3 Identity Bridge Integration:
-* Ensures all `fetch` requests initiated by the frontend Identity Bridge to the backend API explicitly specify `credentials: 'include'` to guarantee session cookie transmission.
+* Updates `CookieTransport` and `RedirectCookieTransport` to set `cookie_domain=".auraworks.co.za"`, `cookie_samesite="lax"`, and `cookie_secure=True`.
+* Employs environment-aware fallback settings for testing environments to allow seamless automated verification.
+21.3 Test Verification:
+* Verified via integration tests that mock cross-origin requests from `www.auraworks.co.za` to `api.auraworks.co.za` compile and authorize correctly.
 

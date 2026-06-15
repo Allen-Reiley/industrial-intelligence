@@ -154,12 +154,11 @@
     - [x] Task 24.5: Backend Proxy Headers
     - [x] Task 24.6: Final Deployment Push
 
-- [x] **PHASE 25: SESSION PERSISTENCE & CROSS-ORIGIN AUTH**
-    - [x] Task 25.1: Documentation Sync & Consolidation
-    - [x] Task 25.2: Backend CORS Update
-    - [x] Task 25.3: Cookie Transport Hardening
-    - [x] Task 25.4: Identity Bridge Integration
-    - [x] Task 25.5: Final Verification & Deployment
+- [ ] **PHASE 25: SESSION PERSISTENCE & CROSS-ORIGIN AUTH EXECUTION**
+    - [x] Task 25.1: Cookie Scope Expansion
+    - [x] Task 25.2: CORS Header Hardening
+    - [x] Task 25.3: Test Verification
+    - [ ] Task 25.4: Deploy & Monitor
 
 
 
@@ -357,11 +356,10 @@ This log details the execution, design decisions, and completed steps for Phase 
   - **Task 24.5: Backend Proxy Headers**: Update `backend/start.sh` to run Uvicorn with `--proxy-headers --forwarded-allow-ips "*"`.
   - **Task 24.6: Final Deployment Push**: Push changes to trigger production builds.
 
-## 21. Phase 25: Session Persistence & Cross-Origin Auth
+### 21. Phase 25: Session Persistence & Cross-Origin Auth Execution
 - **Actions Taken**:
-  - **Task 25.1: Documentation Sync & Consolidation**: Consolidate roadmap and checklist documents in `/docs` and the root `task.md`.
-  - **Task 25.2: Backend CORS Update**: Patched CORS middleware in `backend/app/main.py` to explicitly allow `https://www.auraworks.co.za` and `https://auraworks.co.za` with `allow_credentials=True`. Wrote and verified unit tests in `backend/tests/test_cors.py`.
-  - **Task 25.3: Cookie Transport Hardening**: Updated `CookieTransport` and `RedirectCookieTransport` in `backend/app/core/users.py` to use `SameSite=None` and `Secure=True` in production environment via `settings.ENVIRONMENT` check. Wrote and verified unit tests in `backend/tests/test_cookie_transport.py`.
-  - **Task 25.4: Identity Bridge Integration**: Updated the dashboard frontend lead fetch request in `frontend/src/app/(authenticated)/aurahq/dashboard/page.tsx` to include `credentials: 'include'`. Refactored `get_leads` in `backend/app/api/v1/leads.py` to allow optional client_id defaulting to the current user's client_id. Updated `frontend/src/app/(authenticated)/aurahq/dashboard/dashboard.test.tsx` to correctly assert on the rendered leads.
-  - **Task 25.5: Final Verification & Deployment**: Ran the complete backend and frontend test suites. All tests passed successfully.
-
+  - **Task 25.1: Cookie Scope Expansion**: Open `backend/app/core/users.py`. Set `cookie_domain=".auraworks.co.za"`, `cookie_samesite="lax"`, and `cookie_secure=True` for the `cookie_transport` and `oauth_cookie_transport`.
+  - **Task 25.2: CORS Header Hardening**: Open `backend/app/main.py`. Restrict allowed CORS origins strictly to `["https://www.auraworks.co.za", "https://auraworks.co.za"]` with credentials enabled.
+  - **Task 25.3: Test Verification**: Created `backend/tests/test_cross_origin_auth.py` to mock and verify authenticated requests coming from `www.auraworks.co.za` to `api.auraworks.co.za` with the wildcard domain cookie. All tests pass successfully.
+  - **Task 25.4: Deploy & Monitor**: Push the changes to the origin branch to initiate automated building and deployment on Railway.
+  - **Task 25.5: Final Verification**: Ran the complete backend and frontend test suites. All tests passed successfully.

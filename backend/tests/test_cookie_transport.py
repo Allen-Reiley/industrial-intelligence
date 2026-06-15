@@ -8,35 +8,39 @@ pytestmark = pytest.mark.anyio
 
 async def test_cookie_transport_dev_environment():
     """
-    Verify that in non-production environments, cookies are Lax and not Secure.
+    Verify that in non-production environments, cookies are Lax, Secure, and domain is None.
     """
-    with patch("app.core.config.settings.ENVIRONMENT", "development"):
-        import app.core.users
-        importlib.reload(app.core.users)
-        
-        transport = app.core.users.cookie_transport
-        assert transport.cookie_secure is False
-        assert transport.cookie_samesite == "lax"
-
-        oauth_transport = app.core.users.oauth_cookie_transport
-        assert oauth_transport.cookie_secure is False
-        assert oauth_transport.cookie_samesite == "lax"
-
-async def test_cookie_transport_prod_environment():
-    """
-    Verify that in production environment, cookies are SameSite=None and Secure.
-    """
-    with patch("app.core.config.settings.ENVIRONMENT", "production"):
+    with patch("app.core.config.settings.COOKIE_DOMAIN", None):
         import app.core.users
         importlib.reload(app.core.users)
         
         transport = app.core.users.cookie_transport
         assert transport.cookie_secure is True
-        assert transport.cookie_samesite == "none"
+        assert transport.cookie_samesite == "lax"
+        assert transport.cookie_domain is None
 
         oauth_transport = app.core.users.oauth_cookie_transport
         assert oauth_transport.cookie_secure is True
-        assert oauth_transport.cookie_samesite == "none"
+        assert oauth_transport.cookie_samesite == "lax"
+        assert oauth_transport.cookie_domain is None
+
+async def test_cookie_transport_prod_environment():
+    """
+    Verify that in production environment, cookies are SameSite=Lax, Secure, and .auraworks.co.za domain.
+    """
+    with patch("app.core.config.settings.COOKIE_DOMAIN", ".auraworks.co.za"):
+        import app.core.users
+        importlib.reload(app.core.users)
+        
+        transport = app.core.users.cookie_transport
+        assert transport.cookie_secure is True
+        assert transport.cookie_samesite == "lax"
+        assert transport.cookie_domain == ".auraworks.co.za"
+
+        oauth_transport = app.core.users.oauth_cookie_transport
+        assert oauth_transport.cookie_secure is True
+        assert oauth_transport.cookie_samesite == "lax"
+        assert oauth_transport.cookie_domain == ".auraworks.co.za"
 
     # Restore the original state for other tests
     importlib.reload(app.core.users)
