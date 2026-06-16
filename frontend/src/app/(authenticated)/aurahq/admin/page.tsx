@@ -234,10 +234,10 @@ export default function AdminDashboard() {
     try {
       const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/clients/${selectedClient.id}`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include',
         body: JSON.stringify({
           custom_monthly_amount: amountInCents
         })
@@ -269,10 +269,10 @@ export default function AdminDashboard() {
     try {
       const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/billing/simulate-webhook`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include',
         body: JSON.stringify({
           client_id: selectedClient.id,
           status: simulationType,
@@ -335,10 +335,10 @@ export default function AdminDashboard() {
     try {
       const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/clients/`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include',
         body: JSON.stringify({
           company_name: newCompanyName,
           whitelisted_domains: domainsArray,
@@ -568,7 +568,9 @@ export default function AdminDashboard() {
               <div className="text-[10px] uppercase font-bold tracking-widest text-zinc-500 mb-1">Warm Profile Rate</div>
               <div className="text-3xl font-light text-indigo-400">{stats.warmRate}%</div>
             </div>
-                   <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* Left Column: Leads Control & Table (Col span 3) */}
             <div className="lg:col-span-3 space-y-6">
               {/* Search and Export */}
@@ -600,7 +602,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Leads Table */}
-              <div className="border border-zinc-850/60 rounded-xl overflow-hidden bg-zinc-950/10 shadow-2xl backdrop-blur-sm">
+              <div className="border border-zinc-850/60 rounded-xl overflow-x-auto bg-zinc-950/10 shadow-2xl backdrop-blur-sm">
                 {leadsLoading ? (
                   <div className="py-24 text-center">
                     <div className="h-6 w-6 border-2 border-zinc-850 border-t-indigo-500 rounded-full animate-spin mx-auto mb-3" />
@@ -843,13 +845,13 @@ export default function AdminDashboard() {
                 )}
               </div>
             </div>
-          </div>   </div>
+          </div>
         </div>
       )}
 
       {/* REGISTER CLIENT MODAL */}
       {showRegisterModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
           <div className="w-full max-w-lg bg-[#0c0c0e] border border-zinc-850 rounded-2xl overflow-hidden relative shadow-2xl animate-zoom">
             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-indigo-500/35 to-transparent" />
             
@@ -951,7 +953,7 @@ export default function AdminDashboard() {
 
       {/* SNIPPET MODAL */}
       {showSnippetModal && selectedClient && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
           <div className="w-full max-w-lg bg-[#0c0c0e] border border-zinc-850 rounded-2xl overflow-hidden relative shadow-2xl animate-zoom">
             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-indigo-500/35 to-transparent" />
             

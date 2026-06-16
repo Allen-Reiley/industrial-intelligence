@@ -172,6 +172,12 @@
     - [x] Task 27.3: Admin Test Coverage Update
     - [x] Task 27.4: Final Deployment Push
 
+- [x] **PHASE 28: UI RESTORATION & SURGICAL AUTH PATCH**
+    - [x] Task 28.1: UI Restoration (Git Revert)
+    - [x] Task 28.2: Surgical Auth Patch
+    - [x] Task 28.3: UI Polish & Cleanup
+    - [x] Task 28.4: Deployment Push
+
 
 
 
@@ -401,4 +407,23 @@ This log details the execution, design decisions, and completed steps for Phase 
 [x] Task 2: Admin Header Refactor complete.
 [x] Task 3: Admin Test Coverage Update complete.
 [x] Task 4: Final Deployment Push complete.
+
+### 24. Phase 28: UI Restoration & Surgical Auth Patch
+- **Actions Taken**:
+  - **Task 28.1: UI Restoration (Git Revert)**: Checked out the original, untouched admin `page.tsx` file from prior to Phase 27.
+  - **Task 28.2: Surgical Auth Patch**: Removed `getHeaders` function, added `credentials: 'include'` to GET/verify/transactions/clients fetch requests, and added `Content-Type`, `credentials: 'include'` to POST/PATCH requests without modifying React states or UI layouts.
+  - **Task 28.3: UI Polish & Cleanup**: Audited the JSX/Tailwind structure for layout alignment, margins, modal z-index handling, and mobile responsiveness.
+  - **Task 28.4: Deployment Push**: Ran local jest tests and pushed surgical fixes to the remote repository.
+
+### Phase 28 TDD Progress Tracking Ledger
+- [x] Task 1: UI Restoration (Git Revert). Revert `admin/page.tsx` to pre-Phase 27. Verify UI file is restored.
+- [x] Task 2: Surgical Auth Patch. Surgically apply the HttpOnly session and credentials configuration to the restored `admin/page.tsx` fetch requests without modifying any React hooks, states, or UI/Tailwind styles.
+- [x] Task 3: UI Polish & Cleanup. Improve the z-index, mobile responsive spacing, margins, and layout padding of the Admin dashboard adhering to the "Quiet Premium" design.
+- [x] Task 4: Deployment Push. Verify tests, commit, and push.
+
+[x] Task 1: UI Restoration complete.
+[x] Task 2: Surgical Auth Patch complete.
+[x] Task 3: UI Polish & Cleanup complete.
+[x] Task 4: Deployment Push complete.
+
 

@@ -334,4 +334,17 @@ Modify unit tests in `frontend/src/app/(authenticated)/aurahq/admin/admin.test.t
 Task 27.4: Final Deployment Push
 Commit and push changes to trigger staging/production deployments.
 
+Phase 28: UI Restoration & Surgical Auth Patch [COMPLETE]
+This phase restores the original Admin dashboard UI structure from git history prior to the Phase 27 changes and surgically re-applies the HttpOnly authorization upgrades to the fetch requests, preserving the layout and refining design elements.
+
+Task 28.1: UI Restoration (Git Revert)
+Checkout `frontend/src/app/(authenticated)/aurahq/admin/page.tsx` from the git commit prior to Phase 27 to restore the untouched UI layout.
+Task 28.2: Surgical Auth Patch
+Remove `getHeaders()` and apply `credentials: 'include'` and explicit JSON Content-Type options surgically to every fetch request.
+Task 28.3: UI Polish & Cleanup
+Inspect and align modal z-indices, responsive layout padding, margins, and responsiveness using the "Quiet Premium" design tokens.
+Task 28.4: Deployment Push
+Run testing suite, verify correctness, commit, and push.
+
+
 

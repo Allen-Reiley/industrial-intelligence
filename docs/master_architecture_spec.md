@@ -404,4 +404,13 @@ Updates the matching Prospect or Visit record's vsl_completion_percentage and vs
 23.4 Content-Type Headers:
 * Explicitly configure `'Content-Type': 'application/json'` headers solely on state-altering fetch requests (e.g., PATCH, POST) where JSON bodies are transmitted.
 
+24. Phase 28: UI Restoration & Surgical Auth Patch Specifications
+24.1 Clean Revert of UI Structure:
+* Reverts any structural JSX changes, state hook alterations, or Tailwind styling changes made during Phase 27 fetch headers refactor.
+24.2 Surgical Fetch Customization:
+* Ensures all API interaction overrides in `frontend/src/app/(authenticated)/aurahq/admin/page.tsx` are made without impacting non-auth UI rendering components.
+24.3 Dashboard Layout & Polish:
+* Standardizes modal alignment, padding, z-indices, and responsiveness across the clients, leads, and billing interfaces to guarantee visual parity and premium design consistency.
+
+
 

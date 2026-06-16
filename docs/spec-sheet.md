@@ -415,4 +415,12 @@ Phase 13 establishes the internal console for managing multi-tenant client deplo
 * **Obsolete Token Clean Up**: Remove the `getHeaders()` function and the `Authorization` bearer token header injection.
 * **Explicit Content-Type**: Ensure state-altering fetch calls (PATCH, POST) explicitly set `Content-Type: application/json` headers when a JSON body is sent.
 
+---
+
+## 25. Phase 28: UI Restoration & Surgical Auth Patch Specifications
+* **UI Reversion Integrity**: Guarantees the full restoration of the pre-Phase 27 Admin dashboard UI by retrieving the exact code from version control history.
+* **Surgical Fetch Options Injection**: Re-applies `credentials: 'include'` and `'Content-Type': 'application/json'` fetch properties surgically in a way that is structurally isolated from visual UI and rendering hooks.
+* **Visual Polish Standards**: Enhances the visual layout of the Admin dashboard under the Quiet Premium styling strategy, improving mobile padding on tables, refining modal spacing, and standardizing modal z-indices.
+
+
 
