@@ -6784,76 +6784,6 @@ export default function AdminDashboard() {
 }
 </file>
 
-<file path="frontend/src/app/(authenticated)/aurahq/dashboard/dashboard.test.tsx">
-import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import UnifiedDashboard from './page';
-
-// Mock next/navigation
-const mockPush = jest.fn();
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
-}));
-
-describe('UnifiedDashboard Component Tests', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('renders loading state initially and then fetches leads with credentials include', async () => {
-    const mockLeads = [
-      {
-        id: 'lead-1',
-        name: 'John Doe',
-        company_name: 'Mining Corp',
-        email: 'john@mining-corp.co.za',
-        position: 'Operations Manager',
-        department: 'Operations',
-        ip_address: '196.25.1.1',
-        city: 'Johannesburg',
-        region: 'Gauteng',
-        country: 'South Africa',
-        duration: 45,
-        url: '/specs/drill-press',
-        referrer: 'https://google.com',
-        created_at: '2026-06-14T12:00:00Z',
-        hit_count: 3,
-        is_b2b: true,
-        industry: 'Mining',
-      }
-    ];
-
-    const mockFetch = jest.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => mockLeads,
-    });
-    global.fetch = mockFetch;
-
-    render(<UnifiedDashboard />);
-
-    // Check loading indicator first
-    expect(screen.getByText(/Synchronizing Intelligence.../i)).toBeInTheDocument();
-
-    // Wait for the leads to load
-    await waitFor(() => {
-      expect(screen.getByText('Mining Corp')).toBeInTheDocument();
-    });
-
-    // Check that fetch was called with credentials include
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/v1/leads'),
-      expect.objectContaining({
-        credentials: 'include'
-      })
-    );
-  });
-});
-</file>
-
 <file path="frontend/src/app/(authenticated)/aurahq/dashboard/layout.tsx">
 import { Metadata } from 'next';
 
@@ -11514,334 +11444,106 @@ You must never guess or mock your way through architectural setup keys. If an en
 Initialize the local working space. Execute the `repo-pack` terminal command to establish structural alignment. Create the `task.md` file at the repository root, output the blank progress checklist into our logging stream, implement the explicit `pytest` mock suites for Phase 1, and proceed straight to code implementation for **Task 1.1: Initialize SQLModel Database Entities**. Stop execution and query for human verification the moment a cryptographic credential or environment key parameter trigger is hit.
 </file>
 
-<file path="frontend/src/app/(authenticated)/aurahq/dashboard/page.tsx">
-"use client";
+<file path="frontend/src/app/(authenticated)/aurahq/dashboard/dashboard.test.tsx">
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import UnifiedDashboard from './page';
 
-import React, { useEffect, useState, useMemo } from 'react';
-import Link from 'next/link';
-import { 
-  Building2, 
-  MapPin, 
-  Clock, 
-  Globe, 
-  ShieldCheck, 
-  Zap,
-  Activity,
-  RefreshCcw,
-  MousePointer2,
-  ChevronRight,
-  LayoutGrid,
-  List
-} from 'lucide-react';
+// Mock next/navigation
+const mockPush = jest.fn();
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+  }),
+}));
 
-// --- DATA CONTRACTS ---
-interface Lead {
-  id: string;
-  company_name: string | null;
-  is_b2b: boolean;
-  industry: string | null;
-  ip_address: string;
-  city: string | null;
-  region: string | null;
-  country: string | null;
-  duration: number | null;
-  url: string | null;
-  referrer: string | null;
-  created_at: string;
-  hit_count?: number;
-}
+describe('UnifiedDashboard Component Tests', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
-interface GroupedEntity {
-  main: Lead;
-  totalHits: number;
-  totalDuration: number;
-  paths: { url: string; duration: number; hits: number }[];
-}
-
-export default function UnifiedDashboard() {
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [viewMode, setViewMode] = useState<'cards' | 'ledger'>('ledger');
-
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://dynamic-flow-production-a5d6.up.railway.app";
-
-  // --- IDENTITY BRIDGE LOGIC ---
-  const groupedEntities = useMemo(() => {
-    const groups: Record<string, GroupedEntity> = {};
-    
-    leads.forEach(lead => {
-      const key = lead.ip_address;
-      if (!groups[key]) {
-        groups[key] = { main: lead, totalHits: 0, totalDuration: 0, paths: [] };
+  it('renders loading state initially, fetches clients, and then fetches leads with client_id and trailing slash', async () => {
+    const mockClients = [
+      {
+        id: 'client-uuid-1',
+        company_name: 'Mining Corp Support',
+        whitelisted_domains: ['mining-corp.co.za'],
+        subscription_status: 'active',
+        require_consent_banner: true,
+        collect_personal_data: true,
+        is_active: true,
       }
-      
-      const pathIndex = groups[key].paths.findIndex(p => p.url === lead.url);
-      const currentHits = lead.hit_count || 1;
-      const currentDuration = lead.duration || 0;
+    ];
 
-      groups[key].totalHits += currentHits;
-      groups[key].totalDuration += currentDuration;
+    const mockLeads = [
+      {
+        id: 'lead-1',
+        name: 'John Doe',
+        company_name: 'Mining Corp',
+        email: 'john@mining-corp.co.za',
+        position: 'Operations Manager',
+        department: 'Operations',
+        ip_address: '196.25.1.1',
+        city: 'Johannesburg',
+        region: 'Gauteng',
+        country: 'South Africa',
+        duration: 45,
+        url: '/specs/drill-press',
+        referrer: 'https://google.com',
+        created_at: '2026-06-14T12:00:00Z',
+        hit_count: 3,
+        is_b2b: true,
+        industry: 'Mining',
+      }
+    ];
 
-      if (pathIndex > -1) {
-        groups[key].paths[pathIndex].duration += currentDuration;
-        groups[key].paths[pathIndex].hits += currentHits;
-      } else {
-        groups[key].paths.push({ 
-          url: lead.url || "/", 
-          duration: currentDuration, 
-          hits: currentHits 
+    const mockFetch = jest.fn((url: string, options?: any) => {
+      if (url.includes('/api/v1/clients/')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => mockClients,
         });
       }
+      if (url.includes('/api/v1/leads/')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => mockLeads,
+        });
+      }
+      return Promise.reject(new Error(`Unhandled URL: ${url}`));
     });
-    
-    return Object.values(groups).sort((a, b) => 
-      new Date(b.main.created_at).getTime() - new Date(a.main.created_at).getTime()
-    );
-  }, [leads]);
+    global.fetch = mockFetch;
 
-  const fetchData = async () => {
-    setIsRefreshing(true);
-    try {
-      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/leads`, {
+    render(<UnifiedDashboard />);
+
+    // Check loading indicator first
+    expect(screen.getByText(/Synchronizing Intelligence.../i)).toBeInTheDocument();
+
+    // Wait for the leads to load
+    await waitFor(() => {
+      expect(screen.getByText('Mining Corp')).toBeInTheDocument();
+    });
+
+    // Check that fetch was called for clients
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/v1/clients/'),
+      expect.objectContaining({
         credentials: 'include'
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setLeads(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("AuraWorks Identity Bridge Failure:", err);
-      setLeads([]);
-    } finally {
-      setLoading(false);
-      setIsRefreshing(false);
-    }
-  };
+      })
+    );
 
-  useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const getPathname = (urlStr: string | null) => {
-    if (!urlStr) return "/";
-    try {
-      const urlObj = new URL(urlStr.startsWith('http') ? urlStr : `https://${urlStr}`);
-      return urlObj.pathname;
-    } catch (e) { return urlStr; }
-  };
-
-  if (loading) return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#09090b]">
-      <div className="h-8 w-8 border-2 border-zinc-800 border-t-emerald-500 rounded-full animate-spin mb-4" />
-      <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.3em]">Synchronizing Intelligence...</p>
-    </div>
-  );
-
-  return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100 pb-20 font-sans selection:bg-emerald-500/30">
-      {/* --- REFINED NAV BAR --- */}
-      <nav className="border-b border-zinc-900 bg-[#09090b]/80 backdrop-blur-md sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <div className="h-10 w-10 rounded-lg bg-zinc-100 flex items-center justify-center text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-              <Activity className="h-5 w-5" />
-            </div>
-            <div className="hidden md:block">
-              <div className="flex items-center gap-2 text-[10px] tracking-[0.3em] text-emerald-500 font-bold uppercase">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Live Signal Ledger</span>
-              </div>
-              <h1 className="text-lg font-light tracking-tight">Intelligence Dashboard</h1>
-            </div>
-          </div>
-
-          {/* Navigation Switcher */}
-          <div className="flex items-center bg-zinc-950/60 border border-zinc-850 rounded-lg p-1 text-xs">
-            <div className="relative group">
-              <Link
-                href="/dashboard"
-                className="px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-              >
-                <Activity className="h-3.5 w-3.5" />
-                <span>Dashboard</span>
-              </Link>
-              {/* Tooltip */}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-52 p-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] text-zinc-400 opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 shadow-2xl z-50 text-center leading-normal">
-                <p className="font-bold text-zinc-200 mb-0.5">Intelligence Dashboard</p>
-                Real-time visitor telemetry, geolocation mapping, and live traffic analytics.
-              </div>
-            </div>
-            
-            <div className="relative group">
-              <Link
-                href="/admin"
-                className="px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50"
-              >
-                <Building2 className="h-3.5 w-3.5" />
-                <span>Admin Ledger</span>
-              </Link>
-              {/* Tooltip */}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-52 p-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] text-zinc-400 opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 shadow-2xl z-50 text-center leading-normal">
-                <p className="font-bold text-zinc-200 mb-0.5">Juristic Identity Ledger</p>
-                B2B consent records, enterprise identity resolution, and CSV lead exporter.
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="flex bg-zinc-900 rounded-lg p-1 mr-4 border border-zinc-800">
-              <button 
-                onClick={() => setViewMode('ledger')}
-                className={`p-1.5 rounded-md transition-all ${viewMode === 'ledger' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
-              >
-                <List className="h-4 w-4" />
-              </button>
-              <button 
-                onClick={() => setViewMode('cards')}
-                className={`p-1.5 rounded-md transition-all ${viewMode === 'cards' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </button>
-            </div>
-            <button onClick={fetchData} className="p-2 hover:bg-zinc-900 rounded-full border border-zinc-800 transition-colors">
-              <RefreshCcw className={`h-4 w-4 text-zinc-400 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      <div className="max-w-7xl mx-auto px-6 mt-12">
-        {groupedEntities.length > 0 ? (
-          viewMode === 'ledger' ? (
-            /* --- JURISTIC LEDGER VIEW --- */
-            <div className="border border-zinc-800 rounded-xl overflow-hidden bg-zinc-900/20 shadow-2xl">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-zinc-900/50 text-zinc-500 text-[10px] uppercase tracking-[0.2em] border-b border-zinc-800">
-                  <tr>
-                    <th className="px-6 py-5 font-bold">Entity Identity</th>
-                    <th className="px-6 py-5 font-bold">Jurisdiction / IP</th>
-                    <th className="px-6 py-5 font-bold text-center">Signals</th>
-                    <th className="px-6 py-5 font-bold text-right">Last Attribution</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-800/50">
-                  {groupedEntities.map(({ main: lead, totalHits }) => (
-                    <tr key={lead.ip_address} className="hover:bg-zinc-800/30 transition-colors group">
-                      <td className="px-6 py-6">
-                        <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded bg-zinc-800 flex items-center justify-center text-zinc-500 font-bold border border-zinc-700 group-hover:border-emerald-500/50 transition-colors">
-                            {lead.company_name?.charAt(0) || <Globe className="h-4 w-4" />}
-                          </div>
-                          <div>
-                            <div className="font-semibold text-zinc-100 group-hover:text-emerald-400 transition-colors leading-none mb-1">
-                              {lead.company_name || "Unresolved Juristic Entity"}
-                            </div>
-                            <div className="text-[11px] text-zinc-500 font-mono tracking-tighter">
-                              {lead.industry || 'Industrial'} • {lead.is_b2b ? 'B2B Locked' : 'General'}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-6">
-                        <div className="text-zinc-300 text-xs flex items-center gap-1.5">
-                          <MapPin className="h-3 w-3 text-zinc-600" />
-                          {lead.city || 'Hub'}, {lead.country || 'ZAF'}
-                        </div>
-                        <div className="text-[10px] text-zinc-500 font-mono mt-1 italic">{lead.ip_address}</div>
-                      </td>
-                      <td className="px-6 py-6 text-center">
-                        <span className="px-3 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-emerald-500 text-[10px] font-black uppercase tracking-widest group-hover:bg-emerald-500/10 transition-colors">
-                          {totalHits} Events
-                        </span>
-                      </td>
-                      <td className="px-6 py-6 text-right text-zinc-500 tabular-nums text-[11px]">
-                        {new Date(lead.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            /* --- FORENSIC CARD VIEW --- */
-            <div className="grid gap-8 max-w-5xl mx-auto">
-              {groupedEntities.map(({ main: lead, paths, totalHits }) => (
-                <div key={lead.ip_address} className="rounded-2xl border border-zinc-800 bg-zinc-900/30 transition-all hover:border-zinc-700 shadow-xl overflow-hidden group">
-                  <div className="p-8">
-                    <div className="flex justify-between items-start gap-4 mb-8">
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                          <h2 className="text-2xl font-bold tracking-tight text-white group-hover:text-emerald-400 transition-colors">
-                            {lead.company_name || "Unresolved Juristic Entity"}
-                          </h2>
-                          {lead.is_b2b && (
-                            <div className="flex items-center gap-1 rounded bg-emerald-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-emerald-500 border border-emerald-500/20">
-                              <ShieldCheck className="h-3 w-3" /> Juristic
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-4 text-zinc-500">
-                          <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest">
-                            <MapPin className="h-3.5 w-3.5" /> {lead.city || "Hub"}, {lead.country || "ZAF"}
-                          </div>
-                          <div className="font-mono text-[10px] bg-zinc-800 px-2 py-0.5 rounded border border-zinc-700 text-zinc-400">
-                            {lead.ip_address}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.2em] block mb-1">Capture Epoch</span>
-                        <p className="text-[11px] font-bold text-zinc-400 tabular-nums">{new Date(lead.created_at).toLocaleString()}</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 mb-4">
-                        <MousePointer2 className="h-3 w-3 text-emerald-500" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">Interaction Intelligence</span>
-                      </div>
-                      {paths.map((p, idx) => (
-                        <div key={idx} className="flex items-center justify-between bg-zinc-800/40 rounded-xl p-4 border border-zinc-800/60 hover:bg-zinc-800/60 transition-colors">
-                          <div className="flex items-center gap-3">
-                            <Zap className="h-3.5 w-3.5 text-emerald-500" />
-                            <span className="text-xs font-mono font-bold text-zinc-300">{getPathname(p.url)}</span>
-                          </div>
-                          <div className="flex items-center gap-8 text-right">
-                            <div>
-                              <div className="text-[8px] uppercase text-zinc-600 font-black tracking-widest">Dwell</div>
-                              <div className="text-[11px] font-mono font-bold text-zinc-100">{p.duration}s</div>
-                            </div>
-                            <div>
-                              <div className="text-[8px] uppercase text-zinc-600 font-black tracking-widest">Signal</div>
-                              <div className="text-[11px] font-mono font-bold text-emerald-500">{p.hits}x</div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="px-8 py-4 bg-zinc-900/60 border-t border-zinc-800 flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-zinc-500">
-                    <span className="flex items-center gap-2 italic">Ref: {lead.referrer || "Direct Ingress"}</span>
-                    <button className="flex items-center gap-1 hover:text-emerald-500 transition-colors group/btn">
-                      Trace Source <ChevronRight className="h-3 w-3 group-hover/btn:translate-x-0.5 transition-transform" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )
-        ) : (
-          <div className="text-center py-40 rounded-3xl border border-dashed border-zinc-800 bg-zinc-900/10">
-            <Activity className="h-10 w-10 text-zinc-800 mb-4 mx-auto" />
-            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">No Signal Attributed</h3>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+    // Verify trailing slash and query param on leads fetch call
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/v1/leads/?client_id=client-uuid-1'),
+      expect.objectContaining({
+        credentials: 'include'
+      })
+    );
+  });
+});
 </file>
 
 <file path="frontend/src/app/(pages)/about/page.tsx">
@@ -13354,6 +13056,398 @@ async def simulate_webhook(
     }
 </file>
 
+<file path="backend/app/core/scheduler.py">
+# backend/app/core/scheduler.py
+import logging
+from datetime import datetime, timezone
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db import async_session_maker
+from app.models.company import Company
+from app.models.department import Department
+from app.services.enrichment import get_departmental_intelligence, process_enrichment_queue
+
+logger = logging.getLogger("uvicorn")
+
+def get_current_time() -> datetime:
+    return datetime.now(timezone.utc)
+
+async def run_enrichment_cycle():
+    """
+    Industrial Async Enrichment Task:
+    Maps corporate departments for captured Juristic Entities via Apollo.io.
+    """
+    if not async_session_maker:
+        logger.error("❌ Scheduler Enrichment Cycle: Aborted. Async Database Engine not initialized.")
+        return
+
+    async with async_session_maker() as session:
+        try:
+            # Locate target companies requiring deep intelligence routing
+            statement = select(Company).where(Company.domain != None)
+            result = await session.execute(statement)
+            companies = result.scalars().all()
+
+            for company in companies:
+                try:
+                    # 🛡️ CREDIT WASTE GATE:
+                    # Verify if this company already possesses parsed industrial department layers.
+                    dept_stmt = select(Department).where(Department.company_id == company.id)
+                    dept_result = await session.execute(dept_stmt)
+                    existing_dept = dept_result.scalars().first()
+                    
+                    if existing_dept:
+                        # Skip execution block to preserve Apollo/Enrichment API token allocation
+                        continue
+
+                    logger.info(f"🔍 Forensic Enrichment: Querying {company.company_name} [{company.domain}]")
+                    
+                    # Direct async execution without breaking loop state or threading overhead
+                    depts_data = await get_departmental_intelligence(company.domain)
+                    
+                    if not depts_data:
+                        logger.info(f"ℹ️ Operational Intelligence: No structural departments identified for {company.domain}")
+                        continue
+
+                    for dept in depts_data:
+                        priority_score = 1
+                        role = dept.get('role', 'Lead').lower()
+                        for kw in ["procurement", "supply chain", "chief engineer", "director"]:
+                            if kw in role:
+                                priority_score = 5
+                                break
+                        new_dept = Department(
+                            company_id=company.id,
+                            contact_name=dept.get('name', 'Unknown Contact'),
+                            role_title=dept.get('role', 'Lead'),
+                            email=dept.get('email'),
+                            phone=dept.get('phone'),
+                            linkedin_url=dept.get('linkedin_url'),
+                            priority_score=priority_score
+                        )
+                        session.add(new_dept)
+                    
+                    # Commit updates per juristic node to keep database logs interactive and up to date
+                    await session.commit()
+                    logger.info(f"✅ Structural Map Saved: Tied {len(depts_data)} departments to {company.company_name}")
+
+                except Exception as inner_error:
+                    await session.rollback()
+                    logger.error(f"❌ Structural Mapping Failure for {company.company_name}: {inner_error}")
+
+        except Exception as global_error:
+            logger.error(f"❌ Global Enrichment Pipeline Exception: {global_error}")
+
+async def check_trial_expirations():
+    """
+    Background worker: monitors trial_ends_at.
+    Exactly 48 hours before the trial expires, Resend dispatches a warning email
+    notifying the client of the upcoming automated charge.
+    """
+    if not async_session_maker:
+        logger.error("❌ check_trial_expirations: Aborted. Async Database Engine not initialized.")
+        return
+
+    from app.services.email import send_trial_warning_email
+    from app.models.client import Client, SubscriptionStatus
+    from datetime import timedelta
+
+    async with async_session_maker() as session:
+        try:
+            now = get_current_time()
+            limit_time = now + timedelta(hours=48)
+            
+            stmt = select(Client).where(
+                Client.subscription_status == SubscriptionStatus.TRIAL,
+                Client.trial_warning_sent == False,
+                Client.trial_ends_at != None,
+                Client.trial_ends_at <= limit_time,
+                Client.cancellation_requested == False
+            )
+            res = await session.execute(stmt)
+            clients = res.scalars().all()
+
+            for client in clients:
+                logger.info(f"⏰ Trial expiring in < 48 hours for {client.company_name}. Sending warning email...")
+                to_email = f"billing@{client.domain}" if client.domain else "billing@auraworks.co.za"
+                sent = await send_trial_warning_email(to_email, client.id)
+                if sent:
+                    client.trial_warning_sent = True
+                    session.add(client)
+                    await session.commit()
+                    logger.info(f"✅ Trial warning email sent successfully to {to_email}")
+        except Exception as e:
+            logger.error(f"❌ Error in check_trial_expirations background job: {e}")
+
+
+def start_scheduler():
+    """
+    Initializes the Asynchronous AuraWorks Background Engine Pipeline.
+    """
+    scheduler = AsyncIOScheduler()
+    
+    # Check trial expirations every hour
+    scheduler.add_job(
+        check_trial_expirations,
+        'interval',
+        hours=1,
+        id='trial_expiration_checker',
+        replace_existing=True
+    )
+
+    # Ingest target juristic entities every hour for firmographic lead enrichment
+    scheduler.add_job(
+        run_enrichment_cycle, 
+        'interval', 
+        hours=1, 
+        id='industrial_enrichment',
+        replace_existing=True
+    )
+
+    # Process enrichment queue every 15 minutes
+    scheduler.add_job(
+        process_enrichment_queue,
+        'interval',
+        minutes=15,
+        id='enrichment_queue_processor',
+        replace_existing=True
+    )
+    
+    # Weekly reporting service scheduled every Monday at 06:00 SAST (04:00 UTC)
+    scheduler.add_job(
+        run_weekly_reporting_cycle,
+        'cron',
+        day_of_week='mon',
+        hour=4,
+        minute=0,
+        id='weekly_pdf_reports',
+        replace_existing=True
+    )
+    
+    # Run recurring billing daily at 01:00 UTC
+    scheduler.add_job(
+        execute_recurring_billing,
+        'cron',
+        hour=1,
+        minute=0,
+        id='recurring_billing_engine',
+        replace_existing=True
+    )
+    
+    scheduler.start()
+    logger.info("🚀 AuraWorks Async Scheduler: Online. Structural enrichment, trial warning, recurring billing, and weekly report loops active.")
+
+# --- TASK 7.1 WEEKLY REPORTING CYCLE ---
+from app.services.reports import compile_weekly_report, upload_report_to_r2, generate_signed_cdn_link, send_weekly_report_email
+from app.models.client import Client
+
+async def run_weekly_reporting_cycle():
+    """
+    Weekly Reporting cron task: compiles the report for each active client,
+    uploads to R2, and dispatches an email with a 24-hour expiration token.
+    """
+    if not async_session_maker:
+        return
+        
+    async with async_session_maker() as session:
+        try:
+            stmt = select(Client).where(Client.is_active == True)
+            res = await session.execute(stmt)
+            clients = res.scalars().all()
+            
+            for client in clients:
+                try:
+                    pdf_bytes = await compile_weekly_report(client.id, session)
+                    filename = f"weekly_report_{client.id}_{get_current_time().strftime('%Y%m%d')}.pdf"
+                    
+                    upload_success = await upload_report_to_r2(pdf_bytes, filename)
+                    if upload_success:
+                        download_link = generate_signed_cdn_link(filename)
+                        recipient = f"reports@{client.domain}"
+                        await send_weekly_report_email(recipient, download_link)
+                        logger.info(f"📊 Weekly report successfully sent to {recipient}")
+                except Exception as inner_e:
+                    logger.error(f"❌ Failed compiling weekly report for client {client.id}: {inner_e}")
+        except Exception as e:
+            logger.error(f"❌ Weekly report global cycle failure: {e}")
+
+
+async def charge_and_log(session: AsyncSession, client: Client, amount: int, description: str) -> bool:
+    """
+    Charges the client's token via IkhokhaClient and logs a transaction entry.
+    Returns True if successful, False if failed.
+    """
+    from app.services.payment import IkhokhaClient, IkhokhaError
+    from app.models.transaction import Transaction, TransactionStatus
+    import uuid
+
+    ik_client = IkhokhaClient()
+    logger.info(f"Executing charge of {amount} cents against token for client {client.company_name} - {description}")
+    
+    try:
+        res = await ik_client.charge_token(client.id, amount, client.payment_method_token)
+        if res.get("status") in ("successful", "success"):
+            new_tx = Transaction(
+                client_id=client.id,
+                amount=amount,
+                currency="ZAR",
+                status=TransactionStatus.SUCCESSFUL,
+                gateway_reference=res.get("transactionId") or f"ik_tx_{uuid.uuid4()}",
+                payment_method_token=client.payment_method_token,
+                error_message=None
+            )
+            session.add(new_tx)
+            await session.commit()
+            return True
+        else:
+            raise IkhokhaError(res.get("errorMessage") or "Transaction failed")
+    except Exception as e:
+        logger.error(f"🚨 Failed transaction for {client.company_name}: {e}")
+        new_tx = Transaction(
+            client_id=client.id,
+            amount=amount,
+            currency="ZAR",
+            status=TransactionStatus.FAILED,
+            gateway_reference=f"fail_ref_{uuid.uuid4()}",
+            payment_method_token=client.payment_method_token,
+            error_message=str(e)
+        )
+        session.add(new_tx)
+        await session.commit()
+        return False
+
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+async def execute_recurring_billing():
+    """
+    Cron/worker task: executes recurring payments daily.
+    - Triggers monthly billing on the 1st of every month.
+    - Triggers annual billing on the 1st of the anniversary month (if year > trial_ends_at.year).
+    - Checks for failed monthly charges and retries after 3 days.
+    - Checks for failed annual charges and retries after 7 days.
+    - Suspends accounts if retry fails.
+    - Transitions trial-end clients to active by executing their initial real charge.
+    """
+    if not async_session_maker:
+        logger.error("❌ execute_recurring_billing: Aborted. Async Database Engine not initialized.")
+        return
+
+    from app.services.payment import calculate_prorated_amount
+    from app.models.client import Client, SubscriptionStatus
+    from app.models.transaction import Transaction, TransactionStatus
+    from datetime import datetime, timezone, timedelta
+
+    async with async_session_maker() as session:
+        try:
+            now = get_current_time()
+            is_first_of_month = (now.day == 1)
+            
+            # --- PART 1: 1st of Month Billing Triggers ---
+            if is_first_of_month:
+                logger.info("📅 1st of Month recurring billing trigger active.")
+                # 1. Monthly Active Clients
+                stmt_monthly = select(Client).where(
+                    Client.subscription_status == SubscriptionStatus.ACTIVE,
+                    Client.is_active == True,
+                    Client.billing_cycle == "monthly",
+                    Client.payment_method_token != None
+                )
+                res_monthly = await session.execute(stmt_monthly)
+                for client in res_monthly.scalars().all():
+                    amount = client.custom_monthly_amount or 1000000
+                    await charge_and_log(session, client, amount, "Monthly renewal charge")
+                
+                # 2. Annual Active Clients (Anniversary month)
+                stmt_annual = select(Client).where(
+                    Client.subscription_status == SubscriptionStatus.ACTIVE,
+                    Client.is_active == True,
+                    Client.billing_cycle == "annual",
+                    Client.payment_method_token != None,
+                    Client.trial_ends_at != None
+                )
+                res_annual = await session.execute(stmt_annual)
+                for client in res_annual.scalars().all():
+                    trial_end_utc = client.trial_ends_at.replace(tzinfo=timezone.utc)
+                    if trial_end_utc.month == now.month and trial_end_utc.year < now.year:
+                        amount = 12000000
+                        await charge_and_log(session, client, amount, "Annual renewal charge")
+
+            # --- PART 2: Trial Expired T-Zero Automated Charging ---
+            stmt_trials = select(Client).where(
+                Client.subscription_status == SubscriptionStatus.TRIAL,
+                Client.trial_ends_at != None,
+                Client.trial_ends_at <= now,
+                Client.cancellation_requested == False,
+                Client.payment_method_token != None
+            )
+            res_trials = await session.execute(stmt_trials)
+            for client in res_trials.scalars().all():
+                logger.info(f"⏳ Trial ended for client {client.company_name}. Executing T-Zero billing...")
+                if client.billing_cycle == "monthly":
+                    amount = calculate_prorated_amount(client.trial_ends_at.replace(tzinfo=timezone.utc), client.custom_monthly_amount or 1000000)
+                else:
+                    amount = 12000000
+                
+                success = await charge_and_log(session, client, amount, f"Trial-end charge ({client.billing_cycle})")
+                if success:
+                    client.subscription_status = SubscriptionStatus.ACTIVE
+                    client.is_active = True
+                    session.add(client)
+                    await session.commit()
+                    logger.info(f"🎉 Client {client.company_name} is now ACTIVE.")
+                else:
+                    client.subscription_status = SubscriptionStatus.SUSPENDED
+                    client.is_active = False
+                    session.add(client)
+                    await session.commit()
+                    logger.error(f"❌ Initial trial-end charge failed for {client.company_name}. Client suspended.")
+
+            # --- PART 3: Grace Period Retries & Suspensions ---
+            stmt_active = select(Client).where(
+                Client.subscription_status == SubscriptionStatus.ACTIVE,
+                Client.is_active == True,
+                Client.payment_method_token != None
+            )
+            res_active = await session.execute(stmt_active)
+            for client in res_active.scalars().all():
+                last_tx_stmt = select(Transaction).where(
+                    Transaction.client_id == client.id
+                ).order_by(Transaction.created_at.desc()).limit(1)
+                tx_res = await session.execute(last_tx_stmt)
+                last_tx = tx_res.scalars().first()
+                
+                if last_tx and last_tx.status == TransactionStatus.FAILED:
+                    tx_age = now - last_tx.created_at.replace(tzinfo=timezone.utc)
+                    
+                    if client.billing_cycle == "monthly":
+                        if tx_age.days >= 3:
+                            logger.info(f"🔁 Retrying failed monthly charge for {client.company_name}...")
+                            amount = client.custom_monthly_amount or 1000000
+                            success = await charge_and_log(session, client, amount, "Monthly renewal retry charge")
+                            if not success:
+                                client.subscription_status = SubscriptionStatus.SUSPENDED
+                                client.is_active = False
+                                session.add(client)
+                                await session.commit()
+                                logger.error(f"❌ Monthly retry failed. Client {client.company_name} suspended.")
+                    elif client.billing_cycle == "annual":
+                        if tx_age.days >= 7:
+                            logger.info(f"🔁 Retrying failed annual charge for {client.company_name}...")
+                            amount = 12000000
+                            success = await charge_and_log(session, client, amount, "Annual renewal retry charge")
+                            if not success:
+                                client.subscription_status = SubscriptionStatus.SUSPENDED
+                                client.is_active = False
+                                session.add(client)
+                                await session.commit()
+                                logger.error(f"❌ Annual retry failed. Client {client.company_name} suspended.")
+
+        except Exception as e:
+            logger.error(f"❌ execute_recurring_billing Global Failure: {e}")
+</file>
+
 <file path="backend/app/models/department.py">
 # backend/app/models/department.py
 from typing import Optional, TYPE_CHECKING
@@ -14430,6 +14524,407 @@ Orchestration, environment variables, and Docker configurations.
 Unauthorized copying, modification, or redistribution of this software is strictly prohibited.
 </file>
 
+<file path="frontend/src/app/(authenticated)/aurahq/dashboard/page.tsx">
+"use client";
+
+import React, { useEffect, useState, useMemo } from 'react';
+import Link from 'next/link';
+import { 
+  Building2, 
+  MapPin, 
+  Clock, 
+  Globe, 
+  ShieldCheck, 
+  Zap,
+  Activity,
+  RefreshCcw,
+  MousePointer2,
+  ChevronRight,
+  LayoutGrid,
+  List
+} from 'lucide-react';
+
+// --- DATA CONTRACTS ---
+interface Client {
+  id: string;
+  company_name: string;
+  domain?: string;
+  whitelisted_domains: string[];
+  subscription_status: 'trial' | 'active' | 'suspended';
+  require_consent_banner: boolean;
+  collect_personal_data: boolean;
+  is_active: boolean;
+}
+
+interface Lead {
+  id: string;
+  company_name: string | null;
+  is_b2b: boolean;
+  industry: string | null;
+  ip_address: string;
+  city: string | null;
+  region: string | null;
+  country: string | null;
+  duration: number | null;
+  url: string | null;
+  referrer: string | null;
+  created_at: string;
+  hit_count?: number;
+}
+
+interface GroupedEntity {
+  main: Lead;
+  totalHits: number;
+  totalDuration: number;
+  paths: { url: string; duration: number; hits: number }[];
+}
+
+export default function UnifiedDashboard() {
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [activeClient, setActiveClient] = useState<Client | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [viewMode, setViewMode] = useState<'cards' | 'ledger'>('ledger');
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://dynamic-flow-production-a5d6.up.railway.app";
+
+  // --- IDENTITY BRIDGE LOGIC ---
+  const groupedEntities = useMemo(() => {
+    const groups: Record<string, GroupedEntity> = {};
+    
+    leads.forEach(lead => {
+      const key = lead.ip_address;
+      if (!groups[key]) {
+        groups[key] = { main: lead, totalHits: 0, totalDuration: 0, paths: [] };
+      }
+      
+      const pathIndex = groups[key].paths.findIndex(p => p.url === lead.url);
+      const currentHits = lead.hit_count || 1;
+      const currentDuration = lead.duration || 0;
+
+      groups[key].totalHits += currentHits;
+      groups[key].totalDuration += currentDuration;
+
+      if (pathIndex > -1) {
+        groups[key].paths[pathIndex].duration += currentDuration;
+        groups[key].paths[pathIndex].hits += currentHits;
+      } else {
+        groups[key].paths.push({ 
+          url: lead.url || "/", 
+          duration: currentDuration, 
+          hits: currentHits 
+        });
+      }
+    });
+    
+    return Object.values(groups).sort((a, b) => 
+      new Date(b.main.created_at).getTime() - new Date(a.main.created_at).getTime()
+    );
+  }, [leads]);
+
+  const fetchClients = async () => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : '';
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/clients/`, {
+        headers,
+        credentials: 'include'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setClients(data);
+        if (data.length > 0) {
+          setActiveClient(data[0]);
+        } else {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error("AuraWorks Clients Retrieval Failure:", err);
+      setLoading(false);
+    }
+  };
+
+  const fetchData = async (clientId: string) => {
+    setIsRefreshing(true);
+    try {
+      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/leads/?client_id=${clientId}`, {
+        credentials: 'include'
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setLeads(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("AuraWorks Identity Bridge Failure:", err);
+      setLeads([]);
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  useEffect(() => {
+    if (activeClient) {
+      fetchData(activeClient.id);
+      const interval = setInterval(() => fetchData(activeClient.id), 60000);
+      return () => clearInterval(interval);
+    }
+  }, [activeClient]);
+
+  const getPathname = (urlStr: string | null) => {
+    if (!urlStr) return "/";
+    try {
+      const urlObj = new URL(urlStr.startsWith('http') ? urlStr : `https://${urlStr}`);
+      return urlObj.pathname;
+    } catch (e) { return urlStr; }
+  };
+
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#09090b]">
+      <div className="h-8 w-8 border-2 border-zinc-800 border-t-emerald-500 rounded-full animate-spin mb-4" />
+      <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.3em]">Synchronizing Intelligence...</p>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 pb-20 font-sans selection:bg-emerald-500/30">
+      {/* --- REFINED NAV BAR --- */}
+      <nav className="border-b border-zinc-900 bg-[#09090b]/80 backdrop-blur-md sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <div className="h-10 w-10 rounded-lg bg-zinc-100 flex items-center justify-center text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+              <Activity className="h-5 w-5" />
+            </div>
+            <div className="hidden md:block">
+              <div className="flex items-center gap-2 text-[10px] tracking-[0.3em] text-emerald-500 font-bold uppercase">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Live Signal Ledger</span>
+              </div>
+              <h1 className="text-lg font-light tracking-tight">Intelligence Dashboard</h1>
+            </div>
+          </div>
+
+          {/* Navigation Switcher */}
+          <div className="flex items-center bg-zinc-950/60 border border-zinc-850 rounded-lg p-1 text-xs">
+            <div className="relative group">
+              <Link
+                href="/dashboard"
+                className="px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+              >
+                <Activity className="h-3.5 w-3.5" />
+                <span>Dashboard</span>
+              </Link>
+              {/* Tooltip */}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-52 p-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] text-zinc-400 opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 shadow-2xl z-50 text-center leading-normal">
+                <p className="font-bold text-zinc-200 mb-0.5">Intelligence Dashboard</p>
+                Real-time visitor telemetry, geolocation mapping, and live traffic analytics.
+              </div>
+            </div>
+            
+            <div className="relative group">
+              <Link
+                href="/admin"
+                className="px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50"
+              >
+                <Building2 className="h-3.5 w-3.5" />
+                <span>Admin Ledger</span>
+              </Link>
+              {/* Tooltip */}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-52 p-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-[10px] text-zinc-400 opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 shadow-2xl z-50 text-center leading-normal">
+                <p className="font-bold text-zinc-200 mb-0.5">Juristic Identity Ledger</p>
+                B2B consent records, enterprise identity resolution, and CSV lead exporter.
+              </div>
+            </div>
+          </div>
+
+          {/* Client Switcher (Visible if multiple clients are present, e.g. superuser) */}
+          {clients.length > 0 && activeClient && (
+            <div className="flex items-center gap-2 bg-zinc-950 border border-zinc-850 px-3 py-1.5 rounded-lg text-xs">
+              <span className="text-[10px] font-black uppercase text-zinc-500 tracking-wider">Client:</span>
+              <select 
+                value={activeClient.id} 
+                onChange={(e) => {
+                  const client = clients.find(c => c.id === e.target.value);
+                  if (client) setActiveClient(client);
+                }}
+                className="bg-transparent border-none text-xs text-zinc-300 font-bold focus:ring-0 cursor-pointer max-w-[180px] outline-none"
+              >
+                {clients.map(c => (
+                  <option key={c.id} value={c.id} className="bg-zinc-950 text-zinc-300 font-bold">{c.company_name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="flex items-center gap-3">
+            <div className="flex bg-zinc-900 rounded-lg p-1 mr-4 border border-zinc-800">
+              <button 
+                onClick={() => setViewMode('ledger')}
+                className={`p-1.5 rounded-md transition-all ${viewMode === 'ledger' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                <List className="h-4 w-4" />
+              </button>
+              <button 
+                onClick={() => setViewMode('cards')}
+                className={`p-1.5 rounded-md transition-all ${viewMode === 'cards' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+            </div>
+            <button 
+              onClick={() => activeClient && fetchData(activeClient.id)} 
+              className="p-2 hover:bg-zinc-900 rounded-full border border-zinc-800 transition-colors"
+            >
+              <RefreshCcw className={`h-4 w-4 text-zinc-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-7xl mx-auto px-6 mt-12">
+        {groupedEntities.length > 0 ? (
+          viewMode === 'ledger' ? (
+            /* --- JURISTIC LEDGER VIEW --- */
+            <div className="border border-zinc-800 rounded-xl overflow-hidden bg-zinc-900/20 shadow-2xl">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-zinc-900/50 text-zinc-500 text-[10px] uppercase tracking-[0.2em] border-b border-zinc-800">
+                  <tr>
+                    <th className="px-6 py-5 font-bold">Entity Identity</th>
+                    <th className="px-6 py-5 font-bold">Jurisdiction / IP</th>
+                    <th className="px-6 py-5 font-bold text-center">Signals</th>
+                    <th className="px-6 py-5 font-bold text-right">Last Attribution</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/50">
+                  {groupedEntities.map(({ main: lead, totalHits }) => (
+                    <tr key={lead.ip_address} className="hover:bg-zinc-800/30 transition-colors group">
+                      <td className="px-6 py-6">
+                        <div className="flex items-center gap-4">
+                          <div className="h-10 w-10 rounded bg-zinc-800 flex items-center justify-center text-zinc-500 font-bold border border-zinc-700 group-hover:border-emerald-500/50 transition-colors">
+                            {lead.company_name?.charAt(0) || <Globe className="h-4 w-4" />}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-zinc-100 group-hover:text-emerald-400 transition-colors leading-none mb-1">
+                              {lead.company_name || "Unresolved Juristic Entity"}
+                            </div>
+                            <div className="text-[11px] text-zinc-500 font-mono tracking-tighter">
+                              {lead.industry || 'Industrial'} • {lead.is_b2b ? 'B2B Locked' : 'General'}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-6">
+                        <div className="text-zinc-300 text-xs flex items-center gap-1.5">
+                          <MapPin className="h-3 w-3 text-zinc-600" />
+                          {lead.city || 'Hub'}, {lead.country || 'ZAF'}
+                        </div>
+                        <div className="text-[10px] text-zinc-500 font-mono mt-1 italic">{lead.ip_address}</div>
+                      </td>
+                      <td className="px-6 py-6 text-center">
+                        <span className="px-3 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-emerald-500 text-[10px] font-black uppercase tracking-widest group-hover:bg-emerald-500/10 transition-colors">
+                          {totalHits} Events
+                        </span>
+                      </td>
+                      <td className="px-6 py-6 text-right text-zinc-500 tabular-nums text-[11px]">
+                        {new Date(lead.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            /* --- FORENSIC CARD VIEW --- */
+            <div className="grid gap-8 max-w-5xl mx-auto">
+              {groupedEntities.map(({ main: lead, paths, totalHits }) => (
+                <div key={lead.ip_address} className="rounded-2xl border border-zinc-800 bg-zinc-900/30 transition-all hover:border-zinc-700 shadow-xl overflow-hidden group">
+                  <div className="p-8">
+                    <div className="flex justify-between items-start gap-4 mb-8">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <h2 className="text-2xl font-bold tracking-tight text-white group-hover:text-emerald-400 transition-colors">
+                            {lead.company_name || "Unresolved Juristic Entity"}
+                          </h2>
+                          {lead.is_b2b && (
+                            <div className="flex items-center gap-1 rounded bg-emerald-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-emerald-500 border border-emerald-500/20">
+                              <ShieldCheck className="h-3 w-3" /> Juristic
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4 text-zinc-500">
+                          <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest">
+                            <MapPin className="h-3.5 w-3.5" /> {lead.city || "Hub"}, {lead.country || "ZAF"}
+                          </div>
+                          <div className="font-mono text-[10px] bg-zinc-800 px-2 py-0.5 rounded border border-zinc-700 text-zinc-400">
+                            {lead.ip_address}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.2em] block mb-1">Capture Epoch</span>
+                        <p className="text-[11px] font-bold text-zinc-400 tabular-nums">{new Date(lead.created_at).toLocaleString()}</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 mb-4">
+                        <MousePointer2 className="h-3 w-3 text-emerald-500" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500">Interaction Intelligence</span>
+                      </div>
+                      {paths.map((p, idx) => (
+                        <div key={idx} className="flex items-center justify-between bg-zinc-800/40 rounded-xl p-4 border border-zinc-800/60 hover:bg-zinc-800/60 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <Zap className="h-3.5 w-3.5 text-emerald-500" />
+                            <span className="text-xs font-mono font-bold text-zinc-300">{getPathname(p.url)}</span>
+                          </div>
+                          <div className="flex items-center gap-8 text-right">
+                            <div>
+                              <div className="text-[8px] uppercase text-zinc-600 font-black tracking-widest">Dwell</div>
+                              <div className="text-[11px] font-mono font-bold text-zinc-100">{p.duration}s</div>
+                            </div>
+                            <div>
+                              <div className="text-[8px] uppercase text-zinc-600 font-black tracking-widest">Signal</div>
+                              <div className="text-[11px] font-mono font-bold text-emerald-500">{p.hits}x</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="px-8 py-4 bg-zinc-900/60 border-t border-zinc-800 flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                    <span className="flex items-center gap-2 italic">Ref: {lead.referrer || "Direct Ingress"}</span>
+                    <button className="flex items-center gap-1 hover:text-emerald-500 transition-colors group/btn">
+                      Trace Source <ChevronRight className="h-3 w-3 group-hover/btn:translate-x-0.5 transition-transform" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        ) : (
+          <div className="text-center py-40 rounded-3xl border border-dashed border-zinc-800 bg-zinc-900/10">
+            <Activity className="h-10 w-10 text-zinc-800 mb-4 mx-auto" />
+            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600">No Signal Attributed</h3>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+</file>
+
 <file path="frontend/src/app/page.tsx">
 import { Metadata } from "next";
 import HeroSection from "@/components/hero-sec/hero-section";
@@ -15407,398 +15902,6 @@ async def ikhokha_webhook(
     return {"status": "success", "message": "Webhook processed successfully"}
 </file>
 
-<file path="backend/app/core/scheduler.py">
-# backend/app/core/scheduler.py
-import logging
-from datetime import datetime, timezone
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from sqlmodel import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.db import async_session_maker
-from app.models.company import Company
-from app.models.department import Department
-from app.services.enrichment import get_departmental_intelligence, process_enrichment_queue
-
-logger = logging.getLogger("uvicorn")
-
-def get_current_time() -> datetime:
-    return datetime.now(timezone.utc)
-
-async def run_enrichment_cycle():
-    """
-    Industrial Async Enrichment Task:
-    Maps corporate departments for captured Juristic Entities via Apollo.io.
-    """
-    if not async_session_maker:
-        logger.error("❌ Scheduler Enrichment Cycle: Aborted. Async Database Engine not initialized.")
-        return
-
-    async with async_session_maker() as session:
-        try:
-            # Locate target companies requiring deep intelligence routing
-            statement = select(Company).where(Company.domain != None)
-            result = await session.execute(statement)
-            companies = result.scalars().all()
-
-            for company in companies:
-                try:
-                    # 🛡️ CREDIT WASTE GATE:
-                    # Verify if this company already possesses parsed industrial department layers.
-                    dept_stmt = select(Department).where(Department.company_id == company.id)
-                    dept_result = await session.execute(dept_stmt)
-                    existing_dept = dept_result.scalars().first()
-                    
-                    if existing_dept:
-                        # Skip execution block to preserve Apollo/Enrichment API token allocation
-                        continue
-
-                    logger.info(f"🔍 Forensic Enrichment: Querying {company.company_name} [{company.domain}]")
-                    
-                    # Direct async execution without breaking loop state or threading overhead
-                    depts_data = await get_departmental_intelligence(company.domain)
-                    
-                    if not depts_data:
-                        logger.info(f"ℹ️ Operational Intelligence: No structural departments identified for {company.domain}")
-                        continue
-
-                    for dept in depts_data:
-                        priority_score = 1
-                        role = dept.get('role', 'Lead').lower()
-                        for kw in ["procurement", "supply chain", "chief engineer", "director"]:
-                            if kw in role:
-                                priority_score = 5
-                                break
-                        new_dept = Department(
-                            company_id=company.id,
-                            contact_name=dept.get('name', 'Unknown Contact'),
-                            role_title=dept.get('role', 'Lead'),
-                            email=dept.get('email'),
-                            phone=dept.get('phone'),
-                            linkedin_url=dept.get('linkedin_url'),
-                            priority_score=priority_score
-                        )
-                        session.add(new_dept)
-                    
-                    # Commit updates per juristic node to keep database logs interactive and up to date
-                    await session.commit()
-                    logger.info(f"✅ Structural Map Saved: Tied {len(depts_data)} departments to {company.company_name}")
-
-                except Exception as inner_error:
-                    await session.rollback()
-                    logger.error(f"❌ Structural Mapping Failure for {company.company_name}: {inner_error}")
-
-        except Exception as global_error:
-            logger.error(f"❌ Global Enrichment Pipeline Exception: {global_error}")
-
-async def check_trial_expirations():
-    """
-    Background worker: monitors trial_ends_at.
-    Exactly 48 hours before the trial expires, Resend dispatches a warning email
-    notifying the client of the upcoming automated charge.
-    """
-    if not async_session_maker:
-        logger.error("❌ check_trial_expirations: Aborted. Async Database Engine not initialized.")
-        return
-
-    from app.services.email import send_trial_warning_email
-    from app.models.client import Client, SubscriptionStatus
-    from datetime import timedelta
-
-    async with async_session_maker() as session:
-        try:
-            now = get_current_time()
-            limit_time = now + timedelta(hours=48)
-            
-            stmt = select(Client).where(
-                Client.subscription_status == SubscriptionStatus.TRIAL,
-                Client.trial_warning_sent == False,
-                Client.trial_ends_at != None,
-                Client.trial_ends_at <= limit_time,
-                Client.cancellation_requested == False
-            )
-            res = await session.execute(stmt)
-            clients = res.scalars().all()
-
-            for client in clients:
-                logger.info(f"⏰ Trial expiring in < 48 hours for {client.company_name}. Sending warning email...")
-                to_email = f"billing@{client.domain}" if client.domain else "billing@auraworks.co.za"
-                sent = await send_trial_warning_email(to_email, client.id)
-                if sent:
-                    client.trial_warning_sent = True
-                    session.add(client)
-                    await session.commit()
-                    logger.info(f"✅ Trial warning email sent successfully to {to_email}")
-        except Exception as e:
-            logger.error(f"❌ Error in check_trial_expirations background job: {e}")
-
-
-def start_scheduler():
-    """
-    Initializes the Asynchronous AuraWorks Background Engine Pipeline.
-    """
-    scheduler = AsyncIOScheduler()
-    
-    # Check trial expirations every hour
-    scheduler.add_job(
-        check_trial_expirations,
-        'interval',
-        hours=1,
-        id='trial_expiration_checker',
-        replace_existing=True
-    )
-
-    # Ingest target juristic entities every hour for firmographic lead enrichment
-    scheduler.add_job(
-        run_enrichment_cycle, 
-        'interval', 
-        hours=1, 
-        id='industrial_enrichment',
-        replace_existing=True
-    )
-
-    # Process enrichment queue every 15 minutes
-    scheduler.add_job(
-        process_enrichment_queue,
-        'interval',
-        minutes=15,
-        id='enrichment_queue_processor',
-        replace_existing=True
-    )
-    
-    # Weekly reporting service scheduled every Monday at 06:00 SAST (04:00 UTC)
-    scheduler.add_job(
-        run_weekly_reporting_cycle,
-        'cron',
-        day_of_week='mon',
-        hour=4,
-        minute=0,
-        id='weekly_pdf_reports',
-        replace_existing=True
-    )
-    
-    # Run recurring billing daily at 01:00 UTC
-    scheduler.add_job(
-        execute_recurring_billing,
-        'cron',
-        hour=1,
-        minute=0,
-        id='recurring_billing_engine',
-        replace_existing=True
-    )
-    
-    scheduler.start()
-    logger.info("🚀 AuraWorks Async Scheduler: Online. Structural enrichment, trial warning, recurring billing, and weekly report loops active.")
-
-# --- TASK 7.1 WEEKLY REPORTING CYCLE ---
-from app.services.reports import compile_weekly_report, upload_report_to_r2, generate_signed_cdn_link, send_weekly_report_email
-from app.models.client import Client
-
-async def run_weekly_reporting_cycle():
-    """
-    Weekly Reporting cron task: compiles the report for each active client,
-    uploads to R2, and dispatches an email with a 24-hour expiration token.
-    """
-    if not async_session_maker:
-        return
-        
-    async with async_session_maker() as session:
-        try:
-            stmt = select(Client).where(Client.is_active == True)
-            res = await session.execute(stmt)
-            clients = res.scalars().all()
-            
-            for client in clients:
-                try:
-                    pdf_bytes = await compile_weekly_report(client.id, session)
-                    filename = f"weekly_report_{client.id}_{get_current_time().strftime('%Y%m%d')}.pdf"
-                    
-                    upload_success = await upload_report_to_r2(pdf_bytes, filename)
-                    if upload_success:
-                        download_link = generate_signed_cdn_link(filename)
-                        recipient = f"reports@{client.domain}"
-                        await send_weekly_report_email(recipient, download_link)
-                        logger.info(f"📊 Weekly report successfully sent to {recipient}")
-                except Exception as inner_e:
-                    logger.error(f"❌ Failed compiling weekly report for client {client.id}: {inner_e}")
-        except Exception as e:
-            logger.error(f"❌ Weekly report global cycle failure: {e}")
-
-
-async def charge_and_log(session: AsyncSession, client: Client, amount: int, description: str) -> bool:
-    """
-    Charges the client's token via IkhokhaClient and logs a transaction entry.
-    Returns True if successful, False if failed.
-    """
-    from app.services.payment import IkhokhaClient, IkhokhaError
-    from app.models.transaction import Transaction, TransactionStatus
-    import uuid
-
-    ik_client = IkhokhaClient()
-    logger.info(f"Executing charge of {amount} cents against token for client {client.company_name} - {description}")
-    
-    try:
-        res = await ik_client.charge_token(client.id, amount, client.payment_method_token)
-        if res.get("status") in ("successful", "success"):
-            new_tx = Transaction(
-                client_id=client.id,
-                amount=amount,
-                currency="ZAR",
-                status=TransactionStatus.SUCCESSFUL,
-                gateway_reference=res.get("transactionId") or f"ik_tx_{uuid.uuid4()}",
-                payment_method_token=client.payment_method_token,
-                error_message=None
-            )
-            session.add(new_tx)
-            await session.commit()
-            return True
-        else:
-            raise IkhokhaError(res.get("errorMessage") or "Transaction failed")
-    except Exception as e:
-        logger.error(f"🚨 Failed transaction for {client.company_name}: {e}")
-        new_tx = Transaction(
-            client_id=client.id,
-            amount=amount,
-            currency="ZAR",
-            status=TransactionStatus.FAILED,
-            gateway_reference=f"fail_ref_{uuid.uuid4()}",
-            payment_method_token=client.payment_method_token,
-            error_message=str(e)
-        )
-        session.add(new_tx)
-        await session.commit()
-        return False
-
-
-from sqlalchemy.ext.asyncio import AsyncSession
-
-async def execute_recurring_billing():
-    """
-    Cron/worker task: executes recurring payments daily.
-    - Triggers monthly billing on the 1st of every month.
-    - Triggers annual billing on the 1st of the anniversary month (if year > trial_ends_at.year).
-    - Checks for failed monthly charges and retries after 3 days.
-    - Checks for failed annual charges and retries after 7 days.
-    - Suspends accounts if retry fails.
-    - Transitions trial-end clients to active by executing their initial real charge.
-    """
-    if not async_session_maker:
-        logger.error("❌ execute_recurring_billing: Aborted. Async Database Engine not initialized.")
-        return
-
-    from app.services.payment import calculate_prorated_amount
-    from app.models.client import Client, SubscriptionStatus
-    from app.models.transaction import Transaction, TransactionStatus
-    from datetime import datetime, timezone, timedelta
-
-    async with async_session_maker() as session:
-        try:
-            now = get_current_time()
-            is_first_of_month = (now.day == 1)
-            
-            # --- PART 1: 1st of Month Billing Triggers ---
-            if is_first_of_month:
-                logger.info("📅 1st of Month recurring billing trigger active.")
-                # 1. Monthly Active Clients
-                stmt_monthly = select(Client).where(
-                    Client.subscription_status == SubscriptionStatus.ACTIVE,
-                    Client.is_active == True,
-                    Client.billing_cycle == "monthly",
-                    Client.payment_method_token != None
-                )
-                res_monthly = await session.execute(stmt_monthly)
-                for client in res_monthly.scalars().all():
-                    amount = client.custom_monthly_amount or 1000000
-                    await charge_and_log(session, client, amount, "Monthly renewal charge")
-                
-                # 2. Annual Active Clients (Anniversary month)
-                stmt_annual = select(Client).where(
-                    Client.subscription_status == SubscriptionStatus.ACTIVE,
-                    Client.is_active == True,
-                    Client.billing_cycle == "annual",
-                    Client.payment_method_token != None,
-                    Client.trial_ends_at != None
-                )
-                res_annual = await session.execute(stmt_annual)
-                for client in res_annual.scalars().all():
-                    trial_end_utc = client.trial_ends_at.replace(tzinfo=timezone.utc)
-                    if trial_end_utc.month == now.month and trial_end_utc.year < now.year:
-                        amount = 12000000
-                        await charge_and_log(session, client, amount, "Annual renewal charge")
-
-            # --- PART 2: Trial Expired T-Zero Automated Charging ---
-            stmt_trials = select(Client).where(
-                Client.subscription_status == SubscriptionStatus.TRIAL,
-                Client.trial_ends_at != None,
-                Client.trial_ends_at <= now,
-                Client.cancellation_requested == False,
-                Client.payment_method_token != None
-            )
-            res_trials = await session.execute(stmt_trials)
-            for client in res_trials.scalars().all():
-                logger.info(f"⏳ Trial ended for client {client.company_name}. Executing T-Zero billing...")
-                if client.billing_cycle == "monthly":
-                    amount = calculate_prorated_amount(client.trial_ends_at.replace(tzinfo=timezone.utc), client.custom_monthly_amount or 1000000)
-                else:
-                    amount = 12000000
-                
-                success = await charge_and_log(session, client, amount, f"Trial-end charge ({client.billing_cycle})")
-                if success:
-                    client.subscription_status = SubscriptionStatus.ACTIVE
-                    client.is_active = True
-                    session.add(client)
-                    await session.commit()
-                    logger.info(f"🎉 Client {client.company_name} is now ACTIVE.")
-                else:
-                    client.subscription_status = SubscriptionStatus.SUSPENDED
-                    client.is_active = False
-                    session.add(client)
-                    await session.commit()
-                    logger.error(f"❌ Initial trial-end charge failed for {client.company_name}. Client suspended.")
-
-            # --- PART 3: Grace Period Retries & Suspensions ---
-            stmt_active = select(Client).where(
-                Client.subscription_status == SubscriptionStatus.ACTIVE,
-                Client.is_active == True,
-                Client.payment_method_token != None
-            )
-            res_active = await session.execute(stmt_active)
-            for client in res_active.scalars().all():
-                last_tx_stmt = select(Transaction).where(
-                    Transaction.client_id == client.id
-                ).order_by(Transaction.created_at.desc()).limit(1)
-                tx_res = await session.execute(last_tx_stmt)
-                last_tx = tx_res.scalars().first()
-                
-                if last_tx and last_tx.status == TransactionStatus.FAILED:
-                    tx_age = now - last_tx.created_at.replace(tzinfo=timezone.utc)
-                    
-                    if client.billing_cycle == "monthly":
-                        if tx_age.days >= 3:
-                            logger.info(f"🔁 Retrying failed monthly charge for {client.company_name}...")
-                            amount = client.custom_monthly_amount or 1000000
-                            success = await charge_and_log(session, client, amount, "Monthly renewal retry charge")
-                            if not success:
-                                client.subscription_status = SubscriptionStatus.SUSPENDED
-                                client.is_active = False
-                                session.add(client)
-                                await session.commit()
-                                logger.error(f"❌ Monthly retry failed. Client {client.company_name} suspended.")
-                    elif client.billing_cycle == "annual":
-                        if tx_age.days >= 7:
-                            logger.info(f"🔁 Retrying failed annual charge for {client.company_name}...")
-                            amount = 12000000
-                            success = await charge_and_log(session, client, amount, "Annual renewal retry charge")
-                            if not success:
-                                client.subscription_status = SubscriptionStatus.SUSPENDED
-                                client.is_active = False
-                                session.add(client)
-                                await session.commit()
-                                logger.error(f"❌ Annual retry failed. Client {client.company_name} suspended.")
-
-        except Exception as e:
-            logger.error(f"❌ execute_recurring_billing Global Failure: {e}")
-</file>
-
 <file path="backend/app/core/security.py">
 import os
 import base64
@@ -15957,6 +16060,379 @@ class PageView(SQLModel, table=True):
     )
 
     visit: Optional["Visit"] = Relationship(back_populates="page_views")
+</file>
+
+<file path="backend/app/services/email.py">
+# backend/app/services/email.py
+import logging
+from typing import Optional
+import httpx
+from app.core.config import settings
+
+logger = logging.getLogger("auraworks.email")
+
+import base64
+
+async def send_resend_email(
+    to_email: str, 
+    subject: str, 
+    html_content: str,
+    attachment_bytes: Optional[bytes] = None,
+    filename: Optional[str] = None
+) -> bool:
+    """
+    Dispatches outbound email notifications using Resend's REST API.
+    Asynchronous implementation ensures waitlist route submission stays fast.
+    """
+    if not settings.RESEND_API_KEY:
+        logger.error("Resend delivery failed: RESEND_API_KEY is not configured in settings.")
+        return False
+
+    url = "https://api.resend.com/emails"
+    headers = {
+        "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "from": settings.RESEND_FROM_EMAIL,
+        "to": [to_email],
+        "subject": subject,
+        "html": html_content
+    }
+    if attachment_bytes and filename:
+        payload["attachments"] = [
+            {
+                "content": base64.b64encode(attachment_bytes).decode("utf-8"),
+                "filename": filename
+            }
+        ]
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.post(url, json=payload, headers=headers)
+            
+            if response.status_code in [200, 201]:
+                data = response.json()
+                logger.info(f"Waitlist confirmation email sent successfully. Resend ID: {data.get('id')}")
+                return True
+            else:
+                logger.error(f"Resend rejected payload with status {response.status_code}: {response.text}")
+                return False
+                
+    except httpx.RequestError as exc:
+        logger.error(f"Network error trying to connect to Resend endpoint: {exc}")
+        return False
+
+
+async def send_prospect_success_email(
+    recipient_email: str,
+    recipient_name: Optional[str] = None,
+    calendly_link: Optional[str] = None
+) -> bool:
+    """
+    Sends a premium demo onboarding confirmation email to prospects.
+    Introduces AuraWorks' Identity Resolution engine and requests booking.
+    """
+    subject = "Confirm Your AuraWorks Demo & Onboarding"
+    
+    greeting = f"Hello {recipient_name}," if recipient_name else "Hello,"
+    link = calendly_link or settings.CALENDLY_LINK
+    
+    # Premium minimalist design framework matching a professional brand layout
+    html_template = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #fafafa; color: #1a1a1a; margin: 0; padding: 40px; }}
+            .card {{ max-width: 520px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e5e5; border-radius: 4px; padding: 40px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02); }}
+            .brand {{ font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: #737373; margin-bottom: 32px; }}
+            .greeting {{ font-size: 15px; font-weight: 500; margin-bottom: 16px; color: #171717; }}
+            .body-text {{ font-size: 14px; line-height: 1.6; color: #404040; margin-bottom: 24px; }}
+            .cta-container {{ margin: 32px 0; text-align: left; }}
+            .cta-button {{ display: inline-block; font-size: 13px; font-weight: 600; color: #ffffff !important; background: #000000; padding: 12px 24px; text-decoration: none; border-radius: 4px; letter-spacing: 0.05em; }}
+            .cta-button:hover {{ background: #262626; }}
+            .status-tag {{ display: inline-block; font-size: 12px; font-family: monospace; background: #f4f4f5; color: #18181b; padding: 6px 12px; border-radius: 2px; margin-bottom: 24px; font-weight: 500; }}
+            .footer {{ border-top: 1px solid #f3f3f3; padding-top: 24px; font-size: 11px; color: #a3a3a3; letter-spacing: 0.05em; line-height: 1.5; }}
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <div class="brand">AuraWorks Industrial Intelligence</div>
+            <div class="greeting">{greeting}</div>
+            
+            <div class="body-text">
+                Thank you for requesting a demonstration of AuraWorks. Your inquiry has been securely registered in our system.
+            </div>
+            
+            <div class="status-tag">STATUS: DEMO_REQUESTED</div>
+            
+            <div class="body-text">
+                AuraWorks specializes in industrial-grade <strong>Identity Resolution</strong>, bridging the gap between anonymous traffic and verified operational profiles to reveal hidden demand.
+            </div>
+
+            <div class="body-text">
+                To proceed with your demo, please select a convenient timeframe for your onboarding call with our technical engineering team:
+            </div>
+
+            <div class="cta-container">
+                <a href="{link}" class="cta-button" target="_blank">Book Onboarding Session</a>
+            </div>
+
+            <div class="body-text">
+                If you have any questions before our session, simply reply directly to this email to contact our team.
+            </div>
+            
+            <div class="footer">
+                This is an automated demo onboarding dispatch.<br>
+                AuraWorks (Pty) Ltd &bull; Where presence meets performance.
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    return await send_resend_email(
+        to_email=recipient_email,
+        subject=subject,
+        html_content=html_template
+    )
+
+
+async def send_inbound_auto_reply(to_email: str, recipient_alias: str) -> bool:
+    """
+    Sends an immediate contextual auto-reply based on the recipient alias.
+    Prevents infinite email loops.
+    """
+    sender_lower = to_email.lower()
+    loop_indicators = [
+        "legal@auraworks.co.za",
+        "privacy@auraworks.co.za",
+        "customer@auraworks.co.za",
+        "noreply",
+        "no-reply",
+        "mailer-daemon",
+        "bounce",
+        "postmaster"
+    ]
+    if any(indicator in sender_lower for indicator in loop_indicators):
+        logger.info(f"🚫 Auto-reply skipped for {to_email} to prevent infinite loops.")
+        return False
+
+    recipient_alias_lower = recipient_alias.lower()
+    if "privacy" in recipient_alias_lower:
+        subject = "We have received your inquiry regarding data privacy"
+        message_text = "We have received your inquiry regarding data privacy. Our Information Officer will review your request and respond shortly."
+    elif "legal" in recipient_alias_lower:
+        subject = "We have received your legal inquiry"
+        message_text = "We have received your legal inquiry. Our compliance team will review your request and respond shortly."
+    else:
+        subject = "We have received your inquiry"
+        message_text = "We have received your inquiry. Our support team will review your request and respond shortly."
+
+    # Premium minimalist design framework
+    html_template = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #fafafa; color: #1a1a1a; margin: 0; padding: 40px; }}
+            .card {{ max-width: 520px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e5e5; border-radius: 4px; padding: 40px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02); }}
+            .brand {{ font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: #737373; margin-bottom: 32px; }}
+            .greeting {{ font-size: 15px; font-weight: 500; margin-bottom: 16px; color: #171717; }}
+            .body-text {{ font-size: 14px; line-height: 1.6; color: #404040; margin-bottom: 24px; }}
+            .footer {{ border-top: 1px solid #f3f3f3; padding-top: 24px; font-size: 11px; color: #a3a3a3; letter-spacing: 0.05em; line-height: 1.5; }}
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <div class="brand">AuraWorks Correspondence</div>
+            <div class="greeting">Hello,</div>
+            <div class="body-text">
+                {message_text}
+            </div>
+            <div class="footer">
+                AuraWorks (Pty) Ltd &bull; Where presence meets performance.
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+    return await send_resend_email(
+        to_email=to_email,
+        subject=subject,
+        html_content=html_template
+    )
+
+from uuid import UUID
+
+async def send_trial_warning_email(recipient_email: str, client_id: UUID) -> bool:
+    """
+    Sends a warning email to clients exactly 48 hours before their free trial expires,
+    notifying them of the upcoming automated billing.
+    Provides a retention gate cancellation link.
+    """
+    subject = "Important: Your AuraWorks Free Trial is Expiring in 48 Hours"
+    cancel_link = f"http://localhost:3000/cancel-request?client_id={client_id}"
+    
+    html_template = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #fafafa; color: #1a1a1a; margin: 0; padding: 40px; }}
+            .card {{ max-width: 520px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e5e5; border-radius: 4px; padding: 40px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02); }}
+            .brand {{ font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: #737373; margin-bottom: 32px; }}
+            .greeting {{ font-size: 15px; font-weight: 500; margin-bottom: 16px; color: #171717; }}
+            .body-text {{ font-size: 14px; line-height: 1.6; color: #404040; margin-bottom: 24px; }}
+            .cta-container {{ margin: 32px 0; text-align: left; }}
+            .cta-button {{ display: inline-block; font-size: 13px; font-weight: 600; color: #ef4444 !important; background: #fee2e2; border: 1px solid #fca5a5; padding: 12px 24px; text-decoration: none; border-radius: 4px; letter-spacing: 0.05em; }}
+            .cta-button:hover {{ background: #fecaca; }}
+            .status-tag {{ display: inline-block; font-size: 12px; font-family: monospace; background: #fef3c7; color: #92400e; padding: 6px 12px; border-radius: 2px; margin-bottom: 24px; font-weight: 500; }}
+            .footer {{ border-top: 1px solid #f3f3f3; padding-top: 24px; font-size: 11px; color: #a3a3a3; letter-spacing: 0.05em; line-height: 1.5; }}
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <div class="brand">AuraWorks Account Billing</div>
+            <div class="greeting">Hello,</div>
+            
+            <div class="body-text">
+                This email is to notify you that your 14-day free trial of AuraWorks is expiring in 48 hours.
+            </div>
+            
+            <div class="status-tag">STATUS: TRIAL_EXPIRING_WARNING</div>
+            
+            <div class="body-text">
+                If you choose to continue unmasking high-value industrial traffic, no action is required on your part. Your card on file will be automatically charged in 48 hours for your chosen plan.
+            </div>
+
+            <div class="body-text">
+                If you wish to cancel your subscription, please submit a cancellation request below:
+            </div>
+
+            <div class="cta-container">
+                <a href="{cancel_link}" class="cta-button" target="_blank">Request Subscription Cancellation</a>
+            </div>
+            
+            <div class="footer">
+                AuraWorks (Pty) Ltd &bull; Where presence meets performance.
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    return await send_resend_email(
+        to_email=recipient_email,
+        subject=subject,
+        html_content=html_template
+    )
+</file>
+
+<file path="backend/app/tasks/janitor.py">
+# backend/app/tasks/janitor.py
+import logging
+from datetime import datetime, timedelta, timezone
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db import async_engine
+from app.models import Visit, Prospect
+
+logger = logging.getLogger("uvicorn")
+
+async def execute_janitor_scrub_cascade(session: AsyncSession):
+    """
+    Executes a precise column anonymization cascade matching POPIA parameters.
+    Identifies unverified interaction traces where tracking stamps exceed 48 hours
+    and nulls personal identifiers, replacing raw fingerprint arrays with a non-reversible hash.
+    """
+    threshold = (datetime.now(timezone.utc) - timedelta(hours=48)).replace(tzinfo=None)
+    
+    statement = select(Visit).where(
+        Visit.verification_status == "verifying",
+        Visit.created_at < threshold
+    )
+    result = await session.execute(statement)
+    candidates = result.scalars().all()
+    
+    if not candidates:
+        logger.info("✅ Janitor: Forensic vault is already optimized.")
+        return
+
+    purged_count = 0
+    promoted_count = 0
+
+    for visit in candidates:
+        # Safety Check: The 'Waitlist Shield'
+        prospect_stmt = select(Prospect).where(Prospect.aura_id == visit.aura_id)
+        prospect_res = await session.execute(prospect_stmt)
+        has_lead = prospect_res.scalars().first()
+        
+        if has_lead:
+            visit.verification_status = "verified"
+            if has_lead.company_id:
+                visit.company_id = has_lead.company_id
+            session.add(visit)
+            promoted_count += 1
+            continue
+
+        # POPIA Column Anonymization
+        visit.email = None
+        visit.visitor_name = None
+        
+        # Calculate SHA256(canvas + webgl + drift + rotating_daily_secret)
+        canvas = visit.canvas_hash or ""
+        webgl = visit.webgl_renderer or ""
+        drift = visit.clock_drift or ""
+        
+        from app.core.config import settings
+        import hashlib
+        date_str = visit.created_at.strftime("%Y-%m-%d")
+        secret = settings.SECRET_KEY or "default_secret"
+        rotating_daily_secret = hashlib.sha256(f"{secret}:{date_str}".encode()).hexdigest()
+        
+        combined_fingerprint = f"{canvas}{webgl}{drift}{rotating_daily_secret}"
+        visit.fingerprint_hash = hashlib.sha256(combined_fingerprint.encode()).hexdigest()
+        
+        # Clear raw fingerprint columns to prevent tracking individual traits
+        visit.canvas_hash = None
+        visit.webgl_renderer = None
+        visit.clock_drift = None
+        
+        visit.verification_status = "anonymized_corporate"
+        visit.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+        
+        session.add(visit)
+        purged_count += 1
+
+    await session.commit()
+    logger.info(
+        f"🗑️ Janitor: Anonymized {purged_count} noise signatures. "
+        f"🛡️ Promoted {promoted_count} high-intent visits. Vault optimized."
+    )
+
+async def cleanup_unverified_visits():
+    """
+    FastAPI background task entry point for the periodic Janitor Sweep.
+    """
+    logger.info("🧹 AuraWorks OS: Activating 48-hour Janitor Sweep...")
+    
+    if not async_engine:
+        logger.error("❌ Janitor Sweep aborted: Async Database Engine not initialized.")
+        return
+        
+    async with AsyncSession(async_engine) as session:
+        try:
+            await execute_janitor_scrub_cascade(session)
+        except Exception as e:
+            await session.rollback()
+            logger.error(f"🚨 Janitor Failure: {e}")
 </file>
 
 <file path="backend/reset_db.py">
@@ -16261,6 +16737,618 @@ export function SolutionsCTA() {
         </section>
     )
 }
+</file>
+
+<file path="tracker/src/public/aura.js">
+/**
+ * AuraWorks Industrial Intelligence Engine - Decoupled Edge Tracker
+ * Version: 4.0.0 (Decoupled Edge Architecture)
+ * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
+ */
+(async function() {
+    const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const logWarn = (...args) => { if (isLocalDev) console.warn(...args); };
+    const logError = (...args) => { if (isLocalDev) console.error(...args); };
+
+    const script = document.currentScript || document.querySelector('script[data-client-id]') || document.querySelector('script[src*="aura.js"]');
+    const agencyId = window.AURA_AGENCY_ID || script?.getAttribute('data-client-id') || script?.getAttribute('data-id');
+    window.AURA_START_TIME = performance.now();
+    
+    if (!agencyId) {
+        logError("❌ AuraWorks: Missing Client Identity.");
+        return;
+    }
+
+    // Retrieve the base tracking endpoint.
+    const getBaseUrl = () => {
+        if (window.AURA_CONFIG?.apiUrl) return window.AURA_CONFIG.apiUrl;
+        return "https://api.auraworks.co.za";
+    };
+
+    const getApiPath = (subPath) => {
+        const base = getBaseUrl().replace(/\/$/, '');
+        if (base.includes("api.auraworks.co.za")) {
+            return `${base}/v1/${subPath}`;
+        }
+        return `${base}/api/v1/${subPath}`;
+    };
+    
+    const API_URL = getApiPath("track");
+    const CONFIG_URL = getApiPath("clients/config");
+
+    /**
+     * Identity Persistence Layer:
+     * Dual-redundancy storage mechanism syncing tracking IDs across Document Cookies 
+     * and LocalStorage.
+     */
+    const AuraPersistence = {
+        key: 'aura_uid',
+        utmKey: 'aura_utm',
+        async init() {
+            let id = await this.getStoredID();
+            this.captureUTMs(); 
+            if (!id) id = this.generateUUID();
+            await this.syncStorage(id);
+            return id;
+        },
+        captureUTMs() {
+            const params = new URLSearchParams(window.location.search);
+            const utms = {};
+            ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(key => {
+                const val = params.get(key);
+                if (val) utms[key] = val;
+            });
+            if (Object.keys(utms).length > 0) {
+                localStorage.setItem(this.utmKey, JSON.stringify({...utms, captured_at: new Date().toISOString()}));
+            }
+        },
+        getStoredUTMs() {
+            try { return JSON.parse(localStorage.getItem(this.utmKey)) || {}; } catch(e) { return {}; }
+        },
+        async getStoredID() {
+            const c = document.cookie.split('; ').find(r => r.startsWith(`${this.key}=`))?.split('=')[1];
+            const l = localStorage.getItem(this.key);
+            return c || l || null;
+        },
+        async syncStorage(id) {
+            const exp = new Date(); exp.setFullYear(exp.getFullYear() + 2);
+            document.cookie = `${this.key}=${id}; expires=${exp.toUTCString()}; path=/; SameSite=Lax; Secure`;
+            localStorage.setItem(this.key, id);
+            window.AURA_UID = id;
+        },
+        generateUUID() {
+            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+        }
+    };
+
+    /**
+     * Forensic Fingerprinter:
+     * Assembles hardware, layout, and clock anomalies to uniquely identify browsers.
+     */
+    const AuraFingerprint = {
+        async getFullSignature() {
+            return {
+                canvas: this.getCanvas(),
+                webgl: this.getWebGL(),
+                network: this.getNetworkInfo(),
+                drift: await this.measureDrift(),
+                screen: `${screen.width}x${screen.height}`,
+                is_incognito: await this.isIncognito(),
+                tz: Intl.DateTimeFormat().resolvedOptions().timeZone
+            };
+        },
+        getNetworkInfo() {
+            const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            return {
+                type: conn?.effectiveType || "unknown",
+                rtt: conn?.rtt,
+                downlink: conn?.downlink,
+                is_residential_prob: !!(conn?.saveData || (conn?.downlink && conn.downlink < 10))
+            };
+        },
+        getCanvas() {
+            try {
+                const cvs = document.createElement('canvas');
+                const ctx = cvs.getContext('2d');
+                ctx.textBaseline = "top"; ctx.font = "14px 'Arial'";
+                ctx.fillText("AuraWorks_v4.0", 2, 2);
+                return cvs.toDataURL().substring(0, 100);
+            } catch (e) { return "blocked"; }
+        },
+        getWebGL() {
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl');
+                const debug = gl.getExtension('WEBGL_debug_renderer_info');
+                return debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : "standard";
+            } catch (e) { return "standard"; }
+        },
+        async measureDrift() {
+            return new Promise(r => {
+                const t0 = performance.now(), d0 = Date.now();
+                setTimeout(() => r(Math.round((performance.now() - t0) - (Date.now() - d0))), 500);
+            });
+        },
+        async isIncognito() {
+            if ('storage' in navigator && 'estimate' in navigator.storage) {
+                const {quota} = await navigator.storage.estimate();
+                return quota < 120000000;
+            }
+            return false;
+        }
+    };
+
+    /**
+     * AuraTracker Engine:
+     * Manages event collection, input field sensors, entry/exit checkpoints, 
+     * and single-page application navigation hooks.
+     */
+    const AuraTracker = {
+        isArmed: false, 
+
+        initialized: false,
+        init(auraId, config) {
+            if (this.initialized) return;
+            this.initialized = true;
+            this.auraId = auraId;
+            this.config = config;
+            this.trackEntry();
+            this.setupSensors();
+            this.patchSPA();
+        },
+        async dispatch(endpoint, payload, useBeacon = false) {
+            const utms = AuraPersistence.getStoredUTMs();
+            let data = {
+                client_id: agencyId, 
+                aura_id: this.auraId,
+                timestamp: new Date().toISOString(),
+                ...utms,
+                ...payload
+            };
+
+            if (endpoint === 'event') {
+                const eventName = payload.event_name || payload.event_type || 'unknown';
+                const properties = {};
+                const standardKeys = ['client_id', 'aura_id', 'url', 'duration', 'event_type', 'intent_cluster', 'event_name', 'timestamp'];
+                Object.keys(data).forEach(key => {
+                    if (!standardKeys.includes(key)) {
+                        properties[key] = data[key];
+                    }
+                });
+                data = {
+                    client_id: data.client_id,
+                    event_name: eventName,
+                    aura_id: data.aura_id,
+                    url: data.url || window.location.href,
+                    duration: data.duration || 0,
+                    event_type: data.event_type || eventName,
+                    intent_cluster: data.intent_cluster || null,
+                    properties: properties,
+                    timestamp: data.timestamp
+                };
+            }
+
+            const url = `${API_URL}/${endpoint}`;
+
+            if (useBeacon && navigator.sendBeacon) {
+                const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+                const success = navigator.sendBeacon(url, blob);
+                if (success) return true;
+            }
+
+            if (!navigator.onLine) {
+                await AuraOfflineQueue.enqueue(endpoint, data);
+                return false;
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST', 
+                    mode: 'cors', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(data), 
+                    keepalive: true
+                });
+                if (!response.ok) {
+                    await AuraOfflineQueue.enqueue(endpoint, data);
+                    return false;
+                }
+                return true;
+            } catch (e) {
+                await AuraOfflineQueue.enqueue(endpoint, data);
+                return false;
+            }
+        },
+        async sendRaw(endpoint, data) {
+            const url = `${API_URL}/${endpoint}`;
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data),
+                    keepalive: true
+                });
+                return response.ok;
+            } catch (e) {
+                return false;
+            }
+        },
+        setupSensors() {
+            document.addEventListener('blur', (e) => {
+                const target = e.target;
+                const fieldName = target.name?.toLowerCase() || "";
+                
+                if (target.type === 'email' || fieldName.includes('email')) {
+                    if (target.value.includes('@')) {
+                        this.dispatch('identity', { email: target.value, capture_source: 'field_blur' });
+                    }
+                } else if (fieldName.includes('company') && target.value.length > 2) {
+                    this.dispatch('identity', { company_name: target.value, capture_source: 'field_blur' });
+                }
+            }, true);
+
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('a, button');
+                if (!btn) return;
+                const text = btn.innerText?.toLowerCase();
+                const intentKeywords = ['pricing', 'audit', 'feature', 'solution', 'prospect', 'get started'];
+                if (intentKeywords.some(kw => text.includes(kw))) {
+                    this.dispatch('event', { 
+                        event_type: 'intent_click', 
+                        intent_cluster: text.substring(0, 20), 
+                        url: window.location.href 
+                    });
+                }
+            });
+
+            // Asset Download Gate (Phase 04):
+            document.addEventListener('click', (e) => {
+                const anchor = e.target.closest('a');
+                if (anchor && anchor.href) {
+                    const href = anchor.href.toLowerCase();
+                    if (href.match(/\.(pdf|zip|dwg|dxf|cad|step|igs)$/)) {
+                        const hasConsent = document.cookie.split('; ').some(row => row.startsWith('aura_consent=true')) || localStorage.getItem('aura_consent_given') === 'true';
+                        if (!hasConsent) {
+                            e.preventDefault();
+                            
+                            // Load banner dynamically if not already present, then trigger Phase 04
+                            if (!document.querySelector('script[src*="banner.js"]')) {
+                                const s = document.createElement('script');
+                                s.src = window.AURA_CONFIG?.bannerUrl || "https://banner.auraworks.co.za/banner.js";
+                                s.defer = true;
+                                s.onload = () => {
+                                    window.dispatchEvent(new CustomEvent('aura:ready', {
+                                        detail: { auraId: this.auraId, clientId: agencyId, config: this.config }
+                                    }));
+                                    setTimeout(() => {
+                                        window.dispatchEvent(new CustomEvent('aura:trigger_banner', { detail: { phase: 4 } }));
+                                    }, 50);
+                                };
+                                document.head.appendChild(s);
+                            } else {
+                                window.dispatchEvent(new CustomEvent('aura:trigger_banner', { detail: { phase: 4 } }));
+                            }
+                        }
+                    }
+                }
+            }, true);
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') this.trackExit();
+            });
+
+            window.addEventListener('pagehide', () => this.trackExit());
+        },
+        trackEntry() {
+            const conn = AuraFingerprint.getNetworkInfo();
+            this.dispatch('entry', { 
+                url: window.location.href, 
+                referrer: document.referrer || "direct",
+                screen_resolution: `${window.innerWidth}x${window.innerHeight}`,
+                effective_connection_type: conn.type,
+                downlink_speed: conn.downlink,
+                rtt: conn.rtt
+            });
+        },
+        trackExit() {
+            const duration = Math.round((performance.now() - window.AURA_START_TIME) / 1000);
+            if (duration < 1) return;
+            
+            this.dispatch('exit', {
+                event_type: 'exit',
+                duration: duration,
+                url: window.location.href
+            }, true); 
+        },
+        patchSPA() {
+            const self = this;
+            ['pushState', 'replaceState'].forEach(m => {
+                const orig = history[m];
+                history[m] = function() {
+                    const r = orig.apply(this, arguments);
+                    setTimeout(() => self.trackEntry(), 0);
+                    return r;
+                };
+            });
+        }
+    };
+
+    let enqueuePromise = Promise.resolve();
+
+    /**
+     * AuraOfflineQueue:
+     * IndexedDB-based queue that stores telemetry events offline when connection is lost.
+     */
+    const AuraOfflineQueue = {
+        db: null,
+        dbName: 'AuraOfflineDB',
+        storeName: 'AuraEventsStore',
+        
+        async init() {
+            return new Promise((resolve) => {
+                try {
+                    const request = indexedDB.open(this.dbName, 1);
+                    request.onupgradeneeded = (e) => {
+                        const db = e.target.result;
+                        if (!db.objectStoreNames.contains(this.storeName)) {
+                            db.createObjectStore(this.storeName, { keyPath: 'id', autoIncrement: true });
+                        }
+                    };
+                    request.onsuccess = (e) => {
+                        this.db = e.target.result;
+                        resolve(true);
+                        this.flush();
+                    };
+                    request.onerror = () => {
+                        resolve(false);
+                    };
+                } catch (e) {
+                    resolve(false);
+                }
+            });
+        },
+        
+        async enqueue(endpoint, payload) {
+            return new Promise((resolve) => {
+                enqueuePromise = enqueuePromise.then(async () => {
+                    if (!this.db) {
+                        resolve(false);
+                        return;
+                    }
+                    try {
+                        const events = await this.getQueuedEvents();
+                        if (events.length >= 100) {
+                            // Drop the oldest event (first one in queue) to prevent memory leak/bloat
+                            await this.removeEvent(events[0].id);
+                        }
+                        const transaction = this.db.transaction([this.storeName], 'readwrite');
+                        const store = transaction.objectStore(this.storeName);
+                        store.add({ endpoint, payload, timestamp: new Date().toISOString(), attempts: 0 });
+                        transaction.oncomplete = () => {
+                            resolve(true);
+                            this.flush();
+                        };
+                        transaction.onerror = () => resolve(false);
+                    } catch (e) {
+                        resolve(false);
+                    }
+                });
+            });
+        },
+        
+        async getQueuedEvents() {
+            return new Promise((resolve) => {
+                if (!this.db) {
+                    resolve([]);
+                    return;
+                }
+                try {
+                    const transaction = this.db.transaction([this.storeName], 'readonly');
+                    const store = transaction.objectStore(this.storeName);
+                    const request = store.getAll();
+                    request.onsuccess = () => resolve(request.result || []);
+                    request.onerror = () => resolve([]);
+                } catch (e) {
+                    resolve([]);
+                }
+            });
+        },
+        
+        async removeEvent(id) {
+            return new Promise((resolve) => {
+                if (!this.db) {
+                    resolve(false);
+                    return;
+                }
+                try {
+                    const transaction = this.db.transaction([this.storeName], 'readwrite');
+                    const store = transaction.objectStore(this.storeName);
+                    store.delete(id);
+                    transaction.oncomplete = () => resolve(true);
+                    transaction.onerror = () => resolve(false);
+                } catch (e) {
+                    resolve(false);
+                }
+            });
+        },
+
+        async updateEvent(event) {
+            return new Promise((resolve) => {
+                if (!this.db) {
+                    resolve(false);
+                    return;
+                }
+                try {
+                    const transaction = this.db.transaction([this.storeName], 'readwrite');
+                    const store = transaction.objectStore(this.storeName);
+                    store.put(event);
+                    transaction.oncomplete = () => resolve(true);
+                    transaction.onerror = () => resolve(false);
+                } catch (e) {
+                    resolve(false);
+                }
+            });
+        },
+
+        isFlushing: false,
+        
+        async flush(attempt = 0) {
+            if (this.isFlushing || !navigator.onLine) return;
+            this.isFlushing = true;
+            
+            try {
+                const events = await this.getQueuedEvents();
+                if (events.length === 0) {
+                    this.isFlushing = false;
+                    return;
+                }
+                
+                for (const event of events) {
+                    if (!navigator.onLine) break;
+                    try {
+                        const success = await AuraTracker.sendRaw(event.endpoint, event.payload);
+                        if (success) {
+                            await this.removeEvent(event.id);
+                        } else {
+                            throw new Error("Flush send raw failed");
+                        }
+                    } catch (e) {
+                        this.isFlushing = false;
+                        
+                        // Increment retry attempts and cap them to prevent infinite loops / memory leak
+                        const attempts = (event.attempts || 0) + 1;
+                        if (attempts >= 5) {
+                            await this.removeEvent(event.id);
+                            logWarn(`AuraWorks: Event exceeded max retries (5). Discarded.`, event);
+                        } else {
+                            event.attempts = attempts;
+                            await this.updateEvent(event);
+                        }
+
+                        const delay = Math.min(1000 * Math.pow(2, attempt), 60000);
+                        setTimeout(() => this.flush(attempt + 1), delay);
+                        return;
+                    }
+                }
+            } catch (e) {
+                // Keep queue intact
+            }
+            this.isFlushing = false;
+        }
+    };
+
+    window.addEventListener('online', () => {
+        AuraOfflineQueue.flush();
+    });
+
+    const startAura = async () => {
+        if (window.AURA_INITIALIZED) return;
+        window.AURA_INITIALIZED = true;
+        
+        await AuraOfflineQueue.init();
+        
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        
+        let config = null;
+        try {
+            const response = await fetch(`${CONFIG_URL}?client_id=${agencyId}&tz=${encodeURIComponent(tz)}`, {
+                method: 'GET',
+                mode: 'cors'
+            });
+            if (response.ok) {
+                config = await response.json();
+            }
+        } catch (e) {
+            logWarn("AuraWorks: Failed to fetch remote config.", e);
+        }
+        
+        if (config && config.is_active === false) {
+            logWarn("AuraWorks: Client license inactive. Tracking halted.");
+            return;
+        }
+
+        const auraId = await AuraPersistence.init();
+        
+        // Register decoupled global event listeners
+        window.addEventListener('aura_consent_granted', () => {
+            AuraTracker.isArmed = true;
+            AuraTracker.init(auraId, config);
+            AuraTracker.dispatch('event', { event_type: 'consent_granted' });
+        });
+
+        window.addEventListener('aura_consent_updated', (e) => {
+            if (e.detail?.status === 'accepted') {
+                AuraTracker.isArmed = true;
+                AuraTracker.init(auraId, config);
+                AuraTracker.dispatch('event', { event_type: 'consent_granted', source: e.detail.source || 'banner' });
+            }
+        });
+
+        window.addEventListener('aura_warm_lead', async (e) => {
+            const fingerprint = await AuraFingerprint.getFullSignature();
+            const payload = {
+                ...e.detail,
+                fingerprint,
+                session_id: auraId,
+                capture_source: e.detail.capture_source || 'banner_warm_signal'
+            };
+            await AuraTracker.dispatch('identity', payload);
+        });
+        
+        const requireConsent = config ? config.require_consent_banner : false;
+        const complianceMode = config ? config.compliance_mode : "POPIA";
+        
+        const hasConsent = document.cookie.split('; ').some(row => row.startsWith('aura_consent=true')) || localStorage.getItem('aura_consent_given') === 'true';
+        
+        if (requireConsent && !hasConsent) {
+            if (complianceMode === "GDPR") {
+                // Strict GDPR: Block telemetry tracking completely until consent is given
+                AuraTracker.isArmed = false;
+            } else {
+                // POPIA: Silent B2B tracking is active
+                AuraTracker.isArmed = true;
+                AuraTracker.init(auraId, config);
+            }
+            
+            // Load banner script dynamically
+            const s = document.createElement('script');
+            s.src = window.AURA_CONFIG?.bannerUrl || "https://banner.auraworks.co.za/banner.js";
+            s.defer = true;
+            s.onload = () => {
+                window.dispatchEvent(new CustomEvent('aura:ready', {
+                    detail: { auraId, clientId: agencyId, config }
+                }));
+            };
+            document.head.appendChild(s);
+        } else {
+            // Already consented or consent banner is bypassed
+            AuraTracker.isArmed = true;
+            AuraTracker.init(auraId, config);
+            
+            // Asynchronously dispatch hardware signature
+            setTimeout(async () => {
+                const sig = await AuraFingerprint.getFullSignature();
+                await AuraTracker.dispatch('identity', { signature: sig });
+            }, 2000);
+
+            // Dispatch aura:ready for generic listeners
+            window.dispatchEvent(new CustomEvent('aura:ready', {
+                detail: { auraId, clientId: agencyId, config }
+            }));
+        }
+    };
+
+    if (isLocalDev || window.__AURA_TESTING__) {
+        window.__AURA_QUEUE__ = AuraOfflineQueue;
+        window.__AURA_TRACKER__ = AuraTracker;
+    }
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') startAura();
+    else window.addEventListener('load', startAura);
+})();
 </file>
 
 <file path="backend/app/api/v1/clients.py">
@@ -16790,279 +17878,6 @@ class FailedEnrichment(SQLModel, table=True):
     error_message: Optional[str] = Field(default=None, nullable=True)
 </file>
 
-<file path="backend/app/services/email.py">
-# backend/app/services/email.py
-import logging
-from typing import Optional
-import httpx
-from app.core.config import settings
-
-logger = logging.getLogger("auraworks.email")
-
-import base64
-
-async def send_resend_email(
-    to_email: str, 
-    subject: str, 
-    html_content: str,
-    attachment_bytes: Optional[bytes] = None,
-    filename: Optional[str] = None
-) -> bool:
-    """
-    Dispatches outbound email notifications using Resend's REST API.
-    Asynchronous implementation ensures waitlist route submission stays fast.
-    """
-    if not settings.RESEND_API_KEY:
-        logger.error("Resend delivery failed: RESEND_API_KEY is not configured in settings.")
-        return False
-
-    url = "https://api.resend.com/emails"
-    headers = {
-        "Authorization": f"Bearer {settings.RESEND_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    
-    payload = {
-        "from": settings.RESEND_FROM_EMAIL,
-        "to": [to_email],
-        "subject": subject,
-        "html": html_content
-    }
-    if attachment_bytes and filename:
-        payload["attachments"] = [
-            {
-                "content": base64.b64encode(attachment_bytes).decode("utf-8"),
-                "filename": filename
-            }
-        ]
-
-    try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.post(url, json=payload, headers=headers)
-            
-            if response.status_code in [200, 201]:
-                data = response.json()
-                logger.info(f"Waitlist confirmation email sent successfully. Resend ID: {data.get('id')}")
-                return True
-            else:
-                logger.error(f"Resend rejected payload with status {response.status_code}: {response.text}")
-                return False
-                
-    except httpx.RequestError as exc:
-        logger.error(f"Network error trying to connect to Resend endpoint: {exc}")
-        return False
-
-
-async def send_prospect_success_email(
-    recipient_email: str,
-    recipient_name: Optional[str] = None,
-    calendly_link: Optional[str] = None
-) -> bool:
-    """
-    Sends a premium demo onboarding confirmation email to prospects.
-    Introduces AuraWorks' Identity Resolution engine and requests booking.
-    """
-    subject = "Confirm Your AuraWorks Demo & Onboarding"
-    
-    greeting = f"Hello {recipient_name}," if recipient_name else "Hello,"
-    link = calendly_link or settings.CALENDLY_LINK
-    
-    # Premium minimalist design framework matching a professional brand layout
-    html_template = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <style>
-            body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #fafafa; color: #1a1a1a; margin: 0; padding: 40px; }}
-            .card {{ max-width: 520px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e5e5; border-radius: 4px; padding: 40px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02); }}
-            .brand {{ font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: #737373; margin-bottom: 32px; }}
-            .greeting {{ font-size: 15px; font-weight: 500; margin-bottom: 16px; color: #171717; }}
-            .body-text {{ font-size: 14px; line-height: 1.6; color: #404040; margin-bottom: 24px; }}
-            .cta-container {{ margin: 32px 0; text-align: left; }}
-            .cta-button {{ display: inline-block; font-size: 13px; font-weight: 600; color: #ffffff !important; background: #000000; padding: 12px 24px; text-decoration: none; border-radius: 4px; letter-spacing: 0.05em; }}
-            .cta-button:hover {{ background: #262626; }}
-            .status-tag {{ display: inline-block; font-size: 12px; font-family: monospace; background: #f4f4f5; color: #18181b; padding: 6px 12px; border-radius: 2px; margin-bottom: 24px; font-weight: 500; }}
-            .footer {{ border-top: 1px solid #f3f3f3; padding-top: 24px; font-size: 11px; color: #a3a3a3; letter-spacing: 0.05em; line-height: 1.5; }}
-        </style>
-    </head>
-    <body>
-        <div class="card">
-            <div class="brand">AuraWorks Industrial Intelligence</div>
-            <div class="greeting">{greeting}</div>
-            
-            <div class="body-text">
-                Thank you for requesting a demonstration of AuraWorks. Your inquiry has been securely registered in our system.
-            </div>
-            
-            <div class="status-tag">STATUS: DEMO_REQUESTED</div>
-            
-            <div class="body-text">
-                AuraWorks specializes in industrial-grade <strong>Identity Resolution</strong>, bridging the gap between anonymous traffic and verified operational profiles to reveal hidden demand.
-            </div>
-
-            <div class="body-text">
-                To proceed with your demo, please select a convenient timeframe for your onboarding call with our technical engineering team:
-            </div>
-
-            <div class="cta-container">
-                <a href="{link}" class="cta-button" target="_blank">Book Onboarding Session</a>
-            </div>
-
-            <div class="body-text">
-                If you have any questions before our session, simply reply directly to this email to contact our team.
-            </div>
-            
-            <div class="footer">
-                This is an automated demo onboarding dispatch.<br>
-                AuraWorks (Pty) Ltd &bull; Where presence meets performance.
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-    
-    return await send_resend_email(
-        to_email=recipient_email,
-        subject=subject,
-        html_content=html_template
-    )
-
-
-async def send_inbound_auto_reply(to_email: str, recipient_alias: str) -> bool:
-    """
-    Sends an immediate contextual auto-reply based on the recipient alias.
-    Prevents infinite email loops.
-    """
-    sender_lower = to_email.lower()
-    loop_indicators = [
-        "legal@auraworks.co.za",
-        "privacy@auraworks.co.za",
-        "customer@auraworks.co.za",
-        "noreply",
-        "no-reply",
-        "mailer-daemon",
-        "bounce",
-        "postmaster"
-    ]
-    if any(indicator in sender_lower for indicator in loop_indicators):
-        logger.info(f"🚫 Auto-reply skipped for {to_email} to prevent infinite loops.")
-        return False
-
-    recipient_alias_lower = recipient_alias.lower()
-    if "privacy" in recipient_alias_lower:
-        subject = "We have received your inquiry regarding data privacy"
-        message_text = "We have received your inquiry regarding data privacy. Our Information Officer will review your request and respond shortly."
-    elif "legal" in recipient_alias_lower:
-        subject = "We have received your legal inquiry"
-        message_text = "We have received your legal inquiry. Our compliance team will review your request and respond shortly."
-    else:
-        subject = "We have received your inquiry"
-        message_text = "We have received your inquiry. Our support team will review your request and respond shortly."
-
-    # Premium minimalist design framework
-    html_template = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <style>
-            body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #fafafa; color: #1a1a1a; margin: 0; padding: 40px; }}
-            .card {{ max-width: 520px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e5e5; border-radius: 4px; padding: 40px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02); }}
-            .brand {{ font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: #737373; margin-bottom: 32px; }}
-            .greeting {{ font-size: 15px; font-weight: 500; margin-bottom: 16px; color: #171717; }}
-            .body-text {{ font-size: 14px; line-height: 1.6; color: #404040; margin-bottom: 24px; }}
-            .footer {{ border-top: 1px solid #f3f3f3; padding-top: 24px; font-size: 11px; color: #a3a3a3; letter-spacing: 0.05em; line-height: 1.5; }}
-        </style>
-    </head>
-    <body>
-        <div class="card">
-            <div class="brand">AuraWorks Correspondence</div>
-            <div class="greeting">Hello,</div>
-            <div class="body-text">
-                {message_text}
-            </div>
-            <div class="footer">
-                AuraWorks (Pty) Ltd &bull; Where presence meets performance.
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-
-    return await send_resend_email(
-        to_email=to_email,
-        subject=subject,
-        html_content=html_template
-    )
-
-from uuid import UUID
-
-async def send_trial_warning_email(recipient_email: str, client_id: UUID) -> bool:
-    """
-    Sends a warning email to clients exactly 48 hours before their free trial expires,
-    notifying them of the upcoming automated billing.
-    Provides a retention gate cancellation link.
-    """
-    subject = "Important: Your AuraWorks Free Trial is Expiring in 48 Hours"
-    cancel_link = f"http://localhost:3000/cancel-request?client_id={client_id}"
-    
-    html_template = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <style>
-            body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #fafafa; color: #1a1a1a; margin: 0; padding: 40px; }}
-            .card {{ max-width: 520px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e5e5; border-radius: 4px; padding: 40px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02); }}
-            .brand {{ font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: #737373; margin-bottom: 32px; }}
-            .greeting {{ font-size: 15px; font-weight: 500; margin-bottom: 16px; color: #171717; }}
-            .body-text {{ font-size: 14px; line-height: 1.6; color: #404040; margin-bottom: 24px; }}
-            .cta-container {{ margin: 32px 0; text-align: left; }}
-            .cta-button {{ display: inline-block; font-size: 13px; font-weight: 600; color: #ef4444 !important; background: #fee2e2; border: 1px solid #fca5a5; padding: 12px 24px; text-decoration: none; border-radius: 4px; letter-spacing: 0.05em; }}
-            .cta-button:hover {{ background: #fecaca; }}
-            .status-tag {{ display: inline-block; font-size: 12px; font-family: monospace; background: #fef3c7; color: #92400e; padding: 6px 12px; border-radius: 2px; margin-bottom: 24px; font-weight: 500; }}
-            .footer {{ border-top: 1px solid #f3f3f3; padding-top: 24px; font-size: 11px; color: #a3a3a3; letter-spacing: 0.05em; line-height: 1.5; }}
-        </style>
-    </head>
-    <body>
-        <div class="card">
-            <div class="brand">AuraWorks Account Billing</div>
-            <div class="greeting">Hello,</div>
-            
-            <div class="body-text">
-                This email is to notify you that your 14-day free trial of AuraWorks is expiring in 48 hours.
-            </div>
-            
-            <div class="status-tag">STATUS: TRIAL_EXPIRING_WARNING</div>
-            
-            <div class="body-text">
-                If you choose to continue unmasking high-value industrial traffic, no action is required on your part. Your card on file will be automatically charged in 48 hours for your chosen plan.
-            </div>
-
-            <div class="body-text">
-                If you wish to cancel your subscription, please submit a cancellation request below:
-            </div>
-
-            <div class="cta-container">
-                <a href="{cancel_link}" class="cta-button" target="_blank">Request Subscription Cancellation</a>
-            </div>
-            
-            <div class="footer">
-                AuraWorks (Pty) Ltd &bull; Where presence meets performance.
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-    
-    return await send_resend_email(
-        to_email=recipient_email,
-        subject=subject,
-        html_content=html_template
-    )
-</file>
-
 <file path="backend/app/services/vault.py">
 # backend/app/services/vault.py
 import httpx
@@ -17241,106 +18056,6 @@ async def sync_to_notion(prospect_data: Dict[str, Any], journey: Dict[str, Any])
                 logger.error(f"❌ Notion Sync Failed ({response.status_code}): {response.text}")
         except Exception as e:
             logger.error(f"🚨 Notion Transport Error: {e}")
-</file>
-
-<file path="backend/app/tasks/janitor.py">
-# backend/app/tasks/janitor.py
-import logging
-from datetime import datetime, timedelta, timezone
-from sqlmodel import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.db import async_engine
-from app.models import Visit, Prospect
-
-logger = logging.getLogger("uvicorn")
-
-async def execute_janitor_scrub_cascade(session: AsyncSession):
-    """
-    Executes a precise column anonymization cascade matching POPIA parameters.
-    Identifies unverified interaction traces where tracking stamps exceed 48 hours
-    and nulls personal identifiers, replacing raw fingerprint arrays with a non-reversible hash.
-    """
-    threshold = (datetime.now(timezone.utc) - timedelta(hours=48)).replace(tzinfo=None)
-    
-    statement = select(Visit).where(
-        Visit.verification_status == "verifying",
-        Visit.created_at < threshold
-    )
-    result = await session.execute(statement)
-    candidates = result.scalars().all()
-    
-    if not candidates:
-        logger.info("✅ Janitor: Forensic vault is already optimized.")
-        return
-
-    purged_count = 0
-    promoted_count = 0
-
-    for visit in candidates:
-        # Safety Check: The 'Waitlist Shield'
-        prospect_stmt = select(Prospect).where(Prospect.aura_id == visit.aura_id)
-        prospect_res = await session.execute(prospect_stmt)
-        has_lead = prospect_res.scalars().first()
-        
-        if has_lead:
-            visit.verification_status = "verified"
-            if has_lead.company_id:
-                visit.company_id = has_lead.company_id
-            session.add(visit)
-            promoted_count += 1
-            continue
-
-        # POPIA Column Anonymization
-        visit.email = None
-        visit.visitor_name = None
-        
-        # Calculate SHA256(canvas + webgl + drift + rotating_daily_secret)
-        canvas = visit.canvas_hash or ""
-        webgl = visit.webgl_renderer or ""
-        drift = visit.clock_drift or ""
-        
-        from app.core.config import settings
-        import hashlib
-        date_str = visit.created_at.strftime("%Y-%m-%d")
-        secret = settings.SECRET_KEY or "default_secret"
-        rotating_daily_secret = hashlib.sha256(f"{secret}:{date_str}".encode()).hexdigest()
-        
-        combined_fingerprint = f"{canvas}{webgl}{drift}{rotating_daily_secret}"
-        visit.fingerprint_hash = hashlib.sha256(combined_fingerprint.encode()).hexdigest()
-        
-        # Clear raw fingerprint columns to prevent tracking individual traits
-        visit.canvas_hash = None
-        visit.webgl_renderer = None
-        visit.clock_drift = None
-        
-        visit.verification_status = "anonymized_corporate"
-        visit.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
-        
-        session.add(visit)
-        purged_count += 1
-
-    await session.commit()
-    logger.info(
-        f"🗑️ Janitor: Anonymized {purged_count} noise signatures. "
-        f"🛡️ Promoted {promoted_count} high-intent visits. Vault optimized."
-    )
-
-async def cleanup_unverified_visits():
-    """
-    FastAPI background task entry point for the periodic Janitor Sweep.
-    """
-    logger.info("🧹 AuraWorks OS: Activating 48-hour Janitor Sweep...")
-    
-    if not async_engine:
-        logger.error("❌ Janitor Sweep aborted: Async Database Engine not initialized.")
-        return
-        
-    async with AsyncSession(async_engine) as session:
-        try:
-            await execute_janitor_scrub_cascade(session)
-        except Exception as e:
-            await session.rollback()
-            logger.error(f"🚨 Janitor Failure: {e}")
 </file>
 
 <file path="frontend/src/components/consent-banner/consent-banner.tsx">
@@ -18208,618 +18923,6 @@ export default function Pricing() {
         </>
     )
 }
-</file>
-
-<file path="tracker/src/public/aura.js">
-/**
- * AuraWorks Industrial Intelligence Engine - Decoupled Edge Tracker
- * Version: 4.0.0 (Decoupled Edge Architecture)
- * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
- */
-(async function() {
-    const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const logWarn = (...args) => { if (isLocalDev) console.warn(...args); };
-    const logError = (...args) => { if (isLocalDev) console.error(...args); };
-
-    const script = document.currentScript || document.querySelector('script[data-client-id]') || document.querySelector('script[src*="aura.js"]');
-    const agencyId = window.AURA_AGENCY_ID || script?.getAttribute('data-client-id') || script?.getAttribute('data-id');
-    window.AURA_START_TIME = performance.now();
-    
-    if (!agencyId) {
-        logError("❌ AuraWorks: Missing Client Identity.");
-        return;
-    }
-
-    // Retrieve the base tracking endpoint.
-    const getBaseUrl = () => {
-        if (window.AURA_CONFIG?.apiUrl) return window.AURA_CONFIG.apiUrl;
-        return "https://api.auraworks.co.za";
-    };
-
-    const getApiPath = (subPath) => {
-        const base = getBaseUrl().replace(/\/$/, '');
-        if (base.includes("api.auraworks.co.za")) {
-            return `${base}/v1/${subPath}`;
-        }
-        return `${base}/api/v1/${subPath}`;
-    };
-    
-    const API_URL = getApiPath("track");
-    const CONFIG_URL = getApiPath("clients/config");
-
-    /**
-     * Identity Persistence Layer:
-     * Dual-redundancy storage mechanism syncing tracking IDs across Document Cookies 
-     * and LocalStorage.
-     */
-    const AuraPersistence = {
-        key: 'aura_uid',
-        utmKey: 'aura_utm',
-        async init() {
-            let id = await this.getStoredID();
-            this.captureUTMs(); 
-            if (!id) id = this.generateUUID();
-            await this.syncStorage(id);
-            return id;
-        },
-        captureUTMs() {
-            const params = new URLSearchParams(window.location.search);
-            const utms = {};
-            ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(key => {
-                const val = params.get(key);
-                if (val) utms[key] = val;
-            });
-            if (Object.keys(utms).length > 0) {
-                localStorage.setItem(this.utmKey, JSON.stringify({...utms, captured_at: new Date().toISOString()}));
-            }
-        },
-        getStoredUTMs() {
-            try { return JSON.parse(localStorage.getItem(this.utmKey)) || {}; } catch(e) { return {}; }
-        },
-        async getStoredID() {
-            const c = document.cookie.split('; ').find(r => r.startsWith(`${this.key}=`))?.split('=')[1];
-            const l = localStorage.getItem(this.key);
-            return c || l || null;
-        },
-        async syncStorage(id) {
-            const exp = new Date(); exp.setFullYear(exp.getFullYear() + 2);
-            document.cookie = `${this.key}=${id}; expires=${exp.toUTCString()}; path=/; SameSite=Lax; Secure`;
-            localStorage.setItem(this.key, id);
-            window.AURA_UID = id;
-        },
-        generateUUID() {
-            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-            );
-        }
-    };
-
-    /**
-     * Forensic Fingerprinter:
-     * Assembles hardware, layout, and clock anomalies to uniquely identify browsers.
-     */
-    const AuraFingerprint = {
-        async getFullSignature() {
-            return {
-                canvas: this.getCanvas(),
-                webgl: this.getWebGL(),
-                network: this.getNetworkInfo(),
-                drift: await this.measureDrift(),
-                screen: `${screen.width}x${screen.height}`,
-                is_incognito: await this.isIncognito(),
-                tz: Intl.DateTimeFormat().resolvedOptions().timeZone
-            };
-        },
-        getNetworkInfo() {
-            const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-            return {
-                type: conn?.effectiveType || "unknown",
-                rtt: conn?.rtt,
-                downlink: conn?.downlink,
-                is_residential_prob: !!(conn?.saveData || (conn?.downlink && conn.downlink < 10))
-            };
-        },
-        getCanvas() {
-            try {
-                const cvs = document.createElement('canvas');
-                const ctx = cvs.getContext('2d');
-                ctx.textBaseline = "top"; ctx.font = "14px 'Arial'";
-                ctx.fillText("AuraWorks_v4.0", 2, 2);
-                return cvs.toDataURL().substring(0, 100);
-            } catch (e) { return "blocked"; }
-        },
-        getWebGL() {
-            try {
-                const canvas = document.createElement('canvas');
-                const gl = canvas.getContext('webgl');
-                const debug = gl.getExtension('WEBGL_debug_renderer_info');
-                return debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : "standard";
-            } catch (e) { return "standard"; }
-        },
-        async measureDrift() {
-            return new Promise(r => {
-                const t0 = performance.now(), d0 = Date.now();
-                setTimeout(() => r(Math.round((performance.now() - t0) - (Date.now() - d0))), 500);
-            });
-        },
-        async isIncognito() {
-            if ('storage' in navigator && 'estimate' in navigator.storage) {
-                const {quota} = await navigator.storage.estimate();
-                return quota < 120000000;
-            }
-            return false;
-        }
-    };
-
-    /**
-     * AuraTracker Engine:
-     * Manages event collection, input field sensors, entry/exit checkpoints, 
-     * and single-page application navigation hooks.
-     */
-    const AuraTracker = {
-        isArmed: false, 
-
-        initialized: false,
-        init(auraId, config) {
-            if (this.initialized) return;
-            this.initialized = true;
-            this.auraId = auraId;
-            this.config = config;
-            this.trackEntry();
-            this.setupSensors();
-            this.patchSPA();
-        },
-        async dispatch(endpoint, payload, useBeacon = false) {
-            const utms = AuraPersistence.getStoredUTMs();
-            let data = {
-                client_id: agencyId, 
-                aura_id: this.auraId,
-                timestamp: new Date().toISOString(),
-                ...utms,
-                ...payload
-            };
-
-            if (endpoint === 'event') {
-                const eventName = payload.event_name || payload.event_type || 'unknown';
-                const properties = {};
-                const standardKeys = ['client_id', 'aura_id', 'url', 'duration', 'event_type', 'intent_cluster', 'event_name', 'timestamp'];
-                Object.keys(data).forEach(key => {
-                    if (!standardKeys.includes(key)) {
-                        properties[key] = data[key];
-                    }
-                });
-                data = {
-                    client_id: data.client_id,
-                    event_name: eventName,
-                    aura_id: data.aura_id,
-                    url: data.url || window.location.href,
-                    duration: data.duration || 0,
-                    event_type: data.event_type || eventName,
-                    intent_cluster: data.intent_cluster || null,
-                    properties: properties,
-                    timestamp: data.timestamp
-                };
-            }
-
-            const url = `${API_URL}/${endpoint}`;
-
-            if (useBeacon && navigator.sendBeacon) {
-                const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-                const success = navigator.sendBeacon(url, blob);
-                if (success) return true;
-            }
-
-            if (!navigator.onLine) {
-                await AuraOfflineQueue.enqueue(endpoint, data);
-                return false;
-            }
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST', 
-                    mode: 'cors', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify(data), 
-                    keepalive: true
-                });
-                if (!response.ok) {
-                    await AuraOfflineQueue.enqueue(endpoint, data);
-                    return false;
-                }
-                return true;
-            } catch (e) {
-                await AuraOfflineQueue.enqueue(endpoint, data);
-                return false;
-            }
-        },
-        async sendRaw(endpoint, data) {
-            const url = `${API_URL}/${endpoint}`;
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(data),
-                    keepalive: true
-                });
-                return response.ok;
-            } catch (e) {
-                return false;
-            }
-        },
-        setupSensors() {
-            document.addEventListener('blur', (e) => {
-                const target = e.target;
-                const fieldName = target.name?.toLowerCase() || "";
-                
-                if (target.type === 'email' || fieldName.includes('email')) {
-                    if (target.value.includes('@')) {
-                        this.dispatch('identity', { email: target.value, capture_source: 'field_blur' });
-                    }
-                } else if (fieldName.includes('company') && target.value.length > 2) {
-                    this.dispatch('identity', { company_name: target.value, capture_source: 'field_blur' });
-                }
-            }, true);
-
-            document.addEventListener('click', (e) => {
-                const btn = e.target.closest('a, button');
-                if (!btn) return;
-                const text = btn.innerText?.toLowerCase();
-                const intentKeywords = ['pricing', 'audit', 'feature', 'solution', 'prospect', 'get started'];
-                if (intentKeywords.some(kw => text.includes(kw))) {
-                    this.dispatch('event', { 
-                        event_type: 'intent_click', 
-                        intent_cluster: text.substring(0, 20), 
-                        url: window.location.href 
-                    });
-                }
-            });
-
-            // Asset Download Gate (Phase 04):
-            document.addEventListener('click', (e) => {
-                const anchor = e.target.closest('a');
-                if (anchor && anchor.href) {
-                    const href = anchor.href.toLowerCase();
-                    if (href.match(/\.(pdf|zip|dwg|dxf|cad|step|igs)$/)) {
-                        const hasConsent = document.cookie.split('; ').some(row => row.startsWith('aura_consent=true')) || localStorage.getItem('aura_consent_given') === 'true';
-                        if (!hasConsent) {
-                            e.preventDefault();
-                            
-                            // Load banner dynamically if not already present, then trigger Phase 04
-                            if (!document.querySelector('script[src*="banner.js"]')) {
-                                const s = document.createElement('script');
-                                s.src = window.AURA_CONFIG?.bannerUrl || "https://banner.auraworks.co.za/banner.js";
-                                s.defer = true;
-                                s.onload = () => {
-                                    window.dispatchEvent(new CustomEvent('aura:ready', {
-                                        detail: { auraId: this.auraId, clientId: agencyId, config: this.config }
-                                    }));
-                                    setTimeout(() => {
-                                        window.dispatchEvent(new CustomEvent('aura:trigger_banner', { detail: { phase: 4 } }));
-                                    }, 50);
-                                };
-                                document.head.appendChild(s);
-                            } else {
-                                window.dispatchEvent(new CustomEvent('aura:trigger_banner', { detail: { phase: 4 } }));
-                            }
-                        }
-                    }
-                }
-            }, true);
-
-            document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'hidden') this.trackExit();
-            });
-
-            window.addEventListener('pagehide', () => this.trackExit());
-        },
-        trackEntry() {
-            const conn = AuraFingerprint.getNetworkInfo();
-            this.dispatch('entry', { 
-                url: window.location.href, 
-                referrer: document.referrer || "direct",
-                screen_resolution: `${window.innerWidth}x${window.innerHeight}`,
-                effective_connection_type: conn.type,
-                downlink_speed: conn.downlink,
-                rtt: conn.rtt
-            });
-        },
-        trackExit() {
-            const duration = Math.round((performance.now() - window.AURA_START_TIME) / 1000);
-            if (duration < 1) return;
-            
-            this.dispatch('exit', {
-                event_type: 'exit',
-                duration: duration,
-                url: window.location.href
-            }, true); 
-        },
-        patchSPA() {
-            const self = this;
-            ['pushState', 'replaceState'].forEach(m => {
-                const orig = history[m];
-                history[m] = function() {
-                    const r = orig.apply(this, arguments);
-                    setTimeout(() => self.trackEntry(), 0);
-                    return r;
-                };
-            });
-        }
-    };
-
-    let enqueuePromise = Promise.resolve();
-
-    /**
-     * AuraOfflineQueue:
-     * IndexedDB-based queue that stores telemetry events offline when connection is lost.
-     */
-    const AuraOfflineQueue = {
-        db: null,
-        dbName: 'AuraOfflineDB',
-        storeName: 'AuraEventsStore',
-        
-        async init() {
-            return new Promise((resolve) => {
-                try {
-                    const request = indexedDB.open(this.dbName, 1);
-                    request.onupgradeneeded = (e) => {
-                        const db = e.target.result;
-                        if (!db.objectStoreNames.contains(this.storeName)) {
-                            db.createObjectStore(this.storeName, { keyPath: 'id', autoIncrement: true });
-                        }
-                    };
-                    request.onsuccess = (e) => {
-                        this.db = e.target.result;
-                        resolve(true);
-                        this.flush();
-                    };
-                    request.onerror = () => {
-                        resolve(false);
-                    };
-                } catch (e) {
-                    resolve(false);
-                }
-            });
-        },
-        
-        async enqueue(endpoint, payload) {
-            return new Promise((resolve) => {
-                enqueuePromise = enqueuePromise.then(async () => {
-                    if (!this.db) {
-                        resolve(false);
-                        return;
-                    }
-                    try {
-                        const events = await this.getQueuedEvents();
-                        if (events.length >= 100) {
-                            // Drop the oldest event (first one in queue) to prevent memory leak/bloat
-                            await this.removeEvent(events[0].id);
-                        }
-                        const transaction = this.db.transaction([this.storeName], 'readwrite');
-                        const store = transaction.objectStore(this.storeName);
-                        store.add({ endpoint, payload, timestamp: new Date().toISOString(), attempts: 0 });
-                        transaction.oncomplete = () => {
-                            resolve(true);
-                            this.flush();
-                        };
-                        transaction.onerror = () => resolve(false);
-                    } catch (e) {
-                        resolve(false);
-                    }
-                });
-            });
-        },
-        
-        async getQueuedEvents() {
-            return new Promise((resolve) => {
-                if (!this.db) {
-                    resolve([]);
-                    return;
-                }
-                try {
-                    const transaction = this.db.transaction([this.storeName], 'readonly');
-                    const store = transaction.objectStore(this.storeName);
-                    const request = store.getAll();
-                    request.onsuccess = () => resolve(request.result || []);
-                    request.onerror = () => resolve([]);
-                } catch (e) {
-                    resolve([]);
-                }
-            });
-        },
-        
-        async removeEvent(id) {
-            return new Promise((resolve) => {
-                if (!this.db) {
-                    resolve(false);
-                    return;
-                }
-                try {
-                    const transaction = this.db.transaction([this.storeName], 'readwrite');
-                    const store = transaction.objectStore(this.storeName);
-                    store.delete(id);
-                    transaction.oncomplete = () => resolve(true);
-                    transaction.onerror = () => resolve(false);
-                } catch (e) {
-                    resolve(false);
-                }
-            });
-        },
-
-        async updateEvent(event) {
-            return new Promise((resolve) => {
-                if (!this.db) {
-                    resolve(false);
-                    return;
-                }
-                try {
-                    const transaction = this.db.transaction([this.storeName], 'readwrite');
-                    const store = transaction.objectStore(this.storeName);
-                    store.put(event);
-                    transaction.oncomplete = () => resolve(true);
-                    transaction.onerror = () => resolve(false);
-                } catch (e) {
-                    resolve(false);
-                }
-            });
-        },
-
-        isFlushing: false,
-        
-        async flush(attempt = 0) {
-            if (this.isFlushing || !navigator.onLine) return;
-            this.isFlushing = true;
-            
-            try {
-                const events = await this.getQueuedEvents();
-                if (events.length === 0) {
-                    this.isFlushing = false;
-                    return;
-                }
-                
-                for (const event of events) {
-                    if (!navigator.onLine) break;
-                    try {
-                        const success = await AuraTracker.sendRaw(event.endpoint, event.payload);
-                        if (success) {
-                            await this.removeEvent(event.id);
-                        } else {
-                            throw new Error("Flush send raw failed");
-                        }
-                    } catch (e) {
-                        this.isFlushing = false;
-                        
-                        // Increment retry attempts and cap them to prevent infinite loops / memory leak
-                        const attempts = (event.attempts || 0) + 1;
-                        if (attempts >= 5) {
-                            await this.removeEvent(event.id);
-                            logWarn(`AuraWorks: Event exceeded max retries (5). Discarded.`, event);
-                        } else {
-                            event.attempts = attempts;
-                            await this.updateEvent(event);
-                        }
-
-                        const delay = Math.min(1000 * Math.pow(2, attempt), 60000);
-                        setTimeout(() => this.flush(attempt + 1), delay);
-                        return;
-                    }
-                }
-            } catch (e) {
-                // Keep queue intact
-            }
-            this.isFlushing = false;
-        }
-    };
-
-    window.addEventListener('online', () => {
-        AuraOfflineQueue.flush();
-    });
-
-    const startAura = async () => {
-        if (window.AURA_INITIALIZED) return;
-        window.AURA_INITIALIZED = true;
-        
-        await AuraOfflineQueue.init();
-        
-        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        
-        let config = null;
-        try {
-            const response = await fetch(`${CONFIG_URL}?client_id=${agencyId}&tz=${encodeURIComponent(tz)}`, {
-                method: 'GET',
-                mode: 'cors'
-            });
-            if (response.ok) {
-                config = await response.json();
-            }
-        } catch (e) {
-            logWarn("AuraWorks: Failed to fetch remote config.", e);
-        }
-        
-        if (config && config.is_active === false) {
-            logWarn("AuraWorks: Client license inactive. Tracking halted.");
-            return;
-        }
-
-        const auraId = await AuraPersistence.init();
-        
-        // Register decoupled global event listeners
-        window.addEventListener('aura_consent_granted', () => {
-            AuraTracker.isArmed = true;
-            AuraTracker.init(auraId, config);
-            AuraTracker.dispatch('event', { event_type: 'consent_granted' });
-        });
-
-        window.addEventListener('aura_consent_updated', (e) => {
-            if (e.detail?.status === 'accepted') {
-                AuraTracker.isArmed = true;
-                AuraTracker.init(auraId, config);
-                AuraTracker.dispatch('event', { event_type: 'consent_granted', source: e.detail.source || 'banner' });
-            }
-        });
-
-        window.addEventListener('aura_warm_lead', async (e) => {
-            const fingerprint = await AuraFingerprint.getFullSignature();
-            const payload = {
-                ...e.detail,
-                fingerprint,
-                session_id: auraId,
-                capture_source: e.detail.capture_source || 'banner_warm_signal'
-            };
-            await AuraTracker.dispatch('identity', payload);
-        });
-        
-        const requireConsent = config ? config.require_consent_banner : false;
-        const complianceMode = config ? config.compliance_mode : "POPIA";
-        
-        const hasConsent = document.cookie.split('; ').some(row => row.startsWith('aura_consent=true')) || localStorage.getItem('aura_consent_given') === 'true';
-        
-        if (requireConsent && !hasConsent) {
-            if (complianceMode === "GDPR") {
-                // Strict GDPR: Block telemetry tracking completely until consent is given
-                AuraTracker.isArmed = false;
-            } else {
-                // POPIA: Silent B2B tracking is active
-                AuraTracker.isArmed = true;
-                AuraTracker.init(auraId, config);
-            }
-            
-            // Load banner script dynamically
-            const s = document.createElement('script');
-            s.src = window.AURA_CONFIG?.bannerUrl || "https://banner.auraworks.co.za/banner.js";
-            s.defer = true;
-            s.onload = () => {
-                window.dispatchEvent(new CustomEvent('aura:ready', {
-                    detail: { auraId, clientId: agencyId, config }
-                }));
-            };
-            document.head.appendChild(s);
-        } else {
-            // Already consented or consent banner is bypassed
-            AuraTracker.isArmed = true;
-            AuraTracker.init(auraId, config);
-            
-            // Asynchronously dispatch hardware signature
-            setTimeout(async () => {
-                const sig = await AuraFingerprint.getFullSignature();
-                await AuraTracker.dispatch('identity', { signature: sig });
-            }, 2000);
-
-            // Dispatch aura:ready for generic listeners
-            window.dispatchEvent(new CustomEvent('aura:ready', {
-                detail: { auraId, clientId: agencyId, config }
-            }));
-        }
-    };
-
-    if (isLocalDev || window.__AURA_TESTING__) {
-        window.__AURA_QUEUE__ = AuraOfflineQueue;
-        window.__AURA_TRACKER__ = AuraTracker;
-    }
-
-    if (document.readyState === 'complete' || document.readyState === 'interactive') startAura();
-    else window.addEventListener('load', startAura);
-})();
 </file>
 
 <file path="backend/app/api/v1/auth.py">
@@ -19813,93 +19916,6 @@ async def resolve_entity_stitching(volunteered_name: str, enriched_name: str) ->
     return volunteered_name
 </file>
 
-<file path="backend/app/models/client.py">
-# backend/app/models/client.py
-from enum import Enum
-from typing import Optional, List, Any
-from datetime import datetime, timezone
-from uuid import UUID, uuid4
-from sqlmodel import SQLModel, Field, Column, DateTime
-from sqlalchemy import ARRAY, String, JSON
-from pydantic import model_validator
-
-class ClientCategory(str, Enum):
-    INDUSTRIAL = "industrial"
-    COMMERCIAL = "commercial"
-
-class SubscriptionStatus(str, Enum):
-    TRIAL = "trial"
-    ACTIVE = "active"
-    SUSPENDED = "suspended"
-    CANCELLATION_PENDING = "cancellation_pending"
-
-class ClientBase(SQLModel):
-    company_name: str = Field(index=True)
-    domain: Optional[str] = Field(default=None, index=True, nullable=True)
-    whitelisted_domains: List[str] = Field(
-        default=[],
-        sa_column=Column(ARRAY(String).with_variant(JSON, "sqlite"), nullable=False)
-    )
-    category: ClientCategory = Field(default=ClientCategory.COMMERCIAL)
-    client_product_description: str = Field(default="")
-    subscription_status: SubscriptionStatus = Field(default=SubscriptionStatus.SUSPENDED)
-    payment_plan: str = Field(default="monthly")
-    setup_fee_paid: bool = Field(default=False)
-    contract_signed_at: Optional[datetime] = Field(
-        default=None,
-        sa_column=Column(DateTime(timezone=True), nullable=True)
-    )
-    payment_provider_id: Optional[str] = Field(default=None, nullable=True)
-    is_active: bool = Field(default=False)
-    collect_personal_data: bool = Field(default=False)
-    require_consent_banner: bool = Field(default=False)
-    payment_method_token: Optional[str] = Field(default=None, nullable=True)
-    custom_monthly_amount: Optional[int] = Field(default=None, nullable=True)
-    billing_cycle: str = Field(default="monthly", nullable=False)
-    trial_ends_at: Optional[datetime] = Field(
-        default=None,
-        sa_column=Column(DateTime(timezone=True), nullable=True)
-    )
-    tc_accepted_at: Optional[datetime] = Field(
-        default=None,
-        sa_column=Column(DateTime(timezone=True), nullable=True)
-    )
-    tc_accepted_ip: Optional[str] = Field(default=None, nullable=True)
-    cancellation_requested: bool = Field(default=False, nullable=False)
-    trial_warning_sent: bool = Field(default=False, nullable=False)
-
-
-    def __init__(self, **data: Any):
-        domain = data.get("domain")
-        whitelisted = data.get("whitelisted_domains")
-        if domain and not whitelisted:
-            data["whitelisted_domains"] = [domain]
-        elif whitelisted and not domain:
-            data["domain"] = whitelisted[0]
-        super().__init__(**data)
-
-class Client(ClientBase, table=True):
-    __tablename__ = "client"
-    
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
-        sa_column=Column(DateTime(timezone=True), nullable=False)
-    )
-    auto_classified_at: Optional[datetime] = Field(
-        default=None,
-        sa_column=Column(DateTime(timezone=True), nullable=True)
-    )
-
-class ClientCreate(ClientBase):
-    pass
-
-class ClientPublic(ClientBase):
-    id: UUID
-    created_at: datetime
-    auto_classified_at: Optional[datetime] = None
-</file>
-
 <file path="backend/app/services/notifications.py">
 # backend/app/services/notifications.py
 import logging
@@ -20563,6 +20579,93 @@ async def post_cancellation_pending_to_slack(client_id: UUID, company_name: str)
             logger.error(f"🚨 post_cancellation_pending_to_slack Failure: {e}")
 </file>
 
+<file path="backend/app/models/client.py">
+# backend/app/models/client.py
+from enum import Enum
+from typing import Optional, List, Any
+from datetime import datetime, timezone
+from uuid import UUID, uuid4
+from sqlmodel import SQLModel, Field, Column, DateTime
+from sqlalchemy import ARRAY, String, JSON
+from pydantic import model_validator
+
+class ClientCategory(str, Enum):
+    INDUSTRIAL = "industrial"
+    COMMERCIAL = "commercial"
+
+class SubscriptionStatus(str, Enum):
+    TRIAL = "trial"
+    ACTIVE = "active"
+    SUSPENDED = "suspended"
+    CANCELLATION_PENDING = "cancellation_pending"
+
+class ClientBase(SQLModel):
+    company_name: str = Field(index=True)
+    domain: Optional[str] = Field(default=None, index=True, nullable=True)
+    whitelisted_domains: List[str] = Field(
+        default=[],
+        sa_column=Column(ARRAY(String).with_variant(JSON, "sqlite"), nullable=False)
+    )
+    category: ClientCategory = Field(default=ClientCategory.COMMERCIAL)
+    client_product_description: str = Field(default="")
+    subscription_status: SubscriptionStatus = Field(default=SubscriptionStatus.SUSPENDED)
+    payment_plan: str = Field(default="monthly")
+    setup_fee_paid: bool = Field(default=False)
+    contract_signed_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    payment_provider_id: Optional[str] = Field(default=None, nullable=True)
+    is_active: bool = Field(default=False)
+    collect_personal_data: bool = Field(default=False)
+    require_consent_banner: bool = Field(default=False)
+    payment_method_token: Optional[str] = Field(default=None, nullable=True)
+    custom_monthly_amount: Optional[int] = Field(default=None, nullable=True)
+    billing_cycle: str = Field(default="monthly", nullable=False)
+    trial_ends_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    tc_accepted_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    tc_accepted_ip: Optional[str] = Field(default=None, nullable=True)
+    cancellation_requested: bool = Field(default=False, nullable=False)
+    trial_warning_sent: bool = Field(default=False, nullable=False)
+
+
+    def __init__(self, **data: Any):
+        domain = data.get("domain")
+        whitelisted = data.get("whitelisted_domains")
+        if domain and not whitelisted:
+            data["whitelisted_domains"] = [domain]
+        elif whitelisted and not domain:
+            data["domain"] = whitelisted[0]
+        super().__init__(**data)
+
+class Client(ClientBase, table=True):
+    __tablename__ = "client"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
+    auto_classified_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+
+class ClientCreate(ClientBase):
+    pass
+
+class ClientPublic(ClientBase):
+    id: UUID
+    created_at: datetime
+    auto_classified_at: Optional[datetime] = None
+</file>
+
 <file path="backend/app/models/visit.py">
 # backend/app/models/visit.py
 from enum import Enum
@@ -20772,6 +20875,215 @@ class Settings(BaseSettings):
             self.COOKIE_DOMAIN = ".auraworks.co.za"
 
 settings = Settings()
+</file>
+
+<file path="backend/app/db.py">
+# backend/app/db.py
+import logging
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+from sqlmodel import SQLModel, create_engine, Session
+from app.core.config import settings
+
+logger = logging.getLogger("uvicorn")
+
+# --- ENGINE INITIALIZATION ---
+
+def get_sanitized_db_url(url: str, is_async: bool = False) -> str:
+    """
+    Sanitizes the database connection URL:
+    - Resolves 'postgres://' to 'postgresql://' to prevent SQLAlchemy dialect lookup crashes.
+    - If is_async is True, enforces the 'postgresql+asyncpg://' driver protocol.
+    - If is_async is False, enforces the standard 'postgresql://' driver protocol.
+    """
+    if not url:
+        return url
+    
+    # Handle the legacy/common postgres:// prefix
+    if url.startswith("postgres://"):
+        url = "postgresql://" + url[len("postgres://"):]
+        
+    if is_async:
+        if url.startswith("postgresql://"):
+            url = "postgresql+asyncpg://" + url[len("postgresql://"):]
+    else:
+        if url.startswith("postgresql+asyncpg://"):
+            url = "postgresql://" + url[len("postgresql+asyncpg://"):]
+            
+    return url
+
+# 1. Synchronous Engine (For Migrations and Admin Dashboards)
+sync_url = get_sanitized_db_url(settings.DATABASE_URL, is_async=False)
+
+if sync_url:
+    engine = create_engine(
+        sync_url,
+        echo=False,
+        pool_pre_ping=True,
+        pool_size=10,
+        max_overflow=20
+    )
+else:
+    logger.critical("🚨 DATABASE_URL missing. System entering Fail-Fast mode.")
+    engine = None
+
+# 2. Asynchronous Engine (For Forensic Tracking, Janitor Cycles & Identity API)
+async_url = get_sanitized_db_url(settings.DATABASE_URL, is_async=True)
+
+if async_url:
+    async_engine = create_async_engine(
+        async_url,
+        echo=False,
+        pool_pre_ping=True,
+        pool_size=10,
+        max_overflow=20
+    )
+    async_session_maker = sessionmaker(
+        async_engine, class_=AsyncSession, expire_on_commit=False
+    )
+else:
+    async_engine = None
+    async_session_maker = None
+
+
+
+from typing import Optional
+from contextvars import ContextVar
+from fastapi import Request
+from sqlalchemy import text
+
+# Context variable to hold client_id for non-request contexts (like background tasks)
+current_client_id: ContextVar[Optional[str]] = ContextVar("current_client_id", default=None)
+
+# --- INITIALIZATION & DEPENDENCIES ---
+
+def init_db():
+    """
+    Schema Synchronization.
+    Verifies that the database ledger tables are correctly defined.
+    Production architectures utilize Alembic migrations. This acts as a secondary failsafe.
+    """
+    if not engine:
+        logger.error("❌ init_db: Operation aborted. No database linked.")
+        return
+
+    try:
+        # Import all models explicitly to guarantee registration with SQLModel.metadata.
+        # If we skip these imports, SQLModel.metadata will be empty when we call create_all.
+        from app.models.client import Client
+        from app.models.company import Company
+        from app.models.department import Department
+        from app.models.visit import Visit
+        from app.models.pageview import PageView
+        from app.models.prospect import Prospect
+        from app.models.enrichment_queue import EnrichmentQueue, FailedEnrichment
+        from app.models.notification_throttle import NotificationThrottle
+        from app.models.crm_dead_letter import CrmDeadLetter
+        from app.models.user import User, OAuthAccount
+
+        
+        # Programmatic Alembic migrations commented out to prevent startup hangs.
+        # Database schema migrations are decoupled from application startup.
+        # import os
+        # from alembic.config import Config
+        # from alembic import command
+        # 
+        # current_dir = os.path.dirname(os.path.abspath(__file__))
+        # alembic_ini_path = os.path.abspath(os.path.join(current_dir, "..", "alembic.ini"))
+        # 
+        # if os.path.exists(alembic_ini_path):
+        #     logger.info("🔄 Running database migrations via Alembic...")
+        #     alembic_cfg = Config(alembic_ini_path)
+        #     command.upgrade(alembic_cfg, "head")
+        #     logger.info("✅ Database migrations completed successfully.")
+        # else:
+        #     logger.warning(f"⚠️ alembic.ini not found at {alembic_ini_path}, skipping migrations.")
+        
+        SQLModel.metadata.create_all(engine)
+        logger.info("✅ Database Ledger: Connection established and tables verified.")
+        
+        # Seed the default test client if it does not exist to avoid foreign key violations.
+        try:
+            from sqlmodel import select
+            from app.models.client import ClientCategory, SubscriptionStatus
+            with Session(engine) as session:
+                stmt = select(Client).where(Client.id == "c4a6c9b1-8355-4de2-985d-a04f4dcd63a0")
+                test_client = session.execute(stmt).scalars().first()
+                if not test_client:
+                    logger.info("🌱 Seeding default integration client (c4a6c9b1-8355-4de2-985d-a04f4dcd63a0)...")
+                    test_client = Client(
+                        id="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0",
+                        company_name="AuraWorks Test Client",
+                        domain="testclient.co.za",
+                        whitelisted_domains=["testclient.co.za", "auraworks.co.za", "www.auraworks.co.za"],
+                        category=ClientCategory.COMMERCIAL,
+                        client_product_description="Default integration test client for telemetry ingestion",
+                        subscription_status=SubscriptionStatus.ACTIVE,
+                        payment_plan="monthly",
+                        setup_fee_paid=True,
+                        is_active=True
+                    )
+                    session.add(test_client)
+                    session.commit()
+                    logger.info("✅ Default integration client successfully seeded.")
+        except Exception as e:
+            logger.error(f"⚠️ Failed to seed default integration client: {e}")
+    except Exception as e:
+        logger.error(f"❌ Database Ledger: Sync failure: {e}")
+
+async def get_async_session(request: Request = None) -> AsyncSession:
+    """
+    FastAPI Dependency: Yields a transaction-scoped Asynchronous session.
+    Automatically releases the connection back to the connection pool upon route completion
+    or when the calling context exits.
+
+    This function acts as the RLS execution hook, setting the request-scoped
+    'app.current_client_id' session variable on the PostgreSQL connection.
+    """
+    if not async_session_maker:
+        raise ConnectionError("Async Database Engine not initialized. Check asyncpg installation.")
+    
+    # 1. Resolve client_id from request or ContextVar fallback
+    client_id = current_client_id.get()
+    
+    if not client_id and request:
+        # Check query parameters
+        client_id = request.query_params.get("client_id")
+        
+        # Check headers (e.g. X-Client-ID or X-Aura-Client-ID)
+        if not client_id:
+            client_id = request.headers.get("x-client-id")
+            
+        # Check JSON body if Content-Type is application/json
+        if not client_id and request.headers.get("content-type") == "application/json":
+            try:
+                body = await request.body()
+                if body:
+                    import json
+                    data = json.loads(body)
+                    client_id = data.get("client_id")
+            except Exception:
+                pass
+    
+    async with async_session_maker() as session:
+        if client_id:
+            # Set the PostgreSQL session variable for RLS policies
+            # is_local=True ensures it is scoped strictly to the current transaction.
+            await session.execute(
+                text("SELECT set_config('app.current_client_id', :client_id, true)").bindparams(client_id=str(client_id))
+            )
+        yield session
+
+def get_session():
+    """
+    FastAPI Dependency: Yields a transaction-scoped Synchronous session.
+    Used for traditional admin dashboard endpoints and sync migrations.
+    """
+    if not engine:
+        raise ConnectionError("Synchronous Database Engine not initialized.")
+        
+    with Session(engine) as session:
+        yield session
 </file>
 
 <file path="docs/spec-sheet.md">
@@ -21411,215 +21723,6 @@ export default function LoginPage() {
     </Suspense>
   );
 }
-</file>
-
-<file path="backend/app/db.py">
-# backend/app/db.py
-import logging
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
-from sqlmodel import SQLModel, create_engine, Session
-from app.core.config import settings
-
-logger = logging.getLogger("uvicorn")
-
-# --- ENGINE INITIALIZATION ---
-
-def get_sanitized_db_url(url: str, is_async: bool = False) -> str:
-    """
-    Sanitizes the database connection URL:
-    - Resolves 'postgres://' to 'postgresql://' to prevent SQLAlchemy dialect lookup crashes.
-    - If is_async is True, enforces the 'postgresql+asyncpg://' driver protocol.
-    - If is_async is False, enforces the standard 'postgresql://' driver protocol.
-    """
-    if not url:
-        return url
-    
-    # Handle the legacy/common postgres:// prefix
-    if url.startswith("postgres://"):
-        url = "postgresql://" + url[len("postgres://"):]
-        
-    if is_async:
-        if url.startswith("postgresql://"):
-            url = "postgresql+asyncpg://" + url[len("postgresql://"):]
-    else:
-        if url.startswith("postgresql+asyncpg://"):
-            url = "postgresql://" + url[len("postgresql+asyncpg://"):]
-            
-    return url
-
-# 1. Synchronous Engine (For Migrations and Admin Dashboards)
-sync_url = get_sanitized_db_url(settings.DATABASE_URL, is_async=False)
-
-if sync_url:
-    engine = create_engine(
-        sync_url,
-        echo=False,
-        pool_pre_ping=True,
-        pool_size=10,
-        max_overflow=20
-    )
-else:
-    logger.critical("🚨 DATABASE_URL missing. System entering Fail-Fast mode.")
-    engine = None
-
-# 2. Asynchronous Engine (For Forensic Tracking, Janitor Cycles & Identity API)
-async_url = get_sanitized_db_url(settings.DATABASE_URL, is_async=True)
-
-if async_url:
-    async_engine = create_async_engine(
-        async_url,
-        echo=False,
-        pool_pre_ping=True,
-        pool_size=10,
-        max_overflow=20
-    )
-    async_session_maker = sessionmaker(
-        async_engine, class_=AsyncSession, expire_on_commit=False
-    )
-else:
-    async_engine = None
-    async_session_maker = None
-
-
-
-from typing import Optional
-from contextvars import ContextVar
-from fastapi import Request
-from sqlalchemy import text
-
-# Context variable to hold client_id for non-request contexts (like background tasks)
-current_client_id: ContextVar[Optional[str]] = ContextVar("current_client_id", default=None)
-
-# --- INITIALIZATION & DEPENDENCIES ---
-
-def init_db():
-    """
-    Schema Synchronization.
-    Verifies that the database ledger tables are correctly defined.
-    Production architectures utilize Alembic migrations. This acts as a secondary failsafe.
-    """
-    if not engine:
-        logger.error("❌ init_db: Operation aborted. No database linked.")
-        return
-
-    try:
-        # Import all models explicitly to guarantee registration with SQLModel.metadata.
-        # If we skip these imports, SQLModel.metadata will be empty when we call create_all.
-        from app.models.client import Client
-        from app.models.company import Company
-        from app.models.department import Department
-        from app.models.visit import Visit
-        from app.models.pageview import PageView
-        from app.models.prospect import Prospect
-        from app.models.enrichment_queue import EnrichmentQueue, FailedEnrichment
-        from app.models.notification_throttle import NotificationThrottle
-        from app.models.crm_dead_letter import CrmDeadLetter
-        from app.models.user import User, OAuthAccount
-
-        
-        # Programmatic Alembic migrations commented out to prevent startup hangs.
-        # Database schema migrations are decoupled from application startup.
-        # import os
-        # from alembic.config import Config
-        # from alembic import command
-        # 
-        # current_dir = os.path.dirname(os.path.abspath(__file__))
-        # alembic_ini_path = os.path.abspath(os.path.join(current_dir, "..", "alembic.ini"))
-        # 
-        # if os.path.exists(alembic_ini_path):
-        #     logger.info("🔄 Running database migrations via Alembic...")
-        #     alembic_cfg = Config(alembic_ini_path)
-        #     command.upgrade(alembic_cfg, "head")
-        #     logger.info("✅ Database migrations completed successfully.")
-        # else:
-        #     logger.warning(f"⚠️ alembic.ini not found at {alembic_ini_path}, skipping migrations.")
-        
-        SQLModel.metadata.create_all(engine)
-        logger.info("✅ Database Ledger: Connection established and tables verified.")
-        
-        # Seed the default test client if it does not exist to avoid foreign key violations.
-        try:
-            from sqlmodel import select
-            from app.models.client import ClientCategory, SubscriptionStatus
-            with Session(engine) as session:
-                stmt = select(Client).where(Client.id == "c4a6c9b1-8355-4de2-985d-a04f4dcd63a0")
-                test_client = session.execute(stmt).scalars().first()
-                if not test_client:
-                    logger.info("🌱 Seeding default integration client (c4a6c9b1-8355-4de2-985d-a04f4dcd63a0)...")
-                    test_client = Client(
-                        id="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0",
-                        company_name="AuraWorks Test Client",
-                        domain="testclient.co.za",
-                        whitelisted_domains=["testclient.co.za", "auraworks.co.za", "www.auraworks.co.za"],
-                        category=ClientCategory.COMMERCIAL,
-                        client_product_description="Default integration test client for telemetry ingestion",
-                        subscription_status=SubscriptionStatus.ACTIVE,
-                        payment_plan="monthly",
-                        setup_fee_paid=True,
-                        is_active=True
-                    )
-                    session.add(test_client)
-                    session.commit()
-                    logger.info("✅ Default integration client successfully seeded.")
-        except Exception as e:
-            logger.error(f"⚠️ Failed to seed default integration client: {e}")
-    except Exception as e:
-        logger.error(f"❌ Database Ledger: Sync failure: {e}")
-
-async def get_async_session(request: Request = None) -> AsyncSession:
-    """
-    FastAPI Dependency: Yields a transaction-scoped Asynchronous session.
-    Automatically releases the connection back to the connection pool upon route completion
-    or when the calling context exits.
-
-    This function acts as the RLS execution hook, setting the request-scoped
-    'app.current_client_id' session variable on the PostgreSQL connection.
-    """
-    if not async_session_maker:
-        raise ConnectionError("Async Database Engine not initialized. Check asyncpg installation.")
-    
-    # 1. Resolve client_id from request or ContextVar fallback
-    client_id = current_client_id.get()
-    
-    if not client_id and request:
-        # Check query parameters
-        client_id = request.query_params.get("client_id")
-        
-        # Check headers (e.g. X-Client-ID or X-Aura-Client-ID)
-        if not client_id:
-            client_id = request.headers.get("x-client-id")
-            
-        # Check JSON body if Content-Type is application/json
-        if not client_id and request.headers.get("content-type") == "application/json":
-            try:
-                body = await request.body()
-                if body:
-                    import json
-                    data = json.loads(body)
-                    client_id = data.get("client_id")
-            except Exception:
-                pass
-    
-    async with async_session_maker() as session:
-        if client_id:
-            # Set the PostgreSQL session variable for RLS policies
-            # is_local=True ensures it is scoped strictly to the current transaction.
-            await session.execute(
-                text("SELECT set_config('app.current_client_id', :client_id, true)").bindparams(client_id=str(client_id))
-            )
-        yield session
-
-def get_session():
-    """
-    FastAPI Dependency: Yields a transaction-scoped Synchronous session.
-    Used for traditional admin dashboard endpoints and sync migrations.
-    """
-    if not engine:
-        raise ConnectionError("Synchronous Database Engine not initialized.")
-        
-    with Session(engine) as session:
-        yield session
 </file>
 
 <file path="backend/app/main.py">
@@ -22787,6 +22890,14 @@ Updates the matching Prospect or Visit record's vsl_completion_percentage and vs
 * Employs environment-aware fallback settings for testing environments to allow seamless automated verification.
 21.3 Test Verification:
 * Verified via integration tests that mock cross-origin requests from `www.auraworks.co.za` to `api.auraworks.co.za` compile and authorize correctly.
+
+22. Phase 26: Superuser Context & Frontend Data-Fetching Patch Specifications
+22.1 Trailing Slash Enforcement:
+* All frontend API endpoints targeting FastAPI routers must explicitly terminate with a trailing slash (e.g. `/api/v1/leads/`) to prevent ASGI 307 temporary redirects and retain headers, methods, and payloads.
+22.2 Superuser Active Client Context:
+* Under superuser/admin authentication status, the frontend must dynamically resolve the active client ID from the dashboard shell context/state and append it as a query parameter (e.g. `?client_id=<uuid>`) when requesting multi-tenant leads resources.
+22.3 TDD Verification:
+* Frontend test suites must assert proper request URL formatting and query parameter appending.
 </file>
 
 <file path="docs/implementation_plan.md">
@@ -23092,7 +23203,7 @@ Update `backend/start.sh` to execute Uvicorn with `--proxy-headers` and `--forwa
 Task 24.6: Final Deployment Push
 Commit all changes and push to trigger production builds.
 
-Phase 25: Session Persistence & Cross-Origin Auth Execution [IN PROGRESS]
+Phase 25: Session Persistence & Cross-Origin Auth Execution [COMPLETE]
 This phase resolves the 401 Unauthorized errors and cookie rejection issues preventing administrative access across subdomains by configuring cross-subdomain wildcard cookies and CORS origins correctly.
 Task 25.1: Cookie Scope Expansion
 Open `backend/app/core/users.py`. Locate the `cookie_transport` and `oauth_cookie_transport` definitions. Set `cookie_domain=".auraworks.co.za"`, `cookie_samesite="lax"`, and `cookie_secure=True`.
@@ -23102,6 +23213,17 @@ Task 25.3: Test Verification
 Implement a new unit test in `backend/tests/` (`test_cross_origin_auth.py`) that mocks an authenticated request from `www.auraworks.co.za` to `api.auraworks.co.za` and verifies the cookie is correctly parsed.
 Task 25.4: Deploy & Monitor
 Push these changes to Railway.
+
+Phase 26: Superuser Context & Frontend Data-Fetching Patch [IN PROGRESS]
+This phase resolves the 307 Temporary Redirect and 400 Bad Request infinite loop occurring when administrative superusers attempt to view the leads dashboard.
+Task 26.1: Documentation Sync & Consolidation
+Consolidate task lists, update docs, and initialize the tracking ledger.
+Task 26.2: Frontend Data-Fetching Patch
+Locate the frontend data-fetching logic for the leads dashboard and update the endpoint URL to use a trailing slash `/api/v1/leads/`. Dynamically append the active client ID query parameter for superuser contexts.
+Task 26.3: Test Verification
+Write or update frontend tests to ensure the URL structure includes a trailing slash and mocks the parameter requirements successfully.
+Task 26.4: Deploy & Monitor
+Commit changes and push to GitHub repository.
 </file>
 
 <file path="task.md">
@@ -23266,6 +23388,12 @@ Push these changes to Railway.
     - [x] Task 25.2: CORS Header Hardening
     - [x] Task 25.3: Test Verification
     - [x] Task 25.4: Deploy & Monitor
+
+- [x] **PHASE 26: SUPERUSER CONTEXT & FRONTEND DATA-FETCHING PATCH**
+    - [x] Task 26.1: Documentation Sync & Consolidation
+    - [x] Task 26.2: Frontend Data-Fetching Patch
+    - [x] Task 26.3: Test Verification
+    - [x] Task 26.4: Deploy & Monitor
 
 
 
@@ -23470,6 +23598,13 @@ This log details the execution, design decisions, and completed steps for Phase 
   - **Task 25.3: Test Verification**: Created `backend/tests/test_cross_origin_auth.py` to mock and verify authenticated requests coming from `www.auraworks.co.za` to `api.auraworks.co.za` with the wildcard domain cookie. All tests pass successfully.
   - **Task 25.4: Deploy & Monitor**: Push the changes to the origin branch to initiate automated building and deployment on Railway.
   - **Task 25.5: Final Verification**: Ran the complete backend and frontend test suites. All tests passed successfully.
+
+### 22. Phase 26: Superuser Context & Frontend Data-Fetching Patch
+- **Actions Taken**:
+  - **Task 26.1: Documentation Sync & Consolidation**: Consolidate checklists, update `/docs`, and set up the progress tracking ledger for Phase 26.
+  - **Task 26.2: Frontend Data-Fetching Patch**: Correct trailing slashes for `/api/v1/leads/` fetch calls. Append `?client_id=` dynamically for administrative superusers.
+  - **Task 26.3: Test Verification**: Add frontend hook/component unit tests mocking the active client ID query parameter and trailing slash URL validation.
+  - **Task 26.4: Deploy & Monitor**: Push commits to origin branch.
 </file>
 
 </files>
