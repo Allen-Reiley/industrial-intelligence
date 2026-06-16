@@ -402,3 +402,17 @@ Phase 13 establishes the internal console for managing multi-tenant client deplo
 * **Cookie Transport Hardening**: Sets cookie transport parameters `cookie_samesite="none"` and `cookie_secure=True` in production environments (using `settings.ENVIRONMENT` check) to ensure browsers do not block cookies across different subdomains.
 * **Identity Bridge Integration**: Ensures all API fetch requests initiated by the frontend Identity Bridge specify `credentials: 'include'` to allow authentication cookie transfer.
 
+---
+
+## 23. Phase 26: Superuser Context & Frontend Data-Fetching Patch Specifications
+* **Trailing Slash API Calls**: Ensure all client-side API requests targeting the FastAPI backend endpoints explicitly terminate with a trailing slash to prevent unnecessary 307 temporary redirects.
+* **Superuser Multi-Tenant Context**: Dynamically append the `client_id` query parameter on leads fetch requests when the user has superuser/admin authentication status to allow retrieval of the specific client context.
+
+---
+
+## 24. Phase 27: Admin Console Authorization Sync Specifications
+* **Credentials Include**: Add `credentials: 'include'` to all `fetch` request options inside the Admin dashboard.
+* **Obsolete Token Clean Up**: Remove the `getHeaders()` function and the `Authorization` bearer token header injection.
+* **Explicit Content-Type**: Ensure state-altering fetch calls (PATCH, POST) explicitly set `Content-Type: application/json` headers when a JSON body is sent.
+
+

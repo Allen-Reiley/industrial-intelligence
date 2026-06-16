@@ -76,6 +76,9 @@ describe('AdminDashboard Component Tests', () => {
 
     // Mock global fetch
     global.fetch = jest.fn((url: string, options?: any) => {
+      if (!options || options.credentials !== 'include') {
+        return Promise.reject(new Error(`Missing credentials: 'include' option in request to ${url}`));
+      }
       if (url.endsWith('/api/v1/clients/')) {
         if (options?.method === 'POST') {
           const body = JSON.parse(options.body);
@@ -213,6 +216,7 @@ describe('AdminDashboard Component Tests', () => {
         expect.stringContaining('/api/v1/clients/'),
         expect.objectContaining({
           method: 'POST',
+          credentials: 'include',
           body: JSON.stringify({
             company_name: 'Initech Corp',
             whitelisted_domains: ['initech.com', 'test.initech.com'],
@@ -260,7 +264,10 @@ describe('AdminDashboard Component Tests', () => {
     jest.useFakeTimers();
     let simulateInstalled = false;
 
-    global.fetch = jest.fn((url: string) => {
+    global.fetch = jest.fn((url: string, options?: any) => {
+      if (!options || options.credentials !== 'include') {
+        return Promise.reject(new Error(`Missing credentials: 'include' option in request to ${url}`));
+      }
       if (url.endsWith('/api/v1/clients/')) {
         return Promise.resolve({
           ok: true,
@@ -375,6 +382,7 @@ describe('AdminDashboard Component Tests', () => {
         expect.stringContaining('/api/v1/clients/client-uuid-1'),
         expect.objectContaining({
           method: 'PATCH',
+          credentials: 'include',
           body: JSON.stringify({ custom_monthly_amount: 1500000 })
         })
       );
@@ -402,6 +410,7 @@ describe('AdminDashboard Component Tests', () => {
         expect.stringContaining('/api/v1/billing/simulate-webhook'),
         expect.objectContaining({
           method: 'POST',
+          credentials: 'include',
           body: JSON.stringify({
             client_id: 'client-uuid-1',
             status: 'failed',
@@ -409,6 +418,20 @@ describe('AdminDashboard Component Tests', () => {
           })
         })
       );
+    });
+  });
+
+  test('strictly verifies that credentials: include is passed for initial GET requests', async () => {
+    render(<AdminDashboard />);
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Acme Corp', level: 2 })).toBeInTheDocument();
+    });
+
+    const calls = (global.fetch as jest.Mock).mock.calls;
+    expect(calls.length).toBeGreaterThan(0);
+    calls.forEach(([url, options]) => {
+      expect(options).toBeDefined();
+      expect(options.credentials).toBe('include');
     });
   });
 });

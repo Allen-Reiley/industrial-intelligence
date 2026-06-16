@@ -394,3 +394,14 @@ Updates the matching Prospect or Visit record's vsl_completion_percentage and vs
 22.3 TDD Verification:
 * Frontend test suites must assert proper request URL formatting and query parameter appending.
 
+23. Phase 27: Admin Console Authorization Sync Specifications
+23.1 HttpOnly Session Alignment:
+* The Admin console page must rely on the established HttpOnly session cookie (`aurahq_auth`) for all client-to-backend API calls instead of local storage tokens.
+23.2 Obsolete Token Headers Removal:
+* The `getHeaders()` helper function and any manual `Authorization: Bearer` attachments must be completely removed from the file.
+23.3 Fetch Request Credentials:
+* All fetch requests in the admin console code must explicitly include `credentials: 'include'` in their options to ensure cookies are sent with cross-origin backend API queries.
+23.4 Content-Type Headers:
+* Explicitly configure `'Content-Type': 'application/json'` headers solely on state-altering fetch requests (e.g., PATCH, POST) where JSON bodies are transmitted.
+
+

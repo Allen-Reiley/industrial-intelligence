@@ -107,14 +107,6 @@ export default function AdminDashboard() {
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-  // Auth resolver
-  const getHeaders = () => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : '';
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    };
-  };
 
   const logout = () => {
     document.cookie = 'admin_access_token=; path=/; max-age=0;';
@@ -127,7 +119,7 @@ export default function AdminDashboard() {
   const fetchClients = async (selectDefaultId?: string) => {
     try {
       const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/clients/`, {
-        headers: getHeaders()
+        credentials: 'include'
       });
       if (res.status === 401) {
         logout();
@@ -155,7 +147,7 @@ export default function AdminDashboard() {
     setLeadsLoading(true);
     try {
       const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/leads/?client_id=${clientId}`, {
-        headers: getHeaders()
+        credentials: 'include'
       });
       if (!res.ok) throw new Error('Failed to retrieve client leads.');
       const data = await res.json();
@@ -173,7 +165,7 @@ export default function AdminDashboard() {
   const checkInstallation = async (clientId: string) => {
     try {
       const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/clients/${clientId}/verify`, {
-        headers: getHeaders()
+        credentials: 'include'
       });
       if (!res.ok) throw new Error('Failed to verify installation.');
       const data = await res.json();
@@ -211,7 +203,7 @@ export default function AdminDashboard() {
     setTransactionsLoading(true);
     try {
       const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/billing/transactions?client_id=${clientId}`, {
-        headers: getHeaders()
+        credentials: 'include'
       });
       if (!res.ok) throw new Error('Failed to retrieve transactions.');
       const data = await res.json();
@@ -242,7 +234,10 @@ export default function AdminDashboard() {
     try {
       const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/clients/${selectedClient.id}`, {
         method: 'PATCH',
-        headers: getHeaders(),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
         body: JSON.stringify({
           custom_monthly_amount: amountInCents
         })
@@ -274,7 +269,10 @@ export default function AdminDashboard() {
     try {
       const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/billing/simulate-webhook`, {
         method: 'POST',
-        headers: getHeaders(),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
         body: JSON.stringify({
           client_id: selectedClient.id,
           status: simulationType,
@@ -337,7 +335,10 @@ export default function AdminDashboard() {
     try {
       const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/clients/`, {
         method: 'POST',
-        headers: getHeaders(),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
         body: JSON.stringify({
           company_name: newCompanyName,
           whitelisted_domains: domainsArray,

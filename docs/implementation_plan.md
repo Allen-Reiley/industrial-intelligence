@@ -311,7 +311,7 @@ Implement a new unit test in `backend/tests/` (`test_cross_origin_auth.py`) that
 Task 25.4: Deploy & Monitor
 Push these changes to Railway.
 
-Phase 26: Superuser Context & Frontend Data-Fetching Patch [IN PROGRESS]
+Phase 26: Superuser Context & Frontend Data-Fetching Patch [COMPLETE]
 This phase resolves the 307 Temporary Redirect and 400 Bad Request infinite loop occurring when administrative superusers attempt to view the leads dashboard.
 Task 26.1: Documentation Sync & Consolidation
 Consolidate task lists, update docs, and initialize the tracking ledger.
@@ -321,4 +321,17 @@ Task 26.3: Test Verification
 Write or update frontend tests to ensure the URL structure includes a trailing slash and mocks the parameter requirements successfully.
 Task 26.4: Deploy & Monitor
 Commit changes and push to GitHub repository.
+
+Phase 27: Admin Console Authorization Sync [COMPLETE]
+This phase fixes the 401 Unauthorized errors on the Admin console page by removing the obsolete `getHeaders()` localStorage-based JWT token strategy and shifting all API calls to utilize the HttpOnly secure cookie-based session by attaching `credentials: 'include'`.
+
+Task 27.1: Documentation Sync & Consolidation
+Consolidate roadmap, checklist, and architectural spec sheets in `/docs` and the root `task.md` tracking ledger.
+Task 27.2: Admin Header Refactor
+Open `frontend/src/app/(authenticated)/aurahq/admin/page.tsx`. Remove the `getHeaders()` function and manual `Authorization` header injection. For every `fetch` request, add `credentials: 'include'` and explicitly configure `Content-Type: application/json` where JSON bodies are transmitted.
+Task 27.3: Admin Test Coverage Update
+Modify unit tests in `frontend/src/app/(authenticated)/aurahq/admin/admin.test.tsx` to align with cookie credentials fetch parameters.
+Task 27.4: Final Deployment Push
+Commit and push changes to trigger staging/production deployments.
+
 
