@@ -112,7 +112,7 @@ export default function HeroSection() {
                                     speedSegment={0.3}
                                     as="h1"
                                     className="mx-auto mt-8 max-w-4xl text-balance text-5xl font-bold md:text-7xl lg:mt-16 xl:text-[4rem] tracking-tight">
-                                    Identify The High-Value Companies Visiting Your Website
+                                    Identify Your Corporate Visitors So You Can Sell To Them
                                 </TextEffect>
                                 <TextEffect
                                     per="line"
@@ -121,7 +121,7 @@ export default function HeroSection() {
                                     delay={0.5}
                                     as="p"
                                     className="mx-auto mt-8 max-w-2xl text-balance text-lg text-muted-foreground">
-                                    Stop letting anonymous corporate traffic leave without a trace. AuraWorks identifies exactly who is browsing your site and delivers direct contact details to your sales team before the visitor issues a tender to your competitors.
+                                    Increase conversations. Lower sales costs. Boost net revenue.
                                 </TextEffect>
 
                                 <AnimatedGroup
