@@ -7,8 +7,16 @@ import { HeroHeader } from '@/components/header/header';
 import Footer from '@/components/footer/footer';
 
 export const metadata: Metadata = {
-  title: 'AuraWorks | Industrial Sales Intelligence & B2B Solutions',
+  title: 'Industrial Sales Intelligence & B2B Solutions',
   description: 'Bridge the gap between anonymous website traffic and high-value contracts. Learn how AuraWorks unmasks mining, manufacturing, and logistics companies visiting your site.',
+  alternates: {
+    canonical: '/solution',
+  },
+  openGraph: {
+    title: 'Industrial Sales Intelligence & B2B Solutions | AuraWorks',
+    description: 'Bridge the gap between anonymous website traffic and high-value contracts for South African heavy industries.',
+    url: 'https://auraworks.co.za/solution',
+  },
 };
 
 export default function SolutionPage() {

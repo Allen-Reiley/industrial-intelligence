@@ -35,7 +35,7 @@ export default function ContentSection2() {
                             <Image
                                 src="/charts-light.webp"
                                 className="rounded-[12px] shadow"
-                                alt="payments illustration light"
+                                alt="AuraWorks sales intelligence pipeline and buyer intent analytics charts"
                                 width={1207}
                                 height={929}
                             />

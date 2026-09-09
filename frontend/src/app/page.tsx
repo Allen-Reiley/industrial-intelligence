@@ -6,8 +6,19 @@ import CallToAction from "@/components/cta/call-to-action";
 import Footer from "@/components/footer/footer";
 
 export const metadata: Metadata = {
-  title: "AuraWorks | Industrial Sales Intelligence & Identity Resolution",
-  description: "Identify the anonymous corporate entities visiting your website. AuraWorks unmasks high-value industrial traffic and delivers the direct contact data your sales team needs to close enterprise deals.",
+  title: {
+    absolute: "AuraWorks | Industrial Sales Intelligence & Identity Resolution",
+  },
+  description: "Identify the anonymous corporate entities visiting your website. AuraWorks turns industrial web traffic into high-intent B2B sales leads across South Africa.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "AuraWorks | Industrial Sales Intelligence & Identity Resolution",
+    description: "Identify the anonymous corporate entities visiting your website. AuraWorks turns industrial web traffic into high-intent B2B sales leads across South Africa.",
+    url: "https://auraworks.co.za",
+    type: "website",
+  },
 };
 
 export default function Home() {
@@ -21,4 +32,3 @@ export default function Home() {
     </main>
   );
 }
-

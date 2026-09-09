@@ -80,9 +80,6 @@ export const metadata = {
     description: "Industrial Lead Generation & Identity Resolution.",
     images: ["/twitter-image.jpg"],
   },
-  alternates: {
-    canonical: "https://auraworks.co.za",
-  },
   robots: {
     index: true,
     follow: true,
@@ -97,14 +94,77 @@ export const metadata = {
   },
 };
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://auraworks.co.za/#organization",
+      "name": "AuraWorks",
+      "legalName": "AuraWorks (Pty) Ltd",
+      "url": "https://auraworks.co.za",
+      "logo": "https://auraworks.co.za/logo.svg",
+      "description": "Industrial sales intelligence and juristic identity resolution platform for B2B enterprises in South Africa.",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Johannesburg",
+        "addressRegion": "Gauteng",
+        "addressCountry": "ZA"
+      },
+      "founder": {
+        "@type": "Person",
+        "name": "Reitumetse Sethabela",
+        "jobTitle": "Founder & Systems Architect"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/company/auraworks"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://auraworks.co.za/#website",
+      "url": "https://auraworks.co.za",
+      "name": "AuraWorks",
+      "description": "Industrial Sales Intelligence & B2B Lead Generation in South Africa",
+      "publisher": {
+        "@id": "https://auraworks.co.za/#organization"
+      },
+      "inLanguage": "en-ZA"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://auraworks.co.za/#software",
+      "name": "AuraWorks Industrial Intelligence Platform",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "All",
+      "offers": {
+        "@type": "Offer",
+        "price": "120000",
+        "priceCurrency": "ZAR",
+        "priceValidUntil": "2027-12-31"
+      },
+      "description": "Autonomous juristic identity resolution, spec-sheet intent telemetry, and weekly pipeline delivery for South African heavy industry."
+    }
+  ]
+};
+
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <head>
-        {/* AuraWorks Industrial Intelligence Edge Tracker */}
-        <script src="https://cdn.auraworks.co.za/aura.js" data-client-id="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0" defer></script>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </head>
-      <body className="antialiased">
+      <body className="antialiased font-sans">
+        {/* AuraWorks Industrial Intelligence Edge Tracker */}
+        <Script
+          src="https://cdn.auraworks.co.za/aura.js"
+          data-client-id="c4a6c9b1-8355-4de2-985d-a04f4dcd63a0"
+          strategy="afterInteractive"
+        />
+
         {children}
         
         {/* Third-party Analytics */}

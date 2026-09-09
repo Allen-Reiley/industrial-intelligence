@@ -41,7 +41,7 @@ export default function HeroSection() {
     return (
         <>
             <HeroHeader />
-            <main className="overflow-hidden">
+            <div className="overflow-hidden">
                 <div
                     aria-hidden
                     className="absolute inset-0 isolate hidden opacity-65 contain-strict lg:block">
@@ -203,7 +203,7 @@ export default function HeroSection() {
                     </div>
                 </section>
                 */}
-            </main>
+            </div>
         </>
     )
 }

@@ -12,7 +12,7 @@ export default function ContentSection1({ className }: { className?: string }) {
                             <Image
                                 src="/payments-light.webp"
                                 className="rounded-[15px] shadow"
-                                alt="payments illustration light"
+                                alt="AuraWorks B2B website visitor identification telemetry for industrial firms"
                                 width={1207}
                                 height={929}
                             />
@@ -36,7 +36,7 @@ export default function ContentSection1({ className }: { className?: string }) {
                                     <div className="relative h-10 w-29">
                                         <Image
                                             src="/logo.svg" // Replace with your client's light SVG
-                                            alt="Client Logo"
+                                            alt="AuraWorks Industrial Intelligence"
                                             fill
                                             className="object-contain object-left"
                                         />

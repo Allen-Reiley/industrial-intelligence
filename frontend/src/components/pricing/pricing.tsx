@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Check } from 'lucide-react'
 import Link from 'next/link'
@@ -21,28 +20,17 @@ const transitionVariants = {
 } as const;
 
 export default function Pricing() {
-    const [hasMounted, setHasMounted] = useState(false);
-
-    useEffect(() => {
-        const handle = requestAnimationFrame(() => setHasMounted(true));
-        return () => cancelAnimationFrame(handle);
-    }, []);
-
-    if (!hasMounted) {
-        return <div className="sr-only">AuraWorks Pricing - R120k/yr Annual Engine</div>;
-    }
-
     return (
         <>
             <HeroHeader />
             <div className="relative py-12 md:py-32">
                 <div className="mx-auto max-w-5xl px-4 md:px-6">
                     <div className="mx-auto max-w-2xl text-center">
-                        <h2 className="text-balance text-3xl font-bold md:text-4xl lg:text-5xl leading-tight">
+                        <h1 className="text-balance text-3xl font-bold md:text-4xl lg:text-5xl leading-tight">
                             <TextEffect preset="fade-in-blur" speedSegment={0.3}>
                                 Deploy Your Industrial Sales Engine
                             </TextEffect>
-                        </h2>
+                        </h1>
                         <div className="text-muted-foreground mt-6 text-base md:text-lg px-2">
                             <AnimatedGroup variants={transitionVariants}>
                                 Unmask your website's hidden pipeline. A fractional investment to secure total visibility into the mining, manufacturing, and logistics firms visiting your site—where landing a single contract pays for the engine multiple times over.

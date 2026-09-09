@@ -5,15 +5,17 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      // Prevent bots from crawling your lead-gen dashboard or internal API
       disallow: [
-        '/private/',
-        '/dashboard/', 
-        '/api/',
-        '/403',        // No need to index error pages
+        '/aurahq/',     // Internal lead dashboard and admin console
+        '/api/',        // Ingestion & auth API endpoints
+        '/checkout',    // Transactional checkout gate
+        '/thank-you',   // Post-conversion onboarding screen
+        '/403',         // Error pages
         '/500', 
         '/admin/',
-      ], 
+        '/dashboard/',
+        '/private/',
+      ],
     },
     sitemap: 'https://auraworks.co.za/sitemap.xml',
   };

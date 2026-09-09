@@ -1,10 +1,11 @@
-// @/pages/403.tsx
+'use client'
+
 import React, { useState, useEffect } from 'react'
 import { ShieldAlert, Lock, ArrowLeft, Key } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
-export default function Forbidden403() {
+export default function ForbiddenClient() {
     const [nodeId, setNodeId] = useState('')
 
     useEffect(() => {
@@ -16,13 +17,11 @@ export default function Forbidden403() {
 
     return (
         <main className="relative min-h-screen flex items-center justify-center bg-background px-6 py-12 overflow-hidden font-sans">
-            {/* Background Atmosphere - Subtly more "restricted" (slightly darker/redder hue if desired, or keep your primary) */}
             <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl h-full opacity-15 [background:radial-gradient(50%_50%_at_50%_50%_var(--color-primary)_0%,transparent_100%)] blur-3xl" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl h-full opacity-15 [background:radial-gradient(50%_50%_at_50%_50%,var(--color-primary)_0%,transparent_100%)] blur-3xl" />
             </div>
 
             <div className="w-full max-w-md text-center">
-                {/* Visual Indicator - Shield/Lock Combo */}
                 <div className="relative inline-flex items-center justify-center w-24 h-24 mb-8">
                     <div className="absolute inset-0 bg-primary/10 rounded-full animate-ping opacity-20" />
                     <div className="relative z-10 flex items-center justify-center w-20 h-20 rounded-3xl border bg-card/50 backdrop-blur-sm shadow-2xl">
@@ -30,7 +29,6 @@ export default function Forbidden403() {
                     </div>
                 </div>
 
-                {/* Typography Block */}
                 <div className="space-y-4 mb-10">
                     <div className="flex items-center justify-center gap-2">
                         <span className="font-mono text-[10px] uppercase tracking-[0.4em] font-bold text-primary/60">
@@ -43,7 +41,6 @@ export default function Forbidden403() {
                     </p>
                 </div>
 
-                {/* Action Interface */}
                 <div className="flex flex-col gap-3">
                     <Button 
                         asChild
@@ -62,7 +59,6 @@ export default function Forbidden403() {
                     </Button>
                 </div>
 
-                {/* Technical Security Footer */}
                 <div className="mt-16 flex flex-col items-center gap-2 opacity-30">
                     <div className="flex items-center gap-4 text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground">
                         <div className="flex items-center gap-1">
