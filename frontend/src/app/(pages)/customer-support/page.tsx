@@ -2,14 +2,14 @@ import { Metadata } from 'next';
 import SupportPage from "@/components/sections/support/customer-support";
 
 export const metadata: Metadata = {
-  title: 'Customer Support Desk',
-  description: 'Submit technical inquiries regarding tracking script integration, CORS boundaries, or API webhook feeds.',
+  title: 'Customer Support & Integration Desk',
+  description: 'Technical support for SEO infrastructure, structured data verification, edge tracking script integration, and lead delivery.',
   alternates: {
     canonical: '/customer-support',
   },
   openGraph: {
-    title: 'Customer Support Desk | AuraWorks',
-    description: 'Submit technical inquiries regarding tracking script integration, CORS boundaries, or API webhook feeds.',
+    title: 'Customer Support & Integration Desk | AuraWorks',
+    description: 'Technical support for SEO infrastructure, structured data verification, edge tracking script integration, and lead delivery.',
     url: 'https://auraworks.co.za/customer-support',
   },
 };

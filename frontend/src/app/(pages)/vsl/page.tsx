@@ -2,14 +2,14 @@ import { Metadata } from 'next';
 import VSLFunnel from '@/components/vsl/vsl-funnel';
 
 export const metadata: Metadata = {
-  title: 'Forensic Identity Resolution Video Walkthrough',
-  description: 'Learn how AuraWorks de-anonymizes network traffic into verified B2B prospects across South Africa.',
+  title: 'Platform Walkthrough: Discoverability & Lead Capture',
+  description: 'Watch how AuraWorks pairs organic search dominance and Generative Engine Optimization (GEO) with proprietary visitor intelligence to capture high-value industrial pipeline.',
   alternates: {
     canonical: '/vsl',
   },
   openGraph: {
-    title: 'Forensic Identity Resolution Video Walkthrough | AuraWorks',
-    description: 'Learn how AuraWorks de-anonymizes network traffic into verified B2B prospects across South Africa.',
+    title: 'Platform Walkthrough: Discoverability & Lead Capture | AuraWorks',
+    description: 'Watch how AuraWorks pairs organic search dominance and Generative Engine Optimization (GEO) with proprietary visitor intelligence to capture high-value industrial pipeline.',
     url: 'https://auraworks.co.za/vsl',
   },
 };

@@ -91,7 +91,7 @@ export default function HeroSection() {
                                     <Link
                                         href="/features"
                                         className="hover:bg-background bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-zinc-950/5 transition-colors duration-300">
-                                        <span className="text-foreground text-sm">Industrial Identity Resolution</span>
+                                        <span className="text-foreground text-sm">B2B Discoverability & Lead Capture</span>
                                         <span className="block h-4 w-0.5 border-l bg-white"></span>
 
                                         <div className="bg-background group-hover:bg-muted size-6 overflow-hidden rounded-full duration-500">
@@ -112,7 +112,7 @@ export default function HeroSection() {
                                     speedSegment={0.3}
                                     as="h1"
                                     className="mx-auto mt-8 max-w-4xl text-balance text-5xl font-bold md:text-7xl lg:mt-16 xl:text-[4rem] tracking-tight">
-                                    Identify Your Corporate Visitors So You Can Sell To Them
+                                    Be Found. Be Cited. Be Chosen.
                                 </TextEffect>
                                 <TextEffect
                                     per="line"
@@ -120,8 +120,8 @@ export default function HeroSection() {
                                     speedSegment={0.3}
                                     delay={0.5}
                                     as="p"
-                                    className="mx-auto mt-8 max-w-2xl text-balance text-lg text-muted-foreground">
-                                    Increase conversations. Lower sales costs. Boost net revenue.
+                                    className="mx-auto mt-8 max-w-3xl text-balance text-lg text-muted-foreground">
+                                    The organic discoverability and lead-capture partner for industrial and B2B leaders across South Africa and SADC. We unite technical SEO and Generative Engine Optimization (GEO)—optimizing websites so AI search engines like ChatGPT, Perplexity, Gemini, and Google AI Overviews understand, cite, and recommend your business—powered by the AuraWorks Intelligence Engine to convert anonymous corporate traffic into verified pipeline.
                                 </TextEffect>
 
                                 <AnimatedGroup
@@ -176,7 +176,7 @@ export default function HeroSection() {
                                     <Image
                                         className="z-2 border-border/25 aspect-15/8 relative rounded-2xl border"
                                         src="/mail2-light.webp"
-                                        alt="industrial lead report dashboard"
+                                        alt="AuraWorks B2B organic discoverability and lead intelligence dashboard"
                                         width="2700"
                                         height="1440"
                                         priority

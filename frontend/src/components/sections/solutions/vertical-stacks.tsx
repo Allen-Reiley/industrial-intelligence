@@ -3,22 +3,22 @@ import { cn } from '@/lib/utils'
 
 const verticals = [
     {
-        title: "Mining & Resource Extraction",
-        problem: "Waiting for procurement officers from Tier-1 mining houses to submit a contact form—only to discover they have already drafted their RFP specifications with a competitor.",
-        solution: "Intercept the specific mining site or regional HQ while they are window-shopping your technical specifications, allowing your team to shape the requirements before the tender goes public.",
-        stats: "Ideal for: Drill rigs, safety gear, and processing plant OEMs."
+        title: "Turn key High-Performance Websites",
+        problem: "Traditional agency websites are built as static digital brochures. They lack deep technical SEO architecture, remain invisible to generative AI engines, and leak 98% of visiting industrial buyers because there is no built-in conversion technology.",
+        solution: "We engineer a high-speed web presence from the ground up with built-in technical SEO, Generative Engine Optimization (GEO) structured data, and the AuraWorks Intelligence Engine embedded as a native conversion layer—transforming your website into an active pipeline asset.",
+        stats: "Includes: Modern web engineering, GEO entity architecture, built-in visitor intelligence."
     },
     {
-        title: "Industrial Manufacturing",
-        problem: "Losing visibility when engineers download CAD drawings and load capacities anonymously, leaving your sales team blind to active factory expansion projects.",
-        solution: "De-anonymize the manufacturing firms downloading your technical documentation to gauge their project timeline and capacity needs before your competitors do.",
-        stats: "Ideal for: Precision tooling, automation systems, and raw material suppliers."
+        title: "Existing Website Upgrades",
+        problem: "Your enterprise has an established brand and existing web traffic, but your company is unreferenced in AI engine recommendations (ChatGPT, Perplexity, Gemini) and your sales reps have zero visibility into which corporate accounts are reviewing your technical specifications.",
+        solution: "We retrofit your existing site with enterprise-grade technical SEO, inject Generative Engine Optimization (GEO) semantic graphs, and plug in the AuraWorks Intelligence Engine to unmask high-intent corporate visitors without requiring a rebuild.",
+        stats: "Includes: Technical SEO retrofit, GEO citability schemas, standalone intelligence integration."
     },
     {
-        title: "Logistics & Infrastructure",
-        problem: "Hoping fleet and facility directors reach out via your contact page while they secretly compare your routes, cold-chain capacities, and logistics rates.",
-        solution: "Unmask the logistics entities researching your infrastructure, allowing your sales team to initiate targeted outreach to expanding firms.",
-        stats: "Ideal for: 3PL providers, fleet management, and cold-chain specialists."
+        title: "SADC Industrial & Heavy Procurement",
+        problem: "Multi-million Rand sales cycles in mining, manufacturing, and logistics mean buyers compare specifications months before publishing tenders—leaving your commercial team blind during the critical specification window.",
+        solution: "We establish search category dominance across South African and SADC industrial hubs, ensure AI models cite your products as preferred answers, and alert your sales team the moment an industrial account investigates your capacity tables.",
+        stats: "Corridors: Mining (Gauteng, Mpumalanga, Limpopo), Heavy Manufacturing, Bulk Logistics."
     }
 ]
 

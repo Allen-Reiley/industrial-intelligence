@@ -21,14 +21,17 @@ export function FounderProfile() {
                             <p className="text-primary font-mono text-sm mt-1 uppercase tracking-widest">Founder & Systems Architect</p>
                         </div>
                         <p className="text-muted-foreground leading-relaxed">
-                            With a background in engineering, I founded AuraWorks to solve a fundamental challenge: B2B industrial sales teams shouldn&apos;t operate on guesswork or wait passively for forms to be filled.
+                            With an engineering systems background, I founded AuraWorks because South Africa&apos;s industrial and B2B leaders deserve growth infrastructure that reflects the technical caliber of their operations.
                         </p>
                         <p className="text-muted-foreground leading-relaxed">
-                            We do not deal in superficial marketing metrics like clicks or traffic spikes. We build and deploy robust, juristic-first data infrastructure designed to unmask and enrich enterprise leads for the SADC heavy industry sectors.
+                            The procurement journey has fundamentally shifted. Industrial decision-makers research on Google and query generative AI engines (ChatGPT, Perplexity, Gemini) long before contacting sales. Yet when they review your technical specifications, legacy marketing treats them as anonymous bounces.
+                        </p>
+                        <p className="text-muted-foreground leading-relaxed">
+                            We don&apos;t deal in vanity metrics or empty clicks. We build high-performance organic discoverability systems—uniting technical SEO, Generative Engine Optimization (GEO), and our proprietary AuraWorks Intelligence Engine to deliver verified, actionable pipeline to your commercial team.
                         </p>
                         <div className="pt-4">
                              <blockquote className="italic text-sm text-foreground/80 border-l-2 border-primary pl-4">
-                                &quot;The goal is not more traffic. The goal is unmasked revenue.&quot;
+                                &quot;The objective isn&apos;t merely more traffic. The objective is category authority, AI citability, and unmasked revenue.&quot;
                              </blockquote>
                         </div>
                     </div>

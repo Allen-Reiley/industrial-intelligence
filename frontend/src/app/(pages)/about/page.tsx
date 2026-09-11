@@ -7,14 +7,14 @@ import { HeroHeader } from "@/components/header/header";
 import Footer from "@/components/footer/footer";
 
 export const metadata: Metadata = {
-  title: 'Our Mission & Engineering DNA',
-  description: 'Discover how AuraWorks was built to bring POPIA-compliant B2B corporate sales intelligence to South African heavy industries—where presence meets performance.',
+  title: 'Our Mission: Discoverability & Pipeline Conversion',
+  description: 'Learn why AuraWorks was founded: bridging the gap between B2B industrial search visibility, AI citability, and qualified sales pipeline across South Africa and SADC.',
   alternates: {
     canonical: '/about',
   },
   openGraph: {
-    title: 'Our Mission & Engineering DNA | AuraWorks',
-    description: 'POPIA-compliant B2B corporate sales intelligence for South African heavy industries.',
+    title: 'Our Mission: Discoverability & Pipeline Conversion | AuraWorks',
+    description: 'Engineering-driven organic discoverability, Generative Engine Optimization (GEO), and proprietary visitor intelligence for heavy industry.',
     url: 'https://auraworks.co.za/about',
   },
 };

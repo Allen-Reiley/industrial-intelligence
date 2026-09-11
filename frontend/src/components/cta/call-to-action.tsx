@@ -6,8 +6,8 @@ export default function CallToAction() {
         <section className="py-16 md:py-32">
             <div className="mx-auto max-w-5xl px-6">
                 <div className="text-center">
-                    <h2 className="text-balance text-4xl font-semibold lg:text-5xl">Turn anonymous traffic into paying clients.</h2>
-                    <p className="mt-4">Stop letting high-value interest leave without a trace. Get a curated, weekly digest of unmasked corporate leads delivered straight to your inbox. No complex software to learn—just raw pipeline.</p>
+                    <h2 className="text-balance text-4xl font-semibold lg:text-5xl">Own your category across search, AI, and pipeline.</h2>
+                    <p className="mt-4">Stop letting high-value procurement interest leave without a trace. AuraWorks unites top Google rankings, AI engine citability, and the proprietary AuraWorks Intelligence Engine to convert anonymous industrial visitors into verified pipeline.</p>
 
                     <div className="mt-12 flex flex-wrap justify-center gap-4">
                         <Button

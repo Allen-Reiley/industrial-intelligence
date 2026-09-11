@@ -10,7 +10,7 @@ export function AboutCTA() {
                     Partner with modern industrial leaders.
                 </h2>
                 <p className="mx-auto mt-6 max-w-xl text-muted-foreground">
-                    We restrict our client cohort to ensure premium data resolution and dedicated routing channels. Secure your slot in the engine today.
+                    We restrict our client cohort to ensure dedicated engineering attention, high-authority positioning, and priority intelligence routing. Secure your consultation today.
                 </p>
 
                 <div className="mt-12 flex flex-wrap justify-center gap-4">

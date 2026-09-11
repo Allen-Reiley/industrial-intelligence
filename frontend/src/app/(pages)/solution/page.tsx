@@ -7,14 +7,14 @@ import { HeroHeader } from '@/components/header/header';
 import Footer from '@/components/footer/footer';
 
 export const metadata: Metadata = {
-  title: 'Industrial Sales Intelligence & B2B Solutions',
-  description: 'Bridge the gap between anonymous website traffic and high-value contracts. Learn how AuraWorks unmasks mining, manufacturing, and logistics companies visiting your site.',
+  title: 'Turn key Websites & Existing Site Upgrades for Heavy Industry',
+  description: 'Two strategic paths to industrial pipeline: turn key high-performance websites with built-in SEO, GEO, and Intelligence Engine, or existing site upgrades with visitor capture.',
   alternates: {
     canonical: '/solution',
   },
   openGraph: {
-    title: 'Industrial Sales Intelligence & B2B Solutions | AuraWorks',
-    description: 'Bridge the gap between anonymous website traffic and high-value contracts for South African heavy industries.',
+    title: 'Turn key Websites & Existing Site Upgrades for Heavy Industry | AuraWorks',
+    description: 'Two strategic paths to industrial pipeline: turn key high-performance websites with built-in SEO, GEO, and Intelligence Engine, or existing site upgrades with visitor capture.',
     url: 'https://auraworks.co.za/solution',
   },
 };

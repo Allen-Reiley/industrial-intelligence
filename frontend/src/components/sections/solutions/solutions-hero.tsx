@@ -12,15 +12,23 @@ export function SolutionsHero() {
             />
             <div className="mx-auto max-w-5xl px-6">
                 <div className="max-w-3xl">
-                    <span className="text-primary text-sm font-semibold tracking-widest uppercase">Industrial B2B</span>
-                    <h1 className="mt-6 text-balance text-5xl font-bold tracking-tight md:text-7xl">
-                        <TextEffect preset="fade-in-blur" speedSegment={0.3}>
-                            Built for Heavy Industry.
-                        </TextEffect>
-                    </h1>
-                    <p className="mt-8 text-lg text-muted-foreground md:text-xl leading-relaxed">
-                        Generic sales and marketing tools fail in the industrial sector. AuraWorks is built specifically for enterprise firms where sales cycles are measured in months, procurement is heavy, and contracts are valued in millions.
-                    </p>
+                    <span className="text-primary text-sm font-semibold tracking-widest uppercase">Strategic B2B Solutions</span>
+                    <TextEffect
+                        preset="fade-in-blur"
+                        speedSegment={0.3}
+                        as="h1"
+                        className="mt-6 text-balance text-5xl font-bold tracking-tight md:text-7xl">
+                        Two Strategic Paths to Pipeline Dominance.
+                    </TextEffect>
+                    <TextEffect
+                        per="line"
+                        preset="fade-in-blur"
+                        speedSegment={0.3}
+                        delay={0.5}
+                        as="p"
+                        className="mt-8 text-lg text-muted-foreground md:text-xl leading-relaxed">
+                        Whether engineering a new digital flagship or maximizing your existing web presence, AuraWorks provides two tailored entry points to establish search dominance, Generative Engine Optimization (GEO) citability, and proprietary visitor capture across South Africa and the SADC region.
+                    </TextEffect>
                 </div>
             </div>
         </section>

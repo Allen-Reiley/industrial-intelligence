@@ -5,21 +5,22 @@ import React from 'react'
 import Link from 'next/link'
 import { ArrowLeft, CheckCircle2, Clock, ShieldCheck, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { TextEffect } from '@/components/ui/text-effect'
 
 const benefits = [
     {
-        title: "15-Minute Discovery",
-        desc: "A brief technical overview of how we identify your anonymous traffic.",
+        title: "15-Minute Technical Discovery",
+        desc: "An architectural overview of your search rankings, AI citability potential, and corporate traffic resolution.",
         icon: <Clock className="h-5 w-5 text-primary" />
     },
     {
-        title: "Systems Review",
-        desc: "We analyze your current site traffic to see if you're a fit for the 100-client cohort.",
+        title: "Discoverability & Pipeline Audit",
+        desc: "We analyze your web assets to evaluate organic demand, competitor positioning, and visitor capture readiness.",
         icon: <Zap className="h-5 w-5 text-primary" />
     },
     {
-        title: "Privacy First",
-        desc: "A look at our Identity Bridge and how we stay POPIA compliant.",
+        title: "Privacy & POPIA First",
+        desc: "A walkthrough of our juristic-only data resolution architecture under South African privacy law.",
         icon: <ShieldCheck className="h-5 w-5 text-primary" />
     }
 ]
@@ -41,12 +42,22 @@ export default function BookCallPage() {
             <div className="mx-auto max-w-7xl px-6 pb-24 pt-10 lg:flex lg:gap-x-12 lg:px-8">
                 {/* Left Column: Context & Authority */}
                 <div className="flex-1 lg:max-w-md">
-                    <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+                    <TextEffect
+                        preset="fade-in-blur"
+                        speedSegment={0.3}
+                        as="h1"
+                        className="text-4xl font-bold tracking-tight sm:text-5xl">
                         Schedule a Strategy Session
-                    </h1>
-                    <p className="mt-6 text-lg text-muted-foreground">
-                        Let&apos;s discuss how AuraWorks can bridge the gap between your website visitors and your sales team&apos;s inbox.
-                    </p>
+                    </TextEffect>
+                    <TextEffect
+                        per="line"
+                        preset="fade-in-blur"
+                        speedSegment={0.3}
+                        delay={0.5}
+                        as="p"
+                        className="mt-6 text-lg text-muted-foreground leading-relaxed">
+                        {"Let's discuss how AuraWorks can position your business across Google and AI search engines, while converting anonymous corporate visitors into qualified pipeline."}
+                    </TextEffect>
 
                     <div className="mt-12 space-y-8">
                         {benefits.map((item, idx) => (

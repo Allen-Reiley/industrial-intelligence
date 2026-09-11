@@ -24,25 +24,27 @@ export const viewport = {
 export const metadata = {
   metadataBase: new URL("https://auraworks.co.za"),
   title: {
-    default: "AuraWorks | Industrial Sales Intelligence & Lead Generation",
+    default: "AuraWorks | B2B SEO, Generative Engine Optimization & Lead Intelligence",
     template: "%s | AuraWorks",
   },
-  description: "Identify companies visiting your website. AuraWorks turns anonymous industrial traffic into high-intent sales leads for B2B firms in South Africa.",
+  description: "Be found. Be cited. Be chosen. AuraWorks is the organic discoverability and lead-capture partner for industrial and B2B companies across South Africa and SADC, combining technical SEO, Generative Engine Optimization (GEO), and proprietary visitor intelligence.",
   category: 'technology',
-  classification: 'Industrial Sales Intelligence',
+  classification: 'B2B Discoverability & Industrial Sales Intelligence',
   keywords: [
+    "SEO company South Africa",
+    "GEO agency South Africa",
+    "Generative Engine Optimization South Africa",
+    "B2B SEO for industrial companies",
+    "Industrial SEO South Africa",
+    "Lead generation website South Africa",
+    "SADC SEO agency",
+    "AI search optimization South Africa",
+    "B2B lead capture South Africa",
+    "Johannesburg",
+    "Gauteng",
     "B2B Lead Generation South Africa",
     "Industrial Sales Intelligence",
-    "Intent-Based Lead Generation",
-    "Identity Resolution",
-    "POPIA Compliant Lead Generation",
-    "Anonymous Visitor Identification",
-    "Sales Automation for Manufacturing",
-    "Mining Sector Leads",
-    "Engineering Sales Intelligence",
-    "Revenue Systems Architecture",
-    "Gauteng B2B Sales Tools",
-    "East Rand Industrial Marketing"
+    "Visitor Identity Resolution"
   ],
   icons: {
     icon: [
@@ -59,8 +61,8 @@ export const metadata = {
   creator: "Reitumetse Sethabela",
   publisher: "AuraWorks (Pty) Ltd",
   openGraph: {
-    title: "AuraWorks | Industrial Sales Intelligence",
-    description: "Turn anonymous industrial traffic into high-intent sales leads. POPIA-compliant B2B identification.",
+    title: "AuraWorks | B2B SEO, Generative Engine Optimization & Lead Capture",
+    description: "Be found. Be cited. Be chosen. Dominate Google search, get cited in AI search engines (ChatGPT, Perplexity, Gemini), and convert anonymous industrial traffic into pipeline.",
     url: "https://auraworks.co.za",
     siteName: "AuraWorks",
     locale: "en_ZA",
@@ -70,14 +72,14 @@ export const metadata = {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "AuraWorks | Industrial Sales Intelligence Dashboard",
+        alt: "AuraWorks | B2B Organic Discoverability & Lead Intelligence Platform",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "AuraWorks | B2B Intelligence",
-    description: "Industrial Lead Generation & Identity Resolution.",
+    title: "AuraWorks | B2B SEO, GEO & Lead Intelligence",
+    description: "Be found. Be cited. Be chosen. Organic discoverability and pipeline conversion for South African and SADC industrial leaders.",
     images: ["/twitter-image.jpg"],
   },
   robots: {
@@ -104,13 +106,25 @@ const jsonLd = {
       "legalName": "AuraWorks (Pty) Ltd",
       "url": "https://auraworks.co.za",
       "logo": "https://auraworks.co.za/logo.svg",
-      "description": "Industrial sales intelligence and juristic identity resolution platform for B2B enterprises in South Africa.",
+      "description": "Modern organic discoverability and lead-capture partner for industrial and B2B companies across South Africa and SADC, providing technical SEO, Generative Engine Optimization (GEO), and proprietary visitor identity intelligence.",
       "address": {
         "@type": "PostalAddress",
         "addressLocality": "Johannesburg",
         "addressRegion": "Gauteng",
         "addressCountry": "ZA"
       },
+      "areaServed": [
+        "South Africa",
+        "SADC"
+      ],
+      "knowsAbout": [
+        "Search Engine Optimization",
+        "Generative Engine Optimization",
+        "B2B Lead Generation",
+        "Industrial Marketing",
+        "Web Development",
+        "Visitor Identity Resolution"
+      ],
       "founder": {
         "@type": "Person",
         "name": "Reitumetse Sethabela",
@@ -121,29 +135,51 @@ const jsonLd = {
       ]
     },
     {
-      "@type": "WebSite",
-      "@id": "https://auraworks.co.za/#website",
-      "url": "https://auraworks.co.za",
-      "name": "AuraWorks",
-      "description": "Industrial Sales Intelligence & B2B Lead Generation in South Africa",
-      "publisher": {
+      "@type": "ProfessionalService",
+      "@id": "https://auraworks.co.za/#service",
+      "name": "AuraWorks Organic Discoverability & Lead Capture Services",
+      "provider": {
         "@id": "https://auraworks.co.za/#organization"
       },
-      "inLanguage": "en-ZA"
+      "areaServed": [
+        "South Africa",
+        "SADC"
+      ],
+      "description": "Comprehensive B2B organic search engine optimization (SEO), Generative Engine Optimization (GEO) for AI search engines, high-performance website engineering, and proprietary visitor identity resolution for industrial enterprises.",
+      "serviceType": [
+        "Search Engine Optimization (SEO)",
+        "Generative Engine Optimization (GEO)",
+        "B2B Website Engineering",
+        "Visitor Identity Resolution & Lead Capture"
+      ]
     },
     {
       "@type": "SoftwareApplication",
       "@id": "https://auraworks.co.za/#software",
-      "name": "AuraWorks Industrial Intelligence Platform",
+      "name": "AuraWorks Intelligence Engine",
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "All",
+      "creator": {
+        "@id": "https://auraworks.co.za/#organization"
+      },
       "offers": {
         "@type": "Offer",
         "price": "120000",
         "priceCurrency": "ZAR",
         "priceValidUntil": "2027-12-31"
       },
-      "description": "Autonomous juristic identity resolution, spec-sheet intent telemetry, and weekly pipeline delivery for South African heavy industry."
+      "description": "Proprietary B2B visitor de-anonymization and conversion technology that turns anonymous industrial website traffic into verified pipeline for South African and SADC enterprises."
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://auraworks.co.za/#website",
+      "url": "https://auraworks.co.za",
+      "name": "AuraWorks",
+      "description": "B2B Organic Discoverability, Generative Engine Optimization (GEO) & Lead Capture in South Africa and SADC",
+      "publisher": {
+        "@id": "https://auraworks.co.za/#organization"
+      },
+      "inLanguage": "en-ZA"
     }
   ]
 };

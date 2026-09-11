@@ -1,18 +1,18 @@
 // @/components/sections/features/feature-grid.tsx
-import { Mail, Globe, Users, BarChart3 } from 'lucide-react'
+import { Mail, Globe, Network, BarChart3 } from 'lucide-react'
 
 const detailFeatures = [
-    { title: "Automated Inbox Delivery", desc: "No new software or dashboard training required. We deliver a curated CSV and PDF of your hottest corporate prospects directly to your inbox every Monday morning.", icon: Mail },
-    { title: "Regional SADC Enrichment", desc: "Optimized specifically for the South African industrial ecosystem, recognizing local mining houses, manufacturers, and logistics giants.", icon: Globe },
-    { title: "Direct Contact Paths", desc: "Not just company names. We provide verified department-specific emails, corporate switchboards, and LinkedIn profiles for key decision-makers.", icon: Users },
-    { title: "Spec-Sheet Intent Tracking", desc: "Know exactly which technical CAD drawings, capacity tables, or pricing brochures were downloaded and by which firm.", icon: BarChart3 }
+    { title: "Generative Engine Optimization (GEO)", desc: "We engineer structured semantic data and entity graphs that ensure ChatGPT, Perplexity, Gemini, and Google AI Overviews cite and recommend your industrial solutions.", icon: Network },
+    { title: "Industrial Technical SEO", desc: "Built specifically for B2B search intent in South Africa and SADC, capturing high-value procurement terms for mining, heavy engineering, and manufacturing.", icon: Globe },
+    { title: "Proprietary Intelligence Engine", desc: "Built into your new site or integrated into your existing web presence to unmask visiting corporate accounts and monitor technical CAD and spec-sheet intent.", icon: BarChart3 },
+    { title: "Automated Monday Inbox Delivery", desc: "No complicated software to learn. We deliver an enriched, executive-ready digest of unmasked corporate leads directly to your commercial team every Monday morning.", icon: Mail }
 ]
 
 export function FeatureGrid() {
     return (
         <section className="py-24">
             <div className="mx-auto max-w-5xl px-6 text-center mb-16">
-                <h2 className="text-3xl font-bold">Everything your team needs to capture the account.</h2>
+                <h2 className="text-3xl font-bold">Everything your enterprise needs to be found, cited, and chosen.</h2>
             </div>
             <div className="mx-auto max-w-5xl px-6 grid gap-px bg-border overflow-hidden rounded-3xl border md:grid-cols-2">
                 {detailFeatures.map((f, i) => (

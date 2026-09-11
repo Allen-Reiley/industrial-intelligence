@@ -3,18 +3,19 @@ import Link from 'next/link';
 import { HeroHeader } from '@/components/header/header';
 import Footer from '@/components/footer/footer';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Sparkles, ShieldCheck, ArrowRight, BellRing, Cpu, Building2, FileText } from 'lucide-react';
+import { BookOpen, ShieldCheck, ArrowRight, BellRing, Cpu, Building2, FileText } from 'lucide-react';
+import { TextEffect } from '@/components/ui/text-effect';
 import NewsletterSignup from './newsletter-signup';
 
 export const metadata: Metadata = {
-  title: 'Industrial Sales Intelligence & Lead Gen Insights',
-  description: 'Forensic telemetry benchmarks, POPIA compliance directives, and B2B pipeline strategies for South African manufacturing, mining, and engineering firms.',
+  title: 'B2B Discoverability, GEO & Lead Intelligence Research',
+  description: 'Technical guides, Generative Engine Optimization (GEO) playbooks, and industrial pipeline benchmarks for South African and SADC B2B enterprises.',
   alternates: {
     canonical: '/blog',
   },
   openGraph: {
-    title: 'Industrial Sales Intelligence & Lead Gen Insights | AuraWorks',
-    description: 'Forensic telemetry benchmarks, POPIA compliance directives, and B2B pipeline strategies for South African industrial firms.',
+    title: 'B2B Discoverability, GEO & Lead Intelligence Research | AuraWorks',
+    description: 'Technical guides, Generative Engine Optimization (GEO) playbooks, and industrial pipeline benchmarks for South African and SADC B2B enterprises.',
     url: 'https://auraworks.co.za/blog',
     type: 'website',
   },
@@ -23,27 +24,27 @@ export const metadata: Metadata = {
 export default function BlogComingSoonPage() {
   const upcomingBriefs = [
     {
-      category: 'Market Intelligence',
-      title: 'De-anonymizing South African Mining Houses: The Hidden Tender Cycle',
-      desc: 'How Tier-1 mining operators evaluate industrial valves, crushers, and consumables 4 months before issuing RFPs.',
-      icon: Building2,
-      readTime: '6 min read',
+      category: 'Generative Engine Optimization',
+      title: 'How AI Engines Cite South African Industrial Suppliers: The B2B GEO Playbook',
+      desc: 'A technical study on how ChatGPT, Perplexity, and Google AI Overviews extract and synthesize technical specifications in mining and manufacturing.',
+      icon: Cpu,
+      readTime: '7 min read',
       status: 'In Editorial Review',
     },
     {
-      category: 'Legal & Compliance',
-      title: 'POPIA-Compliant Corporate Unmasking vs. Illegal Natural Person Tracking',
-      desc: 'A technical breakdown of section 1 juristic entity identification versus personal data processing under South African law.',
+      category: 'Search Engine Optimization',
+      title: 'Dominating Google in SADC Heavy Industry: Technical SEO for Spec-Sheet Driven Sales',
+      desc: 'Why traditional consumer SEO tactics fail in industrial procurement, and how to rank high-intent technical documentation.',
       icon: ShieldCheck,
       readTime: '8 min read',
       status: 'Peer Review',
     },
     {
       category: 'Pipeline Architecture',
-      title: 'The Spec-Sheet Dilemma: Why 98% of Industrial Engineers Never Fill Out Web Forms',
-      desc: 'Analyzing 45,000 engineering page visits across Gauteng, Mpumalanga, and KwaZulu-Natal industrial nodes.',
-      icon: FileText,
-      readTime: '5 min read',
+      title: 'De-anonymizing South African Mining Houses: The Hidden Tender Cycle',
+      desc: 'How Tier-1 mining operators evaluate industrial valves, crushers, and consumables 4 months before issuing RFPs.',
+      icon: Building2,
+      readTime: '6 min read',
       status: 'Scheduled',
     },
   ];
@@ -62,15 +63,25 @@ export default function BlogComingSoonPage() {
           {/* Header Section */}
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 rounded-full border bg-muted/60 px-3.5 py-1 text-xs font-medium text-primary mb-6 shadow-sm">
-              <Sparkles className="size-3.5" />
-              <span>AuraWorks Intelligence Dispatch — Coming Soon</span>
+              <BookOpen className="size-3.5" />
+              <span>AuraWorks Discoverability & Intelligence Dispatch — Coming Soon</span>
             </div>
-            <h1 className="text-4xl font-bold tracking-tight sm:text-6xl text-balance">
-              Industrial Sales Intelligence & B2B Telemetry Research
-            </h1>
-            <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-              We are finalizing our quarterly benchmark briefings, covering juristic traffic resolution, POPIA-compliant outreach, and sales pipeline optimization across SADC industrial corridors.
-            </p>
+            <TextEffect
+              preset="fade-in-blur"
+              speedSegment={0.3}
+              as="h1"
+              className="text-4xl font-bold tracking-tight sm:text-6xl text-balance">
+              Industrial SEO, GEO & Pipeline Intelligence Research
+            </TextEffect>
+            <TextEffect
+              per="line"
+              preset="fade-in-blur"
+              speedSegment={0.3}
+              delay={0.5}
+              as="p"
+              className="mt-6 text-lg text-muted-foreground leading-relaxed">
+              We are finalizing our quarterly research briefings covering Generative Engine Optimization (GEO), industrial search authority, and juristic visitor capture across SADC industrial corridors.
+            </TextEffect>
           </div>
 
           {/* Email Subscription / Notification Box */}
@@ -80,9 +91,9 @@ export default function BlogComingSoonPage() {
                 <div className="inline-flex items-center gap-2 text-primary font-mono text-xs uppercase tracking-wider font-semibold">
                   <BellRing className="size-3.5" /> Priority Dispatch List
                 </div>
-                <h2 className="text-2xl font-bold tracking-tight">Receive the First Benchmark Briefing</h2>
+                <h2 className="text-2xl font-bold tracking-tight">Receive the Industrial Discoverability Briefing</h2>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Join 240+ commercial directors and sales engineers receiving our weekly data reports on South African industrial buying signals.
+                  Join 240+ commercial directors and sales engineers receiving our weekly data reports on South African industrial buying signals, search trends, and AI citability.
                 </p>
               </div>
 
@@ -132,9 +143,9 @@ export default function BlogComingSoonPage() {
 
           {/* Bottom Action */}
           <div className="mt-16 text-center border rounded-2xl p-8 bg-muted/20">
-            <h3 className="text-lg font-bold">Looking to identify corporate visitors right now?</h3>
+            <h3 className="text-lg font-bold">Ready to upgrade your search discoverability and capture corporate visitors?</h3>
             <p className="text-sm text-muted-foreground mt-2 max-w-xl mx-auto">
-              You do not need to wait for our publications. AuraWorks is live and unmasking industrial traffic across South Africa.
+              You do not need to wait for our publications. AuraWorks is live, optimizing search presence and unmasking industrial traffic across South Africa.
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
               <Button asChild className="rounded-xl px-6">

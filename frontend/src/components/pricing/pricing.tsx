@@ -26,16 +26,22 @@ export default function Pricing() {
             <div className="relative py-12 md:py-32">
                 <div className="mx-auto max-w-5xl px-4 md:px-6">
                     <div className="mx-auto max-w-2xl text-center">
-                        <h1 className="text-balance text-3xl font-bold md:text-4xl lg:text-5xl leading-tight">
-                            <TextEffect preset="fade-in-blur" speedSegment={0.3}>
-                                Deploy Your Industrial Sales Engine
-                            </TextEffect>
-                        </h1>
-                        <div className="text-muted-foreground mt-6 text-base md:text-lg px-2">
-                            <AnimatedGroup variants={transitionVariants}>
-                                Unmask your website's hidden pipeline. A fractional investment to secure total visibility into the mining, manufacturing, and logistics firms visiting your site—where landing a single contract pays for the engine multiple times over.
-                            </AnimatedGroup>
-                        </div>
+                        <TextEffect
+                            preset="fade-in-blur"
+                            speedSegment={0.3}
+                            as="h1"
+                            className="text-balance text-3xl font-bold md:text-4xl lg:text-5xl leading-tight">
+                            Deploy Your Industrial Discoverability & Lead Engine
+                        </TextEffect>
+                        <TextEffect
+                            per="line"
+                            preset="fade-in-blur"
+                            speedSegment={0.3}
+                            delay={0.5}
+                            as="p"
+                            className="text-muted-foreground mt-6 text-base md:text-lg px-2 max-w-2xl mx-auto leading-relaxed">
+                            Be found on Google, cited in AI search engines, and converted into verified pipeline. A high-ROI partnership for SADC mining, manufacturing, and logistics leaders—where securing a single tender or equipment order pays for the engagement multiple times over.
+                        </TextEffect>
                     </div>
 
                     <div className="mt-12 md:mt-20">
@@ -47,14 +53,14 @@ export default function Pricing() {
                                 <div className="p-8 md:p-12 text-center">
                                     <div className="text-xl md:text-2xl font-semibold italic">
                                         <AnimatedGroup variants={transitionVariants}>
-                                            AuraWorks Annual Engine
+                                            AuraWorks Growth Partnership
                                         </AnimatedGroup>
                                     </div>
 
                                     <AnimatedGroup variants={transitionVariants}>
                                         {/* FIX: break-words and responsive text size */}
                                         <div className="mt-3 text-[10px] md:text-sm text-muted-foreground uppercase tracking-[0.2em] break-words">
-                                            Corporate Identity Resolution
+                                            SEO, GEO & Intelligence Engine
                                         </div>
                                     </AnimatedGroup>
 
@@ -80,7 +86,7 @@ export default function Pricing() {
 
                                     <div className="text-muted-foreground mt-10 text-[11px] md:text-xs leading-relaxed max-w-[280px] md:max-w-xs mx-auto">
                                         <TextEffect preset="fade-in-blur" speedSegment={0.3}>
-                                            Annual License includes: Custom tracking script, juristic identity resolution database query access, and weekly lead digests.
+                                            Annual Partnership includes: Full-scope technical SEO, Generative Engine Optimization (GEO), AuraWorks Intelligence Engine integration, and weekly lead digests.
                                         </TextEffect>
                                     </div>
                                 </div>
@@ -90,11 +96,14 @@ export default function Pricing() {
                                     <AnimatedGroup variants={transitionVariants} className="space-y-8">
                                         <ul role="list" className="space-y-5">
                                             {[
-                                                'Real-time corporate identity resolution for SADC traffic',
-                                                'Weekly unmasked hot lead digests delivered straight to your inbox',
-                                                'Direct contact paths (validated department emails & switchboards)',
-                                                'POPIA-compliant juristic-first data resolution',
-                                                'Spec-sheet download and CAD technical asset tracking'
+                                                'Top-tier Google search ranking for SADC industrial keywords',
+                                                'Generative Engine Optimization (GEO) for ChatGPT, Perplexity & Gemini citability',
+                                                'Turn key high-performance website engineering or existing site upgrade',
+                                                'Proprietary AuraWorks Intelligence Engine visitor de-anonymization',
+                                                'Weekly unmasked corporate lead digests delivered straight to your inbox',
+                                                'Direct decision-maker contact paths (validated executive emails & switchboards)',
+                                                'Spec-sheet and CAD download technical intent tracking',
+                                                '100% POPIA-compliant juristic-first corporate data resolution'
                                             ].map((item, index) => (
                                                 <li key={index} className="flex items-start gap-3">
                                                     <Check className="size-4 text-primary mt-1 shrink-0" />
@@ -103,7 +112,7 @@ export default function Pricing() {
                                             ))}
                                         </ul>
                                         <div className="text-muted-foreground text-xs md:text-sm leading-relaxed border-t pt-8 italic">
-                                            &quot;A single unmasked contract pays for the annual engine. Designed for firms that measure success in multi-million Rand purchase orders, not clicks.&quot;
+                                            &quot;Designed for B2B industrial firms that measure success in multi-million Rand purchase orders, not clicks. Be found by search engines, cited by AI, and chosen by buyers.&quot;
                                         </div>
                                     </AnimatedGroup>
                                 </div>

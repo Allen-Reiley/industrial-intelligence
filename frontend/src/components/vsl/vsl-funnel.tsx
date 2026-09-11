@@ -177,13 +177,13 @@ export default function VSLFunnel() {
       <div className="w-full max-w-4xl flex flex-col items-center z-10 space-y-8 mt-12 md:mt-0">
         <div className="text-center space-y-3">
           <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            AuraWorks Sales Intelligence
+            AuraWorks Discoverability & Intelligence
           </span>
           <h1 className="text-3xl md:text-5xl font-semibold bg-gradient-to-r from-zinc-900 via-zinc-700 to-zinc-500 bg-clip-text text-transparent leading-tight tracking-tight">
             How It Works
           </h1>
           <p className="text-sm md:text-base text-muted-foreground max-w-lg mx-auto">
-            Learn how we de-anonymize network traffic into verified B2B prospects in South Africa.
+            Learn how AuraWorks unites search dominance and AI engine citability with proprietary visitor intelligence to convert anonymous industrial traffic into pipeline.
           </p>
         </div>
 

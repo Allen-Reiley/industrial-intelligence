@@ -1,9 +1,9 @@
 // @/components/sections/about/values.tsx
 export function ValuesSection() {
     const values = [
-        { label: "01", title: "Precision Over Volume", desc: "We would rather deliver 5 unmasked enterprise prospects than 5,000 anonymous website clicks." },
-        { label: "02", title: "Juristic-First Compliance", desc: "We prioritize clean corporate resolution to ensure your sales team operates fully within South African POPIA regulations." },
-        { label: "03", title: "SADC Industrial Focus", desc: "We specialize exclusively in the South African heavy industry sectors, speaking the language of spec-sheets, RFPs, and tenders." }
+        { label: "01", title: "Discoverability With Purpose", desc: "We combine dominant Google search positioning with Generative Engine Optimization (GEO) so your business is cited when buyers query AI models." },
+        { label: "02", title: "Proprietary Conversion Engine", desc: "Traffic without capture is lost pipeline. Our intelligence engine de-anonymizes visiting accounts and tracks technical intent, turning presence into revenue." },
+        { label: "03", title: "Juristic-First Compliance", desc: "We operate exclusively on corporate entity identification, ensuring your commercial team conducts outbound prospecting in 100% compliance with South African POPIA." }
     ]
 
     return (

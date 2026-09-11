@@ -4,15 +4,16 @@ import { HeroHeader } from '@/components/header/header';
 import Footer from '@/components/footer/footer';
 import { Button } from '@/components/ui/button';
 import { Mail, MessageSquare, LifeBuoy, ArrowRight, ShieldCheck, Phone, MapPin, Building } from 'lucide-react';
+import { TextEffect } from '@/components/ui/text-effect';
 
 export const metadata: Metadata = {
-  title: 'Contact Corporate Office & Technical Support',
+  title: 'Contact Corporate Office & Solutions Architecture Desk',
   description: 'Connect directly with the AuraWorks technical integration engineering team or executive leadership in Johannesburg, South Africa.',
   alternates: {
     canonical: '/contact',
   },
   openGraph: {
-    title: 'Contact Corporate Office & Technical Support | AuraWorks',
+    title: 'Contact Corporate Office & Solutions Architecture Desk | AuraWorks',
     description: 'Connect directly with the AuraWorks technical integration engineering team or executive leadership in Johannesburg, South Africa.',
     url: 'https://auraworks.co.za/contact',
     type: 'website',
@@ -33,12 +34,22 @@ export default function ContactPage() {
         <div className="mx-auto max-w-5xl px-6">
           <div className="max-w-3xl">
             <span className="text-primary font-mono text-xs uppercase tracking-wider font-semibold">Direct Communication Channels</span>
-            <h1 className="text-4xl font-bold tracking-tight sm:text-6xl text-balance mt-3">
+            <TextEffect
+              preset="fade-in-blur"
+              speedSegment={0.3}
+              as="h1"
+              className="text-4xl font-bold tracking-tight sm:text-6xl text-balance mt-3">
               Connect With AuraWorks
-            </h1>
-            <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-              Whether you are an industrial enterprise looking to evaluate traffic resolution or an active cohort partner needing edge tracking support, our Johannesburg engineering desk is ready.
-            </p>
+            </TextEffect>
+            <TextEffect
+              per="line"
+              preset="fade-in-blur"
+              speedSegment={0.3}
+              delay={0.5}
+              as="p"
+              className="mt-6 text-lg text-muted-foreground leading-relaxed">
+              Whether you are looking to establish dominant Google search rankings, achieve citability across AI engines, or deploy the AuraWorks Intelligence Engine to capture high-intent accounts, our Johannesburg engineering desk is ready.
+            </TextEffect>
           </div>
 
           {/* Contact Cards Grid */}
@@ -50,7 +61,7 @@ export default function ContactPage() {
                 </div>
                 <h2 className="text-xl font-bold">Technical Support Desk</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Fast-lane assistance for edge tracking script integration, CORS policies, CRM webhooks, and data privacy auditing.
+                  Assistance with technical SEO architecture, structured data schemas, edge tracking script integration, and CRM lead feeds.
                 </p>
               </div>
               <div className="mt-8">
@@ -69,7 +80,7 @@ export default function ContactPage() {
                 </div>
                 <h2 className="text-xl font-bold">Commercial Sales & Demos</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Speak directly with an enterprise solutions architect about deploying AuraWorks across your industrial website.
+                  Speak directly with an enterprise solutions architect about turn key website engineering, existing site upgrades, and visitor capture.
                 </p>
               </div>
               <div className="mt-8">
@@ -88,7 +99,7 @@ export default function ContactPage() {
                 </div>
                 <h2 className="text-xl font-bold">Executive Office</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Inquiries for partnership, investor relations, or direct communication with the founder, Reitumetse Sethabela.
+                  Inquiries for enterprise growth partnerships, strategic collaborations, and direct communication with founder Reitumetse Sethabela.
                 </p>
               </div>
               <div className="mt-8">
