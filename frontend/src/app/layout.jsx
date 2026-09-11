@@ -22,7 +22,7 @@ export const viewport = {
 };
 
 export const metadata = {
-  metadataBase: new URL("https://auraworks.co.za"),
+  metadataBase: new URL("https://www.auraworks.co.za"),
   title: {
     default: "AuraWorks | B2B SEO, Generative Engine Optimization & Lead Intelligence",
     template: "%s | AuraWorks",
@@ -57,13 +57,13 @@ export const metadata = {
     ],
   },
   manifest: "/manifest.json",
-  authors: [{ name: "Reitumetse Sethabela", url: "https://auraworks.co.za" }],
+  authors: [{ name: "Reitumetse Sethabela", url: "https://www.auraworks.co.za" }],
   creator: "Reitumetse Sethabela",
   publisher: "AuraWorks (Pty) Ltd",
   openGraph: {
     title: "AuraWorks | B2B SEO, Generative Engine Optimization & Lead Capture",
     description: "Be found. Be cited. Be chosen. Dominate Google search, get cited in AI search engines (ChatGPT, Perplexity, Gemini), and convert anonymous industrial traffic into pipeline.",
-    url: "https://auraworks.co.za",
+    url: "https://www.auraworks.co.za",
     siteName: "AuraWorks",
     locale: "en_ZA",
     type: "website",
@@ -101,11 +101,11 @@ const jsonLd = {
   "@graph": [
     {
       "@type": "Organization",
-      "@id": "https://auraworks.co.za/#organization",
-      "name": "AuraWorks",
-      "legalName": "AuraWorks (Pty) Ltd",
-      "url": "https://auraworks.co.za",
-      "logo": "https://auraworks.co.za/logo.svg",
+      "@id": "https://www.auraworks.co.za/#organization",
+      "name": "AuraWorks (Pty) Ltd",
+      "alternateName": "AuraWorks",
+      "url": "https://www.auraworks.co.za",
+      "logo": "https://www.auraworks.co.za/images/logo.png",
       "description": "Modern organic discoverability and lead-capture partner for industrial and B2B companies across South Africa and SADC, providing technical SEO, Generative Engine Optimization (GEO), and proprietary visitor identity intelligence.",
       "address": {
         "@type": "PostalAddress",
@@ -114,32 +114,40 @@ const jsonLd = {
         "addressCountry": "ZA"
       },
       "areaServed": [
-        "South Africa",
-        "SADC"
+        {
+          "@type": "Country",
+          "name": "South Africa"
+        },
+        {
+          "@type": "AdministrativeArea",
+          "name": "SADC Region"
+        }
       ],
       "knowsAbout": [
-        "Search Engine Optimization",
-        "Generative Engine Optimization",
-        "B2B Lead Generation",
-        "Industrial Marketing",
-        "Web Development",
-        "Visitor Identity Resolution"
+        "B2B SEO",
+        "Generative Engine Optimization (GEO)",
+        "Visitor De-anonymization",
+        "POPIA Compliance",
+        "Industrial Sales Intelligence",
+        "Next.js Web Architecture"
       ],
       "founder": {
         "@type": "Person",
+        "@id": "https://www.auraworks.co.za/#founder",
         "name": "Reitumetse Sethabela",
-        "jobTitle": "Founder & Systems Architect"
+        "jobTitle": "Founder & Managing Director"
       },
       "sameAs": [
-        "https://www.linkedin.com/company/auraworks"
+        "https://www.linkedin.com/company/auraworks",
+        "https://github.com/auraworks"
       ]
     },
     {
       "@type": "ProfessionalService",
-      "@id": "https://auraworks.co.za/#service",
+      "@id": "https://www.auraworks.co.za/#service",
       "name": "AuraWorks Organic Discoverability & Lead Capture Services",
       "provider": {
-        "@id": "https://auraworks.co.za/#organization"
+        "@id": "https://www.auraworks.co.za/#organization"
       },
       "areaServed": [
         "South Africa",
@@ -155,12 +163,12 @@ const jsonLd = {
     },
     {
       "@type": "SoftwareApplication",
-      "@id": "https://auraworks.co.za/#software",
+      "@id": "https://www.auraworks.co.za/#software",
       "name": "AuraWorks Intelligence Engine",
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "All",
       "creator": {
-        "@id": "https://auraworks.co.za/#organization"
+        "@id": "https://www.auraworks.co.za/#organization"
       },
       "offers": {
         "@type": "Offer",
@@ -172,12 +180,12 @@ const jsonLd = {
     },
     {
       "@type": "WebSite",
-      "@id": "https://auraworks.co.za/#website",
-      "url": "https://auraworks.co.za",
+      "@id": "https://www.auraworks.co.za/#website",
+      "url": "https://www.auraworks.co.za",
       "name": "AuraWorks",
       "description": "B2B Organic Discoverability, Generative Engine Optimization (GEO) & Lead Capture in South Africa and SADC",
       "publisher": {
-        "@id": "https://auraworks.co.za/#organization"
+        "@id": "https://www.auraworks.co.za/#organization"
       },
       "inLanguage": "en-ZA"
     }

@@ -29,12 +29,14 @@ export default function robots(): MetadataRoute.Robots {
           'Google-Extended',
           'ClaudeBot',
           'anthropic-ai',
+          'Amazonbot',
         ],
         allow: '/',
         disallow: disallowedPaths,
       },
     ],
-    sitemap: 'https://auraworks.co.za/sitemap.xml',
+    sitemap: 'https://www.auraworks.co.za/sitemap.xml',
+    host: 'https://www.auraworks.co.za',
   };
 }
 

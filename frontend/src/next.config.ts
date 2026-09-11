@@ -20,6 +20,17 @@ const nextConfig: NextConfig = {
     // !! WARN !!
     ignoreBuildErrors: true,
   },
+
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'auraworks.co.za' }],
+        destination: 'https://www.auraworks.co.za/:path*',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

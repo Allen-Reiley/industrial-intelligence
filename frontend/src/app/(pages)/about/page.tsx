@@ -7,15 +7,18 @@ import { HeroHeader } from "@/components/header/header";
 import Footer from "@/components/footer/footer";
 
 export const metadata: Metadata = {
-  title: 'Our Mission: Discoverability & Pipeline Conversion',
-  description: 'Learn why AuraWorks was founded: bridging the gap between B2B industrial search visibility, AI citability, and qualified sales pipeline across South Africa and SADC.',
+  title: {
+    absolute: 'About AuraWorks | Industrial Sales Intelligence',
+  },
+  description: 'Headquartered in Gauteng, AuraWorks engineers high-performance web systems and Generative Engine Optimization for SADC enterprises. Partner with us.',
   alternates: {
     canonical: '/about',
   },
   openGraph: {
-    title: 'Our Mission: Discoverability & Pipeline Conversion | AuraWorks',
-    description: 'Engineering-driven organic discoverability, Generative Engine Optimization (GEO), and proprietary visitor intelligence for heavy industry.',
-    url: 'https://auraworks.co.za/about',
+    title: 'About AuraWorks | Industrial Sales Intelligence',
+    description: 'Headquartered in Gauteng, AuraWorks engineers high-performance web systems and Generative Engine Optimization for SADC enterprises. Partner with us.',
+    url: 'https://www.auraworks.co.za/about',
+    type: 'website',
   },
 };
 

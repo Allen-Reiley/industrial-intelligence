@@ -7,15 +7,17 @@ import { Building2, ShieldCheck, ArrowRight, BarChart3, Lock, CheckCircle2 } fro
 import { TextEffect } from '@/components/ui/text-effect';
 
 export const metadata: Metadata = {
-  title: 'Customer Proof & Industrial Pipeline Benchmarks',
-  description: 'Real-world results: how South African heavy manufacturers, mining suppliers, and logistics operators convert organic discoverability and web traffic into high-value contracts.',
+  title: {
+    absolute: 'Client Case Studies & Pipeline Results | AuraWorks',
+  },
+  description: 'See how South African engineering, mining, and industrial suppliers unlock 4.8x enterprise pipeline with AuraWorks discoverability. Explore proof.',
   alternates: {
     canonical: '/customers',
   },
   openGraph: {
-    title: 'Customer Proof & Industrial Pipeline Benchmarks | AuraWorks',
-    description: 'How South African heavy manufacturers, mining suppliers, and logistics operators convert organic discoverability and web traffic into high-value contracts.',
-    url: 'https://auraworks.co.za/customers',
+    title: 'Client Case Studies & Pipeline Results | AuraWorks',
+    description: 'See how South African engineering, mining, and industrial suppliers unlock 4.8x enterprise pipeline with AuraWorks discoverability. Explore proof.',
+    url: 'https://www.auraworks.co.za/customers',
     type: 'website',
   },
 };
