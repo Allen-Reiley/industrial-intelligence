@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils'
 
 const verticals = [
     {
-        title: "Turn key High-Performance Websites",
+        title: "High-Performance Website Builds",
         problem: "Traditional agency websites are built as static digital brochures. They lack deep technical SEO architecture, remain invisible to generative AI engines, and leak 98% of visiting industrial buyers because there is no built-in conversion technology.",
         solution: "We engineer a high-speed web presence from the ground up with built-in technical SEO, Generative Engine Optimization (GEO) structured data, and the AuraWorks Intelligence Engine embedded as a native conversion layer—transforming your website into an active pipeline asset.",
         stats: "Includes: Modern web engineering, GEO entity architecture, built-in visitor intelligence."

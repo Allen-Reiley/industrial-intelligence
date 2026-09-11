@@ -273,7 +273,7 @@ export default function GenerativeEngineOptimizationGuidePage() {
               </p>
               <ul className="space-y-3">
                 <li>
-                  <strong>Turn Key Next.js Edge Architecture:</strong> Deploying on Next.js 15 provides sub-second edge rendering that satisfies Google&apos;s Core Web Vitals while simultaneously presenting clean, un-obfuscated semantic markup to LLM crawlers.
+                  <strong>High-Performance Next.js Edge Architecture:</strong> Deploying on Next.js 15 provides sub-second edge rendering that satisfies Google&apos;s Core Web Vitals while simultaneously presenting clean, un-obfuscated semantic markup to LLM crawlers.
                 </li>
                 <li>
                   <strong>Unified Entity Knowledge Graph:</strong> Implementing comprehensive Schema.org definitions (Organization, ProfessionalService, Product, FAQPage, TechArticle) that establish undisputed authority in both Google&apos;s Knowledge Graph and external LLM vector databases.

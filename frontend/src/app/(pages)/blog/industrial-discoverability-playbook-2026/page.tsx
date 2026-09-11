@@ -326,7 +326,7 @@ export default function IndustrialDiscoverabilityPlaybookPage() {
                 4. The Engineering Solution: Next.js 15 Edge Architecture
               </h2>
               <p>
-                Modern B2B discoverability demands moving away from monolithic legacy architectures toward distributed edge-rendered web platforms. AuraWorks builds turn key digital platforms on Next.js 15 App Router, distributed globally and locally across edge points of presence in Johannesburg and Cape Town.
+                Modern B2B discoverability demands moving away from monolithic legacy architectures toward distributed edge-rendered web platforms. AuraWorks engineers high-performance digital platforms on Next.js 15 App Router, distributed globally and locally across edge points of presence in Johannesburg and Cape Town.
               </p>
               <p>
                 The architectural advantages of this modern stack include:
@@ -400,7 +400,7 @@ export default function IndustrialDiscoverabilityPlaybookPage() {
                 6. Unmasking the 98%: POPIA-Compliant Visitor De-Anonymization
               </h2>
               <p>
-                The ultimate completion of the industrial discoverability loop is forensic lead capture. Once your turn key Next.js platform is ranking on Google and cited in AI Overviews, qualified enterprise traffic begins flowing. But as established, plant engineers rarely submit public contact forms.
+                The ultimate completion of the industrial discoverability loop is forensic lead capture. Once your Next.js platform is ranking on Google and cited in AI Overviews, qualified enterprise traffic begins flowing. But as established, plant engineers rarely submit public contact forms.
               </p>
               <p>
                 Using <strong>aura.js</strong>, our proprietary visitor intelligence engine, industrial firms unmask the juristic identity of visiting companies deterministically. By mapping autonomous system numbers (ASNs), corporate IP telemetry, and commercial network blocks against South African business registries, aura.js alerts sales teams in real time:
@@ -435,7 +435,7 @@ export default function IndustrialDiscoverabilityPlaybookPage() {
                     <span className="text-primary font-mono">Days 1 – 30:</span> Technical Remediation & Next.js Deployment
                   </h3>
                   <p className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                    Deploy turn key Next.js edge platform with sub-200ms latency. Configure 301 redirect trees to preserve legacy domain authority. Inject Master Organization schemas and install aura.js telemetry snippet.
+                    Deploy Next.js edge platform with sub-200ms latency. Configure 301 redirect trees to preserve legacy domain authority. Inject Master Organization schemas and install aura.js telemetry snippet.
                   </p>
                 </div>
 

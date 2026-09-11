@@ -5,13 +5,13 @@ export const metadata: Metadata = {
   title: {
     absolute: 'B2B SEO & Lead Intelligence Pricing | AuraWorks',
   },
-  description: 'Predictable flat-rate B2B discoverability packages. Turn key Next.js web platforms, technical SEO, and real-time visitor intelligence.',
+  description: 'Predictable flat-rate B2B discoverability packages. High-performance Next.js web platforms, technical SEO, and real-time visitor intelligence.',
   alternates: {
     canonical: '/pricing',
   },
   openGraph: {
     title: 'B2B SEO & Lead Intelligence Pricing | AuraWorks',
-    description: 'Predictable flat-rate B2B discoverability packages. Turn key Next.js web platforms, technical SEO, and real-time visitor intelligence.',
+    description: 'Predictable flat-rate B2B discoverability packages. High-performance Next.js web platforms, technical SEO, and real-time visitor intelligence.',
     url: 'https://www.auraworks.co.za/pricing',
     type: 'website',
   },

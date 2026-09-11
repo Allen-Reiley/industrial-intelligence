@@ -256,7 +256,7 @@ export default function BlogIndexPage() {
           <div className="mt-20 text-center border rounded-3xl p-8 sm:p-12 bg-muted/20">
             <h3 className="text-2xl font-bold">Ready to Upgrade Your Industrial Discoverability?</h3>
             <p className="text-sm sm:text-base text-muted-foreground mt-3 max-w-2xl mx-auto leading-relaxed">
-              Don&apos;t wait for your competitors to capture AI search citations and de-anonymize corporate traffic. AuraWorks delivers turn key Next.js platforms, top-tier technical SEO, and proprietary juristic visitor telemetry.
+              Don&apos;t wait for your competitors to capture AI search citations and de-anonymize corporate traffic. AuraWorks delivers high-performance Next.js platforms, top-tier technical SEO, and proprietary juristic visitor telemetry.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
               <Button asChild size="lg" className="rounded-xl px-8 font-semibold shadow-lg">

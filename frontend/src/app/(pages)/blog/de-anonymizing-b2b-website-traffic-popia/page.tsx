@@ -262,7 +262,7 @@ export default function DeAnonymizingTrafficPage() {
                 De-anonymization data is useless if trapped in a siloed dashboard that commercial sales teams check once a month. The true power of visitor intelligence is realized when actionable signals reach sales engineers within minutes of a buying event.
               </p>
               <p>
-                AuraWorks provides turnkey and custom webhook integrations supporting three distinct alert distribution models:
+                AuraWorks provides pre-built and custom webhook integrations supporting three distinct alert distribution models:
               </p>
 
               <div className="space-y-3 not-prose my-6">

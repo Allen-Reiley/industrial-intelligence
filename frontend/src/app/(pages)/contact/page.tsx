@@ -80,7 +80,7 @@ export default function ContactPage() {
                 </div>
                 <h2 className="text-xl font-bold">Commercial Sales & Demos</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Speak directly with an enterprise solutions architect about turn key website engineering, existing site upgrades, and visitor capture.
+                  Speak directly with an enterprise solutions architect about new website engineering, existing site upgrades, and visitor capture.
                 </p>
               </div>
               <div className="mt-8">

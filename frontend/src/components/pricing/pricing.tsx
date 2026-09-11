@@ -46,7 +46,7 @@ const pricingTiers: PricingTier[] = [
         description: 'Establish high-velocity organic search visibility, sub-second edge performance, and foundational visitor de-anonymization for single-vertical industrial suppliers.',
         idealFor: 'Mid-sized manufacturers, regional engineering service providers, and specialized distributors looking to outrank legacy competitors in local South African hubs.',
         highlights: [
-            'Turn key Next.js 15 edge web platform or existing site acceleration',
+            'Next.js 15 edge web platform or existing site acceleration',
             'Sub-300ms Time-to-First-Byte (TTFB) and 100/100 Core Web Vitals guarantee',
             'Targeted B2B SEO architecture covering up to 45 high-intent industrial keywords',
             'aura.js juristic visitor identification (up to 500 corporate accounts unmasked/mo)',
@@ -68,7 +68,7 @@ const pricingTiers: PricingTier[] = [
         description: 'Complete organic dominance across traditional Google SERPs and modern generative AI engines (ChatGPT, Perplexity, Gemini) paired with uncapped corporate visitor forensics.',
         idealFor: 'Established mining equipment OEMs, pump & valve manufacturers, commercial logistics operators, and fabrication specialists commanding national market share.',
         highlights: [
-            'Turn key Next.js enterprise architecture with dedicated dynamic edge routing',
+            'Next.js enterprise architecture with dedicated dynamic edge routing',
             'Generative Engine Optimization (GEO) knowledge graph and entity schema deployment',
             'Active citation engineering for ChatGPT Search, Perplexity AI, and Google AI Overviews',
             'Uncapped aura.js juristic corporate identification with forensic session playback',
@@ -123,8 +123,8 @@ const comparisonMatrix: MatrixCategory[] = [
         rows: [
             {
                 feature: 'Modern Web Framework & Hosting',
-                growth: 'Turn key Next.js 15 Edge',
-                leader: 'Turn key Next.js 15 Edge',
+                growth: 'Next.js 15 Edge Platform',
+                leader: 'Next.js 15 Edge Platform',
                 enterprise: 'Multi-Region Edge Cluster'
             },
             {
@@ -140,7 +140,7 @@ const comparisonMatrix: MatrixCategory[] = [
                 enterprise: '100% Passing Score'
             },
             {
-                feature: 'Turn key Platform Migration Timeline',
+                feature: 'Platform Migration Timeline',
                 growth: '21 Business Days',
                 leader: '14 Business Days',
                 enterprise: '10 Business Days (Dedicated Sprint)'
@@ -281,7 +281,7 @@ const comparisonMatrix: MatrixCategory[] = [
 const commercialFaqs = [
     {
         question: 'What is the contractual commitment structure and cancelation policy?',
-        answer: 'All AuraWorks enterprise engagements are structured on either a flexible month-to-month retainer or an annual partnership agreement with an upfront 15% rate advantage. Unlike traditional digital marketing agencies that lock clients into multi-year contracts with opaque billable hours, our retainers require a standard 60-day written notice after the initial 90-day technical sprint. The initial 90-day sprint ensures sufficient runway to deploy our turn key Next.js infrastructure, crawl and index proprietary technical schemas, establish generative AI citations, and calibrate the aura.js juristic telemetry engine for your target vertical.'
+        answer: 'All AuraWorks enterprise engagements are structured on either a flexible month-to-month retainer or an annual partnership agreement with an upfront 15% rate advantage. Unlike traditional digital marketing agencies that lock clients into multi-year contracts with opaque billable hours, our retainers require a standard 60-day written notice after the initial 90-day technical sprint. The initial 90-day sprint ensures sufficient runway to deploy our Next.js infrastructure, crawl and index proprietary technical schemas, establish generative AI citations, and calibrate the aura.js juristic telemetry engine for your target vertical.'
     },
     {
         question: 'How does AuraWorks indemnify and protect our company under POPIA regulations?',
@@ -289,7 +289,7 @@ const commercialFaqs = [
     },
     {
         question: 'What is the onboarding timeline and SLA for launching our Next.js platform?',
-        answer: 'For clients selecting our turn key Next.js web platform, standard deployment requires between 14 and 21 business days from contract execution. During this period, our engineering team extracts and migrates existing content, refactors outdated schemas into high-fidelity JSON-LD knowledge graphs, optimizes technical spec-sheets and CAD assets for sub-second edge delivery, and configures automated 301 redirects to eliminate broken legacy URLs. For clients retaining their existing corporate web infrastructure, our aura.js visitor intelligence snippet and edge proxy can be integrated via Google Tag Manager or direct header injection within 48 business hours.'
+        answer: 'For clients commissioning a full Next.js web platform, standard deployment requires between 14 and 21 business days from contract execution. During this period, our engineering team extracts and migrates existing content, refactors outdated schemas into high-fidelity JSON-LD knowledge graphs, optimizes technical spec-sheets and CAD assets for sub-second edge delivery, and configures automated 301 redirects to eliminate broken legacy URLs. For clients retaining their existing corporate web infrastructure, our aura.js visitor intelligence snippet and edge proxy can be integrated via Google Tag Manager or direct header injection within 48 business hours.'
     },
     {
         question: 'How does Generative Engine Optimization (GEO) differ from traditional monthly SEO deliverables?',
@@ -297,7 +297,7 @@ const commercialFaqs = [
     },
     {
         question: 'We already run an established website. Can we partner without doing a full rebuild?',
-        answer: 'Yes. While our turn key Next.js web architecture provides the fastest route to 100/100 Core Web Vitals and edge latency under 200ms, our Industrial Category Leader and Enterprise retainers can be deployed on top of existing corporate WordPress, Drupal, or custom frameworks. In this upgrade configuration, we install a lightweight edge acceleration proxy, deploy our schema injection pipelines, and embed the aura.js tracking script directly. Our solutions engineering team conducts a complimentary technical audit prior to onboarding to verify whether your existing CMS can support the required schema depth.'
+        answer: 'Yes. While our dedicated Next.js web architecture provides the fastest route to 100/100 Core Web Vitals and edge latency under 200ms, our Industrial Category Leader and Enterprise retainers can be deployed on top of existing corporate WordPress, Drupal, or custom frameworks. In this upgrade configuration, we install a lightweight edge acceleration proxy, deploy our schema injection pipelines, and embed the aura.js tracking script directly. Our solutions engineering team conducts a complimentary technical audit prior to onboarding to verify whether your existing CMS can support the required schema depth.'
     },
     {
         question: 'Which CRM, email, and messaging platforms support real-time lead dispatches?',
@@ -356,9 +356,15 @@ export default function Pricing() {
                             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
                             B2B SEO, Generative AI & Lead Intelligence Retainers
                         </TextEffect>
-                        <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                            Stop paying legacy digital agencies for abstract billable hours and vanity impressions. AuraWorks delivers turn key Next.js edge platforms, top-tier Google rankings, generative AI citability, and proprietary juristic visitor de-anonymization engineered exclusively for South African and SADC heavy industry.
-                        </p>
+                        <TextEffect
+                            preset="fade-in-blur"
+                            per="line"
+                            delay={0.4}
+                            speedSegment={0.3}
+                            as="p"
+                            className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+                            Stop paying legacy digital agencies for abstract billable hours and vanity impressions. AuraWorks delivers high-performance Next.js edge platforms, top-tier Google rankings, generative AI citability, and proprietary juristic visitor de-anonymization engineered exclusively for South African and SADC heavy industry.
+                        </TextEffect>
 
                         {/* Billing Switcher */}
                         <div className="pt-6 flex items-center justify-center gap-3">
@@ -749,7 +755,7 @@ export default function Pricing() {
                                 Frequently Asked Commercial & Governance Questions
                             </h2>
                             <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
-                                Clear, binding answers on onboarding timelines, POPIA indemnification, contract structures, and our turn key Next.js technology stack.
+                                Clear, binding answers on onboarding timelines, POPIA indemnification, contract structures, and our Next.js technology stack.
                             </p>
                         </div>
 
