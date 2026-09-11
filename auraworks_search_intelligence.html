@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraWorks | B2B Industrial Search, GEO & Backlink Intelligence</title>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #090d16;
+      --bg-secondary: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-hover: #273549;
+      --bg-glass: rgba(15, 23, 42, 0.8);
+      --border-color: #334155;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-primary: #3b82f6;
+      --accent-primary-hover: #2563eb;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-purple: #8b5cf6;
+      --accent-rose: #f43f5e;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.25);
+      --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    [data-theme="light"] {
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f1f5f9;
+      --bg-glass: rgba(255, 255, 255, 0.85);
+      --border-color: #e2e8f0;
+      --border-subtle: rgba(0, 0, 0, 0.06);
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07);
+      --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      padding-bottom: 80px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    header {
+      background: var(--bg-glass);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 16px 0;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 900;
+      font-size: 20px;
+      box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4);
+    }
+
+    .brand-text h1 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-text p {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+    }
+
+    .controls-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--text-muted);
+    }
+
+    .btn-primary {
+      background: var(--accent-primary);
+      color: #fff;
+      border: 1px solid var(--accent-primary);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-primary-hover);
+    }
+
+    .currency-pill {
+      display: flex;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 2px;
+    }
+
+    .currency-btn {
+      padding: 6px 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .currency-btn.active {
+      background: var(--accent-primary);
+      color: #fff;
+    }
+
+    .market-badge-bar {
+      margin: 24px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+    }
+
+    .market-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .tag-blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .tag-emerald { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .tag-cyan { background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3); }
+    .tag-purple { background: rgba(139, 92, 246, 0.15); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.3); }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .kpi-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--card-accent, var(--accent-primary));
+    }
+
+    .kpi-label {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .kpi-value {
+      font-size: 2.1rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .kpi-subtext {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+    }
+
+    .kpi-badge {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    .kpi-badge.success { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .kpi-badge.highlight { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .kpi-badge.purple { background: rgba(139, 92, 246, 0.2); color: #c084fc; }
+
+    .gsc-banner {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.95));
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 32px;
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+
+    @media (max-width: 768px) {
+      .gsc-banner { flex-direction: column; align-items: flex-start; }
+    }
+
+    .gsc-icon-box {
+      width: 60px;
+      height: 60px;
+      border-radius: var(--radius-md);
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #60a5fa;
+    }
+
+    .gsc-content h3 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .gsc-content p {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .gsc-stat-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .gsc-pill {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8125rem;
+    }
+
+    .gsc-pill strong { color: var(--accent-cyan); }
+
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 32px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-subtitle {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      margin-top: 3px;
+    }
+
+    .layout-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    @media (max-width: 960px) {
+      .layout-2col { grid-template-columns: 1fr; }
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      width: 100%;
+    }
+
+    /* Comparison Matrix */
+    .table-responsive {
+      overflow-x: auto;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+      text-align: left;
+    }
+
+    thead th {
+      background: var(--bg-card);
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    tbody tr:hover {
+      background: var(--bg-card-hover);
+    }
+
+    tbody td {
+      padding: 14px 16px;
+    }
+
+    .badge-intent {
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .intent-geo { background: rgba(139, 92, 246, 0.15); color: #c084fc; }
+    .intent-ind { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .intent-tech { background: rgba(6, 182, 212, 0.15); color: #22d3ee; }
+    .intent-lead { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+
+    .table-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+      background: var(--bg-card);
+      padding: 4px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+    }
+
+    .tab-btn {
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background: var(--accent-primary);
+      color: white;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      min-width: 260px;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 8px 12px 8px 36px;
+      font-size: 0.8125rem;
+      color: var(--text-primary);
+      outline: none;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Simulator */
+    .simulator-card {
+      background: linear-gradient(145deg, var(--bg-secondary), rgba(30, 41, 59, 0.85));
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      border-radius: var(--radius-xl);
+      padding: 32px;
+      margin-bottom: 36px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .sim-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 32px;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 960px) {
+      .sim-grid { grid-template-columns: 1fr; }
+    }
+
+    .slider-group {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .slider-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .slider-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .slider-value-display {
+      font-family: var(--font-mono);
+      color: var(--accent-cyan);
+      font-weight: 700;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: var(--border-color);
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent-primary);
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+      border: 2px solid #fff;
+    }
+
+    .sim-results {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .result-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px;
+    }
+
+    .result-box-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .result-box-val {
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+
+    .roi-highlight {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 182, 212, 0.15));
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      text-align: center;
+    }
+
+    .roi-val {
+      font-size: 2.25rem;
+      font-weight: 900;
+      color: #34d399;
+    }
+
+    /* Competitor Card Matrix */
+    .competitor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .comp-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .comp-type-pill {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      width: fit-content;
+      margin-bottom: 10px;
+    }
+
+    .comp-agency { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .comp-saas { background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3); }
+    .comp-aura { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+
+    .comp-name {
+      font-size: 1.05rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .comp-desc {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }
+
+    .comp-meta {
+      font-size: 0.75rem;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+    }
+
+    /* Backlink Channels */
+    .channel-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .channel-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 18px;
+    }
+
+    .channel-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .channel-desc {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    .channel-pricing {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      color: var(--accent-cyan);
+      font-weight: 700;
+    }
+
+    @media print {
+      body { background: white !important; color: black !important; padding: 0; }
+      header, .controls-group, .table-controls, input[type="range"] { display: none !important; }
+      .card, .kpi-card, .simulator-card, .gsc-banner { border: 1px solid #ccc !important; background: white !important; break-inside: avoid; }
+      .kpi-value, .roi-val, .result-box-val { color: black !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Header -->
+  <header>
+    <div class="container header-content">
+      <div class="brand-group">
+        <div class="logo-icon">AW</div>
+        <div class="brand-text">
+          <h1>AuraWorks | SADC B2B Discoverability & Lead Capture Hub</h1>
+          <p>SEO + Generative Engine Optimization (GEO) + Intelligence Engine Audit</p>
+        </div>
+      </div>
+      <div class="controls-group">
+        <div class="currency-pill">
+          <button class="currency-btn active" id="btn-zar" onclick="setCurrency('ZAR')">ZAR (R)</button>
+          <button class="currency-btn" id="btn-usd" onclick="setCurrency('USD')">USD ($)</button>
+        </div>
+        <button class="btn" onclick="toggleTheme()" id="theme-btn" title="Toggle Light/Dark Theme">
+          <span id="theme-icon">☀️</span> <span id="theme-text">Light</span>
+        </button>
+        <button class="btn btn-primary" onclick="window.print()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          Print / PDF
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Market Badge Bar -->
+    <div class="market-badge-bar">
+      <div class="market-tags">
+        <span class="tag tag-blue">📍 Primary Market: South Africa & SADC Region</span>
+        <span class="tag tag-emerald">🏭 Target Verticals: Mining, Engineering, Logistics & Manufacturing</span>
+        <span class="tag tag-purple">🤖 Search Vectors: Google SERP + ChatGPT, Perplexity & Gemini (GEO)</span>
+        <span class="tag tag-cyan">⚡ Proprietary Layer: AuraWorks Intelligence Engine</span>
+      </div>
+      <div style="font-size: 0.8125rem; color: var(--text-muted);">
+        Audit Cycle: <strong>September 2026</strong>
+      </div>
+    </div>
+
+    <!-- KPI Grid -->
+    <section class="kpi-grid">
+      <div class="kpi-card" style="--card-accent: var(--accent-cyan);">
+        <div class="kpi-label">
+          <span>Target B2B Keyword Volume</span>
+          <span class="kpi-badge highlight">SADC Focus</span>
+        </div>
+        <div class="kpi-value">2,850+</div>
+        <div class="kpi-subtext">
+          High-intent procurement, engineering & B2B searches/mo
+        </div>
+      </div>
+
+      <div class="kpi-card" style="--card-accent: var(--accent-purple);">
+        <div class="kpi-label">
+          <span>Generative Engine (GEO) Demand</span>
+          <span class="kpi-badge purple">+48% YoY</span>
+        </div>
+        <div class="kpi-value">840<span style="font-size: 1rem; color: var(--text-muted);"> queries/mo</span></div>
+        <div class="kpi-subtext">
+          Enterprise technical prompts via ChatGPT, Perplexity, Gemini
+        </div>
+      </div>
+
+      <div class="kpi-card" style="--card-accent: var(--accent-emerald);">
+        <div class="kpi-label">
+          <span>Deanonymized Lift Potential</span>
+          <span class="kpi-badge success">4.8x Pipeline</span>
+        </div>
+        <div class="kpi-value">98%</div>
+        <div class="kpi-subtext">
+          Procurement teams browsing spec sheets without form fills
+        </div>
+      </div>
+
+      <div class="kpi-card" style="--card-accent: var(--accent-amber);">
+        <div class="kpi-label">
+          <span>Average Industrial CPC</span>
+          <span class="kpi-badge highlight">Google Search</span>
+        </div>
+        <div class="kpi-value" id="kpi-cpc">R 38.50</div>
+        <div class="kpi-subtext">
+          High-ticket industrial keywords ($2.10 USD avg)
+        </div>
+      </div>
+    </section>
+
+    <!-- Google Search Console Performance & Strategic Narrative -->
+    <section class="gsc-banner">
+      <div class="gsc-icon-box">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      </div>
+      <div class="gsc-content">
+        <h3>Strategic Diagnostic: Unlocking B2B Industrial Discoverability (<code>auraworks.co.za</code>)</h3>
+        <p>
+          Historical GSC query indexing confirms that brand searches (<em>"auraworks"</em>) capture direct attention, but commercial queries for <strong>SADC industrial lead generation</strong>, <strong>B2B SEO</strong>, and <strong>engineering marketing</strong> remain unindexed. By pairing traditional search visibility with <strong>GEO (citability in LLMs)</strong> and deploying the <strong>Intelligence Engine</strong> to capture anonymous corporate buyers, AuraWorks solves the core challenge traditional agencies ignore.
+        </p>
+        <div class="gsc-stat-pills">
+          <div class="gsc-pill">Primary Geo: <strong>Gauteng & SADC Industrial Corridors</strong></div>
+          <div class="gsc-pill">Core Offering: <strong>SEO + GEO + In-Engine Lead Capture</strong></div>
+          <div class="gsc-pill">Uncaptured Commercial Demand: <strong>94.2%</strong></div>
+          <div class="gsc-pill">Compliance Standard: <strong>POPIA Juristic-First Resolution</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Visual Charts: 2-Column Section -->
+    <section class="layout-2col">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Search & Generative Demand Breakdown</h3>
+            <p class="card-subtitle">Distribution of intent across South Africa & SADC B2B buyers</p>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="demandChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Backlink & PR Budget Allocation Model</h3>
+            <p class="card-subtitle">Recommended distribution across trade publications, business media & citations</p>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="backlinkChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Pipeline & Backlink ROI Simulator -->
+    <section class="simulator-card">
+      <div class="sim-header">
+        <h2 style="font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; gap: 10px;">
+          <span>⚡</span> AuraWorks Growth & Pipeline Capture Simulator
+        </h2>
+        <p style="color: var(--text-secondary); font-size: 0.9375rem; margin-top: 4px;">
+          Forecast how combining discoverability (SEO/GEO) with the AuraWorks Intelligence Engine multiplies enterprise pipeline compared to standard agencies.
+        </p>
+      </div>
+
+      <div class="sim-grid">
+        <div class="slider-group">
+          <div class="slider-item">
+            <div class="slider-label-row">
+              <span>Monthly SEO, GEO & Backlink Spend</span>
+              <span class="slider-value-display" id="disp-spend">R 15,000</span>
+            </div>
+            <input type="range" id="input-spend" min="5000" max="25000" step="1000" value="15000" oninput="recalcSimulator()">
+          </div>
+
+          <div class="slider-item">
+            <div class="slider-label-row">
+              <span>Targeted B2B Enterprise Traffic Generated</span>
+              <span class="slider-value-display" id="disp-visitors">650 /mo</span>
+            </div>
+            <input type="range" id="input-visitors" min="200" max="2500" step="50" value="650" oninput="recalcSimulator()">
+          </div>
+
+          <div class="slider-item">
+            <div class="slider-label-row">
+              <span>Standard Form-Fill Conversion Rate</span>
+              <span class="slider-value-display" id="disp-std-rate">2.0 %</span>
+            </div>
+            <input type="range" id="input-std-rate" min="0.5" max="5.0" step="0.5" value="2.0" oninput="recalcSimulator()">
+          </div>
+
+          <div class="slider-item">
+            <div class="slider-label-row">
+              <span>AuraWorks Engine De-Anonymization Capture</span>
+              <span class="slider-value-display" id="disp-aw-rate">12.0 %</span>
+            </div>
+            <input type="range" id="input-aw-rate" min="6.0" max="25.0" step="1.0" value="12.0" oninput="recalcSimulator()">
+          </div>
+
+          <div class="slider-item">
+            <div class="slider-label-row">
+              <span>Average B2B Industrial Contract Value (Annual)</span>
+              <span class="slider-value-display" id="disp-deal">R 120,000</span>
+            </div>
+            <input type="range" id="input-deal" min="30000" max="500000" step="10000" value="120000" oninput="recalcSimulator()">
+          </div>
+        </div>
+
+        <div class="sim-results">
+          <div class="results-grid">
+            <div class="result-box">
+              <div class="result-box-label">Traditional Form Inquiries</div>
+              <div class="result-box-val" id="res-std-leads" style="color: var(--text-secondary);">13</div>
+            </div>
+            <div class="result-box">
+              <div class="result-box-label">AuraWorks Unmasked Accounts</div>
+              <div class="result-box-val" id="res-aw-leads" style="color: var(--accent-cyan);">78</div>
+            </div>
+            <div class="result-box">
+              <div class="result-box-label">Monthly Pipeline Identified</div>
+              <div class="result-box-val" id="res-pipeline">R 9.36M</div>
+            </div>
+            <div class="result-box">
+              <div class="result-box-label">Pipeline Multiplier vs Agency</div>
+              <div class="result-box-val" id="res-multiplier" style="color: #34d399;">6.0x</div>
+            </div>
+          </div>
+
+          <div class="roi-highlight">
+            <div style="font-size: 0.8125rem; text-transform: uppercase; font-weight: 700; color: #34d399; margin-bottom: 2px;">
+              Projected Annualized Pipeline Lift
+            </div>
+            <div class="roi-val" id="res-annual-lift">R 112.3M</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+              Unmasked industrial intent that traditional marketing agencies discard as bounced traffic
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Keyword & Generative Engine Intelligence Table -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">SADC B2B Search & GEO Intelligence Table</h3>
+          <p class="card-subtitle">Exact keywords, Generative Engine queries, search volume, and commercial difficulty</p>
+        </div>
+      </div>
+
+      <div class="table-controls">
+        <div class="filter-tabs">
+          <button class="tab-btn active" onclick="filterTable('all', this)">All Categories</button>
+          <button class="tab-btn" onclick="filterTable('geo', this)">GEO & LLM Prompts</button>
+          <button class="tab-btn" onclick="filterTable('industrial', this)">Industrial Discoverability</button>
+          <button class="tab-btn" onclick="filterTable('leadcap', this)">Lead Capture & Intent</button>
+        </div>
+        <div class="search-input-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="kwSearch" class="search-input" placeholder="Search keywords or LLM prompts..." onkeyup="searchTable()">
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table id="kwTable">
+          <thead>
+            <tr>
+              <th onclick="sortTable(0)">Target Query / Prompt</th>
+              <th onclick="sortTable(1)">Cluster</th>
+              <th onclick="sortTable(2)">SADC Mo. Volume ▾</th>
+              <th onclick="sortTable(3)">Est. CPC</th>
+              <th onclick="sortTable(4)">Search Engine / Engine Vector</th>
+              <th onclick="sortTable(5)">Intent Type</th>
+            </tr>
+          </thead>
+          <tbody id="kwTableBody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Competitor & Tech Architecture Benchmark -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Competitive SERP & Architectural Benchmark</h3>
+          <p class="card-subtitle">Contrasting traditional South African agencies, standalone tracking SaaS, and AuraWorks</p>
+        </div>
+      </div>
+
+      <div class="competitor-grid">
+        <div class="comp-card">
+          <div>
+            <div class="comp-type-pill comp-agency">Legacy Digital Agency</div>
+            <div class="comp-name">Traditional B2B Agencies (SA)</div>
+            <div class="comp-desc">
+              Focuses purely on front-end aesthetics and generic Google SEO. Delivers surface impressions and clicks, but cannot tell industrial clients which corporate engineering or mining firms visited their spec sheets.
+            </div>
+          </div>
+          <div class="comp-meta">
+            <span>Vanity Metrics Focus</span>
+            <span>No De-anonymization</span>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div>
+            <div class="comp-type-pill comp-saas">Pure-Play SaaS Tool</div>
+            <div class="comp-name">Leadfeeder / Snitcher / Factors</div>
+            <div class="comp-desc">
+              Global IP de-anonymization software subscriptions. They provide raw data dashboards but lack local SADC ISP resolution, leave SEO/GEO unaddressed, and require clients to build their own outreach workflows.
+            </div>
+          </div>
+          <div class="comp-meta">
+            <span>Software Only</span>
+            <span>No Discoverability Service</span>
+          </div>
+        </div>
+
+        <div class="comp-card" style="border-color: rgba(16, 185, 129, 0.5); background: linear-gradient(145deg, var(--bg-card), rgba(16, 185, 129, 0.05));">
+          <div>
+            <div class="comp-type-pill comp-aura">The AuraWorks Partner Model</div>
+            <div class="comp-name">AuraWorks Discoverability + Engine</div>
+            <div class="comp-desc">
+              Full-service discoverability partnership: Modern Technical SEO + Generative Engine Optimization (GEO) ensures high rank on Google and LLM citations. The proprietary Intelligence Engine de-anonymizes corporate pipeline in real time.
+            </div>
+          </div>
+          <div class="comp-meta">
+            <span style="color: #34d399; font-weight: 700;">Complete Pipeline Engine</span>
+            <span style="color: #34d399; font-weight: 700;">POPIA Juristic-First</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Backlink Acquisition Blueprint & PR Channel Directory -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Backlink & PR Authority Acquisition Hub</h3>
+          <p class="card-subtitle">Vetted South African trade publications, national business portals, and local directories</p>
+        </div>
+      </div>
+
+      <div class="channel-list">
+        <div class="channel-card">
+          <div class="channel-title">
+            <span>Creamer Media (Engineering News)</span>
+            <span class="kpi-badge highlight">Trade Media</span>
+          </div>
+          <div class="channel-desc">
+            The undisputed benchmark publication for South African manufacturing, engineering, and infrastructure. Sponsored technical articles establish unbeatable domain authority and reach corporate procurement heads.
+          </div>
+          <div class="channel-pricing">Rate: ~R6,000 – R12,500 / sponsored placement</div>
+        </div>
+
+        <div class="channel-card">
+          <div class="channel-title">
+            <span>Creamer Media (Mining Weekly)</span>
+            <span class="kpi-badge highlight">Heavy Industry</span>
+          </div>
+          <div class="channel-desc">
+            Directly targeted at mining houses across South Africa and the wider SADC corridor. Editorial focus on supply chain digitization, tech innovation, and capital equipment discoverability.
+          </div>
+          <div class="channel-pricing">Rate: ~R6,500 – R14,000 / editorial feature</div>
+        </div>
+
+        <div class="channel-card">
+          <div class="channel-title">
+            <span>Bizcommunity (Marketing & Tech)</span>
+            <span class="kpi-badge purple">National B2B</span>
+          </div>
+          <div class="channel-desc">
+            Premier South African business and marketing platform. Publishing press releases or maintaining a dedicated Press Office guarantees do-follow citations, high trust flow, and rapid LLM scraping.
+          </div>
+          <div class="channel-pricing">Rate: R1,815 / release or R4,000 – R6,000 / promoted</div>
+        </div>
+
+        <div class="channel-card">
+          <div class="channel-title">
+            <span>ITWeb & Brainstorm Tech</span>
+            <span class="kpi-badge purple">Enterprise ICT</span>
+          </div>
+          <div class="channel-desc">
+            Primary portal for enterprise decision-makers and CIOs in Southern Africa. Ideal for thought leadership pieces explaining Generative Engine Optimization (GEO) and juristic lead de-anonymization.
+          </div>
+          <div class="channel-pricing">Rate: Tailored editorial & PR packages</div>
+        </div>
+
+        <div class="channel-card">
+          <div class="channel-title">
+            <span>Crown Publications (MechChem / Sparks)</span>
+            <span class="kpi-badge success">Industrial Trade</span>
+          </div>
+          <div class="channel-desc">
+            Specialized industrial journals catering to mechanical, chemical, and electrical engineering firms. High contextual relevance for B2B supplier backlinks.
+          </div>
+          <div class="channel-pricing">Rate: ~R4,500 – R8,500 / sector showcase</div>
+        </div>
+
+        <div class="channel-card">
+          <div class="channel-title">
+            <span>High-Trust Citations (Brabys, Hotfrog, JCCI)</span>
+            <span class="kpi-badge success">Free / Foundational</span>
+          </div>
+          <div class="channel-desc">
+            Establish clean juristic entity verification, localized Gauteng/East Rand presence, and baseline authority across major South African corporate registers.
+          </div>
+          <div class="channel-pricing">Rate: Free / Included in foundation setup</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    let currentCurrency = 'ZAR';
+    const USD_TO_ZAR = 18.25;
+
+    const keywordsDatabase = [
+      { kw: "b2b lead generation south africa", cluster: "industrial", vol: 590, cpcUSD: 2.45, vector: "Google Organic #1-3", intent: "ind" },
+      { kw: "best b2b seo for engineering companies", cluster: "geo", vol: 320, cpcUSD: 1.85, vector: "ChatGPT & Perplexity Citations", intent: "geo" },
+      { kw: "industrial marketing agency jhb", cluster: "industrial", vol: 480, cpcUSD: 2.10, vector: "Google Search & Maps", intent: "ind" },
+      { kw: "website visitor tracking b2b popia", cluster: "leadcap", vol: 290, cpcUSD: 3.10, vector: "Google + Thought Leadership", intent: "lead" },
+      { kw: "how to get cited in ai overviews b2b", cluster: "geo", vol: 240, cpcUSD: 1.50, vector: "Google AI Overviews / Perplexity", intent: "geo" },
+      { kw: "mining equipment suppliers marketing gauteng", cluster: "industrial", vol: 310, cpcUSD: 2.80, vector: "Google High-Intent SERP", intent: "ind" },
+      { kw: "b2b buyer intent data south africa", cluster: "leadcap", vol: 210, cpcUSD: 3.40, vector: "Organic / Partner Referral", intent: "lead" },
+      { kw: "generative engine optimization agency south africa", cluster: "geo", vol: 280, cpcUSD: 2.20, vector: "LLM Knowledge Base Inclusion", intent: "geo" },
+      { kw: "manufacturing digital marketing east rand", cluster: "industrial", vol: 190, cpcUSD: 1.95, vector: "Local Gauteng SERP", intent: "ind" },
+      { kw: "anonymous website visitor identification saas", cluster: "leadcap", vol: 140, cpcUSD: 3.75, vector: "Search Engine & Direct Compare", intent: "tech" }
+    ];
+
+    let activeFilter = 'all';
+
+    function formatCur(usd) {
+      if (currentCurrency === 'ZAR') {
+        return `R ${(usd * USD_TO_ZAR).toFixed(2)}`;
+      }
+      return `$ ${usd.toFixed(2)}`;
+    }
+
+    function setCurrency(cur) {
+      currentCurrency = cur;
+      document.getElementById('btn-zar').classList.toggle('active', cur === 'ZAR');
+      document.getElementById('btn-usd').classList.toggle('active', cur === 'USD');
+      document.getElementById('kpi-cpc').innerText = formatCur(2.10);
+      renderTable();
+      updateCharts();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('kwTableBody');
+      tbody.innerHTML = '';
+      const search = (document.getElementById('kwSearch').value || '').toLowerCase();
+
+      keywordsDatabase.forEach(item => {
+        if (activeFilter !== 'all' && item.cluster !== activeFilter) return;
+        if (search && !item.kw.toLowerCase().includes(search) && !item.vector.toLowerCase().includes(search)) return;
+
+        const tr = document.createElement('tr');
+        const badgeClass = item.intent === 'geo' ? 'intent-geo' : item.intent === 'ind' ? 'intent-ind' : 'intent-lead';
+        const intentLabel = item.intent === 'geo' ? 'GEO / LLM' : item.intent === 'ind' ? 'Commercial Search' : 'High-Intent Lead';
+
+        tr.innerHTML = `
+          <td><strong>${item.kw}</strong></td>
+          <td><span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary);">${item.cluster}</span></td>
+          <td><strong>${item.vol.toLocaleString()}</strong></td>
+          <td><strong>${formatCur(item.cpcUSD)}</strong></td>
+          <td><span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-cyan);">${item.vector}</span></td>
+          <td><span class="badge-intent ${badgeClass}">${intentLabel}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterTable(cluster, btn) {
+      activeFilter = cluster;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderTable();
+    }
+
+    function searchTable() {
+      renderTable();
+    }
+
+    let sortDir = 1;
+    function sortTable(idx) {
+      sortDir = -sortDir;
+      keywordsDatabase.sort((a, b) => {
+        if (idx === 0) return a.kw.localeCompare(b.kw) * sortDir;
+        if (idx === 1) return a.cluster.localeCompare(b.cluster) * sortDir;
+        if (idx === 2) return (a.vol - b.vol) * sortDir;
+        if (idx === 3) return (a.cpcUSD - b.cpcUSD) * sortDir;
+        if (idx === 4) return a.vector.localeCompare(b.vector) * sortDir;
+        return 0;
+      });
+      renderTable();
+    }
+
+    function recalcSimulator() {
+      const spend = parseFloat(document.getElementById('input-spend').value);
+      const visitors = parseFloat(document.getElementById('input-visitors').value);
+      const stdRate = parseFloat(document.getElementById('input-std-rate').value) / 100;
+      const awRate = parseFloat(document.getElementById('input-aw-rate').value) / 100;
+      const dealVal = parseFloat(document.getElementById('input-deal').value);
+
+      document.getElementById('disp-spend').innerText = `R ${spend.toLocaleString()}`;
+      document.getElementById('disp-visitors').innerText = `${visitors.toLocaleString()} /mo`;
+      document.getElementById('disp-std-rate').innerText = `${(stdRate * 100).toFixed(1)} %`;
+      document.getElementById('disp-aw-rate').innerText = `${(awRate * 100).toFixed(1)} %`;
+      document.getElementById('disp-deal').innerText = `R ${dealVal.toLocaleString()}`;
+
+      const stdLeads = Math.round(visitors * stdRate);
+      const awLeads = Math.round(visitors * awRate);
+      const monthlyPipeline = awLeads * dealVal;
+      const multiplier = stdLeads > 0 ? (awLeads / stdLeads).toFixed(1) : '1.0';
+      const annualLift = (monthlyPipeline * 12) / 1000000;
+
+      document.getElementById('res-std-leads').innerText = stdLeads;
+      document.getElementById('res-aw-leads').innerText = awLeads;
+      document.getElementById('res-pipeline').innerText = `R ${(monthlyPipeline / 1000000).toFixed(2)}M`;
+      document.getElementById('res-multiplier').innerText = `${multiplier}x`;
+      const annualLiftEl = document.getElementById('res-annual-lift') || document.getElementById('res-annualLift');
+      if (annualLiftEl) {
+        annualLiftEl.innerText = `R ${annualLift.toFixed(1)}M`;
+      }
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme') || 'dark';
+      const target = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', target);
+
+      document.getElementById('theme-icon').innerText = target === 'light' ? '🌙' : '☀️';
+      document.getElementById('theme-text').innerText = target === 'light' ? 'Dark' : 'Light';
+      updateCharts();
+    }
+
+    let demandChartInst = null;
+    let backlinkChartInst = null;
+
+    function initCharts() {
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+      const textColor = isDark ? '#94a3b8' : '#475569';
+
+      const ctx1 = document.getElementById('demandChart').getContext('2d');
+      demandChartInst = new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+          labels: ['Google Industrial SEO', 'Generative Engines (GEO)', 'Intent Deanonymization Searches', 'Sector Specific (Mining/Engineering)'],
+          datasets: [{
+            data: [1260, 840, 500, 450],
+            backgroundColor: ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981'],
+            borderWidth: 2,
+            borderColor: isDark ? '#1e293b' : '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right', labels: { color: textColor, font: { family: 'Inter', size: 11 } } }
+          },
+          cutout: '70%'
+        }
+      });
+
+      const ctx2 = document.getElementById('backlinkChart').getContext('2d');
+      backlinkChartInst = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: ['Engineering News', 'Mining Weekly', 'Bizcommunity', 'Crown Publications', 'Local Directories'],
+          datasets: [{
+            label: 'Recommended Budget Allocation (ZAR)',
+            data: [7500, 6000, 4500, 3500, 1000],
+            backgroundColor: '#3b82f6',
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { ticks: { color: textColor, font: { family: 'Inter', size: 10 } }, grid: { display: false } },
+            y: { ticks: { color: textColor, callback: v => 'R ' + v }, grid: { color: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' } }
+          },
+          plugins: {
+            legend: { labels: { color: textColor, font: { family: 'Inter', size: 11 } } }
+          }
+        }
+      });
+    }
+
+    function updateCharts() {
+      if (!demandChartInst || !backlinkChartInst) return;
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+      const textColor = isDark ? '#94a3b8' : '#475569';
+
+      demandChartInst.options.plugins.legend.labels.color = textColor;
+      demandChartInst.data.datasets[0].borderColor = isDark ? '#1e293b' : '#ffffff';
+      demandChartInst.update();
+
+      backlinkChartInst.options.scales.x.ticks.color = textColor;
+      backlinkChartInst.options.scales.y.ticks.color = textColor;
+      backlinkChartInst.options.plugins.legend.labels.color = textColor;
+      backlinkChartInst.update();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderTable();
+      initCharts();
+      recalcSimulator();
+    });
+  </script>
+</body>
+</html>

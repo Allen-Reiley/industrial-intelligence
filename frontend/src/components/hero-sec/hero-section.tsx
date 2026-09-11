@@ -112,7 +112,7 @@ export default function HeroSection() {
                                     speedSegment={0.3}
                                     as="h1"
                                     className="mx-auto mt-8 max-w-4xl text-balance text-5xl font-bold md:text-7xl lg:mt-16 xl:text-[4rem] tracking-tight">
-                                    Be Found. Be Cited. Be Chosen.
+                                    Make Your Business Impossible to Miss.
                                 </TextEffect>
                                 <TextEffect
                                     per="line"
@@ -121,7 +121,7 @@ export default function HeroSection() {
                                     delay={0.5}
                                     as="p"
                                     className="mx-auto mt-8 max-w-3xl text-balance text-lg text-muted-foreground">
-                                    The organic discoverability and lead-capture partner for industrial and B2B leaders across South Africa and SADC. We unite technical SEO and Generative Engine Optimization (GEO)—optimizing websites so AI search engines like ChatGPT, Perplexity, Gemini, and Google AI Overviews understand, cite, and recommend your business—powered by the AuraWorks Intelligence Engine to convert anonymous corporate traffic into verified pipeline.
+                                    Ensure Google, ChatGPT, Perplexity, and Gemini cite and recommend your industrial solutions to buyers—and capture the accounts visiting your site.
                                 </TextEffect>
 
                                 <AnimatedGroup
