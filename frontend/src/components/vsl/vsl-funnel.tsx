@@ -7,7 +7,7 @@ import { ArrowLeft, Play, Pause, RotateCcw } from 'lucide-react';
 import { trackIntent } from '@/lib/api';
 
 const DEFAULT_CLIENT_ID = 'c4a6c9b1-8355-4de2-985d-a04f4dcd63a0';
-const IMAGEKIT_VIDEO_URL = 'https://ik.imagekit.io/lcpi94xy3/demo5.mp4';
+const IMAGEKIT_VIDEO_URL = 'https://ik.imagekit.io/lcpi94xy3/final-demo.mp4';
 
 export default function VSLFunnel() {
   const router = useRouter();
