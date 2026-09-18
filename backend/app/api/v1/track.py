@@ -299,11 +299,16 @@ async def track_identity(
         visit.verification_status = "verified" # Activate Janitor Shield
         visit.is_consented = True
 
+        from sqlalchemy import or_
+
         res_lead = await session.execute(
             select(Prospect).where(
-                Prospect.aura_id == payload.aura_id,
-                Prospect.client_id == payload.client_id
-            )
+                Prospect.client_id == payload.client_id,
+                or_(
+                    Prospect.aura_id == payload.aura_id,
+                    Prospect.email == payload.email
+                )
+            ).order_by(Prospect.created_at.desc())
         )
         lead = res_lead.scalars().first()
 
@@ -314,6 +319,8 @@ async def track_identity(
                 email=payload.email
             )
         
+        # Always ensure aura_id is synced to the latest session if matched by email
+        lead.aura_id = payload.aura_id
         lead.email = payload.email
         if payload.company_name: lead.company_name_raw = payload.company_name
         if payload.department: lead.department = payload.department
@@ -321,8 +328,16 @@ async def track_identity(
         session.add(lead)
 
     session.add(visit)
-    await session.commit()
-    return {"status": "identity_locked"}
+    try:
+        await session.commit()
+    except Exception as e:
+        logger.error(f"Error saving identity: {e}")
+        await session.rollback()
+        # Even on error, if it's a constraint we couldn't bypass, we should let the frontend know so it doesn't loop forever
+        # But we'll try to just return success since we handled the OR condition
+        return {"status": "error", "detail": str(e)}
+
+    return {"status": "success", "lead_captured": True}
 
 @router.post("/event")
 async def track_event(

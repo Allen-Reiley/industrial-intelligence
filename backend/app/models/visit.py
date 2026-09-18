@@ -37,6 +37,7 @@ class Visit(SQLModel, table=True):
     downlink_speed: Optional[float] = Field(default=None, nullable=True)
     rtt: Optional[int] = Field(default=None, nullable=True)
     fingerprint_hash: Optional[str] = Field(default=None, index=True, nullable=True)
+    capture_source: Optional[str] = Field(default="banner", nullable=True)
     duration: int = Field(default=0)
     vsl_completion_percentage: Optional[int] = Field(default=None, nullable=True)
     vsl_completed_at: Optional[datetime] = Field(
