@@ -141,11 +141,17 @@ def init_db():
                         subscription_status=SubscriptionStatus.ACTIVE,
                         payment_plan="monthly",
                         setup_fee_paid=True,
-                        is_active=True
+                        is_active=True,
+                        require_consent_banner=True
                     )
                     session.add(test_client)
                     session.commit()
                     logger.info("✅ Default integration client successfully seeded.")
+                elif not test_client.require_consent_banner:
+                    test_client.require_consent_banner = True
+                    session.add(test_client)
+                    session.commit()
+                    logger.info("✅ Default integration client updated with require_consent_banner=True.")
         except Exception as e:
             logger.error(f"⚠️ Failed to seed default integration client: {e}")
     except Exception as e:

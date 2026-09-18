@@ -36,7 +36,7 @@ class ClientBase(SQLModel):
     payment_provider_id: Optional[str] = Field(default=None, nullable=True)
     is_active: bool = Field(default=False)
     collect_personal_data: bool = Field(default=False)
-    require_consent_banner: bool = Field(default=False)
+    require_consent_banner: bool = Field(default=True)
     payment_method_token: Optional[str] = Field(default=None, nullable=True)
     custom_monthly_amount: Optional[int] = Field(default=None, nullable=True)
     billing_cycle: str = Field(default="monthly", nullable=False)

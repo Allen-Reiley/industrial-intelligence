@@ -103,6 +103,17 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+import re
+
+def is_origin_allowed(origin: Optional[str]) -> bool:
+    if not origin:
+        return False
+    if origin in settings.ALLOWED_ORIGINS:
+        return True
+    if getattr(settings, "ALLOWED_ORIGIN_REGEX", None) and re.match(settings.ALLOWED_ORIGIN_REGEX, origin):
+        return True
+    return False
+
 # --- GLOBAL EXCEPTION HANDLERS WITH CORS PRESERVATION ---
 
 @app.exception_handler(SQLAlchemyError)
@@ -111,7 +122,7 @@ async def db_exception_handler(request: Request, exc: SQLAlchemyError):
     
     headers = {}
     origin = request.headers.get("origin")
-    if origin in settings.ALLOWED_ORIGINS:
+    if is_origin_allowed(origin):
         headers["Access-Control-Allow-Origin"] = origin
         headers["Access-Control-Allow-Credentials"] = "true"
         headers["Access-Control-Allow-Methods"] = "*"
@@ -135,7 +146,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     
     headers = {}
     origin = request.headers.get("origin")
-    if origin in settings.ALLOWED_ORIGINS:
+    if is_origin_allowed(origin):
         headers["Access-Control-Allow-Origin"] = origin
         headers["Access-Control-Allow-Credentials"] = "true"
         headers["Access-Control-Allow-Methods"] = "*"
@@ -161,7 +172,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     
     headers = {}
     origin = request.headers.get("origin")
-    if origin in settings.ALLOWED_ORIGINS:
+    if is_origin_allowed(origin):
         headers["Access-Control-Allow-Origin"] = origin
         headers["Access-Control-Allow-Credentials"] = "true"
         headers["Access-Control-Allow-Methods"] = "*"
@@ -182,7 +193,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 # --- CORS CONFIGURATION ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://www.auraworks.co.za", "https://auraworks.co.za"],
+    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origin_regex=settings.ALLOWED_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

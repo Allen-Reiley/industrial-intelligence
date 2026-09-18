@@ -23,6 +23,7 @@ async def seed_client():
             existing_client.whitelisted_domains = ["auraworks.co.za", "www.auraworks.co.za", "localhost", "testclient.co.za"]
             existing_client.is_active = True
             existing_client.subscription_status = SubscriptionStatus.ACTIVE
+            existing_client.require_consent_banner = True
             session.add(existing_client)
         else:
             print(f"Client {client_id} not found. Creating new...")
@@ -36,13 +37,22 @@ async def seed_client():
                 subscription_status=SubscriptionStatus.ACTIVE,
                 payment_plan="monthly",
                 setup_fee_paid=True,
-                is_active=True
+                is_active=True,
+                require_consent_banner=True
             )
             session.add(new_client)
             
         # 1. Explicitly create and commit the parent Client record first
         await session.commit()
         print("Parent Client committed successfully.")
+
+        # Invalidate TwoTierCache for seeded client
+        try:
+            from app.core.cache import TwoTierCache
+            await TwoTierCache.delete_prefix(f"client_config:{client_id}")
+            print(f"TwoTierCache invalidated for client {client_id}.")
+        except Exception as cache_err:
+            print(f"Warning: Failed to flush cache: {cache_err}")
 
         # 2. Ensure the ClientConfig creation happens sequentially AFTER the Client is committed.
         ClientConfig = None

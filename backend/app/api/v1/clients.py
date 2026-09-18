@@ -92,7 +92,29 @@ async def get_client_config(
     import json
     from app.core.cache import TwoTierCache
 
-    cache_key = f"client_config:{client_id}:{tz or ''}"
+    # 1. Strict Referer / Origin Extraction
+    referer = request.headers.get("referer")
+    origin = request.headers.get("origin")
+    request_domain = ""
+
+    if referer:
+        try:
+            from urllib.parse import urlparse
+            request_domain = urlparse(referer).netloc
+        except Exception:
+            pass
+    elif origin:
+        try:
+            from urllib.parse import urlparse
+            request_domain = urlparse(origin).netloc
+        except Exception:
+            pass
+
+    # Normalize domain by stripping port numbers (e.g. localhost:8080 -> localhost)
+    if ":" in request_domain:
+        request_domain = request_domain.split(":")[0]
+
+    cache_key = f"client_config:{client_id}:{request_domain}:{tz or ''}"
     try:
         cached_val = await TwoTierCache.get(cache_key)
         if cached_val:
@@ -106,28 +128,6 @@ async def get_client_config(
         
     if not client.is_active:
         raise HTTPException(status_code=403, detail="Client subscription is currently suspended.")
-
-    # 1. Strict Referer / Origin Verification
-    referer = request.headers.get("referer")
-    origin = request.headers.get("origin")
-    request_domain = ""
-    
-    if referer:
-        try:
-            from urllib.parse import urlparse
-            request_domain = urlparse(referer).netloc
-        except Exception:
-            pass
-    elif origin:
-        try:
-            from urllib.parse import urlparse
-            request_domain = urlparse(origin).netloc
-        except Exception:
-            pass
-            
-    # Normalize domain by stripping port numbers (e.g. localhost:8080 -> localhost)
-    if ":" in request_domain:
-        request_domain = request_domain.split(":")[0]
         
     # Verify matching domain against whitelisted_domains
     if request_domain and request_domain not in ["localhost", "127.0.0.1", "::1"]:
@@ -135,23 +135,39 @@ async def get_client_config(
         for d in client.whitelisted_domains:
             if ":" in d:
                 d = d.split(":")[0]
-            whitelisted.append(d)
-        if request_domain not in whitelisted:
+            whitelisted.append(d.lower())
+
+        req_domain_lower = request_domain.lower()
+
+        # Check exact domain match or subdomain match (e.g. www.auraworks.co.za -> auraworks.co.za)
+        is_whitelisted = False
+        for wd in whitelisted:
+            if req_domain_lower == wd or req_domain_lower.endswith(f".{wd}"):
+                is_whitelisted = True
+                break
+
+        # Support Vercel preview environments (*.vercel.app) for preview/staging verification
+        if not is_whitelisted and req_domain_lower.endswith(".vercel.app"):
+            is_whitelisted = True
+
+        if not is_whitelisted:
             logger.warning(f"AuraTracker: Strictly unauthorized domain match attempt: origin='{request_domain}', registered={client.whitelisted_domains}")
             raise HTTPException(status_code=403, detail="Unauthorized website tag origin.")
 
     # 2. Timezone-Based Compliance Routing
     compliance_mode = "POPIA"
-    require_consent_banner = client.require_consent_banner
-    
     if tz:
         tz_lower = tz.lower()
         # Timezone check to determine EU/GDPR vs SADC/POPIA bounds
         if "europe" in tz_lower:
             compliance_mode = "GDPR"
-            require_consent_banner = True
         elif "africa" in tz_lower:
             compliance_mode = "POPIA"
+
+    # The client's registered require_consent_banner setting is the primary driver.
+    # If client.require_consent_banner is True, it returns True regardless of timezone.
+    # If GDPR applies (compliance_mode == "GDPR"), consent banner is mandatory.
+    require_consent_banner = bool(client.require_consent_banner or (compliance_mode == "GDPR"))
 
     response_data = {
         "client_id": str(client.id),
@@ -267,4 +283,12 @@ async def update_client(
     session.add(client)
     await session.commit()
     await session.refresh(client)
+
+    # Invalidate cached configuration so changes reflect immediately
+    try:
+        from app.core.cache import TwoTierCache
+        await TwoTierCache.delete_prefix(f"client_config:{client_id}")
+    except Exception as e:
+        logger.warning(f"Failed to invalidate TwoTierCache for client {client_id}: {e}")
+
     return client

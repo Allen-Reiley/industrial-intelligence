@@ -47,3 +47,21 @@ async def test_cors_get_production_origins():
         # but CORS headers must be present.
         assert response.headers.get("access-control-allow-origin") == origin
         assert response.headers.get("access-control-allow-credentials") == "true"
+
+async def test_cors_vercel_preview_origins():
+    """
+    Verify OPTIONS and GET requests to Vercel preview domains match regex and return proper CORS headers.
+    """
+    client = await get_test_client()
+    preview_origin = "https://industrial-intelligence-abc123-allen-reileys-projects.vercel.app"
+    response = await client.options(
+        f"{settings.API_V1_STR}/auth/google/authorize",
+        headers={
+            "Origin": preview_origin,
+            "Access-Control-Request-Method": "GET",
+            "Access-Control-Request-Headers": "content-type",
+        }
+    )
+    assert response.status_code == 200
+    assert response.headers.get("access-control-allow-origin") == preview_origin
+    assert response.headers.get("access-control-allow-credentials") == "true"

@@ -68,6 +68,38 @@ class TwoTierCache:
         _memory_cache[key] = value
 
     @classmethod
+    async def delete(cls, key: str) -> None:
+        """
+        Deletes a specific key from Redis and in-memory cache.
+        """
+        redis_client = get_redis_client()
+        if redis_client:
+            try:
+                await redis_client.delete(key)
+            except Exception as e:
+                logger.warning(f"Redis DELETE failed (key={key}): {e}")
+        _memory_cache.pop(key, None)
+
+    @classmethod
+    async def delete_prefix(cls, prefix: str) -> None:
+        """
+        Deletes all keys matching a prefix from Redis and in-memory cache.
+        """
+        redis_client = get_redis_client()
+        if redis_client:
+            try:
+                keys = []
+                async for k in redis_client.scan_iter(match=f"{prefix}*"):
+                    keys.append(k)
+                if keys:
+                    await redis_client.delete(*keys)
+            except Exception as e:
+                logger.warning(f"Redis DELETE prefix failed (prefix={prefix}): {e}")
+        for k in list(_memory_cache.keys()):
+            if k.startswith(prefix):
+                _memory_cache.pop(k, None)
+
+    @classmethod
     def clear(cls) -> None:
         """
         Clears the local memory cache (primarily for test isolation).

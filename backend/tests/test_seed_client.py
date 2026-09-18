@@ -28,4 +28,5 @@ async def test_seed_client_execution():
         assert client.subscription_status == SubscriptionStatus.ACTIVE, "Seeded client subscription status is incorrect."
         assert client.category == ClientCategory.COMMERCIAL, "Seeded client category is incorrect."
         assert client.is_active is True, "Seeded client is not active."
+        assert client.require_consent_banner is True, "Seeded client require_consent_banner is not True."
         break

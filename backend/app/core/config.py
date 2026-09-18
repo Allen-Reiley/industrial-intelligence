@@ -74,6 +74,7 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: List[str] = [
         "https://industrial-intelligence-xi.vercel.app", 
         "http://localhost:3000",
+        "http://127.0.0.1:3000",
         "https://auraworks.co.za",
         "https://www.auraworks.co.za",
         "https://cdn.auraworks.co.za",
@@ -84,6 +85,7 @@ class Settings(BaseSettings):
         "https://banner.auraworks.co.za",
         "https://api.auraworks.co.za/v1/track/event"
     ]
+    ALLOWED_ORIGIN_REGEX: Optional[str] = r"^https:\/\/[a-zA-Z0-9_.-]+\.vercel\.app$"
 
     # Modern Pydantic V2 Configuration
     model_config = SettingsConfigDict(
