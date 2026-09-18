@@ -33,6 +33,10 @@ class IdentityPayload(BaseModel):
     client_id: UUID
     aura_id: str
     email: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    name: Optional[str] = None
+    phone: Optional[str] = None
     company_name: Optional[str] = None
     department: Optional[str] = None
 
@@ -65,32 +69,24 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
 
             domain = enriched_info.get("domain")
             
-            # 2. Entity Resolution Logic
-            # Search by domain globally (since Company is a shared table)
+            # 2. Entity Resolution Logic (Atomic Upsert)
             company = None
             if domain and domain not in ["unknown.com", "n/a"]:
-                res = await session.execute(
-                    select(Company).where(
-                        Company.domain == domain,
-                        Company.client_id == payload.client_id
-                    )
-                )
-                company = res.scalars().first()
-
-            if company:
-                company.total_visits += 1 
-                session.add(company)
-            elif domain and domain not in ["unknown.com", "n/a"]:
-                company = Company(
+                from sqlalchemy.dialects.postgresql import insert
+                
+                stmt = insert(Company).values(
                     client_id=payload.client_id,
                     company_name=enriched_info.get("company_name", "Unknown"),
                     domain=domain,
                     cipc_verified=False,
                     total_visits=1
-                )
-                session.add(company)
-
-            
+                ).on_conflict_do_update(
+                    index_elements=['client_id', 'domain'],
+                    set_={'total_visits': Company.total_visits + 1}
+                ).returning(Company)
+                
+                res = await session.execute(stmt)
+                company = res.scalars().first()
             await session.commit()
             if company: 
                 await session.refresh(company)
@@ -322,6 +318,14 @@ async def track_identity(
         # Always ensure aura_id is synced to the latest session if matched by email
         lead.aura_id = payload.aura_id
         lead.email = payload.email
+        
+        # Resolve full name
+        resolved_name = payload.name
+        if not resolved_name and (payload.first_name or payload.last_name):
+            resolved_name = f"{payload.first_name or ''} {payload.last_name or ''}".strip()
+            
+        if resolved_name: lead.name = resolved_name
+        if payload.phone: lead.phone_encrypted = payload.phone
         if payload.company_name: lead.company_name_raw = payload.company_name
         if payload.department: lead.department = payload.department
         if payload.position: lead.position = payload.position
@@ -349,16 +353,31 @@ async def track_event(
         target_aura_id = payload.aura_id if getattr(payload, "aura_id", None) else str(payload.client_id)
         res = await session.execute(
             select(Visit).where(
+                Visit.client_id == payload.client_id,
                 Visit.aura_id == target_aura_id
             ).order_by(Visit.created_at.desc())
         )
         visit = res.scalars().first()
-        if visit:
-            if getattr(payload, "event_type", None) == "intent_click":
-                visit.intent_cluster = getattr(payload, "intent_cluster", "General")
-            await session.commit()
-            return {"status": "event_logged"}
-        return {"status": "pending_entry"}
+        if not visit:
+            raise HTTPException(status_code=404, detail="Visit not found or mismatched client_id.")
+
+        if getattr(payload, "event_type", None) == "intent_click":
+            visit.intent_cluster = getattr(payload, "intent_cluster", "General")
+        
+        from app.models.event import Event
+        new_event = Event(
+            client_id=payload.client_id,
+            visit_id=visit.id,
+            event_type=payload.event_type or payload.event_name,
+            properties=payload.properties,
+            timestamp=payload.timestamp or datetime.now(timezone.utc)
+        )
+        session.add(new_event)
+        session.add(visit)
+        await session.commit()
+        return {"status": "event_logged"}
+    except HTTPException:
+        raise
     except Exception as e:
         await session.rollback()
         logger.error(f"Event Route Exception: {str(e)}\n{traceback.format_exc()}")
@@ -398,16 +417,29 @@ async def track_exit(
 
     res = await session.execute(
         select(Visit).where(
+            Visit.client_id == payload.client_id,
             Visit.aura_id == target_aura_id
         ).order_by(Visit.created_at.desc())
     )
     visit = res.scalars().first()
     
-    if visit:
-        if processed_duration > (visit.duration or 0):
-            visit.duration = processed_duration
-            session.add(visit)
-            await session.commit()
+    if not visit:
+        raise HTTPException(status_code=404, detail="Visit not found or mismatched client_id.")
+
+    if processed_duration > (visit.duration or 0):
+        visit.duration = processed_duration
+        session.add(visit)
+        
+    from app.models.pageview import PageView
+    new_page_view = PageView(
+        client_id=payload.client_id,
+        visit_id=visit.id,
+        url_path=payload.url or "unknown",
+        referrer=None,
+        duration=processed_duration
+    )
+    session.add(new_page_view)
+    await session.commit()
 
     # Launch Batch Intelligence processing sequentially when the session closes down
     if target_aura_id and payload.client_id:

@@ -146,9 +146,14 @@ async def get_client_config(
                 is_whitelisted = True
                 break
 
-        # Support Vercel preview environments (*.vercel.app) for preview/staging verification
-        if not is_whitelisted and req_domain_lower.endswith(".vercel.app"):
-            is_whitelisted = True
+        # Support preview environments via settings-driven regex
+        if not is_whitelisted:
+            from app.core.config import settings
+            import re
+            if settings.ALLOWED_ORIGIN_REGEX:
+                origin_with_scheme = f"https://{req_domain_lower}"
+                if re.match(settings.ALLOWED_ORIGIN_REGEX, origin_with_scheme):
+                    is_whitelisted = True
 
         if not is_whitelisted:
             logger.warning(f"AuraTracker: Strictly unauthorized domain match attempt: origin='{request_domain}', registered={client.whitelisted_domains}")

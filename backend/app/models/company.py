@@ -9,13 +9,19 @@ if TYPE_CHECKING:
     from app.models.visit import Visit
     from app.models.prospect import Prospect
 
+from sqlalchemy import UniqueConstraint
+
 class Company(SQLModel, table=True):
     __tablename__ = "company"
+    __table_args__ = (
+        UniqueConstraint("client_id", "domain", name="uix_company_client_domain"),
+    )
     
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
     client_id: UUID = Field(
         default_factory=lambda: UUID("c4a6c9b1-8355-4de2-985d-a04f4dcd63a0"),
         foreign_key="client.id",
+        ondelete="CASCADE",
         index=True
     )
     domain: str = Field(index=True)

@@ -231,9 +231,9 @@ describe('Event Decoupling Integration', () => {
     expect(callPayload.last_name).toBe('Smith');
     expect(callPayload.position).toBe('Chief Procurement');
     expect(callPayload.phone).toBe('+27839999999');
-    expect(callPayload.fingerprint).toBeDefined();
-    expect(callPayload.fingerprint.canvas).toBeDefined();
-    expect(callPayload.session_id).toBeDefined();
+    expect(callPayload.signature).toBeDefined();
+    expect(callPayload.signature.canvas).toBeDefined();
+    expect(callPayload.aura_id).toBeDefined();
     expect(callPayload.client_id).toBe('integration-client-uuid');
   });
 });

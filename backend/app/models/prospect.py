@@ -11,8 +11,8 @@ class Prospect(SQLModel, table=True):
     __tablename__ = "prospect"
     
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    client_id: UUID = Field(foreign_key="client.id", index=True)
-    company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", index=True, nullable=True)
+    client_id: UUID = Field(foreign_key="client.id", ondelete="CASCADE", index=True)
+    company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", ondelete="CASCADE", index=True, nullable=True)
     name: Optional[str] = Field(default=None)
     email: str = Field(index=True)
     phone_encrypted: Optional[str] = Field(default=None)

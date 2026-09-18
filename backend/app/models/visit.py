@@ -9,18 +9,24 @@ from pydantic import BaseModel
 if TYPE_CHECKING:
     from app.models.company import Company
     from app.models.pageview import PageView
+    from app.models.event import Event
 
 class VerificationStatus(str, Enum):
     VERIFYING = "verifying"
     VERIFIED = "verified"
     ANONYMIZED_CORPORATE = "anonymized_corporate"
 
+from sqlalchemy import Index
+
 class Visit(SQLModel, table=True):
     __tablename__ = "visit"
+    __table_args__ = (
+        Index("ix_visit_client_aura_created", "client_id", "aura_id", "created_at"),
+    )
     
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    client_id: UUID = Field(foreign_key="client.id", index=True)
-    company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", index=True, nullable=True)
+    client_id: UUID = Field(foreign_key="client.id", ondelete="CASCADE", index=True)
+    company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", ondelete="CASCADE", index=True, nullable=True)
     aura_id: str = Field(index=True)
     ip_address: str = Field(index=True)
     connection_type: str = Field(default="corporate")
@@ -57,6 +63,7 @@ class Visit(SQLModel, table=True):
 
     company: Optional["Company"] = Relationship(back_populates="visits")
     page_views: List["PageView"] = Relationship(back_populates="visit")
+    events: List["Event"] = Relationship(back_populates="visit")
 
 class VisitCreate(BaseModel):
     client_id: UUID

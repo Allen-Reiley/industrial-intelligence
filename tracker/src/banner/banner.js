@@ -57,6 +57,9 @@
         const phase = e.detail?.phase || 4;
         showPhase(phase);
     });
+    
+    // Signal to aura.js that banner listeners are bound
+    window.dispatchEvent(new CustomEvent('aura:banner_mounted'));
 
     function init() {
         const requireConsent = config ? config.require_consent_banner : false;

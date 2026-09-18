@@ -281,9 +281,11 @@
                                     window.dispatchEvent(new CustomEvent('aura:ready', {
                                         detail: { auraId: this.auraId, clientId: agencyId, config: this.config }
                                     }));
-                                    setTimeout(() => {
+                                    const triggerBanner = () => {
                                         window.dispatchEvent(new CustomEvent('aura:trigger_banner', { detail: { phase: 4 } }));
-                                    }, 50);
+                                        window.removeEventListener('aura:banner_mounted', triggerBanner);
+                                    };
+                                    window.addEventListener('aura:banner_mounted', triggerBanner);
                                 };
                                 document.head.appendChild(s);
                             } else {
@@ -549,8 +551,8 @@
             const fingerprint = await AuraFingerprint.getFullSignature();
             const payload = {
                 ...e.detail,
-                fingerprint,
-                session_id: auraId,
+                signature: fingerprint,
+                aura_id: auraId,
                 capture_source: e.detail.capture_source || 'banner_warm_signal'
             };
             await AuraTracker.dispatch('identity', payload);
