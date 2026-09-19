@@ -131,24 +131,93 @@
 
             function getComputedColor(colorStr) {
                 if (!colorStr) return 'rgb(255, 255, 255)';
-                const div = document.createElement('div');
-                div.style.backgroundColor = colorStr;
-                div.style.display = 'none';
-                document.body.appendChild(div);
-                const computed = window.getComputedStyle(div).backgroundColor;
-                document.body.removeChild(div);
-                return computed || 'rgb(255, 255, 255)';
+                try {
+                    const div = document.createElement('div');
+                    div.style.backgroundColor = colorStr;
+                    div.style.display = 'none';
+                    document.body.appendChild(div);
+                    const computed = window.getComputedStyle(div).backgroundColor;
+                    document.body.removeChild(div);
+                    return computed || colorStr;
+                } catch(e) {
+                    return colorStr;
+                }
             }
 
             function getLuminance(colorStr) {
-                const rgbStr = getComputedColor(colorStr);
-                const match = rgbStr.match(/\d+(\.\d+)?/g);
-                if (!match || match.length < 3) return 1;
-                let r = Number(match[0]) / 255;
-                let g = Number(match[1]) / 255;
-                let b = Number(match[2]) / 255;
-                const sRGB = [r,g,b].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
-                return 0.2126 * sRGB[0] + 0.7152 * sRGB[1] + 0.0722 * sRGB[2];
+                if (!colorStr) return 1;
+                const clean = String(colorStr).trim().toLowerCase();
+
+                // 1. Explicit OKLCH parsing: oklch(L C H [ / A ])
+                if (clean.includes('oklch')) {
+                    const match = clean.match(/[\d.]+/g);
+                    if (match && match.length >= 1) {
+                        let l = parseFloat(match[0]);
+                        if (clean.includes('%') && l > 1) l /= 100;
+                        return isNaN(l) ? 1 : l;
+                    }
+                }
+
+                // 2. Explicit HSL parsing: hsl(H S% L% [ / A ])
+                if (clean.includes('hsl')) {
+                    const match = clean.match(/[\d.]+/g);
+                    if (match && match.length >= 3) {
+                        const l = parseFloat(match[2]) / 100;
+                        return isNaN(l) ? 1 : l;
+                    }
+                }
+
+                // 3. Hex parsing: #RGB or #RRGGBB
+                if (clean.startsWith('#')) {
+                    const hex = clean.replace('#', '');
+                    let r, g, b;
+                    if (hex.length === 3 || hex.length === 4) {
+                        r = parseInt(hex[0] + hex[0], 16);
+                        g = parseInt(hex[1] + hex[1], 16);
+                        b = parseInt(hex[2] + hex[2], 16);
+                    } else if (hex.length >= 6) {
+                        r = parseInt(hex.substring(0, 2), 16);
+                        g = parseInt(hex.substring(2, 4), 16);
+                        b = parseInt(hex.substring(4, 6), 16);
+                    }
+                    if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
+                        const sRGB = [r / 255, g / 255, b / 255].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+                        return 0.2126 * sRGB[0] + 0.7152 * sRGB[1] + 0.0722 * sRGB[2];
+                    }
+                }
+
+                // 4. Try browser computed style
+                const computedStr = getComputedColor(colorStr);
+                const cleanComputed = String(computedStr).trim().toLowerCase();
+
+                if (cleanComputed.includes('oklch')) {
+                    const match = cleanComputed.match(/[\d.]+/g);
+                    if (match && match.length >= 1) {
+                        let l = parseFloat(match[0]);
+                        if (cleanComputed.includes('%') && l > 1) l /= 100;
+                        return isNaN(l) ? 1 : l;
+                    }
+                }
+
+                if (cleanComputed.includes('hsl')) {
+                    const match = cleanComputed.match(/[\d.]+/g);
+                    if (match && match.length >= 3) {
+                        const l = parseFloat(match[2]) / 100;
+                        return isNaN(l) ? 1 : l;
+                    }
+                }
+
+                // 5. RGB / RGBA: rgb(r, g, b)
+                const rgbMatch = cleanComputed.match(/\d+(\.\d+)?/g);
+                if (rgbMatch && rgbMatch.length >= 3) {
+                    let r = Number(rgbMatch[0]) / 255;
+                    let g = Number(rgbMatch[1]) / 255;
+                    let b = Number(rgbMatch[2]) / 255;
+                    const sRGB = [r, g, b].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+                    return 0.2126 * sRGB[0] + 0.7152 * sRGB[1] + 0.0722 * sRGB[2];
+                }
+
+                return 1;
             }
 
             const colors = { bg: {}, accent: {} };
