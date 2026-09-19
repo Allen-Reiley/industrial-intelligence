@@ -9,8 +9,18 @@ export default function AuraHQLayout({ children }: { children: React.ReactNode }
   const pathname = usePathname();
   const router = useRouter();
 
-  const handleLogout = () => {
-    // Clear auth cookie and local storage credentials
+  const handleLogout = async () => {
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      await fetch(`${apiBase}/api/v1/auth/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
+    
+    // Clear local storage credentials
     document.cookie = "aurahq_auth=; path=/; max-age=0; SameSite=Lax; Secure";
     document.cookie = "admin_access_token=; path=/; max-age=0; SameSite=Lax; Secure";
     localStorage.removeItem('admin_token');

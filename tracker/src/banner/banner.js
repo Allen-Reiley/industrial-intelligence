@@ -129,28 +129,24 @@
                 return c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent' && c !== 'inherit' && c !== 'none';
             }
 
+            function getComputedColor(colorStr) {
+                if (!colorStr) return 'rgb(255, 255, 255)';
+                const div = document.createElement('div');
+                div.style.backgroundColor = colorStr;
+                div.style.display = 'none';
+                document.body.appendChild(div);
+                const computed = window.getComputedStyle(div).backgroundColor;
+                document.body.removeChild(div);
+                return computed || 'rgb(255, 255, 255)';
+            }
+
             function getLuminance(colorStr) {
-                if (!colorStr) return 1;
-                let r, g, b;
-                if (colorStr.startsWith('#')) {
-                    const hex = colorStr.replace('#', '');
-                    if (hex.length === 3) {
-                        r = parseInt(hex[0]+hex[0], 16);
-                        g = parseInt(hex[1]+hex[1], 16);
-                        b = parseInt(hex[2]+hex[2], 16);
-                    } else {
-                        r = parseInt(hex.substring(0,2), 16);
-                        g = parseInt(hex.substring(2,4), 16);
-                        b = parseInt(hex.substring(4,6), 16);
-                    }
-                } else {
-                    const match = colorStr.match(/\d+(\.\d+)?/g);
-                    if (!match || match.length < 3) return 1;
-                    r = Number(match[0]);
-                    g = Number(match[1]);
-                    b = Number(match[2]);
-                }
-                r /= 255; g /= 255; b /= 255;
+                const rgbStr = getComputedColor(colorStr);
+                const match = rgbStr.match(/\d+(\.\d+)?/g);
+                if (!match || match.length < 3) return 1;
+                let r = Number(match[0]) / 255;
+                let g = Number(match[1]) / 255;
+                let b = Number(match[2]) / 255;
                 const sRGB = [r,g,b].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
                 return 0.2126 * sRGB[0] + 0.7152 * sRGB[1] + 0.0722 * sRGB[2];
             }
@@ -360,9 +356,9 @@
             }
             
             .aura-text {
-                font-size: 12px;
+                font-size: 13px;
                 line-height: 1.6;
-                color: var(--aura-text-muted);
+                color: var(--aura-text);
                 font-weight: 300;
                 margin-bottom: 20px;
             }
