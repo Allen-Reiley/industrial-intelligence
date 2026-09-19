@@ -129,12 +129,27 @@
                 return c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent' && c !== 'inherit' && c !== 'none';
             }
 
-            function getLuminance(rgbStr) {
-                // Basic parsing for rgb(), rgba(), or hex
-                // Since getComputedStyle usually returns rgb() or rgba()
-                const match = rgbStr.match(/\d+(\.\d+)?/g);
-                if (!match || match.length < 3) return 1;
-                let [r, g, b] = match.slice(0, 3).map(Number);
+            function getLuminance(colorStr) {
+                if (!colorStr) return 1;
+                let r, g, b;
+                if (colorStr.startsWith('#')) {
+                    const hex = colorStr.replace('#', '');
+                    if (hex.length === 3) {
+                        r = parseInt(hex[0]+hex[0], 16);
+                        g = parseInt(hex[1]+hex[1], 16);
+                        b = parseInt(hex[2]+hex[2], 16);
+                    } else {
+                        r = parseInt(hex.substring(0,2), 16);
+                        g = parseInt(hex.substring(2,4), 16);
+                        b = parseInt(hex.substring(4,6), 16);
+                    }
+                } else {
+                    const match = colorStr.match(/\d+(\.\d+)?/g);
+                    if (!match || match.length < 3) return 1;
+                    r = Number(match[0]);
+                    g = Number(match[1]);
+                    b = Number(match[2]);
+                }
                 r /= 255; g /= 255; b /= 255;
                 const sRGB = [r,g,b].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
                 return 0.2126 * sRGB[0] + 0.7152 * sRGB[1] + 0.0722 * sRGB[2];
@@ -174,6 +189,9 @@
                 if (domBg.includes('rgba')) theme.bg = domBg;
             }
             if (domAccent) theme.accent = domAccent;
+
+            const accentLuminance = getLuminance(theme.accent);
+            theme.accentText = accentLuminance < 0.5 ? '#ffffff' : '#111827';
 
             // Compute contrast against background
             const bgForLuminance = domBg || 'rgb(255, 255, 255)';
@@ -237,6 +255,7 @@
                 --aura-btn-text: ${t.btnText};
                 --aura-btn-hover: ${t.btnHover};
                 --aura-accent: ${t.accent};
+                --aura-accent-text: ${t.accentText};
                 --aura-overlay: ${t.overlay};
                 --aura-modal-bg: ${t.modalBg};
             }
@@ -427,7 +446,7 @@
             
             .aura-btn-primary.accent {
                 background: var(--aura-accent);
-                color: #ffffff;
+                color: var(--aura-accent-text);
             }
             
             .aura-btn-primary.accent:hover:not(:disabled) {
