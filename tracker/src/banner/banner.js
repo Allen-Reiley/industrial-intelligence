@@ -347,14 +347,17 @@
                 color: var(--aura-text-muted);
             }
             
-            .aura-title {
+            .aura-title,
+            h3.aura-title,
+            h4.aura-title {
                 font-size: 16px;
                 font-weight: 700;
                 letter-spacing: -0.02em;
-                color: var(--aura-text-muted);
+                color: var(--aura-text);
                 margin: 0 0 8px 0;
             }
             
+            p.aura-text,
             .aura-text {
                 font-size: 13px;
                 line-height: 1.6;
@@ -490,8 +493,10 @@
                 border-bottom: 2px solid transparent;
             }
             
-            .aura-tab.active {
-                color: var(--aura-text-muted);
+            .aura-tab.active,
+            button#aura-tab-1.aura-tab.active,
+            button#aura-tab-2.aura-tab.active {
+                color: var(--aura-text);
                 border-bottom-color: var(--aura-accent);
             }
             
@@ -576,7 +581,7 @@ position: fixed;
             .aura-modal-title {
                 font-size: 20px;
                 font-weight: 700;
-                color: var(--aura-text-muted);
+                color: var(--aura-text);
                 margin: 0 0 8px 0;
                 letter-spacing: -0.02em;
             }
