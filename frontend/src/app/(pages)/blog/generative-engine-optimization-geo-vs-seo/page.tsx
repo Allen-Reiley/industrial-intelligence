@@ -132,7 +132,7 @@ export default function GenerativeEngineOptimizationGuidePage() {
           </header>
 
           {/* Article Content */}
-          <article className="prose prose-zinc dark:prose-invert max-w-none pt-10 text-foreground/90 space-y-8 text-base sm:text-lg leading-relaxed">
+          <article className="prose prose-zinc max-w-none pt-10 text-foreground/90 space-y-8 text-base sm:text-lg leading-relaxed">
             {/* Section 1 */}
             <section className="space-y-4">
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">

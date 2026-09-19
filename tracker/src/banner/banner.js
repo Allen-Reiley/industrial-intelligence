@@ -124,7 +124,7 @@
             
             :host {
                 font-family: 'Inter', system-ui, -apple-system, sans-serif;
-                color-scheme: dark;
+                color-scheme: light;
             }
             
             .aura-banner {
@@ -133,11 +133,11 @@
                 right: 32px;
                 width: 380px;
                 max-width: calc(100vw - 64px);
-                background: rgba(10, 10, 10, 0.95);
+                background: rgba(255, 255, 255, 0.95);
                 backdrop-filter: blur(16px);
                 -webkit-backdrop-filter: blur(16px);
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                color: #e2e8f0;
+                border: 1px solid rgba(0, 0, 0, 0.08);
+                color: #0f172a;
                 padding: 24px;
                 border-radius: 14px;
                 box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75);
@@ -215,21 +215,21 @@
             }
             
             .aura-close:hover {
-                color: #cbd5e1;
+                color: #475569;
             }
             
             .aura-title {
                 font-size: 16px;
                 font-weight: 700;
                 letter-spacing: -0.02em;
-                color: #f8fafc;
+                color: #0f172a;
                 margin: 0 0 8px 0;
             }
             
             .aura-text {
                 font-size: 12px;
                 line-height: 1.6;
-                color: #94a3b8;
+                color: #475569;
                 font-weight: 300;
                 margin-bottom: 20px;
             }
@@ -251,11 +251,11 @@
             
             .aura-input {
                 width: 100%;
-                background: #020617;
-                border: 1px solid #1e293b;
+                background: #f8fafc;
+                border: 1px solid #cbd5e1;
                 border-radius: 8px;
                 padding: 10px 12px 10px 36px;
-                color: #f8fafc;
+                color: #0f172a;
                 font-size: 13px;
                 box-sizing: border-box;
                 outline: none;
@@ -279,8 +279,8 @@
             }
             
             .aura-btn-primary {
-                background: #f8fafc;
-                color: #020617;
+                background: #0f172a;
+                color: #f8fafc;
                 border: none;
                 border-radius: 8px;
                 padding: 12px 16px;
@@ -299,7 +299,7 @@
             }
             
             .aura-btn-primary:hover:not(:disabled) {
-                background: #ffffff;
+                background: #1e293b;
             }
             
             .aura-btn-primary:active:not(:disabled) {
@@ -337,12 +337,12 @@
             }
             
             .aura-btn-secondary:hover {
-                color: #cbd5e1;
+                color: #475569;
             }
             
             .aura-tabs {
                 display: flex;
-                border-bottom: 1px solid #1e293b;
+                border-bottom: 1px solid #e2e8f0;
                 margin-bottom: 16px;
             }
             
@@ -362,7 +362,7 @@
             }
             
             .aura-tab.active {
-                color: #f8fafc;
+                color: #0f172a;
                 border-bottom-color: #10b981;
             }
             
@@ -385,16 +385,16 @@
             }
             
             .aura-footer-text a:hover {
-                color: #cbd5e1;
+                color: #475569;
             }
             
             .aura-modal-overlay {
-                position: fixed;
+position: fixed;
                 top: 0;
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: rgba(0, 0, 0, 0.85);
+                background: rgba(255, 255, 255, 0.85);
                 backdrop-filter: blur(12px);
                 -webkit-backdrop-filter: blur(12px);
                 z-index: 2147483646;
@@ -414,13 +414,13 @@
             }
             
             .aura-modal {
-                background: #0a0a0a;
-                border: 1px solid rgba(255, 255, 255, 0.08);
+                background: #ffffff;
+                border: 1px solid rgba(0, 0, 0, 0.08);
                 border-radius: 16px;
                 max-width: 480px;
                 width: 100%;
                 padding: 32px;
-                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
                 text-align: center;
                 transform: scale(0.95);
                 transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -435,19 +435,19 @@
                 width: 56px;
                 height: 56px;
                 border-radius: 56px;
-                background: rgba(15, 23, 42, 0.6);
-                border: 1px solid rgba(255, 255, 255, 0.08);
+                background: #f1f5f9;
+                border: 1px solid rgba(0, 0, 0, 0.08);
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                color: #94a3b8;
+                color: #475569;
                 margin: 0 auto 20px auto;
             }
             
             .aura-modal-title {
                 font-size: 20px;
                 font-weight: 700;
-                color: #f8fafc;
+                color: #0f172a;
                 margin: 0 0 8px 0;
                 letter-spacing: -0.02em;
             }
@@ -455,7 +455,7 @@
             .aura-modal-text {
                 font-size: 13px;
                 line-height: 1.6;
-                color: #94a3b8;
+                color: #475569;
                 font-weight: 300;
                 margin-bottom: 24px;
             }
