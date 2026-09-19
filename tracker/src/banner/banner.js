@@ -107,10 +107,114 @@
         });
     }
 
+
+    function extractHostTheme() {
+        let theme = {
+            bg: 'rgba(255, 255, 255, 0.95)',
+            primary: '#0f172a',
+            accent: '#10b981',
+            text: '#111827',
+            textMuted: '#4B5563',
+            border: 'rgba(0, 0, 0, 0.08)',
+            inputBg: '#F3F4F6',
+            btnBg: '#111827',
+            btnText: '#F9FAFB',
+            btnHover: '#374151',
+            overlay: 'rgba(255, 255, 255, 0.85)',
+            modalBg: '#ffffff'
+        };
+
+        try {
+            function isValid(c) {
+                return c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent' && c !== 'inherit' && c !== 'none';
+            }
+
+            function getLuminance(rgbStr) {
+                // Basic parsing for rgb(), rgba(), or hex
+                // Since getComputedStyle usually returns rgb() or rgba()
+                const match = rgbStr.match(/\d+(\.\d+)?/g);
+                if (!match || match.length < 3) return 1;
+                let [r, g, b] = match.slice(0, 3).map(Number);
+                r /= 255; g /= 255; b /= 255;
+                const sRGB = [r,g,b].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+                return 0.2126 * sRGB[0] + 0.7152 * sRGB[1] + 0.0722 * sRGB[2];
+            }
+
+            const colors = { bg: {}, accent: {} };
+            const els = document.querySelectorAll('header, nav, main, button, a, h1, h2');
+            els.forEach(el => {
+                // skip our own elements
+                if (el.closest('#aura-consent-root')) return;
+                
+                const style = window.getComputedStyle(el);
+                const bg = style.backgroundColor;
+                const fg = style.color;
+                
+                if (el.tagName === 'MAIN' || el.tagName === 'BODY' || el.tagName === 'HEADER') {
+                    if (isValid(bg)) colors.bg[bg] = (colors.bg[bg] || 0) + 1;
+                } else if (el.tagName === 'BUTTON' || el.tagName === 'A') {
+                    if (isValid(bg)) colors.accent[bg] = (colors.accent[bg] || 0) + 1;
+                    if (isValid(fg)) colors.accent[fg] = (colors.accent[fg] || 0) + 1;
+                }
+            });
+
+            const rootStyle = window.getComputedStyle(document.documentElement);
+            const varPrimary = rootStyle.getPropertyValue('--primary') || rootStyle.getPropertyValue('--color-brand');
+            const varAccent = rootStyle.getPropertyValue('--accent');
+            const varBg = rootStyle.getPropertyValue('--background');
+
+            const getMostFreq = (dict) => Object.entries(dict).sort((a,b) => b[1]-a[1])[0]?.[0];
+            const domBg = (isValid(varBg) ? varBg.trim() : null) || getMostFreq(colors.bg);
+            const domAccent = (isValid(varPrimary) ? varPrimary.trim() : null) || (isValid(varAccent) ? varAccent.trim() : null) || getMostFreq(colors.accent);
+
+            if (domBg) {
+                // apply a slight transparency if it's solid rgb, or just use it
+                theme.bg = domBg.replace('rgb(', 'rgba(').replace(')', ', 0.95)');
+                // If it was already rgba, just use it
+                if (domBg.includes('rgba')) theme.bg = domBg;
+            }
+            if (domAccent) theme.accent = domAccent;
+
+            // Compute contrast against background
+            const bgForLuminance = domBg || 'rgb(255, 255, 255)';
+            const luminance = getLuminance(bgForLuminance);
+            
+            if (luminance < 0.5) {
+                // Dark background
+                theme.text = '#F9FAFB';
+                theme.textMuted = '#9CA3AF';
+                theme.border = 'rgba(255, 255, 255, 0.1)';
+                theme.inputBg = 'rgba(255, 255, 255, 0.05)';
+                theme.btnBg = '#F9FAFB';
+                theme.btnText = '#111827';
+                theme.btnHover = '#E5E7EB';
+                theme.overlay = 'rgba(0, 0, 0, 0.85)';
+                theme.modalBg = '#1f2937';
+            } else {
+                // Light background
+                theme.text = '#111827';
+                theme.textMuted = '#4B5563';
+                theme.border = 'rgba(0, 0, 0, 0.08)';
+                theme.inputBg = '#F3F4F6';
+                theme.btnBg = '#111827';
+                theme.btnText = '#F9FAFB';
+                theme.btnHover = '#374151';
+                theme.overlay = 'rgba(255, 255, 255, 0.85)';
+                theme.modalBg = '#ffffff';
+            }
+        } catch(e) {
+            console.error('Aura Banner: Theme extraction failed', e);
+        }
+        return theme;
+    }
+
     function createDOM() {
         if (document.getElementById('aura-consent-root')) return;
 
+        const t = extractHostTheme();
+
         container = document.createElement('div');
+
         container.id = 'aura-consent-root';
         container.style.position = 'fixed';
         container.style.zIndex = '2147483647';
@@ -124,7 +228,17 @@
             
             :host {
                 font-family: 'Inter', system-ui, -apple-system, sans-serif;
-                color-scheme: light;
+                --aura-bg: ${t.bg};
+                --aura-text: ${t.text};
+                --aura-text-muted: ${t.textMuted};
+                --aura-border: ${t.border};
+                --aura-input-bg: ${t.inputBg};
+                --aura-btn-bg: ${t.btnBg};
+                --aura-btn-text: ${t.btnText};
+                --aura-btn-hover: ${t.btnHover};
+                --aura-accent: ${t.accent};
+                --aura-overlay: ${t.overlay};
+                --aura-modal-bg: ${t.modalBg};
             }
             
             .aura-banner {
@@ -133,11 +247,11 @@
                 right: 32px;
                 width: 380px;
                 max-width: calc(100vw - 64px);
-                background: rgba(255, 255, 255, 0.95);
+                background: var(--aura-bg);
                 backdrop-filter: blur(16px);
                 -webkit-backdrop-filter: blur(16px);
-                border: 1px solid rgba(0, 0, 0, 0.08);
-                color: #0f172a;
+                border: 1px solid var(--aura-border);
+                color: var(--aura-text);
                 padding: 24px;
                 border-radius: 14px;
                 box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75);
@@ -199,13 +313,13 @@
                 font-weight: 700;
                 text-transform: uppercase;
                 letter-spacing: 0.25em;
-                color: #64748b;
+                color: var(--aura-text-muted);
             }
             
             .aura-close {
                 background: none;
                 border: none;
-                color: #475569;
+                color: var(--aura-text-muted);
                 cursor: pointer;
                 padding: 0;
                 display: flex;
@@ -215,21 +329,21 @@
             }
             
             .aura-close:hover {
-                color: #475569;
+                color: var(--aura-text-muted);
             }
             
             .aura-title {
                 font-size: 16px;
                 font-weight: 700;
                 letter-spacing: -0.02em;
-                color: #0f172a;
+                color: var(--aura-text);
                 margin: 0 0 8px 0;
             }
             
             .aura-text {
                 font-size: 12px;
                 line-height: 1.6;
-                color: #475569;
+                color: var(--aura-text-muted);
                 font-weight: 300;
                 margin-bottom: 20px;
             }
@@ -244,18 +358,18 @@
                 left: 12px;
                 top: 50%;
                 transform: translateY(-50%);
-                color: #475569;
+                color: var(--aura-text-muted);
                 display: flex;
                 align-items: center;
             }
             
             .aura-input {
                 width: 100%;
-                background: #f8fafc;
-                border: 1px solid #cbd5e1;
+                background: var(--aura-input-bg);
+                border: 1px solid var(--aura-border);
                 border-radius: 8px;
                 padding: 10px 12px 10px 36px;
-                color: #0f172a;
+                color: var(--aura-text);
                 font-size: 13px;
                 box-sizing: border-box;
                 outline: none;
@@ -263,12 +377,12 @@
             }
             
             .aura-input:focus {
-                border-color: #10b981;
-                box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15);
+                border-color: var(--aura-accent);
+                box-shadow: 0 0 0 2px var(--aura-border);
             }
             
             .aura-input::placeholder {
-                color: #475569;
+                color: var(--aura-text-muted);
             }
             
             .aura-input-grid {
@@ -279,8 +393,8 @@
             }
             
             .aura-btn-primary {
-                background: #0f172a;
-                color: #f8fafc;
+                background: var(--aura-btn-bg);
+                color: var(--aura-btn-text);
                 border: none;
                 border-radius: 8px;
                 padding: 12px 16px;
@@ -299,7 +413,7 @@
             }
             
             .aura-btn-primary:hover:not(:disabled) {
-                background: #1e293b;
+                background: var(--aura-btn-hover);
             }
             
             .aura-btn-primary:active:not(:disabled) {
@@ -312,18 +426,18 @@
             }
             
             .aura-btn-primary.accent {
-                background: #10b981;
+                background: var(--aura-accent);
                 color: #ffffff;
             }
             
             .aura-btn-primary.accent:hover:not(:disabled) {
-                background: #34d399;
+                opacity: 0.9;
             }
             
             .aura-btn-secondary {
                 background: none;
                 border: none;
-                color: #64748b;
+                color: var(--aura-text-muted);
                 font-size: 11px;
                 font-weight: 600;
                 text-transform: uppercase;
@@ -337,12 +451,12 @@
             }
             
             .aura-btn-secondary:hover {
-                color: #475569;
+                color: var(--aura-text-muted);
             }
             
             .aura-tabs {
                 display: flex;
-                border-bottom: 1px solid #e2e8f0;
+                border-bottom: 1px solid var(--aura-border);
                 margin-bottom: 16px;
             }
             
@@ -350,7 +464,7 @@
                 flex: 1;
                 background: none;
                 border: none;
-                color: #475569;
+                color: var(--aura-text-muted);
                 font-size: 10px;
                 font-weight: 700;
                 text-transform: uppercase;
@@ -362,8 +476,8 @@
             }
             
             .aura-tab.active {
-                color: #0f172a;
-                border-bottom-color: #10b981;
+                color: var(--aura-text);
+                border-bottom-color: var(--aura-accent);
             }
             
             .aura-tab:disabled {
@@ -373,19 +487,19 @@
             
             .aura-footer-text {
                 font-size: 8px;
-                color: #475569;
+                color: var(--aura-text-muted);
                 text-align: center;
                 margin-top: 16px;
                 line-height: 1.4;
             }
             
             .aura-footer-text a {
-                color: #64748b;
+                color: var(--aura-text-muted);
                 text-decoration: underline;
             }
             
             .aura-footer-text a:hover {
-                color: #475569;
+                color: var(--aura-text-muted);
             }
             
             .aura-modal-overlay {
@@ -394,7 +508,7 @@ position: fixed;
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: rgba(255, 255, 255, 0.85);
+                background: var(--aura-overlay);
                 backdrop-filter: blur(12px);
                 -webkit-backdrop-filter: blur(12px);
                 z-index: 2147483646;
@@ -414,8 +528,8 @@ position: fixed;
             }
             
             .aura-modal {
-                background: #ffffff;
-                border: 1px solid rgba(0, 0, 0, 0.08);
+                background: var(--aura-modal-bg);
+                border: 1px solid var(--aura-border);
                 border-radius: 16px;
                 max-width: 480px;
                 width: 100%;
@@ -435,19 +549,19 @@ position: fixed;
                 width: 56px;
                 height: 56px;
                 border-radius: 56px;
-                background: #f1f5f9;
-                border: 1px solid rgba(0, 0, 0, 0.08);
+                background: var(--aura-input-bg);
+                border: 1px solid var(--aura-border);
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                color: #475569;
+                color: var(--aura-text-muted);
                 margin: 0 auto 20px auto;
             }
             
             .aura-modal-title {
                 font-size: 20px;
                 font-weight: 700;
-                color: #0f172a;
+                color: var(--aura-text);
                 margin: 0 0 8px 0;
                 letter-spacing: -0.02em;
             }
@@ -455,7 +569,7 @@ position: fixed;
             .aura-modal-text {
                 font-size: 13px;
                 line-height: 1.6;
-                color: #475569;
+                color: var(--aura-text-muted);
                 font-weight: 300;
                 margin-bottom: 24px;
             }
