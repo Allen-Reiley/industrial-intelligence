@@ -11,5 +11,11 @@
 #     echo "⚠️ Database migrations failed to apply, but proceeding to start ASGI server..."
 # fi
 
-echo "🚀 Starting ASGI server..."
-exec uv run uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}" --proxy-headers --forwarded-allow-ips "*"
+WORKERS=${WEB_CONCURRENCY:-2}
+echo "🚀 Starting ASGI server with ${WORKERS} workers..."
+exec uv run uvicorn app.main:app \
+    --host 0.0.0.0 \
+    --port "${PORT:-8000}" \
+    --workers "${WORKERS}" \
+    --proxy-headers \
+    --forwarded-allow-ips "*"

@@ -266,31 +266,26 @@
             document.addEventListener('click', (e) => {
                 const anchor = e.target.closest('a');
                 if (anchor && anchor.href) {
-                    const href = anchor.href.toLowerCase();
-                    if (href.match(/\.(pdf|zip|dwg|dxf|cad|step|igs)$/)) {
-                        const hasConsent = document.cookie.split('; ').some(row => row.startsWith('aura_consent=true')) || localStorage.getItem('aura_consent_given') === 'true';
+                    const href = anchor.href;
+                    if (href.toLowerCase().match(/\.(pdf|zip|dwg|dxf|cad|step|igs)$/)) {
+                        const hasConsent = document.cookie.includes('aura_consent=true') || localStorage.getItem('aura_consent_given') === 'true';
                         if (!hasConsent) {
                             e.preventDefault();
                             
-                            // Load banner dynamically if not already present, then trigger Phase 04
-                            if (!document.querySelector('script[src*="banner.js"]')) {
-                                const s = document.createElement('script');
-                                s.src = window.AURA_CONFIG?.bannerUrl || "https://banner.auraworks.co.za/banner.js";
-                                s.defer = true;
-                                s.onload = () => {
-                                    window.dispatchEvent(new CustomEvent('aura:ready', {
-                                        detail: { auraId: this.auraId, clientId: agencyId, config: this.config }
-                                    }));
-                                    const triggerBanner = () => {
-                                        window.dispatchEvent(new CustomEvent('aura:trigger_banner', { detail: { phase: 4 } }));
-                                        window.removeEventListener('aura:banner_mounted', triggerBanner);
-                                    };
-                                    window.addEventListener('aura:banner_mounted', triggerBanner);
-                                };
-                                document.head.appendChild(s);
-                            } else {
-                                window.dispatchEvent(new CustomEvent('aura:trigger_banner', { detail: { phase: 4 } }));
-                            }
+                            let released = false;
+                            const fallbackTimer = setTimeout(() => {
+                                if (!released) {
+                                    released = true;
+                                    window.location.href = href; // Fail-safe release
+                                }
+                            }, 1200);
+
+                            window.addEventListener('aura:banner_mounted', () => {
+                                clearTimeout(fallbackTimer);
+                            }, { once: true });
+
+                            // Dispatch trigger to mount banner
+                            window.dispatchEvent(new CustomEvent('aura:trigger_banner', { detail: { phase: 4, assetUrl: href } }));
                         }
                     }
                 }

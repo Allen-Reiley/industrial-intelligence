@@ -191,6 +191,33 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 
 # --- CORS CONFIGURATION ---
+from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi import Response
+
+class IngestionCORSMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        if request.url.path.startswith("/v1/track"):
+            origin = request.headers.get("origin")
+            if request.method == "OPTIONS":
+                response = Response()
+                if origin:
+                    response.headers["Access-Control-Allow-Origin"] = origin
+                    response.headers["Access-Control-Allow-Credentials"] = "true"
+                    response.headers["Access-Control-Allow-Methods"] = "*"
+                    response.headers["Access-Control-Allow-Headers"] = "*"
+                return response
+            
+            response = await call_next(request)
+            if origin:
+                response.headers["Access-Control-Allow-Origin"] = origin
+                response.headers["Access-Control-Allow-Credentials"] = "true"
+                response.headers["Access-Control-Allow-Methods"] = "*"
+                response.headers["Access-Control-Allow-Headers"] = "*"
+            return response
+        return await call_next(request)
+
+app.add_middleware(IngestionCORSMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,

@@ -124,10 +124,16 @@ async def get_lead_intelligence(
         if lead.company_id:
             company = await session.get(Company, lead.company_id)
 
-        # 3. Pull Visit History for Activity Heatmap
-        visit_stmt = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at.desc())
-        res_visits = await session.execute(visit_stmt)
-        visits = res_visits.scalars().all()
+        # 3. Pull PageView History for Activity Heatmap
+        from app.models.pageview import PageView
+        pv_stmt = (
+            select(PageView)
+            .join(Visit, PageView.visit_id == Visit.id)
+            .where(Visit.aura_id == aura_id)
+            .order_by(PageView.created_at.desc())
+        )
+        res_pv = await session.execute(pv_stmt)
+        page_views = res_pv.scalars().all()
 
         return {
             "lead_profile": {
@@ -138,10 +144,10 @@ async def get_lead_intelligence(
             },
             "company_intel": company,
             "forensic_trail": [
-                {"timestamp": v.created_at, "url": v.url, "duration": v.duration} 
-                for v in visits
+                {"timestamp": pv.created_at, "url": pv.url_path, "duration": pv.duration} 
+                for pv in page_views
             ],
-            "total_engagement_points": len(visits)
+            "total_engagement_points": len(page_views)
         }
         
     except HTTPException:

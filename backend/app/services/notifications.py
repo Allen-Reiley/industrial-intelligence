@@ -157,19 +157,34 @@ async def post_to_visit_channel(visit_data: dict, journey: dict):
 
 # --- PHASE 02: Lead Notifications (Identity Promotion) ---
 
-async def post_to_slack(prospect_data: dict, journey: dict = None):
+async def post_to_slack(prospect_data: dict, journey: dict = None, client_id: Optional[UUID] = None):
     """
     Standard lead notification for identified conversions (Promotion / Form Submission).
     Structures firmographic and forensic profile data clearly.
     """
-    if not settings.SLACK_WEBHOOK_URL:
+    if not client_id:
+        client_id_raw = prospect_data.get("client_id")
+        if client_id_raw:
+            client_id = UUID(str(client_id_raw))
+
+    webhook_url = None
+    if client_id and async_session_maker:
+        from app.models.client import Client
+        async with async_session_maker() as session:
+            client = await session.get(Client, client_id)
+            if client and client.slack_webhook_url:
+                webhook_url = client.slack_webhook_url
+
+    if not webhook_url:
+        webhook_url = settings.SLACK_WEBHOOK_URL
+
+    if not webhook_url:
         return
 
-    client_id = prospect_data.get("client_id")
     company_id = prospect_data.get("company_id")
     
     if client_id and company_id:
-        if await is_slack_notification_throttled(UUID(str(client_id)), UUID(str(company_id))):
+        if await is_slack_notification_throttled(client_id, UUID(str(company_id))):
             logger.info(f"🔇 Slack Notification Throttled for company_id: {company_id}")
             return
 
@@ -223,9 +238,9 @@ async def post_to_slack(prospect_data: dict, journey: dict = None):
             ]
         })
     
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient() as http_client:
         try:
-            response = await client.post(settings.SLACK_WEBHOOK_URL, json=payload, timeout=10.0)
+            response = await http_client.post(webhook_url, json=payload, timeout=10.0)
             response.raise_for_status()
         except Exception as e:
             logger.error(f"Lead Channel Dispatch Failure: {e}")

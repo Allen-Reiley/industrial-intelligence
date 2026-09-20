@@ -27,13 +27,18 @@ def is_consumer_traffic(target_name: str) -> bool:
     normalized = target_name.lower()
     return any(keyword in normalized for keyword in CONSUMER_ISP_KEYWORDS)
 
-def perform_local_reverse_dns(ip_address: str) -> Dict[str, Any]:
+async def perform_local_reverse_dns(ip_address: str) -> Dict[str, Any]:
     """
     Layer 1: Zero-Cost Classification.
     Identifies cloud providers and obvious ISPs without burning API credits.
     """
+    import asyncio
     try:
-        hostname, _, _ = socket.gethostbyaddr(ip_address)
+        loop = asyncio.get_running_loop()
+        hostname, _, _ = await asyncio.wait_for(
+            loop.run_in_executor(None, socket.gethostbyaddr, ip_address),
+            timeout=1.0
+        )
         hostname = hostname.lower()
         
         # Cloud/Data Center filtration
@@ -68,8 +73,19 @@ async def enrich_visitor_data(ip_address: str, volunteered_company: Optional[str
             "provider_type": "Warm Lead"
         }
 
+    import json
+    from app.core.cache import TwoTierCache
+
+    cache_key = f"ip_intel:{ip_address}"
+    try:
+        cached = await TwoTierCache.get(cache_key)
+        if cached:
+            return json.loads(cached)
+    except Exception as e:
+        logger.warning(f"Cache lookup failed for {ip_address}: {e}")
+
     # 2. Layer 1 Check (Local Reverse DNS)
-    local_intel = perform_local_reverse_dns(ip_address)
+    local_intel = await perform_local_reverse_dns(ip_address)
 
     # 3. Layer 2 Check (IPinfo)
     if not settings.IPINFO_TOKEN:
@@ -111,7 +127,7 @@ async def enrich_visitor_data(ip_address: str, volunteered_company: Optional[str
             # Final determination for the 'Industrial' threshold
             is_b2b = confidence >= 0.5
 
-            return {
+            result_data = {
                 "company_name": final_name,
                 "domain": final_domain or asn_data.get("domain"),
                 "is_b2b": is_b2b,
@@ -121,6 +137,13 @@ async def enrich_visitor_data(ip_address: str, volunteered_company: Optional[str
                 "region": data.get("region"),
                 "provider_type": local_intel["type"]
             }
+
+            try:
+                await TwoTierCache.set(cache_key, json.dumps(result_data), expire=86400)
+            except Exception as e:
+                logger.warning(f"Cache write failed for {ip_address}: {e}")
+
+            return result_data
         except (httpx.RequestError, socket.timeout) as e:
             logger.error(f"🚨 IPinfo Network Failure: {e}")
             raise EnrichmentError(f"IPinfo network failure: {e}", status_code=504)

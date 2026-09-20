@@ -25,6 +25,8 @@ async def run_enrichment_cycle():
 
     async with async_session_maker() as session:
         try:
+            from sqlalchemy import text
+            await session.execute(text("SELECT set_config('app.bypass_rls', 'on', true)"))
             # Locate target companies requiring deep intelligence routing
             statement = select(Company).where(Company.domain != None)
             result = await session.execute(statement)

@@ -125,11 +125,27 @@
         };
 
         try {
+            function normalizeColor(c) {
+                if (!c) return null;
+                c = String(c).trim();
+                if (/^[\d.]+\s+[\d.]+%\s+[\d.]+%$/.test(c)) return `hsl(${c})`;
+                if (/^[\d.]+\s+[\d.]+\s+[\d.]+$/.test(c)) return `rgb(${c.split(/\s+/).join(', ')})`;
+                return c;
+            }
+
             function isValid(c) {
-                return c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent' && c !== 'inherit' && c !== 'none';
+                c = normalizeColor(c);
+                if (!c) return false;
+                const clean = c.replace(/\s+/g, '').toLowerCase();
+                if (clean === 'rgba(0,0,0,0)' || clean === 'transparent' || clean === 'inherit' || clean === 'none' || clean === 'initial' || clean === '') return false;
+                
+                const div = document.createElement('div');
+                div.style.backgroundColor = c;
+                return div.style.backgroundColor !== '';
             }
 
             function getComputedColor(colorStr) {
+                colorStr = normalizeColor(colorStr);
                 if (!colorStr) return 'rgb(255, 255, 255)';
                 try {
                     const div = document.createElement('div');
@@ -244,8 +260,9 @@
             const varBg = rootStyle.getPropertyValue('--background');
 
             const getMostFreq = (dict) => Object.entries(dict).sort((a,b) => b[1]-a[1])[0]?.[0];
-            const domBg = (isValid(varBg) ? varBg.trim() : null) || getMostFreq(colors.bg);
-            const domAccent = (isValid(varPrimary) ? varPrimary.trim() : null) || (isValid(varAccent) ? varAccent.trim() : null) || getMostFreq(colors.accent);
+            const domBg = (isValid(varBg) ? normalizeColor(varBg).trim() : null) || getMostFreq(colors.bg);
+            const domAccent = (isValid(varPrimary) ? normalizeColor(varPrimary).trim() : null) || (isValid(varAccent) ? normalizeColor(varAccent).trim() : null) || getMostFreq(colors.accent);
+
 
             if (domBg) {
                 // apply a slight transparency if it's solid rgb, or just use it

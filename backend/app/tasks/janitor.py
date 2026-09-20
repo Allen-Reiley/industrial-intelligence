@@ -91,6 +91,8 @@ async def cleanup_unverified_visits():
         
     async with AsyncSession(async_engine) as session:
         try:
+            from sqlalchemy import text
+            await session.execute(text("SELECT set_config('app.bypass_rls', 'on', true)"))
             await execute_janitor_scrub_cascade(session)
         except Exception as e:
             await session.rollback()

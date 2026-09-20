@@ -325,7 +325,9 @@ async def track_identity(
             resolved_name = f"{payload.first_name or ''} {payload.last_name or ''}".strip()
             
         if resolved_name: lead.name = resolved_name
-        if payload.phone: lead.phone_encrypted = payload.phone
+        if payload.phone:
+            from app.core.security import encrypt_field
+            lead.phone_encrypted = encrypt_field(payload.phone)
         if payload.company_name: lead.company_name_raw = payload.company_name
         if payload.department: lead.department = payload.department
         if payload.position: lead.position = payload.position
