@@ -2,6 +2,7 @@
 import logging
 import httpx
 import urllib.parse
+from typing import Optional
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 from sqlmodel import select
