@@ -8,7 +8,8 @@ def get_encryption_key() -> bytes:
     Derives a 32-byte key from the SECRET_KEY for AES-256-GCM encryption.
     If the SECRET_KEY is not exactly 32 bytes, we hash it using SHA-256 to guarantee size.
     """
-    secret = settings.SECRET_KEY.encode('utf-8')
+    secret_str = settings.SECRET_KEY or "dev-fallback-secret-key-1234567890"
+    secret = secret_str.encode('utf-8')
     # AES-256 requires a key length of exactly 256 bits (32 bytes).
     # If the system secret is pre-configured to exactly 32 bytes, use it directly.
     if len(secret) == 32:
