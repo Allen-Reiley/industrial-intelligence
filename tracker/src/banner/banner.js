@@ -125,187 +125,54 @@
         };
 
         try {
-            function normalizeColor(c) {
-                if (!c) return null;
-                c = String(c).trim();
-                if (/^[\d.]+\s+[\d.]+%\s+[\d.]+%$/.test(c)) return `hsl(${c})`;
-                if (/^[\d.]+\s+[\d.]+\s+[\d.]+$/.test(c)) return `rgb(${c.split(/\s+/).join(', ')})`;
-                return c;
-            }
-
-            function isValid(c) {
-                c = normalizeColor(c);
-                if (!c) return false;
-                const clean = c.replace(/\s+/g, '').toLowerCase();
-                if (clean === 'rgba(0,0,0,0)' || clean === 'transparent' || clean === 'inherit' || clean === 'none' || clean === 'initial' || clean === '') return false;
+            if (config && config.theme_config) {
+                const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const mode = isDark ? 'dark' : 'light';
+                const tc = config.theme_config[mode] || config.theme_config['light'] || config.theme_config['dark'] || {};
                 
-                const div = document.createElement('div');
-                div.style.backgroundColor = c;
-                return div.style.backgroundColor !== '';
-            }
-
-            function getComputedColor(colorStr) {
-                colorStr = normalizeColor(colorStr);
-                if (!colorStr) return 'rgb(255, 255, 255)';
-                try {
-                    const div = document.createElement('div');
-                    div.style.backgroundColor = colorStr;
-                    div.style.display = 'none';
-                    document.body.appendChild(div);
-                    const computed = window.getComputedStyle(div).backgroundColor;
-                    document.body.removeChild(div);
-                    return computed || colorStr;
-                } catch(e) {
-                    return colorStr;
+                if (tc.bg) {
+                    theme.bg = tc.bg;
+                    theme.modalBg = tc.bg;
+                    theme.overlay = isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)';
                 }
-            }
-
-            function getLuminance(colorStr) {
-                if (!colorStr) return 1;
-                const clean = String(colorStr).trim().toLowerCase();
-
-                // 1. Explicit OKLCH parsing: oklch(L C H [ / A ])
-                if (clean.includes('oklch')) {
-                    const match = clean.match(/[\d.]+/g);
-                    if (match && match.length >= 1) {
-                        let l = parseFloat(match[0]);
-                        if (clean.includes('%') && l > 1) l /= 100;
-                        return isNaN(l) ? 1 : l;
-                    }
+                if (tc.text) {
+                    theme.text = tc.text;
+                    // Muted is slightly transparent text
+                    theme.textMuted = tc.text + '99'; 
+                } else if (tc.bg) {
+                    // Check luminance for default text if not provided
+                    const rgb = hexToRgb(tc.bg);
+                    const lum = rgb ? (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255 : (isDark ? 0 : 1);
+                    theme.text = lum < 0.5 ? '#F9FAFB' : '#111827';
+                    theme.textMuted = lum < 0.5 ? '#9CA3AF' : '#4B5563';
                 }
-
-                // 2. Explicit HSL parsing: hsl(H S% L% [ / A ])
-                if (clean.includes('hsl')) {
-                    const match = clean.match(/[\d.]+/g);
-                    if (match && match.length >= 3) {
-                        const l = parseFloat(match[2]) / 100;
-                        return isNaN(l) ? 1 : l;
-                    }
-                }
-
-                // 3. Hex parsing: #RGB or #RRGGBB
-                if (clean.startsWith('#')) {
-                    const hex = clean.replace('#', '');
-                    let r, g, b;
-                    if (hex.length === 3 || hex.length === 4) {
-                        r = parseInt(hex[0] + hex[0], 16);
-                        g = parseInt(hex[1] + hex[1], 16);
-                        b = parseInt(hex[2] + hex[2], 16);
-                    } else if (hex.length >= 6) {
-                        r = parseInt(hex.substring(0, 2), 16);
-                        g = parseInt(hex.substring(2, 4), 16);
-                        b = parseInt(hex.substring(4, 6), 16);
-                    }
-                    if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
-                        const sRGB = [r / 255, g / 255, b / 255].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
-                        return 0.2126 * sRGB[0] + 0.7152 * sRGB[1] + 0.0722 * sRGB[2];
-                    }
-                }
-
-                // 4. Try browser computed style
-                const computedStr = getComputedColor(colorStr);
-                const cleanComputed = String(computedStr).trim().toLowerCase();
-
-                if (cleanComputed.includes('oklch')) {
-                    const match = cleanComputed.match(/[\d.]+/g);
-                    if (match && match.length >= 1) {
-                        let l = parseFloat(match[0]);
-                        if (cleanComputed.includes('%') && l > 1) l /= 100;
-                        return isNaN(l) ? 1 : l;
-                    }
-                }
-
-                if (cleanComputed.includes('hsl')) {
-                    const match = cleanComputed.match(/[\d.]+/g);
-                    if (match && match.length >= 3) {
-                        const l = parseFloat(match[2]) / 100;
-                        return isNaN(l) ? 1 : l;
-                    }
-                }
-
-                // 5. RGB / RGBA: rgb(r, g, b)
-                const rgbMatch = cleanComputed.match(/\d+(\.\d+)?/g);
-                if (rgbMatch && rgbMatch.length >= 3) {
-                    let r = Number(rgbMatch[0]) / 255;
-                    let g = Number(rgbMatch[1]) / 255;
-                    let b = Number(rgbMatch[2]) / 255;
-                    const sRGB = [r, g, b].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
-                    return 0.2126 * sRGB[0] + 0.7152 * sRGB[1] + 0.0722 * sRGB[2];
-                }
-
-                return 1;
-            }
-
-            const colors = { bg: {}, accent: {} };
-            const els = document.querySelectorAll('header, nav, main, button, a, h1, h2');
-            els.forEach(el => {
-                // skip our own elements
-                if (el.closest('#aura-consent-root')) return;
                 
-                const style = window.getComputedStyle(el);
-                const bg = style.backgroundColor;
-                const fg = style.color;
-                
-                if (el.tagName === 'MAIN' || el.tagName === 'BODY' || el.tagName === 'HEADER') {
-                    if (isValid(bg)) colors.bg[bg] = (colors.bg[bg] || 0) + 1;
-                } else if (el.tagName === 'BUTTON' || el.tagName === 'A') {
-                    if (isValid(bg)) colors.accent[bg] = (colors.accent[bg] || 0) + 1;
-                    if (isValid(fg)) colors.accent[fg] = (colors.accent[fg] || 0) + 1;
+                if (tc.primary) {
+                    theme.primary = tc.primary;
+                    theme.accent = tc.primary;
+                    theme.btnBg = tc.primary;
+                    
+                    const rgb = hexToRgb(tc.primary);
+                    const lum = rgb ? (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255 : 0;
+                    theme.accentText = lum < 0.5 ? '#ffffff' : '#111827';
                 }
-            });
-
-            const rootStyle = window.getComputedStyle(document.documentElement);
-            const varPrimary = rootStyle.getPropertyValue('--primary') || rootStyle.getPropertyValue('--color-brand');
-            const varAccent = rootStyle.getPropertyValue('--accent');
-            const varBg = rootStyle.getPropertyValue('--background');
-
-            const getMostFreq = (dict) => Object.entries(dict).sort((a,b) => b[1]-a[1])[0]?.[0];
-            const domBg = (isValid(varBg) ? normalizeColor(varBg).trim() : null) || getMostFreq(colors.bg);
-            const domAccent = (isValid(varPrimary) ? normalizeColor(varPrimary).trim() : null) || (isValid(varAccent) ? normalizeColor(varAccent).trim() : null) || getMostFreq(colors.accent);
-
-
-            if (domBg) {
-                // apply a slight transparency if it's solid rgb, or just use it
-                theme.bg = domBg.replace('rgb(', 'rgba(').replace(')', ', 0.95)');
-                // If it was already rgba, just use it
-                if (domBg.includes('rgba')) theme.bg = domBg;
-            }
-            if (domAccent) theme.accent = domAccent;
-
-            const accentLuminance = getLuminance(theme.accent);
-            theme.accentText = accentLuminance < 0.5 ? '#ffffff' : '#111827';
-
-            // Compute contrast against background
-            const bgForLuminance = domBg || 'rgb(255, 255, 255)';
-            const luminance = getLuminance(bgForLuminance);
-            
-            if (luminance < 0.5) {
-                // Dark background
-                theme.text = '#F9FAFB';
-                theme.textMuted = '#9CA3AF';
-                theme.border = 'rgba(255, 255, 255, 0.1)';
-                theme.inputBg = 'rgba(255, 255, 255, 0.05)';
-                theme.btnBg = '#F9FAFB';
-                theme.btnText = '#111827';
-                theme.btnHover = '#E5E7EB';
-                theme.overlay = 'rgba(0, 0, 0, 0.85)';
-                theme.modalBg = '#1f2937';
-            } else {
-                // Light background
-                theme.text = '#111827';
-                theme.textMuted = '#4B5563';
-                theme.border = 'rgba(0, 0, 0, 0.08)';
-                theme.inputBg = '#F3F4F6';
-                theme.btnBg = '#111827';
-                theme.btnText = '#F9FAFB';
-                theme.btnHover = '#374151';
-                theme.overlay = 'rgba(255, 255, 255, 0.85)';
-                theme.modalBg = '#ffffff';
+                if (tc.btnText) {
+                    theme.btnText = tc.btnText;
+                }
             }
         } catch(e) {
-            console.error('Aura Banner: Theme extraction failed', e);
+            console.error('Aura Banner: Theme config application failed', e);
         }
         return theme;
+    }
+
+    function hexToRgb(hex) {
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
     }
 
     function createDOM() {

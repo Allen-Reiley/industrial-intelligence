@@ -55,6 +55,10 @@ class ClientBase(SQLModel):
     tc_accepted_ip: Optional[str] = Field(default=None, nullable=True)
     cancellation_requested: bool = Field(default=False, nullable=False)
     trial_warning_sent: bool = Field(default=False, nullable=False)
+    theme_config: Optional[dict] = Field(
+        default=None,
+        sa_column=Column(JSON)
+    )
 
 
     def __init__(self, **data: Any):

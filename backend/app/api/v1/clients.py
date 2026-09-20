@@ -245,7 +245,7 @@ class ClientUpdatePayload(BaseModel):
     collect_personal_data: Optional[bool] = None
     is_active: Optional[bool] = None
     custom_monthly_amount: Optional[int] = None
-
+    theme_config: Optional[dict] = None
 
 @router.patch("/{client_id}", response_model=ClientPublic)
 async def update_client(
@@ -284,6 +284,8 @@ async def update_client(
         client.is_active = payload.is_active
     if payload.custom_monthly_amount is not None:
         client.custom_monthly_amount = payload.custom_monthly_amount
+    if payload.theme_config is not None:
+        client.theme_config = payload.theme_config
 
     session.add(client)
     await session.commit()
