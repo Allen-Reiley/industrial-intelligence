@@ -66,10 +66,13 @@ async def run_janitor_loop():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    The AuraWorks OS Lifecycle Manager.
-    """
-    logger.info(f"🚀 {settings.PROJECT_NAME} v{settings.VERSION}: Initializing...")
+    try:
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(None, init_db)
+    except Exception as e:
+        logger.error(f"Error initializing DB: {e}")
+    
+    logger.info("🚀 Industrial Intelligence Engine v3.2.1: Initializing...")
     
     # Database schema checks/migrations are fully decoupled from application startup.
     # The ASGI startup sequence only boots the FastAPI context and starts background helpers.

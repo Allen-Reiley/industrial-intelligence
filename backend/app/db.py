@@ -102,22 +102,21 @@ def init_db():
         from app.models.user import User, OAuthAccount
 
         
-        # Programmatic Alembic migrations commented out to prevent startup hangs.
-        # Database schema migrations are decoupled from application startup.
-        # import os
-        # from alembic.config import Config
-        # from alembic import command
-        # 
-        # current_dir = os.path.dirname(os.path.abspath(__file__))
-        # alembic_ini_path = os.path.abspath(os.path.join(current_dir, "..", "alembic.ini"))
-        # 
-        # if os.path.exists(alembic_ini_path):
-        #     logger.info("🔄 Running database migrations via Alembic...")
-        #     alembic_cfg = Config(alembic_ini_path)
-        #     command.upgrade(alembic_cfg, "head")
-        #     logger.info("✅ Database migrations completed successfully.")
-        # else:
-        #     logger.warning(f"⚠️ alembic.ini not found at {alembic_ini_path}, skipping migrations.")
+        # Programmatic Alembic migrations
+        import os
+        from alembic.config import Config
+        from alembic import command
+        
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        alembic_ini_path = os.path.abspath(os.path.join(current_dir, "..", "alembic.ini"))
+        
+        if os.path.exists(alembic_ini_path):
+            logger.info("🔄 Running database migrations via Alembic...")
+            alembic_cfg = Config(alembic_ini_path)
+            command.upgrade(alembic_cfg, "head")
+            logger.info("✅ Database migrations completed successfully.")
+        else:
+            logger.warning(f"⚠️ alembic.ini not found at {alembic_ini_path}, skipping migrations.")
         
         SQLModel.metadata.create_all(engine)
         logger.info("✅ Database Ledger: Connection established and tables verified.")
