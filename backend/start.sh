@@ -4,12 +4,12 @@
 
 # Migrations decoupled from application startup to avoid blocking port binding on Railway.
 # Database schema updates should be executed independently during deployment tasks.
-# echo "🏗️ Running database migrations..."
-# if uv run alembic upgrade head; then
-#     echo "✅ Database migrations successfully applied."
-# else
-#     echo "⚠️ Database migrations failed to apply, but proceeding to start ASGI server..."
-# fi
+echo "🏗️ Running database migrations..."
+if uv run alembic upgrade head; then
+    echo "✅ Database migrations successfully applied."
+else
+    echo "⚠️ Database migrations failed to apply, but proceeding to start ASGI server..."
+fi
 
 WORKERS=${WEB_CONCURRENCY:-2}
 echo "🚀 Starting ASGI server with ${WORKERS} workers..."
