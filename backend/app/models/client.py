@@ -19,6 +19,7 @@ class SubscriptionStatus(str, Enum):
 
 class ClientBase(SQLModel):
     company_name: str = Field(index=True)
+    contact_email: Optional[str] = Field(default=None, nullable=True)
     domain: Optional[str] = Field(default=None, index=True, nullable=True)
     whitelisted_domains: List[str] = Field(
         default=[],

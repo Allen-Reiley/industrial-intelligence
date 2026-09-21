@@ -19,6 +19,18 @@ async def send_resend_email(
     Dispatches outbound email notifications using Resend's REST API.
     Asynchronous implementation ensures waitlist route submission stays fast.
     """
+    if not to_email:
+        return False
+        
+    lower_email = to_email.lower()
+    blocked_keywords = [
+        "test", "example", "fake", "spam", "dummy", 
+        "localhost", "foo.com", "bar.com", "unknown@"
+    ]
+    if any(keyword in lower_email for keyword in blocked_keywords):
+        logger.info(f"🚫 Email dispatch skipped for test/blocked address: {to_email}")
+        return False
+
     if not settings.RESEND_API_KEY:
         logger.error("Resend delivery failed: RESEND_API_KEY is not configured in settings.")
         return False

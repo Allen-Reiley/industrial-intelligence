@@ -239,12 +239,14 @@ async def verify_client_installation(
 
 class ClientUpdatePayload(BaseModel):
     company_name: Optional[str] = None
+    contact_email: Optional[str] = None
     whitelisted_domains: Optional[List[str]] = None
     subscription_status: Optional[str] = None
     require_consent_banner: Optional[bool] = None
     collect_personal_data: Optional[bool] = None
     is_active: Optional[bool] = None
     custom_monthly_amount: Optional[int] = None
+    payment_plan: Optional[str] = None
     theme_config: Optional[dict] = None
 
 @router.patch("/{client_id}", response_model=ClientPublic)
@@ -272,6 +274,8 @@ async def update_client(
 
     if payload.company_name is not None:
         client.company_name = payload.company_name
+    if payload.contact_email is not None:
+        client.contact_email = payload.contact_email
     if payload.whitelisted_domains is not None:
         client.whitelisted_domains = payload.whitelisted_domains
     if payload.subscription_status is not None:
@@ -284,6 +288,8 @@ async def update_client(
         client.is_active = payload.is_active
     if payload.custom_monthly_amount is not None:
         client.custom_monthly_amount = payload.custom_monthly_amount
+    if payload.payment_plan is not None:
+        client.payment_plan = payload.payment_plan
     if payload.theme_config is not None:
         client.theme_config = payload.theme_config
 
@@ -299,3 +305,27 @@ async def update_client(
         logger.warning(f"Failed to invalidate TwoTierCache for client {client_id}: {e}")
 
     return client
+
+@router.delete("/{client_id}")
+async def delete_client(
+    client_id: UUID,
+    session: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(get_current_admin_user)
+):
+    """
+    Permanently deletes a client tenant profile.
+    """
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=403,
+            detail="Forbidden: Only superusers can delete clients."
+        )
+
+    client = await session.get(Client, client_id)
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+
+    await session.delete(client)
+    await session.commit()
+
+    return {"message": "Client deleted successfully"}
