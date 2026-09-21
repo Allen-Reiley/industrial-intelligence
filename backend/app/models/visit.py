@@ -2,7 +2,8 @@
 from enum import Enum
 from typing import Optional, List, Dict, Any, TYPE_CHECKING
 from datetime import datetime, timezone
-from uuid import UUID, uuid4
+from uuid import UUID
+from uuid6 import uuid7
 from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
 from pydantic import BaseModel
 
@@ -24,7 +25,7 @@ class Visit(SQLModel, table=True):
         Index("ix_visit_client_aura_created", "client_id", "aura_id", "created_at"),
     )
     
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    id: UUID = Field(default_factory=uuid7, primary_key=True)
     client_id: UUID = Field(foreign_key="client.id", ondelete="CASCADE", index=True)
     company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", ondelete="CASCADE", index=True, nullable=True)
     aura_id: str = Field(index=True)

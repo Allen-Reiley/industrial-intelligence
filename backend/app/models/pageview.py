@@ -1,7 +1,8 @@
 # backend/app/models/pageview.py
 from typing import Optional, TYPE_CHECKING
 from datetime import datetime, timezone
-from uuid import UUID, uuid4
+from uuid import UUID
+from uuid6 import uuid7
 from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
 
 if TYPE_CHECKING:
@@ -10,7 +11,7 @@ if TYPE_CHECKING:
 class PageView(SQLModel, table=True):
     __tablename__ = "page_view"
     
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    id: UUID = Field(default_factory=uuid7, primary_key=True)
     client_id: UUID = Field(foreign_key="client.id", ondelete="CASCADE", index=True)
     visit_id: UUID = Field(foreign_key="visit.id", ondelete="CASCADE", index=True)
     url_path: str = Field(index=True)

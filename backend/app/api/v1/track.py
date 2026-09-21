@@ -180,7 +180,7 @@ async def process_exit_logic(aura_id: str, client_id: str, duration: int = 0, ha
             visit_with_company = (await session.execute(visit_stmt)).scalars().first()
 
             company = None
-            if visit_with_company:
+            if visit_with_company and visit_with_company.company_id:
                 company = await session.get(Company, visit_with_company.company_id)
 
             if not lead and not company:

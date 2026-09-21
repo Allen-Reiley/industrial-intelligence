@@ -1,7 +1,8 @@
 # backend/app/models/event.py
 from typing import Optional, Dict, Any, TYPE_CHECKING
 from datetime import datetime, timezone
-from uuid import UUID, uuid4
+from uuid import UUID
+from uuid6 import uuid7
 from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
 from sqlalchemy.dialects.postgresql import JSONB
 import sqlalchemy as sa
@@ -12,7 +13,7 @@ if TYPE_CHECKING:
 class Event(SQLModel, table=True):
     __tablename__ = "event"
     
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    id: UUID = Field(default_factory=uuid7, primary_key=True)
     client_id: UUID = Field(foreign_key="client.id", ondelete="CASCADE", index=True)
     visit_id: UUID = Field(foreign_key="visit.id", ondelete="CASCADE", index=True)
     event_type: str = Field(index=True)

@@ -2,7 +2,8 @@
 from enum import Enum
 from typing import Optional, List, Any
 from datetime import datetime, timezone
-from uuid import UUID, uuid4
+from uuid import UUID
+from uuid6 import uuid7
 from sqlmodel import SQLModel, Field, Column, DateTime
 from sqlalchemy import ARRAY, String, JSON
 from pydantic import model_validator
@@ -74,7 +75,7 @@ class ClientBase(SQLModel):
 class Client(ClientBase, table=True):
     __tablename__ = "client"
     
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    id: UUID = Field(default_factory=uuid7, primary_key=True)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(DateTime(timezone=True), nullable=False)

@@ -2,7 +2,8 @@
 from enum import Enum
 from typing import Optional, Dict, Any
 from datetime import datetime, timezone
-from uuid import UUID, uuid4
+from uuid import UUID
+from uuid6 import uuid7
 from sqlmodel import SQLModel, Field, Column, DateTime
 from sqlalchemy import JSON
 from sqlalchemy.dialects.postgresql import JSONB
@@ -14,7 +15,7 @@ class QueueType(str, Enum):
 class EnrichmentQueue(SQLModel, table=True):
     __tablename__ = "enrichment_queue"
     
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    id: UUID = Field(default_factory=uuid7, primary_key=True)
     client_id: UUID = Field(foreign_key="client.id", index=True)
     visit_id: Optional[UUID] = Field(default=None, index=True, nullable=True)
     aura_id: Optional[str] = Field(default=None, index=True)
@@ -38,7 +39,7 @@ class EnrichmentQueue(SQLModel, table=True):
 class FailedEnrichment(SQLModel, table=True):
     __tablename__ = "failed_enrichment"
     
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    id: UUID = Field(default_factory=uuid7, primary_key=True)
     client_id: UUID = Field(foreign_key="client.id", index=True)
     visit_id: Optional[UUID] = Field(default=None, index=True, nullable=True)
     aura_id: Optional[str] = Field(default=None, index=True)

@@ -1,6 +1,7 @@
 # backend/app/models/crm_dead_letter.py
 from datetime import datetime, timezone
-from uuid import UUID, uuid4
+from uuid import UUID
+from uuid6 import uuid7
 from typing import Optional
 from sqlmodel import SQLModel, Field, Column, DateTime
 from sqlalchemy import JSON
@@ -9,7 +10,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 class CrmDeadLetter(SQLModel, table=True):
     __tablename__ = "crm_dead_letter"
     
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    id: UUID = Field(default_factory=uuid7, primary_key=True)
     client_id: UUID = Field(foreign_key="client.id", index=True)
     payload: dict = Field(
         default_factory=dict, 

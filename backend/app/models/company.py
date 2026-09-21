@@ -1,7 +1,8 @@
 # backend/app/models/company.py
 from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime, timezone
-from uuid import UUID, uuid4
+from uuid import UUID
+from uuid6 import uuid7
 from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
 
 if TYPE_CHECKING:
@@ -17,7 +18,7 @@ class Company(SQLModel, table=True):
         UniqueConstraint("client_id", "domain", name="uix_company_client_domain"),
     )
     
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    id: UUID = Field(default_factory=uuid7, primary_key=True)
     client_id: UUID = Field(
         default_factory=lambda: UUID("c4a6c9b1-8355-4de2-985d-a04f4dcd63a0"),
         foreign_key="client.id",

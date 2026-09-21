@@ -222,7 +222,7 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
         past_prospect_res = await session.execute(past_prospect_stmt)
         past_lead = past_prospect_res.scalars().first()
         
-        if past_lead:
+        if past_lead and past_lead.company_id:
             company = await session.get(Company, past_lead.company_id)
             if company:
                 cluster_info += f" | 🔗 Ghost-Linked: {company.company_name} (Identity via colleague)"
@@ -387,6 +387,8 @@ async def run_daily_intent_batch(session: AsyncSession):
         company_visits[v.company_id].append(v)
         
     for company_id, v_list in company_visits.items():
+        if not company_id:
+            continue
         company = await session.get(Company, company_id)
         if not company:
             continue
