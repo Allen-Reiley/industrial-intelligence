@@ -9,7 +9,7 @@ export function FounderProfile() {
                     <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border bg-muted shadow-2xl">
                         {/* Placeholder for your "Quiet Premium" AI-generated headshot */}
                         <Image 
-                            src="/founder-headshot.png" 
+                            src="https://ik.imagekit.io/lcpi94xy3/Founder-headshot.png?updatedAt=1790746841691" 
                             alt="Reitumetse Sethabela - Founder" 
                             fill 
                             className="object-cover grayscale hover:grayscale-0 transition-all duration-700"
@@ -21,7 +21,7 @@ export function FounderProfile() {
                             <p className="text-primary font-mono text-sm mt-1 uppercase tracking-widest">Founder & Systems Architect</p>
                         </div>
                         <p className="text-muted-foreground leading-relaxed">
-                            With an engineering systems background, I founded AuraWorks because South Africa&apos;s industrial and B2B leaders deserve growth infrastructure that reflects the technical caliber of their operations.
+                            With an engineering background, I founded AuraWorks because South Africa&apos;s industrial and B2B leaders deserve growth infrastructure that reflects the technical caliber of their operations.
                         </p>
                         <p className="text-muted-foreground leading-relaxed">
                             The procurement journey has fundamentally shifted. Industrial decision-makers research on Google and query generative AI engines (ChatGPT, Perplexity, Gemini) long before contacting sales. Yet when they review your technical specifications, legacy marketing treats them as anonymous bounces.
