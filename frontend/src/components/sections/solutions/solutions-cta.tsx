@@ -15,7 +15,7 @@ export function SolutionsCTA() {
                         <Link href="/book-demo">Book Demo</Link>
                     </Button>
                     <Button asChild size="lg" variant="outline" className="rounded-xl px-10">
-                        <Link href="/vsl">Watch Video</Link>
+                        <Link href="/book-audit">Book Audit</Link>
                     </Button>
                 </div>
             </div>

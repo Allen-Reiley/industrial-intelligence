@@ -31,8 +31,8 @@ const links = [
                 href: '/book-demo',
             },
             {
-                title: 'Core VSL Video',
-                href: '/vsl',
+                title: 'Executive SEO & GEO Audit',
+                href: '/book-audit',
             },
         ],
     },

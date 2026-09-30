@@ -87,8 +87,8 @@ export const HeroHeader = () => {
                                     variant="outline"
                                     size="sm"
                                     className={cn(isScrolled && 'lg:hidden')}>
-                                    <Link href="/vsl">
-                                        <span>Watch Video</span>
+                                    <Link href="/book-audit">
+                                        <span>Book Audit</span>
                                     </Link>
                                 </Button>
                                 <Button

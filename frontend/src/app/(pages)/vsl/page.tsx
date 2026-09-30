@@ -1,19 +1,19 @@
 import { Metadata } from 'next';
-import VSLFunnel from '@/components/vsl/vsl-funnel';
+import BookAuditView from '@/components/audit/book-audit-view';
 
 export const metadata: Metadata = {
-  title: 'Platform Walkthrough: Discoverability & Lead Capture',
-  description: 'Watch how AuraWorks pairs organic search dominance and Generative Engine Optimization (GEO) with proprietary visitor intelligence to capture high-value industrial pipeline.',
+  title: 'Executive SEO & GEO Audit | AuraWorks',
+  description: 'Request a precise, boardroom-ready 9-page audit evaluating your domain across Google Search Console, Google Trends, OpenSEO, and Google Gemini 2.0 AI citability.',
   alternates: {
     canonical: '/vsl',
   },
   openGraph: {
-    title: 'Platform Walkthrough: Discoverability & Lead Capture | AuraWorks',
-    description: 'Watch how AuraWorks pairs organic search dominance and Generative Engine Optimization (GEO) with proprietary visitor intelligence to capture high-value industrial pipeline.',
+    title: 'Executive SEO & GEO Audit | AuraWorks',
+    description: 'Request a precise, boardroom-ready 9-page audit evaluating your domain across Google Search Console, Google Trends, OpenSEO, and Google Gemini 2.0 AI citability.',
     url: 'https://auraworks.co.za/vsl',
   },
 };
 
 export default function VSLPage() {
-  return <VSLFunnel />;
+  return <BookAuditView />;
 }

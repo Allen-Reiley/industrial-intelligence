@@ -28,8 +28,8 @@ export function AboutCTA() {
                         size="lg"
                         variant="outline"
                         className="rounded-xl px-10">
-                        <Link href="/vsl">
-                            <span>Watch Video</span>
+                        <Link href="/book-audit">
+                            <span>Book Audit</span>
                         </Link>
                     </Button>
                 </div>

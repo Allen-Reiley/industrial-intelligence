@@ -22,8 +22,8 @@ export default function CallToAction() {
                             asChild
                             size="lg"
                             variant="outline">
-                            <Link href="/vsl">
-                                <span>Watch Video</span>
+                            <Link href="/book-audit">
+                                <span>Book Audit</span>
                             </Link>
                         </Button>
                     </div>
