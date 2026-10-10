@@ -3,6 +3,13 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import LoginPage from './page';
 import { signIn, signUp } from '@/lib/auth-client';
+import { ThemeProvider } from '@/context/ThemeContext';
+
+jest.mock('@/icons', () => ({
+  EyeCloseIcon: () => <svg data-testid="eye-close-icon" />,
+  EyeIcon: () => <svg data-testid="eye-icon" />,
+  GridIcon: () => <svg data-testid="grid-icon" />,
+}));
 
 jest.mock('@/lib/auth-client', () => ({
   signIn: {
@@ -25,33 +32,38 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
+const renderWithTheme = (ui: React.ReactElement) => {
+  return render(
+    <ThemeProvider>{ui}</ThemeProvider>
+  );
+};
+
 describe('LoginPage V2 Astryx Multi-Method Auth Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   test('renders multi-method auth options (Google, GitHub, Email/Password)', () => {
-    render(<LoginPage />);
+    renderWithTheme(<LoginPage />);
 
-    expect(screen.getByText(/AuraHQ Operations Portal/i)).toBeInTheDocument();
-    expect(screen.getByText(/Multi-Method Auth/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Continue with Google/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Continue with GitHub/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Sign In with Email/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Sign In/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Google/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /GitHub/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sign In' })).toBeInTheDocument();
   });
 
   test('clicking Google SSO triggers Better Auth signIn.social', async () => {
     (signIn.social as jest.Mock).mockResolvedValueOnce({ error: null });
 
-    render(<LoginPage />);
+    renderWithTheme(<LoginPage />);
 
-    const googleBtn = screen.getByRole('button', { name: /Continue with Google/i });
+    const googleBtn = screen.getByRole('button', { name: /Google/i });
     fireEvent.click(googleBtn);
 
     await waitFor(() => {
       expect(signIn.social).toHaveBeenCalledWith({
         provider: 'google',
-        callbackURL: '/aurahq/sales',
+        callbackURL: '/aurahq',
       });
     });
   });
@@ -59,15 +71,15 @@ describe('LoginPage V2 Astryx Multi-Method Auth Tests', () => {
   test('clicking GitHub SSO triggers Better Auth signIn.social with github', async () => {
     (signIn.social as jest.Mock).mockResolvedValueOnce({ error: null });
 
-    render(<LoginPage />);
+    renderWithTheme(<LoginPage />);
 
-    const githubBtn = screen.getByRole('button', { name: /Continue with GitHub/i });
+    const githubBtn = screen.getByRole('button', { name: /GitHub/i });
     fireEvent.click(githubBtn);
 
     await waitFor(() => {
       expect(signIn.social).toHaveBeenCalledWith({
         provider: 'github',
-        callbackURL: '/aurahq/sales',
+        callbackURL: '/aurahq',
       });
     });
   });
@@ -75,55 +87,56 @@ describe('LoginPage V2 Astryx Multi-Method Auth Tests', () => {
   test('signing in with email and password triggers signIn.email', async () => {
     (signIn.email as jest.Mock).mockResolvedValueOnce({ error: null });
 
-    render(<LoginPage />);
+    renderWithTheme(<LoginPage />);
 
-    const emailInput = screen.getByPlaceholderText(/name@company\.co\.za/i);
-    const passwordInput = screen.getByPlaceholderText(/••••••••••••/i);
+    const emailInput = screen.getByPlaceholderText(/info@company\.co\.za/i);
+    const passwordInput = screen.getByPlaceholderText(/Enter your password/i);
 
     fireEvent.change(emailInput, { target: { value: 'rep@auraworks.co.za' } });
     fireEvent.change(passwordInput, { target: { value: 'SecurePassword123!' } });
 
-    const submitBtn = screen.getByRole('button', { name: /Sign In with Email/i });
+    const submitBtn = screen.getByRole('button', { name: 'Sign In' });
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
       expect(signIn.email).toHaveBeenCalledWith({
         email: 'rep@auraworks.co.za',
         password: 'SecurePassword123!',
-        callbackURL: '/aurahq/sales',
+        callbackURL: '/aurahq',
       });
-      expect(mockPush).toHaveBeenCalledWith('/aurahq/sales');
+      expect(mockPush).toHaveBeenCalledWith('/aurahq');
     });
   });
 
-  test('switching to Create Account tab and submitting triggers signUp.email', async () => {
+  test('switching to Sign Up tab and submitting triggers signUp.email', async () => {
     (signUp.email as jest.Mock).mockResolvedValueOnce({ error: null });
 
-    render(<LoginPage />);
+    renderWithTheme(<LoginPage />);
 
-    const createAccountTab = screen.getByRole('button', { name: /Create Account/i });
-    fireEvent.click(createAccountTab);
+    const signUpToggleBtn = screen.getByRole('button', { name: /Sign Up/i });
+    fireEvent.click(signUpToggleBtn);
 
-    expect(screen.getByPlaceholderText(/e\.g\. Jordan Belfort/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Jordan Belfort/i)).toBeInTheDocument();
 
-    const nameInput = screen.getByPlaceholderText(/e\.g\. Jordan Belfort/i);
-    const emailInput = screen.getByPlaceholderText(/name@company\.co\.za/i);
-    const passwordInputs = screen.getAllByPlaceholderText(/••••••••••••/i);
+    const nameInput = screen.getByPlaceholderText(/Jordan Belfort/i);
+    const emailInput = screen.getByPlaceholderText(/info@company\.co\.za/i);
+    const passwordInput = screen.getByPlaceholderText(/Enter your password/i);
+    const confirmPasswordInput = screen.getByPlaceholderText(/Confirm your password/i);
 
     fireEvent.change(nameInput, { target: { value: 'Jordan Belfort' } });
     fireEvent.change(emailInput, { target: { value: 'jordan@auraworks.co.za' } });
-    fireEvent.change(passwordInputs[0], { target: { value: 'SecretP@ssword123' } });
-    fireEvent.change(passwordInputs[1], { target: { value: 'SecretP@ssword123' } });
+    fireEvent.change(passwordInput, { target: { value: 'SecretP@ssword123' } });
+    fireEvent.change(confirmPasswordInput, { target: { value: 'SecretP@ssword123' } });
 
-    const registerBtn = screen.getByRole('button', { name: /Register Account/i });
-    fireEvent.click(registerBtn);
+    const submitBtn = screen.getByRole('button', { name: 'Sign Up' });
+    fireEvent.click(submitBtn);
 
     await waitFor(() => {
       expect(signUp.email).toHaveBeenCalledWith({
         email: 'jordan@auraworks.co.za',
         password: 'SecretP@ssword123',
         name: 'Jordan Belfort',
-        callbackURL: '/aurahq/sales',
+        callbackURL: '/aurahq',
       });
     });
   });

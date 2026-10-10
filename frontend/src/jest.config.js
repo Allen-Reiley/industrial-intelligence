@@ -12,6 +12,7 @@ const customJestConfig = {
   moduleNameMapper: {
     // Handle module aliases
     '^@/(.*)$': '<rootDir>/$1',
+    '^.+\\.svg$': '<rootDir>/__mocks__/svgMock.js',
   },
 }
 

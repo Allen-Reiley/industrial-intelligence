@@ -1,23 +1,20 @@
-// frontend/src/app/login/page.tsx
 "use client";
 
 import React, { useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { 
-  Shield, 
-  Sparkles, 
-  ArrowRight, 
-  Loader2, 
-  Lock, 
-  AlertCircle,
-  Mail,
-  User,
-  KeyRound,
-  CheckCircle2
-} from "lucide-react";
 import { signIn, signUp } from "@/lib/auth-client";
+import { Logo } from "@/components/ui/logo";
+import { Loader2 } from "lucide-react";
 
-function LoginForm() {
+import Input from "@/components/form/input/InputField";
+import Label from "@/components/form/Label";
+import Button from "@/components/ui/button/Button";
+import Checkbox from "@/components/form/input/Checkbox";
+import GridShape from "@/components/common/GridShape";
+import ThemeTogglerTwo from "@/components/common/ThemeTogglerTwo";
+import { EyeCloseIcon, EyeIcon } from "@/icons";
+
+function AuthForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
@@ -27,6 +24,9 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isChecked, setIsChecked] = useState(false);
   
   // Status states
   const [loading, setLoading] = useState(false);
@@ -34,7 +34,7 @@ function LoginForm() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const redirectUrl = searchParams.get("from") || "/aurahq/sales";
+  const redirectUrl = searchParams.get("from") || "/aurahq";
 
   const handleSocialSignIn = async (provider: "google" | "github") => {
     setSocialLoading(provider);
@@ -110,247 +110,223 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center p-6 relative overflow-hidden font-sans">
-      {/* Astryx Ambient Background Glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-[120px] pointer-events-none" />
-
-      <div className="w-full max-w-md relative z-10 space-y-6">
-        {/* Brand Header */}
-        <div className="text-center">
-          <div className="inline-flex p-3 bg-zinc-900/80 rounded-2xl border border-zinc-800 text-indigo-400 mb-4 shadow-xl shadow-indigo-500/5">
-            <Shield className="w-6 h-6" />
-          </div>
-          <h1 className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-zinc-100 via-zinc-200 to-zinc-400 bg-clip-text text-transparent">
-            AuraHQ Operations Portal
-          </h1>
-          <p className="text-zinc-500 text-xs uppercase tracking-[0.25em] font-semibold mt-1">
-            Industrial Intelligence OS
-          </p>
-        </div>
-
-        {/* Astryx Card */}
-        <div className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/80 rounded-2xl p-8 shadow-2xl space-y-6">
-          {/* Auth Mode Tabs */}
-          <div className="flex bg-zinc-950/70 border border-zinc-850 p-1 rounded-xl">
-            <button
-              type="button"
-              onClick={() => {
-                setAuthMode("signin");
-                setError("");
-                setSuccessMessage("");
-              }}
-              className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
-                authMode === "signin"
-                  ? "bg-indigo-600 text-white shadow-md"
-                  : "text-zinc-400 hover:text-zinc-200"
-              }`}
-            >
-              Sign In
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setAuthMode("signup");
-                setError("");
-                setSuccessMessage("");
-              }}
-              className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
-                authMode === "signup"
-                  ? "bg-indigo-600 text-white shadow-md"
-                  : "text-zinc-400 hover:text-zinc-200"
-              }`}
-            >
-              Create Account
-            </button>
-          </div>
-
-          <div className="space-y-1.5 text-center">
-            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-mono uppercase tracking-widest font-semibold">
-              <Sparkles className="w-3 h-3" /> Multi-Method Auth
+    <div className="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
+      <div className="relative flex lg:flex-row w-full h-screen justify-center flex-col dark:bg-gray-900 sm:p-0">
+        
+        {/* Form Container */}
+        <div className="flex w-full flex-1 flex-col justify-center lg:w-1/2">
+          <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
+            
+            <div className="mb-5 sm:mb-8">
+              <h1 className="mb-2 text-title-sm font-semibold text-gray-800 sm:text-title-md dark:text-white/90">
+                {authMode === "signin" ? "Sign In" : "Sign Up"}
+              </h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {authMode === "signin"
+                  ? "Enter your email and password to sign in!"
+                  : "Enter your details to create an account!"}
+              </p>
             </div>
-            <p className="text-xs text-zinc-400 leading-relaxed pt-1">
-              {authMode === "signin"
-                ? "Sign in with Google, GitHub, or your email & password."
-                : "Register a new sales or management account with any email."}
-            </p>
-          </div>
+            
+            {/* Error & Success Messages */}
+            {error && (
+              <div className="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                {error}
+              </div>
+            )}
+            {successMessage && (
+              <div className="mb-4 rounded-lg bg-green-50 p-4 text-sm text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                {successMessage}
+              </div>
+            )}
 
-          {/* Feedback Alerts */}
-          {error && (
-            <div className="p-3.5 bg-red-950/40 border border-red-900/50 rounded-xl text-xs text-red-300 flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {successMessage && (
-            <div className="p-3.5 bg-emerald-950/40 border border-emerald-900/50 rounded-xl text-xs text-emerald-300 flex items-start gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-              <span>{successMessage}</span>
-            </div>
-          )}
-
-          {/* Social OAuth Buttons */}
-          <div className="space-y-2.5">
-            <button
-              type="button"
-              onClick={() => handleSocialSignIn("google")}
-              disabled={Boolean(socialLoading) || loading}
-              className="w-full py-3 px-4 rounded-xl bg-zinc-100 hover:bg-white text-zinc-950 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2.5 shadow-md active:scale-[0.99] disabled:opacity-50 cursor-pointer"
-            >
-              {socialLoading === "google" ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin text-zinc-950" />
-                  <span>Connecting Google...</span>
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" viewBox="0 0 24 24">
-                    <path
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      fill="#4285F4"
-                    />
-                    <path
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      fill="#34A853"
-                    />
-                    <path
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                      fill="#FBBC05"
-                    />
-                    <path
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                      fill="#EA4335"
-                    />
+            <div>
+              {/* Social Login */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
+                <button
+                  type="button"
+                  onClick={() => handleSocialSignIn("google")}
+                  disabled={Boolean(socialLoading) || loading}
+                  className="inline-flex items-center justify-center gap-3 rounded-lg bg-gray-100 px-7 py-3 text-sm font-normal text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10 disabled:opacity-50"
+                >
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18.7511 10.1944C18.7511 9.47495 18.6915 8.94995 18.5626 8.40552H10.1797V11.6527H15.1003C15.0011 12.4597 14.4654 13.675 13.2749 14.4916L13.2582 14.6003L15.9087 16.6126L16.0924 16.6305C17.7788 15.1041 18.7511 12.8583 18.7511 10.1944Z" fill="#4285F4"/>
+                    <path d="M10.1788 18.75C12.5895 18.75 14.6133 17.9722 16.0915 16.6305L13.274 14.4916C12.5201 15.0068 11.5081 15.3666 10.1788 15.3666C7.81773 15.3666 5.81379 13.8402 5.09944 11.7305L4.99473 11.7392L2.23868 13.8295L2.20264 13.9277C3.67087 16.786 6.68674 18.75 10.1788 18.75Z" fill="#34A853"/>
+                    <path d="M5.10014 11.7305C4.91165 11.186 4.80257 10.6027 4.80257 9.99992C4.80257 9.3971 4.91165 8.81379 5.09022 8.26935L5.08523 8.1534L2.29464 6.02954L2.20333 6.0721C1.5982 7.25823 1.25098 8.5902 1.25098 9.99992C1.25098 11.4096 1.5982 12.7415 2.20333 13.9277L5.10014 11.7305Z" fill="#FBBC05"/>
+                    <path d="M10.1789 4.63331C11.8554 4.63331 12.9864 5.34303 13.6312 5.93612L16.1511 3.525C14.6035 2.11528 12.5895 1.25 10.1789 1.25C6.68676 1.25 3.67088 3.21387 2.20264 6.07218L5.08953 8.26943C5.81381 6.15972 7.81776 4.63331 10.1789 4.63331Z" fill="#EB4335"/>
                   </svg>
-                  <span>Continue with Google</span>
-                </>
-              )}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleSocialSignIn("github")}
-              disabled={Boolean(socialLoading) || loading}
-              className="w-full py-3 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-200 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2.5 active:scale-[0.99] disabled:opacity-50 cursor-pointer"
-            >
-              {socialLoading === "github" ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin text-zinc-300" />
-                  <span>Connecting GitHub...</span>
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4 fill-current text-zinc-200" viewBox="0 0 24 24">
+                  {socialLoading === "google" ? "Connecting..." : "Google"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSocialSignIn("github")}
+                  disabled={Boolean(socialLoading) || loading}
+                  className="inline-flex items-center justify-center gap-3 rounded-lg bg-gray-100 px-7 py-3 text-sm font-normal text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10 disabled:opacity-50"
+                >
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
                     <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
                   </svg>
-                  <span>Continue with GitHub</span>
-                </>
-              )}
-            </button>
-          </div>
+                  {socialLoading === "github" ? "Connecting..." : "GitHub"}
+                </button>
+              </div>
 
-          {/* Divider */}
-          <div className="relative flex items-center justify-center">
-            <div className="border-t border-zinc-800 w-full" />
-            <span className="bg-zinc-900 px-3 text-[10px] uppercase font-mono tracking-widest text-zinc-500 absolute">
-              or with email
-            </span>
-          </div>
-
-          {/* Email & Password Form */}
-          <form onSubmit={handleEmailAuth} className="space-y-4">
-            {authMode === "signup" && (
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-300">Full Name *</label>
-                <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Jordan Belfort"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs focus:border-indigo-500 focus:outline-none transition-colors"
-                  />
+              <div className="relative py-3 sm:py-5">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200 dark:border-gray-800"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="bg-white p-2 text-gray-400 sm:px-5 sm:py-2 dark:bg-gray-900">
+                    Or
+                  </span>
                 </div>
               </div>
-            )}
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-zinc-300">Corporate Email *</label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                <input
-                  type="email"
-                  required
-                  placeholder="name@company.co.za"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs focus:border-indigo-500 focus:outline-none transition-colors"
-                />
-              </div>
-            </div>
+              {/* Email/Password Form */}
+              <form onSubmit={handleEmailAuth}>
+                <div className="space-y-5">
+                  
+                  {authMode === "signup" && (
+                    <div>
+                      <Label>Full Name <span className="text-error-500">*</span></Label>
+                      <Input 
+                        type="text" 
+                        placeholder="Jordan Belfort" 
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                      />
+                    </div>
+                  )}
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-zinc-300">Password *</label>
-              <div className="relative">
-                <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                <input
-                  type="password"
-                  required
-                  placeholder="••••••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs focus:border-indigo-500 focus:outline-none transition-colors"
-                />
-              </div>
-            </div>
+                  <div>
+                    <Label>Email <span className="text-error-500">*</span></Label>
+                    <Input 
+                      type="email" 
+                      placeholder="info@company.co.za" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
 
-            {authMode === "signup" && (
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-300">Confirm Password *</label>
-                <div className="relative">
-                  <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                  <input
-                    type="password"
-                    required
-                    placeholder="••••••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs focus:border-indigo-500 focus:outline-none transition-colors"
-                  />
+                  <div>
+                    <Label>Password <span className="text-error-500">*</span></Label>
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                      <span
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="inset-e-4 absolute top-1/2 z-30 -translate-y-1/2 cursor-pointer"
+                      >
+                        {showPassword ? (
+                          <EyeIcon className="fill-gray-500 dark:fill-gray-400" />
+                        ) : (
+                          <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400" />
+                        )}
+                      </span>
+                    </div>
+                  </div>
+
+                  {authMode === "signup" && (
+                    <div>
+                      <Label>Confirm Password <span className="text-error-500">*</span></Label>
+                      <div className="relative">
+                        <Input
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="Confirm your password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          required
+                        />
+                        <span
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="inset-e-4 absolute top-1/2 z-30 -translate-y-1/2 cursor-pointer"
+                        >
+                          {showConfirmPassword ? (
+                            <EyeIcon className="fill-gray-500 dark:fill-gray-400" />
+                          ) : (
+                            <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400" />
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {authMode === "signin" && (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Checkbox checked={isChecked} onChange={setIsChecked} />
+                        <span className="block text-theme-sm font-normal text-gray-700 dark:text-gray-400">
+                          Keep me logged in
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400 cursor-pointer"
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
+                  )}
+
+                  <div>
+                    <Button className="w-full" size="sm" disabled={loading || Boolean(socialLoading)}>
+                      {loading ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          {authMode === "signin" ? "Signing In..." : "Creating Account..."}
+                        </span>
+                      ) : (
+                        authMode === "signin" ? "Sign In" : "Sign Up"
+                      )}
+                    </Button>
+                  </div>
                 </div>
+              </form>
+
+              <div className="mt-5">
+                <p className="text-center text-sm font-normal text-gray-700 sm:text-start dark:text-gray-400">
+                  {authMode === "signin" ? "Don't have an account? " : "Already have an account? "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMode(authMode === "signin" ? "signup" : "signin");
+                      setError("");
+                      setSuccessMessage("");
+                    }}
+                    className="text-brand-500 hover:text-brand-600 dark:text-brand-400 cursor-pointer font-medium"
+                  >
+                    {authMode === "signin" ? "Sign Up" : "Sign In"}
+                  </button>
+                </p>
               </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading || Boolean(socialLoading)}
-              className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 active:scale-[0.99] disabled:opacity-50 cursor-pointer"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin text-white" />
-                  <span>{authMode === "signin" ? "Authenticating..." : "Creating Account..."}</span>
-                </>
-              ) : (
-                <>
-                  <span>{authMode === "signin" ? "Sign In with Email" : "Register Account"}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Footer Metadata */}
-          <div className="pt-4 border-t border-zinc-800/80 flex items-center justify-between text-[10px] text-zinc-500 font-mono">
-            <span className="flex items-center gap-1">
-              <Lock className="w-3 h-3 text-zinc-500" /> RBAC Protected
-            </span>
-            <span>Better Auth v2.0</span>
+            </div>
           </div>
+        </div>
+
+        {/* Right Side Branding */}
+        <div className="lg:w-1/2 w-full h-full bg-brand-950 dark:bg-white/5 lg:grid items-center hidden">
+          <div className="relative items-center justify-center flex z-1">
+            <GridShape />
+            <div className="flex flex-col items-center max-w-xs gap-6">
+              {/* Logo Swap applied here */}
+              <div className="bg-white/10 p-6 rounded-2xl backdrop-blur-sm border border-white/10">
+                <Logo className="h-12 w-auto" priority />
+              </div>
+              <p className="text-center text-gray-400 dark:text-white/60">
+                Industrial Intelligence OS. Secure operations portal.
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="fixed bottom-6 right-6 z-50 hidden sm:block">
+          <ThemeTogglerTwo />
         </div>
       </div>
     </div>
@@ -361,12 +337,12 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
+        <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-brand-500" />
         </div>
       }
     >
-      <LoginForm />
+      <AuthForm />
     </Suspense>
   );
 }

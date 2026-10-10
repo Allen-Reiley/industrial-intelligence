@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useSession } from '@/lib/auth-client';
+import { useRouter } from 'next/navigation';
 import { 
   Building2, 
   MapPin, 

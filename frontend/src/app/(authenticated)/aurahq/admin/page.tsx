@@ -79,8 +79,27 @@ interface ScriptItem {
 }
 
 export default function AdminConsole() {
+
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, isPending } = useSession();
+  
+  useEffect(() => {
+    if (!isPending) {
+      const role = (session?.user as any)?.role || "sales";
+      if (role !== "admin") {
+        router.replace("/aurahq/sales");
+      }
+    }
+  }, [session, isPending, router]);
+
+  if (isPending || ((session?.user as any)?.role !== "admin")) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+      </div>
+    );
+  }
+
 
   const [activeTab, setActiveTab] = useState<"overview" | "personnel" | "vault">("overview");
   const [copiedSnippetId, setCopiedSnippetId] = useState<string | null>(null);

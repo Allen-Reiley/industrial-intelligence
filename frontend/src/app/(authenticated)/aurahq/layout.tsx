@@ -1,19 +1,40 @@
 "use client";
 
 import React, { useEffect, useRef } from 'react';
-import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, ShieldAlert, LogOut, Activity } from 'lucide-react';
 import posthog from 'posthog-js';
 import { useSession } from '@/lib/auth-client';
+import { SidebarProvider, useSidebar } from '@/context/SidebarContext';
+import { ThemeProvider } from '@/context/ThemeContext';
+import AppHeader from '@/layout/AppHeader';
+import AppSidebar from '@/layout/AppSidebar';
+import Backdrop from '@/layout/Backdrop';
 
 const isPostHogConfigured = Boolean(
   process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN && process.env.NEXT_PUBLIC_POSTHOG_HOST,
 );
 
+function AdminLayoutInner({ children }: { children: React.ReactNode }) {
+  const { isExpanded, isHovered, isMobileOpen } = useSidebar();
+  const mainContentMargin = isMobileOpen
+    ? "ml-0"
+    : isExpanded || isHovered
+    ? "lg:ml-[290px]"
+    : "lg:ml-[90px]";
+
+  return (
+    <div className="min-h-screen xl:flex bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
+      <AppSidebar />
+      <Backdrop />
+      <div className={`flex-1 transition-all duration-300 ease-in-out ${mainContentMargin}`}>
+        <AppHeader />
+        <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">{children}</div>
+      </div>
+    </div>
+  );
+}
+
 export default function AuraHQLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const router = useRouter();
   const { data: session } = useSession();
   const identifiedUserId = useRef<string | null>(null);
 
@@ -34,97 +55,11 @@ export default function AuraHQLayout({ children }: { children: React.ReactNode }
     identifiedUserId.current = user.id;
   }, [session]);
 
-  const handleLogout = async () => {
-    try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      await fetch(`${apiBase}/api/v1/auth/logout`, {
-        method: 'POST',
-        credentials: 'include'
-      });
-    } catch (err) {
-      console.error('Logout error:', err);
-    }
-    
-    // Clear local storage credentials
-    document.cookie = "aurahq_auth=; path=/; max-age=0; SameSite=Lax; Secure";
-    document.cookie = "admin_access_token=; path=/; max-age=0; SameSite=Lax; Secure";
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_refresh_token');
-    if (isPostHogConfigured) {
-      posthog.reset();
-    }
-    router.push('/login');
-  };
-
-  const navItems = [
-    {
-      name: 'Client Ledger',
-      path: '/aurahq/dashboard',
-      icon: LayoutDashboard
-    },
-    {
-      name: 'Admin Controls',
-      path: '/aurahq/admin',
-      icon: ShieldAlert
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-[#070708] text-zinc-100 flex flex-col font-sans">
-      {/* Shared Navigation Header */}
-      <header className="border-b border-zinc-900 bg-[#0c0c0e]/85 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            {/* Logo */}
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-indigo-600/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-                <Activity className="h-4 w-4" />
-              </div>
-              <span className="text-sm font-semibold tracking-[0.2em] uppercase text-zinc-100">
-                Aura<span className="text-indigo-400">HQ</span>
-              </span>
-            </div>
-
-            {/* Navigation links */}
-            <nav className="flex items-center gap-1">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname.startsWith(item.path);
-                return (
-                  <Link
-                    key={item.path}
-                    href={item.path}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] uppercase tracking-wider font-bold transition-all duration-150 ${
-                      isActive
-                        ? 'bg-zinc-900 text-indigo-400 border border-zinc-850'
-                        : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-950'
-                    }`}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                    {item.name}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-
-          {/* User actions */}
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg border border-zinc-850 bg-zinc-950 hover:bg-zinc-900 text-zinc-400 hover:text-red-400 text-[10px] font-bold uppercase tracking-wider transition-all duration-150"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              <span>Sign Out</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {children}
-      </main>
-    </div>
+    <ThemeProvider>
+      <SidebarProvider>
+        <AdminLayoutInner>{children}</AdminLayoutInner>
+      </SidebarProvider>
+    </ThemeProvider>
   );
 }
