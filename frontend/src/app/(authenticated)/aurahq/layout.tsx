@@ -24,7 +24,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
     : "lg:ml-[90px]";
 
   return (
-    <div className="min-h-screen xl:flex bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
+    <div className="dashboard-layout min-h-screen xl:flex bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
       <AppSidebar />
       <Backdrop />
       <div className={`flex-1 transition-all duration-300 ease-in-out ${mainContentMargin}`}>
