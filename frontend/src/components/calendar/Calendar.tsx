@@ -16,11 +16,10 @@ import type {
   ToolbarSectionInfo,
 } from "@fullcalendar/react";
 import FullCalendar, { CalendarRef } from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/react/daygrid";
-import interactionPlugin from "@fullcalendar/react/interaction";
-import multiMonthPlugin from "@fullcalendar/react/multimonth";
-import themePlugin from "@fullcalendar/react/themes/classic";
-import timeGridPlugin from "@fullcalendar/react/timegrid";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import multiMonthPlugin from "@fullcalendar/multimonth";
+import timeGridPlugin from "@fullcalendar/timegrid";
 import { useLocale } from "next-intl";
 import React, { useEffect, useRef, useState } from "react";
 import CalendarEventItem from "./CalendarEventItem";
@@ -222,7 +221,6 @@ const Calendar: React.FC = () => {
           ref={calendarRef}
           className="gap-0!"
           plugins={[
-            themePlugin,
             dayGridPlugin,
             timeGridPlugin,
             interactionPlugin,
