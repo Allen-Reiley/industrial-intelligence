@@ -400,9 +400,23 @@ async def ikhokha_webhook(
     else:
         tx_status = TransactionStatus.PENDING
 
-    # Create transaction record
+    # Create transaction record with sales attribution
+    from app.models.checkout_session import CheckoutSession, CheckoutSessionStatus
+    
+    # Locate active or pending checkout session for this client
+    sess_stmt = select(CheckoutSession).where(
+        CheckoutSession.client_id == client.id
+    ).order_by(CheckoutSession.created_at.desc())
+    sess_res = await session.execute(sess_stmt)
+    checkout_session = sess_res.scalars().first()
+
+    checkout_session_id = checkout_session.id if checkout_session else None
+    sales_rep_id = client.sales_rep_id or (checkout_session.sales_rep_id if checkout_session else None)
+
     new_tx = Transaction(
         client_id=payload.client_id,
+        sales_rep_id=sales_rep_id,
+        checkout_session_id=checkout_session_id,
         amount=payload.amount,
         currency=payload.currency,
         status=tx_status,
@@ -413,17 +427,23 @@ async def ikhokha_webhook(
     
     session.add(new_tx)
     
-    # Update client details if status is successful
+    # Update client details and transition checkout session to PAID if status is successful
     if tx_status == TransactionStatus.SUCCESSFUL:
         client.subscription_status = SubscriptionStatus.ACTIVE
         client.is_active = True
         client.payment_method_token = payload.payment_method_token
         session.add(client)
+
+        if checkout_session and checkout_session.status != CheckoutSessionStatus.PAID:
+            checkout_session.status = CheckoutSessionStatus.PAID
+            session.add(checkout_session)
+            logger.info(f"Ikhokha Webhook: Transitioned CheckoutSession {checkout_session.id} to PAID.")
         
     await session.commit()
     await session.refresh(new_tx)
     
     logger.info(f"Ikhokha Webhook: Processed transaction {new_tx.id} (Status: {tx_status}) for Client {client.company_name} ({client.id}).")
     return {"status": "success", "message": "Webhook processed successfully"}
+
 
 

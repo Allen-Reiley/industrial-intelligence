@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 
 from app.core.config import settings
 from app.db import init_db, get_async_session
-from app.api.v1 import track, clients, identity, prospects, leads, webhook, auth, billing
+from app.api.v1 import track, clients, identity, prospects, leads, webhook, auth, billing, checkout, scripts, sales, admin
 from app.models import Prospect, Company
 from app.tasks.janitor import cleanup_unverified_visits
 from app.core.scheduler import start_scheduler
@@ -24,28 +24,28 @@ from typing import Optional
 logger = logging.getLogger("uvicorn")
 
 # --- SECURITY: Admin Access Guard ---
-from app.core.users import fastapi_users_instance
+from app.core.security import get_current_user, require_admin
 from app.models.user import User
 
 async def verify_admin_token(
     x_aura_token: Optional[str] = Header(None),
-    user: Optional[User] = Depends(fastapi_users_instance.current_user(optional=True, active=True))
+    user: Optional[User] = Depends(get_current_user)
 ):
     """
     Hardens debug and admin routes. 
-    Rejects any request missing the correct ADMIN_API_KEY or valid Bearer JWT.
+    Rejects any request missing the correct ADMIN_API_KEY or valid Better Auth session.
     """
     # 1. Try X-Aura-Token first (legacy API key)
     if x_aura_token == settings.ADMIN_API_KEY and settings.ADMIN_API_KEY:
         return "admin"
         
-    # 2. Try FastAPI-Users user
+    # 2. Try authenticated user
     if user:
         return user.email
-
             
     logger.warning(f"🚨 UNAUTHORIZED ACCESS ATTEMPT: {datetime.now(timezone.utc)}")
     raise HTTPException(status_code=403, detail="Unauthorized Forensic Access")
+
 
 
 
@@ -233,7 +233,9 @@ app.add_middleware(
 # --- PROXY HEADER STACK ---
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
-from app.core.users import current_request
+from contextvars import ContextVar
+
+current_request: ContextVar[Optional[Request]] = ContextVar("current_request", default=None)
 
 @app.middleware("http")
 async def set_current_request_context(request: Request, call_next):
@@ -284,6 +286,11 @@ app.include_router(leads.router, prefix=f"{settings.API_V1_STR}/leads", tags=["l
 app.include_router(webhook.router, prefix=f"{settings.API_V1_STR}/webhook", tags=["webhooks"])
 app.include_router(webhook.router, prefix=f"{settings.API_V1_STR}/webhooks", tags=["webhooks"])
 app.include_router(billing.router, prefix=f"{settings.API_V1_STR}/billing", tags=["billing"])
+app.include_router(checkout.router, prefix=f"{settings.API_V1_STR}/checkout", tags=["checkout"])
+app.include_router(scripts.router, prefix=f"{settings.API_V1_STR}/scripts", tags=["scripts"])
+app.include_router(sales.router, prefix=f"{settings.API_V1_STR}/sales", tags=["sales"])
+app.include_router(admin.router, prefix=f"{settings.API_V1_STR}/admin", tags=["admin_personnel"])
+
 
 @app.get("/health")
 def health_check():

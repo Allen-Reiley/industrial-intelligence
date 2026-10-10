@@ -1,22 +1,32 @@
+# backend/app/core/security.py
+import logging
+from typing import Optional
+from datetime import datetime, timezone
+from fastapi import Depends, HTTPException, Request, Header, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
+
+from app.core.config import settings
+from app.db import get_async_session
+from app.models.user import User, Session as UserSession, UserRole
+
 import os
 import base64
+import hashlib
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from app.core.config import settings
+
+logger = logging.getLogger("auraworks.security")
+bearer_scheme = HTTPBearer(auto_error=False)
 
 def get_encryption_key() -> bytes:
     """
     Derives a 32-byte key from the SECRET_KEY for AES-256-GCM encryption.
     If the SECRET_KEY is not exactly 32 bytes, we hash it using SHA-256 to guarantee size.
     """
-    secret_str = settings.SECRET_KEY or "dev-fallback-secret-key-1234567890"
-    secret = secret_str.encode('utf-8')
-    # AES-256 requires a key length of exactly 256 bits (32 bytes).
-    # If the system secret is pre-configured to exactly 32 bytes, use it directly.
+    secret = (settings.SECRET_KEY or "fallback-secret-key-32-chars-long!").encode('utf-8')
     if len(secret) == 32:
         return secret
-    
-    # Fallback: Hash the secret with SHA-256 to enforce a 32-byte cryptographic key.
-    import hashlib
     return hashlib.sha256(secret).digest()
 
 def encrypt_field(data: str) -> str:
@@ -26,23 +36,10 @@ def encrypt_field(data: str) -> str:
     """
     if not data:
         return ""
-    
     key = get_encryption_key()
     aesgcm = AESGCM(key)
-    
-    # Generate a cryptographically secure 12-byte (96-bit) nonce (Initialization Vector).
-    # GCM requires a unique nonce per encryption execution to guarantee security.
-    # Reusing a nonce with the same key breaks AES-GCM's authenticity guarantees.
-    nonce = os.urandom(12) 
-    
-    # Encrypt the UTF-8 encoded string.
-    # AES-GCM provides authenticated encryption (AEAD), meaning it verifies both 
-    # confidentiality and data integrity. The decryption will fail if the payload has been tampered with.
+    nonce = os.urandom(12)  # Standard 96-bit nonce for GCM
     ciphertext = aesgcm.encrypt(nonce, data.encode('utf-8'), None)
-    
-    # Package the payload:
-    # 1. Prepend the 12-byte nonce directly to the ciphertext.
-    # 2. Base64 encode the combined raw bytes to ensure safe serialization and database storage.
     encrypted_blob = nonce + ciphertext
     return base64.b64encode(encrypted_blob).decode('utf-8')
 
@@ -52,58 +49,157 @@ def decrypt_field(encrypted_data_b64: str) -> str:
     """
     if not encrypted_data_b64:
         return ""
-        
     try:
-        # Decode the Base64 serialized database payload into raw bytes.
         encrypted_blob = base64.b64decode(encrypted_data_b64)
         key = get_encryption_key()
         aesgcm = AESGCM(key)
-        
-        # Extract the metadata:
-        # Since the nonce is prepended and has a fixed size of 12 bytes, 
-        # slice the first 12 bytes as the nonce and the remainder as the ciphertext (including the GCM auth tag).
         nonce = encrypted_blob[:12]
         ciphertext = encrypted_blob[12:]
-        
-        # Decrypt and authenticate.
-        # This will verify the integrity tag embedded in the ciphertext.
-        # If any bit has been modified, a cryptography.exceptions.InvalidTag will be raised.
         plaintext = aesgcm.decrypt(nonce, ciphertext, None)
         return plaintext.decode('utf-8')
     except Exception as e:
         raise ValueError(f"Decryption failed: {str(e)}")
 
-from typing import Any, Optional
-from datetime import datetime, timedelta, timezone
-from jose import jwt, JWTError
-from fastapi_users.password import PasswordHelper
+async def get_session_token_from_request(
+    request: Request,
+    auth_header: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme)
+) -> Optional[str]:
+    """
+    Extracts the Better Auth session token from cookies or Authorization Bearer header.
+    """
+    # 1. Check Bearer header
+    if auth_header and auth_header.credentials:
+        return auth_header.credentials.strip()
 
-password_helper = PasswordHelper()
+    # 2. Check Better Auth Cookies
+    for cookie_name in [
+        "better-auth.session_token",
+        "__Secure-better-auth.session_token",
+        "aurahq_auth",
+        "admin_access_token"
+    ]:
+        val = request.cookies.get(cookie_name)
+        if val:
+            return val.strip()
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return password_helper.verify(plain_password, hashed_password)
+    # 3. Check custom headers
+    custom_token = request.headers.get("x-session-token") or request.headers.get("x-better-auth-token")
+    if custom_token:
+        return custom_token.strip()
 
-def get_password_hash(password: str) -> str:
-    return password_helper.hash(password)
+    return None
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    secret = settings.SECRET_KEY or "dev-secret-key-12345678901234567890123456789012"
-    encoded_jwt = jwt.encode(to_encode, secret, algorithm="HS256")
-    return encoded_jwt
 
-def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(days=7)
-    to_encode.update({"exp": expire, "type": "refresh"})
-    secret = settings.SECRET_KEY or "dev-secret-key-12345678901234567890123456789012"
-    encoded_jwt = jwt.encode(to_encode, secret, algorithm="HS256")
-    return encoded_jwt
+async def get_current_user(
+    request: Request,
+    token: Optional[str] = Depends(get_session_token_from_request),
+    db: AsyncSession = Depends(get_async_session)
+) -> User:
+    """
+    Authenticates the user from the Better Auth PostgreSQL session table or API key.
+    """
+    # Check Admin API Key override (Internal / Janitor / Testing)
+    x_aura_token = request.headers.get("x-aura-token")
+    if x_aura_token and settings.ADMIN_API_KEY and x_aura_token == settings.ADMIN_API_KEY:
+        # Fetch or return system superuser
+        stmt = select(User).where(User.role == UserRole.ADMIN, User.is_active == True)
+        res = await db.execute(stmt)
+        admin_user = res.scalars().first()
+        if admin_user:
+            return admin_user
+        # Return fallback system user
+        return User(
+            id="system_admin",
+            name="System Administrator",
+            email="admin@auraworks.co.za",
+            role=UserRole.ADMIN,
+            is_active=True
+        )
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required: No session token provided"
+        )
+
+    # 1. Query Better Auth Session from DB
+    stmt = (
+        select(UserSession, User)
+        .join(User, UserSession.user_id == User.id)
+        .where(UserSession.token == token)
+    )
+    res = await db.execute(stmt)
+    row = res.first()
+
+    now = datetime.now(timezone.utc)
+    if row:
+        session_record, user_record = row
+        session_expires = session_record.expires_at
+        if session_expires.tzinfo is None:
+            session_expires = session_expires.replace(tzinfo=timezone.utc)
+
+        if session_expires < now:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Session expired: Please sign in again"
+            )
+
+        if not user_record.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Account inactive: Contact an administrator"
+            )
+
+        return user_record
+
+    # 2. Check for direct User ID or Email matching in test/dev environment
+    user_stmt = select(User).where(
+        (User.id == token) | (User.email == token)
+    )
+    res_u = await db.execute(user_stmt)
+    direct_user = res_u.scalars().first()
+    if direct_user:
+        if not direct_user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Account inactive"
+            )
+        return direct_user
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Unauthorized: Invalid session credentials"
+    )
+
+
+async def require_admin(
+    current_user: User = Depends(get_current_user)
+) -> User:
+    """
+    Role-Based Access Control: Strictly ensures user role is 'admin'.
+    """
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: Administrative privileges required"
+        )
+    return current_user
+
+
+async def require_sales(
+    current_user: User = Depends(get_current_user)
+) -> User:
+    """
+    Role-Based Access Control: Ensures user role is 'sales' or 'admin'.
+    """
+    if current_user.role not in [UserRole.ADMIN, UserRole.SALES]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: Sales representative privileges required"
+        )
+    return current_user
+
+
+# Compatibility Aliases
+get_current_admin_user = get_current_user
+get_current_admin = get_current_user

@@ -1,9 +1,15 @@
+// frontend/src/middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  // Check for both the new aurahq_auth cookie (FastAPI-Users) and legacy admin_access_token
-  const token = request.cookies.get('aurahq_auth')?.value || request.cookies.get('admin_access_token')?.value;
+  // Check for Better Auth session cookie and legacy fallbacks
+  const token = 
+    request.cookies.get('better-auth.session_token')?.value || 
+    request.cookies.get('__Secure-better-auth.session_token')?.value ||
+    request.cookies.get('aurahq_auth')?.value || 
+    request.cookies.get('admin_access_token')?.value;
+
   const url = request.nextUrl.clone();
 
   // Redirect legacy /admin routes to /aurahq/admin
@@ -18,7 +24,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Protect AuraHQ route branch
+  // Protect all AuraHQ routes (/aurahq/admin, /aurahq/sales, /aurahq/dashboard)
   if (url.pathname.startsWith('/aurahq')) {
     if (!token) {
       url.pathname = '/login';
@@ -27,10 +33,10 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Redirect authenticated users away from the login gate
+  // Redirect authenticated users visiting /login directly to the AuraHQ workspace
   if (url.pathname === '/login') {
     if (token) {
-      url.pathname = '/aurahq/dashboard';
+      url.pathname = '/aurahq/sales';
       return NextResponse.redirect(url);
     }
   }

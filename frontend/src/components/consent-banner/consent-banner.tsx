@@ -2,6 +2,11 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { ArrowRight, X, FileText, Check, User, Mail, Briefcase, Phone, Building2 } from 'lucide-react';
+import posthog from 'posthog-js';
+
+const isPostHogConfigured = Boolean(
+  process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN && process.env.NEXT_PUBLIC_POSTHOG_HOST,
+);
 
 const AuraConsentBanner = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -114,6 +119,9 @@ const AuraConsentBanner = () => {
           status: 'accepted'
         })
       });
+      if (isPostHogConfigured) {
+        posthog.capture('consent_accepted', { phase });
+      }
     } catch (err) {
       console.error("⚠️ AuraWorks: Consent sync failed.", err);
     }
@@ -194,6 +202,9 @@ const AuraConsentBanner = () => {
           full_capture: true
         })
       });
+      if (isPostHogConfigured) {
+        posthog.capture('lead_enrichment_submitted');
+      }
     } catch (err) {
       console.error("Prospect full capture failed", err);
     }

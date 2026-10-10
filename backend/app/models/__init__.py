@@ -1,5 +1,5 @@
 # backend/app/models/__init__.py
-from .client import Client, ClientCategory, SubscriptionStatus
+from .client import Client, ClientCategory, SubscriptionStatus, ClientCreate, ClientPublic
 from .company import Company
 from .department import Department
 from .visit import Visit, VerificationStatus
@@ -12,6 +12,7 @@ from .crm_dead_letter import CrmDeadLetter
 from .inbound_message import InboundMessage, MessageStatus
 from .transaction import Transaction, TransactionStatus
 from .admin_user import AdminUser
-from .user import User, OAuthAccount
+from .user import User, Session, Account, Verification, UserRole
+from .checkout_session import CheckoutSession, CheckoutSessionStatus
 
 # Do NOT include router logic here

@@ -12,6 +12,11 @@ import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { submitToProspects } from "@/lib/api";
+import posthog from 'posthog-js'
+
+const isPostHogConfigured = Boolean(
+    process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN && process.env.NEXT_PUBLIC_POSTHOG_HOST,
+)
 
 export default function BookDemoPage() {
     const [step, setStep] = useState(1)
@@ -36,6 +41,11 @@ export default function BookDemoPage() {
             alert("Please enter a valid work email address.")
             return
         }
+        if (isPostHogConfigured) {
+            posthog.capture('demo_request_step_completed', {
+                industry: formData.industry,
+            })
+        }
         setStep(2)
     }
 
@@ -49,6 +59,14 @@ export default function BookDemoPage() {
                 ...formData,
                 aura_id: aura_id
             });
+            if (isPostHogConfigured) {
+                posthog.capture('demo_request_submitted', {
+                    industry: formData.industry,
+                    traffic_range: formData.traffic,
+                    average_price_range: formData.avg_price,
+                    crm: formData.crm,
+                })
+            }
             setIsSuccess(true);
         } catch (error: unknown) {
             console.error("Submission Error:", error);

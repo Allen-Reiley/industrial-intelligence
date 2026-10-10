@@ -17,6 +17,11 @@ import { submitToProspects } from '@/lib/api'
 import { HeroHeader } from '@/components/header/header'
 import Footer from '@/components/footer/footer'
 import { TextEffect } from '@/components/ui/text-effect'
+import posthog from 'posthog-js'
+
+const isPostHogConfigured = Boolean(
+    process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN && process.env.NEXT_PUBLIC_POSTHOG_HOST,
+)
 
 const MCP_ENGINES = [
     {
@@ -81,6 +86,11 @@ export default function BookAuditView() {
             alert('Please enter a valid work email address.')
             return
         }
+        if (isPostHogConfigured) {
+            posthog.capture('audit_request_step_completed', {
+                industry: formData.industry,
+            })
+        }
         setStep(2)
     }
 
@@ -96,6 +106,13 @@ export default function BookAuditView() {
                 audit_type: 'mcp_executive_9_page_audit',
                 aura_id: aura_id
             })
+            if (isPostHogConfigured) {
+                posthog.capture('audit_request_submitted', {
+                    industry: formData.industry,
+                    traffic_range: formData.traffic,
+                    gsc_status: formData.gsc_status,
+                })
+            }
             setIsSuccess(true)
         } catch (error: unknown) {
             console.error('Audit Request Error:', error)

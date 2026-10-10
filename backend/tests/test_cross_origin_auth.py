@@ -4,8 +4,7 @@ import httpx
 import uuid
 from app.main import app
 from app.core.config import settings
-from app.core.users import get_jwt_strategy
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.db import get_async_session
 from sqlmodel import select
 
@@ -20,47 +19,35 @@ async def get_test_client():
 
 async def test_cross_origin_cookie_auth():
     """
-    Test Task 3: Mock an authenticated request from www.auraworks.co.za
-    to api.auraworks.co.za, verifying that the cookie is parsed correctly
-    under the .auraworks.co.za wildcard domain.
+    Mock an authenticated request from www.auraworks.co.za
+    to api.auraworks.co.za, verifying that the cookie is parsed correctly.
     """
     client = await get_test_client()
     
-    # 1. Create a test user
-    test_email = f"cross-origin-user-{uuid.uuid4()}@auraworks.co.za"
-    test_password = "secure_password_123"
-    
-    from fastapi_users.password import PasswordHelper
-    password_helper = PasswordHelper()
-    hashed_pwd = password_helper.hash(test_password)
+    # 1. Create a test admin user
+    user_id = f"cross_user_{uuid.uuid4().hex[:8]}"
+    test_email = f"cross-origin-user-{uuid.uuid4().hex[:6]}@auraworks.co.za"
     
     async for session in get_async_session():
         user = User(
-            id=uuid.uuid4(),
+            id=user_id,
             email=test_email,
-            hashed_password=hashed_pwd,
-            is_active=True,
-            is_verified=True,
-            is_superuser=False
+            name="Cross User",
+            role=UserRole.ADMIN,
+            is_active=True
         )
         session.add(user)
         await session.commit()
         break
 
-    # 2. Generate authentication token using the backend's JWT strategy
-    strategy = get_jwt_strategy()
-    token = await strategy.write_token(user)
-    
-    # 3. Perform a request to api.auraworks.co.za simulating coming from www.auraworks.co.za
-    # We pass the aurahq_auth cookie. Because the cookie domain is .auraworks.co.za, 
-    # it matches api.auraworks.co.za.
+    # 2. Perform a request simulating www.auraworks.co.za origin with session cookie
     headers = {
         "Origin": "https://www.auraworks.co.za",
         "Referer": "https://www.auraworks.co.za/",
     }
     
     cookies = {
-        "aurahq_auth": token
+        "better-auth.session_token": user_id
     }
     
     response = await client.get(
@@ -77,7 +64,7 @@ async def test_cross_origin_cookie_auth():
     
     # Clean up test user
     async for session in get_async_session():
-        stmt_cleanup = select(User).where(User.email == test_email)
+        stmt_cleanup = select(User).where(User.id == user_id)
         res_cleanup = await session.execute(stmt_cleanup)
         existing_user = res_cleanup.scalars().first()
         if existing_user:

@@ -1,750 +1,500 @@
-
+// frontend/src/app/(authenticated)/aurahq/admin/page.tsx
 "use client";
 
-import React, { useEffect, useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from "react";
+import useSWR from "swr";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { 
-  Building2, Globe, Activity, RefreshCcw, Search, Download, 
-  User, Mail, Plus, Code, Check, AlertTriangle, LogOut, Sliders, Database,
-  CreditCard, DollarSign, Save, Trash2, Settings, Palette, Users
-} from 'lucide-react';
+  Building2, 
+  Users, 
+  Code, 
+  ShieldAlert, 
+  Activity, 
+  Search, 
+  Copy, 
+  Check, 
+  Trash2, 
+  Save, 
+  LogOut, 
+  TrendingUp, 
+  DollarSign, 
+  Link as LinkIcon, 
+  Sparkles,
+  Lock,
+  ChevronRight,
+  ShieldCheck,
+  CheckCircle2,
+  AlertOctagon,
+  Loader2
+} from "lucide-react";
+import { useSession, signOut } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 
-interface Client {
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const isPostHogConfigured = Boolean(
+  process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN && process.env.NEXT_PUBLIC_POSTHOG_HOST,
+);
+const cleanApiBase = API_BASE.replace(/\/$/, "");
+
+const fetcher = async (url: string) => {
+  const res = await fetch(url, { credentials: "include" });
+  if (!res.ok) {
+    throw new Error("Failed to fetch data.");
+  }
+  return res.json();
+};
+
+interface Personnel {
   id: string;
-  company_name: string;
-  contact_email?: string;
-  domain?: string;
-  whitelisted_domains: string[];
-  subscription_status: 'trial' | 'active' | 'suspended' | 'cancellation_pending';
-  payment_plan: string;
-  require_consent_banner: boolean;
-  collect_personal_data: boolean;
+  name: string;
+  email: string;
+  role: "admin" | "sales";
   is_active: boolean;
-  payment_method_token?: string;
-  custom_monthly_amount?: number;
-  theme_config?: any;
-  created_at: string;
+  image?: string;
+  total_links_generated: number;
+  paid_conversions: number;
+  created_at?: string;
 }
 
-interface Lead {
-  id: string;
-  name?: string;
-  email?: string;
-  position?: string;
-  department?: string;
-  aura_id: string;
-  created_at: string;
-  is_warm: boolean;
-  company?: {
-    name: string;
-    domain?: string;
-    industry?: string;
-    total_visits: number;
-    is_verified: boolean;
-  };
+interface OverviewMetrics {
+  active_clients: number;
+  trial_clients: number;
+  total_clients: number;
+  total_links_generated: number;
+  total_conversions: number;
+  conversion_rate_percentage: number;
+  total_mrr_cents: number;
+  total_mrr_zar: number;
+  active_sales_reps: number;
 }
 
-export default function AdminDashboard() {
+interface ScriptItem {
+  client_id: string;
+  company_name: string;
+  subscription_status: string;
+  whitelisted_domains: string[];
+  contact_email?: string;
+  snippet: string;
+}
+
+export default function AdminConsole() {
   const router = useRouter();
+  const { data: session } = useSession();
 
-  const [clients, setClients] = useState<Client[]>([]);
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [leadsLoading, setLeadsLoading] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  // Status filter tab
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'trial' | 'suspended' | 'cancellation_pending'>('all');
-  
-  // Detail View Tab
-  const [detailTab, setDetailTab] = useState<'overview' | 'settings' | 'billing' | 'theming'>('overview');
+  const [activeTab, setActiveTab] = useState<"overview" | "personnel" | "vault">("overview");
+  const [copiedSnippetId, setCopiedSnippetId] = useState<string | null>(null);
+  const [searchPersonnel, setSearchPersonnel] = useState("");
+  const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
 
-  // Form states (Settings)
-  const [contactEmail, setContactEmail] = useState('');
-  const [whitelistedDomains, setWhitelistedDomains] = useState('');
-  const [requireConsent, setRequireConsent] = useState(false);
-  const [isSavingSettings, setIsSavingSettings] = useState(false);
+  // SWR Queries
+  const { 
+    data: overviewMetrics, 
+    mutate: mutateOverview 
+  } = useSWR<OverviewMetrics>(
+    `${cleanApiBase}/api/v1/admin/overview-metrics`,
+    fetcher
+  );
 
-  // Billing states
-  const [paymentPlan, setPaymentPlan] = useState('monthly');
-  const [monthlyAmountInput, setMonthlyAmountInput] = useState<string>('10000');
-  const [isSavingBilling, setIsSavingBilling] = useState(false);
+  const { 
+    data: personnel, 
+    mutate: mutatePersonnel 
+  } = useSWR<Personnel[]>(
+    `${cleanApiBase}/api/v1/admin/users`,
+    fetcher
+  );
 
-  // Theme states
-  const [themeLightBg, setThemeLightBg] = useState('#ffffff');
-  const [themeLightText, setThemeLightText] = useState('#111827');
-  const [themeLightPrimary, setThemeLightPrimary] = useState('#10b981');
-  const [themeDarkBg, setThemeDarkBg] = useState('#111827');
-  const [themeDarkText, setThemeDarkText] = useState('#ffffff');
-  const [themeDarkPrimary, setThemeDarkPrimary] = useState('#10b981');
-  const [isSavingTheme, setIsSavingTheme] = useState(false);
+  const { 
+    data: scripts, 
+    mutate: mutateScripts 
+  } = useSWR<ScriptItem[]>(
+    `${cleanApiBase}/api/v1/scripts/`,
+    fetcher
+  );
 
-  // General app state
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
-  const [showSnippetModal, setShowSnippetModal] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const [newCompanyName, setNewCompanyName] = useState('');
-  const [newContactEmail, setNewContactEmail] = useState('');
-  const [newWhitelistedDomains, setNewWhitelistedDomains] = useState('');
-  const [formLoading, setFormLoading] = useState(false);
-  
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
-  const logout = () => {
-    document.cookie = 'admin_access_token=; path=/; max-age=0;';
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_refresh_token');
-    router.push('/login');
-  };
-
-  const fetchClients = async (selectDefaultId?: string) => {
+  const handleRoleChange = async (userId: string, newRole: "admin" | "sales") => {
+    setUpdatingUserId(userId);
     try {
-      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/clients/`, { credentials: 'include' });
-      if (res.status === 401) return logout();
-      if (!res.ok) throw new Error('Failed to retrieve clients list.');
-      const data = await res.json();
-      setClients(data);
-      if (data.length > 0) {
-        const nextSelected = selectDefaultId ? data.find((c: Client) => c.id === selectDefaultId) || data[0] : data[0];
-        setSelectedClient(nextSelected);
+      const res = await fetch(`${cleanApiBase}/api/v1/admin/users/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ role: newRole }),
+      });
+      if (!res.ok) throw new Error("Failed to update role");
+      if (isPostHogConfigured) {
+        posthog.capture("admin_user_role_updated", { role: newRole });
       }
+      mutatePersonnel();
     } catch (err) {
-      console.error("🚨 Clients Fetch Error:", err);
+      alert("Error updating user role");
     } finally {
-      setLoading(false);
+      setUpdatingUserId(null);
     }
   };
 
-  const fetchLeads = async (clientId: string) => {
-    setLeadsLoading(true);
+  const handleToggleActive = async (userId: string, currentActive: boolean) => {
+    setUpdatingUserId(userId);
     try {
-      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/leads/?client_id=${clientId}`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Failed to retrieve client leads.');
-      const data = await res.json();
-      setLeads(data);
-    } catch (err) {
-      setLeads([]);
-    } finally {
-      setLeadsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchClients();
-  }, []);
-
-  useEffect(() => {
-    if (selectedClient) {
-      fetchLeads(selectedClient.id);
-      
-      // Populate states
-      setContactEmail(selectedClient.contact_email || '');
-      setWhitelistedDomains(selectedClient.whitelisted_domains.join(', '));
-      setRequireConsent(selectedClient.require_consent_banner);
-      setPaymentPlan(selectedClient.payment_plan || 'monthly');
-      
-      const amountInRands = selectedClient.custom_monthly_amount != null 
-        ? (selectedClient.custom_monthly_amount / 100).toString() 
-        : '10000';
-      setMonthlyAmountInput(amountInRands);
-
-      const tc = selectedClient.theme_config;
-      setThemeLightBg(tc?.light?.bg || '#ffffff');
-      setThemeLightText(tc?.light?.text || '#111827');
-      setThemeLightPrimary(tc?.light?.primary || '#10b981');
-      setThemeDarkBg(tc?.dark?.bg || '#111827');
-      setThemeDarkText(tc?.dark?.text || '#ffffff');
-      setThemeDarkPrimary(tc?.dark?.primary || '#10b981');
-    }
-  }, [selectedClient]);
-
-  const handleUpdateSettings = async () => {
-    if (!selectedClient) return;
-    setIsSavingSettings(true);
-    try {
-      const domainsArray = whitelistedDomains.split(',').map(d => d.trim()).filter(d => d.length > 0);
-      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/clients/${selectedClient.id}`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contact_email: contactEmail,
-          whitelisted_domains: domainsArray,
-          require_consent_banner: requireConsent
-        })
+      const res = await fetch(`${cleanApiBase}/api/v1/admin/users/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ is_active: !currentActive }),
       });
-      if (!res.ok) throw new Error('Failed to update settings');
-      const updatedClient = await res.json();
-      setClients(prev => prev.map(c => c.id === updatedClient.id ? { ...c, ...updatedClient } : c));
-      setSelectedClient(updatedClient);
-      alert('Settings updated successfully');
+      if (!res.ok) throw new Error("Failed to toggle status");
+      if (isPostHogConfigured) {
+        posthog.capture("admin_user_status_updated", { is_active: !currentActive });
+      }
+      mutatePersonnel();
     } catch (err) {
-      alert('Error updating settings');
+      alert("Error updating user status");
     } finally {
-      setIsSavingSettings(false);
+      setUpdatingUserId(null);
     }
   };
 
-  const handleUpdateBilling = async () => {
-    if (!selectedClient) return;
-    setIsSavingBilling(true);
-    const parsedAmount = parseFloat(monthlyAmountInput);
-    if (isNaN(parsedAmount) || parsedAmount < 0) {
-      alert('Invalid amount. Enter a positive number.');
-      setIsSavingBilling(false);
-      return;
-    }
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    if (!confirm(`Are you sure you want to delete ${userName}? This action is irreversible.`)) return;
+
     try {
-      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/clients/${selectedClient.id}`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          custom_monthly_amount: Math.round(parsedAmount * 100),
-          payment_plan: paymentPlan
-        })
+      const res = await fetch(`${cleanApiBase}/api/v1/admin/users/${userId}`, {
+        method: "DELETE",
+        credentials: "include",
       });
-      if (!res.ok) throw new Error('Failed to update billing');
-      const updatedClient = await res.json();
-      setClients(prev => prev.map(c => c.id === updatedClient.id ? { ...c, ...updatedClient } : c));
-      setSelectedClient(updatedClient);
-      alert('Billing updated successfully');
+      if (!res.ok) throw new Error("Failed to delete user");
+      if (isPostHogConfigured) {
+        posthog.capture("admin_user_deleted");
+      }
+      mutatePersonnel();
     } catch (err) {
-      alert('Error updating billing');
+      alert("Error deleting user profile");
+    }
+  };
+
+  const copyScript = (snippet: string, clientId: string) => {
+    navigator.clipboard.writeText(snippet);
+    if (isPostHogConfigured) {
+      posthog.capture("admin_script_copied");
+    }
+    setCopiedSnippetId(clientId);
+    setTimeout(() => setCopiedSnippetId(null), 2500);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
     } finally {
-      setIsSavingBilling(false);
+      if (isPostHogConfigured) {
+        posthog.reset();
+      }
+      router.push("/login");
     }
   };
 
-  const handleUpdateTheme = async () => {
-    if (!selectedClient) return;
-    setIsSavingTheme(true);
-    const theme_config = {
-      light: { bg: themeLightBg, text: themeLightText, primary: themeLightPrimary },
-      dark: { bg: themeDarkBg, text: themeDarkText, primary: themeDarkPrimary }
-    };
-    try {
-      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/clients/${selectedClient.id}`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ theme_config })
-      });
-      if (!res.ok) throw new Error('Failed to update theme');
-      const updatedClient = await res.json();
-      setClients(prev => prev.map(c => c.id === updatedClient.id ? { ...c, ...updatedClient } : c));
-      setSelectedClient(updatedClient);
-      alert('Theme updated successfully');
-    } catch (err) {
-      alert('Error updating theme');
-    } finally {
-      setIsSavingTheme(false);
-    }
-  };
-
-  const handleDeleteClient = async () => {
-    if (!selectedClient) return;
-    const confirmDelete = window.confirm(`Are you sure you want to permanently delete ${selectedClient.company_name}? This action cannot be undone.`);
-    if (!confirmDelete) return;
-    
-    try {
-      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/clients/${selectedClient.id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error('Failed to delete client');
-      
-      setClients(prev => prev.filter(c => c.id !== selectedClient.id));
-      setSelectedClient(null);
-      alert('Client deleted successfully');
-    } catch (err) {
-      alert('Error deleting client');
-    }
-  };
-
-  const handleRegisterClient = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormLoading(true);
-    const domainsArray = newWhitelistedDomains.split(',').map(d => d.trim()).filter(d => d.length > 0);
-    try {
-      const res = await fetch(`${API_BASE.replace(/\/$/, '')}/api/v1/clients/`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          company_name: newCompanyName,
-          contact_email: newContactEmail,
-          whitelisted_domains: domainsArray,
-          require_consent_banner: false,
-          subscription_status: 'trial',
-          is_active: true
-        })
-      });
-      if (!res.ok) throw new Error('Failed to register client');
-      const registered = await res.json();
-      setShowRegisterModal(false);
-      setNewCompanyName(''); setNewContactEmail(''); setNewWhitelistedDomains('');
-      await fetchClients(registered.id);
-    } catch (err) {
-      alert('Error registering client');
-    } finally {
-      setFormLoading(false);
-    }
-  };
-
-  const filteredClients = useMemo(() => {
-    if (statusFilter === 'all') return clients;
-    return clients.filter(c => c.subscription_status === statusFilter);
-  }, [clients, statusFilter]);
-
-  const filteredLeads = useMemo(() => {
-    return leads.filter(lead => {
-      const searchStr = `${lead.name || ''} ${lead.email || ''} ${lead.position || ''}`.toLowerCase();
-      return searchStr.includes(searchTerm.toLowerCase());
-    });
-  }, [leads, searchTerm]);
-  
-  if (loading) return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-950">
-      <div className="h-8 w-8 border-2 border-zinc-900 border-t-indigo-500 rounded-full animate-spin mb-4" />
-      <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.3em]">Loading Console...</p>
-    </div>
+  const filteredPersonnel = (personnel || []).filter((p) =>
+    `${p.name} ${p.email} ${p.role}`.toLowerCase().includes(searchPersonnel.toLowerCase())
   );
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans">
-      <nav className="border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-20 shrink-0">
-        <div className="w-full px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <div className="h-8 w-8 rounded bg-zinc-900 border border-zinc-800 flex items-center justify-center">
-              <Building2 className="h-4 w-4 text-indigo-400" />
+      {/* Astryx Top Navigation */}
+      <nav className="border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-indigo-400">
+              <Building2 className="h-5 w-5" />
             </div>
-            <h1 className="text-sm font-semibold tracking-tight text-zinc-300">Admin Control Console</h1>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-sm tracking-tight text-zinc-100">AuraHQ</span>
+                <span className="px-2 py-0.5 rounded-full bg-red-500/10 border border-red-500/20 text-[9px] font-mono uppercase font-bold text-red-400">
+                  Admin Command
+                </span>
+              </div>
+              <span className="text-[10px] text-zinc-500 font-mono">Global RBAC & Script Vault</span>
+            </div>
           </div>
+
           <div className="flex items-center gap-4">
-            <button 
-              onClick={() => setShowRegisterModal(true)}
-              className="h-8 px-4 rounded bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-2 transition-all"
+            <Link
+              href="/aurahq/sales"
+              className="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-xs font-semibold text-zinc-300 transition-colors flex items-center gap-1.5"
             >
-              <Plus className="h-3 w-3" /> New Client
-            </button>
-            <button onClick={logout} className="p-2 hover:bg-zinc-900 rounded border border-zinc-850 text-zinc-500">
+              <LinkIcon className="w-3.5 h-3.5 text-indigo-400" /> Sales Portal
+            </Link>
+
+            <div className="text-right hidden sm:block">
+              <span className="block text-xs font-semibold text-zinc-200">{session?.user?.name || "Administrator"}</span>
+              <span className="text-[10px] text-zinc-500 font-mono">{session?.user?.email}</span>
+            </div>
+
+            <button
+              onClick={handleSignOut}
+              title="Sign Out"
+              className="p-2 hover:bg-zinc-900 rounded-lg border border-zinc-850 text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
+            >
               <LogOut className="h-4 w-4" />
             </button>
           </div>
         </div>
       </nav>
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar: Clients List */}
-        <div className="w-80 border-r border-zinc-900 bg-zinc-950/50 flex flex-col shrink-0">
-          <div className="p-4 border-b border-zinc-900">
-            <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-2 scrollbar-none">
-              {(['all', 'active', 'trial', 'suspended', 'cancellation_pending'] as const).map(status => (
-                <button
-                  key={status}
-                  onClick={() => setStatusFilter(status)}
-                  className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${
-                    statusFilter === status 
-                      ? 'bg-zinc-800 text-zinc-200 border border-zinc-700' 
-                      : 'bg-zinc-900/50 text-zinc-500 hover:bg-zinc-800 border border-transparent'
-                  }`}
-                >
-                  {status.replace('_', ' ')}
-                </button>
-              ))}
-            </div>
-            <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-3">Clients ({filteredClients.length})</h2>
-          </div>
-          
-          <div className="flex-1 overflow-y-auto">
-            {filteredClients.map(client => (
-              <button
-                key={client.id}
-                onClick={() => setSelectedClient(client)}
-                className={`w-full text-left p-4 border-b border-zinc-900 transition-colors ${
-                  selectedClient?.id === client.id ? 'bg-zinc-900 border-l-2 border-l-indigo-500' : 'hover:bg-zinc-900/50'
-                }`}
-              >
-                <div className="flex justify-between items-start mb-1">
-                  <span className="font-medium text-sm text-zinc-200">{client.company_name}</span>
-                  <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                    client.subscription_status === 'active' ? 'bg-green-500/10 text-green-400' :
-                    client.subscription_status === 'trial' ? 'bg-amber-500/10 text-amber-400' :
-                    'bg-red-500/10 text-red-400'
-                  }`}>
-                    {client.subscription_status}
-                  </span>
-                </div>
-                <div className="text-xs text-zinc-500 truncate">{client.whitelisted_domains[0] || 'No domain'}</div>
-              </button>
-            ))}
-            {filteredClients.length === 0 && (
-              <div className="p-8 text-center text-zinc-500 text-xs">No clients found for this filter.</div>
-            )}
-          </div>
+      {/* Main Container */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-8">
+        {/* Navigation Tabs */}
+        <div className="flex gap-2 border-b border-zinc-900 pb-px">
+          {[
+            { id: "overview", icon: Activity, label: "Global Overview" },
+            { id: "personnel", icon: Users, label: "Personnel Management" },
+            { id: "vault", icon: Code, label: "Script Vault (Gated)" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-2 px-5 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors cursor-pointer ${
+                activeTab === tab.id
+                  ? "border-indigo-500 text-indigo-400 bg-indigo-500/5 rounded-t-xl"
+                  : "border-transparent text-zinc-500 hover:text-zinc-300"
+              }`}
+            >
+              <tab.icon className="w-4 h-4" /> {tab.label}
+            </button>
+          ))}
         </div>
 
-        {/* Main Content Area */}
-        <div className="flex-1 overflow-y-auto bg-zinc-950">
-          {selectedClient ? (
-            <div className="p-8 max-w-5xl mx-auto">
-              {/* Header Info */}
-              <div className="flex justify-between items-end mb-8 pb-6 border-b border-zinc-900">
-                <div>
-                  <h2 className="text-3xl font-light text-zinc-100 mb-2">{selectedClient.company_name}</h2>
-                  <div className="flex items-center gap-4 text-sm text-zinc-400">
-                    <span className="flex items-center gap-1.5"><Globe className="h-4 w-4" /> {selectedClient.whitelisted_domains.join(', ')}</span>
-                    {selectedClient.contact_email && (
-                      <span className="flex items-center gap-1.5"><Mail className="h-4 w-4" /> {selectedClient.contact_email}</span>
-                    )}
+        {/* TAB 1: GLOBAL OVERVIEW */}
+        {activeTab === "overview" && (
+          <div className="space-y-8">
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-zinc-900/50 border border-zinc-850 rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Total Pipeline MRR</span>
+                  <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
+                    <DollarSign className="w-4 h-4" />
                   </div>
                 </div>
-                <button
-                  onClick={() => setShowSnippetModal(true)}
-                  className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-300 font-medium flex items-center gap-2 transition-colors"
-                >
-                  <Code className="h-4 w-4" /> View Script Tag
-                </button>
+                <div className="text-3xl font-extrabold text-zinc-100">
+                  R{(overviewMetrics?.total_mrr_zar ?? 0).toLocaleString()}
+                </div>
+                <span className="text-[10px] text-zinc-500 mt-1 block">Active + Trial Subscriptions</span>
               </div>
 
-              {/* Detail Tabs */}
-              <div className="flex gap-2 mb-8 border-b border-zinc-900 pb-px">
-                {[
-                  { id: 'overview', icon: Users, label: 'Leads & Overview' },
-                  { id: 'settings', icon: Settings, label: 'Settings' },
-                  { id: 'billing', icon: CreditCard, label: 'Billing' },
-                  { id: 'theming', icon: Palette, label: 'Theme Config' },
-                ].map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => setDetailTab(t.id as any)}
-                    className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-                      detailTab === t.id 
-                        ? 'border-indigo-500 text-indigo-400' 
-                        : 'border-transparent text-zinc-500 hover:text-zinc-300'
-                    }`}
+              <div className="bg-zinc-900/50 border border-zinc-850 rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Total Conversions</span>
+                  <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+                    <CheckCircle2 className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="text-3xl font-extrabold text-emerald-400">
+                  {overviewMetrics?.total_conversions ?? 0}
+                </div>
+                <span className="text-[10px] text-zinc-500 mt-1 block">Paid Checkout Sessions</span>
+              </div>
+
+              <div className="bg-zinc-900/50 border border-zinc-850 rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Global Conversion Rate</span>
+                  <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400">
+                    <TrendingUp className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="text-3xl font-extrabold text-zinc-100">
+                  {overviewMetrics?.conversion_rate_percentage ?? 0}%
+                </div>
+                <span className="text-[10px] text-zinc-500 mt-1 block">
+                  {overviewMetrics?.total_conversions ?? 0} / {overviewMetrics?.total_links_generated ?? 0} Links Closed
+                </span>
+              </div>
+
+              <div className="bg-zinc-900/50 border border-zinc-850 rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Active Personnel</span>
+                  <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
+                    <Users className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="text-3xl font-extrabold text-zinc-100">
+                  {overviewMetrics?.active_sales_reps ?? 0}
+                </div>
+                <span className="text-[10px] text-zinc-500 mt-1 block">Attributed Sales Representatives</span>
+              </div>
+            </section>
+          </div>
+        )}
+
+        {/* TAB 2: PERSONNEL MANAGEMENT */}
+        {activeTab === "personnel" && (
+          <section className="bg-zinc-900/40 border border-zinc-850 rounded-2xl p-8 backdrop-blur-xl space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-zinc-850 pb-4">
+              <div>
+                <h2 className="text-lg font-bold text-zinc-100 flex items-center gap-2">
+                  <Users className="w-5 h-5 text-indigo-400" /> Sales Representatives & Role Management
+                </h2>
+                <p className="text-xs text-zinc-400 mt-0.5">
+                  Configure role assignments (admin / sales), active gating, and review individual attribution performance.
+                </p>
+              </div>
+
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <input
+                  type="text"
+                  placeholder="Search personnel..."
+                  value={searchPersonnel}
+                  onChange={(e) => setSearchPersonnel(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-200 focus:border-indigo-500 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="border border-zinc-800 rounded-xl overflow-hidden bg-zinc-950/40">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-zinc-900/80 text-zinc-400 text-[10px] uppercase font-bold tracking-wider border-b border-zinc-800">
+                  <tr>
+                    <th className="px-6 py-3.5">User</th>
+                    <th className="px-6 py-3.5">Role</th>
+                    <th className="px-6 py-3.5">Status</th>
+                    <th className="px-6 py-3.5">Links Gen</th>
+                    <th className="px-6 py-3.5">Paid Closed</th>
+                    <th className="px-6 py-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-850">
+                  {filteredPersonnel.map((user) => (
+                    <tr key={user.id} className="hover:bg-zinc-900/30 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-semibold text-zinc-100">{user.name}</div>
+                        <div className="text-[10px] text-zinc-400 font-mono">{user.email}</div>
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <select
+                          value={user.role}
+                          disabled={updatingUserId === user.id}
+                          onChange={(e) => handleRoleChange(user.id, e.target.value as any)}
+                          className="px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs font-mono capitalize focus:border-indigo-500 focus:outline-none cursor-pointer"
+                        >
+                          <option value="sales">Sales</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => handleToggleActive(user.id, user.is_active)}
+                          disabled={updatingUserId === user.id}
+                          className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider cursor-pointer ${
+                            user.is_active
+                              ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20"
+                              : "bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20"
+                          }`}
+                        >
+                          {user.is_active ? "Active" : "Inactive"}
+                        </button>
+                      </td>
+
+                      <td className="px-6 py-4 font-mono text-zinc-300 font-semibold">
+                        {user.total_links_generated}
+                      </td>
+
+                      <td className="px-6 py-4 font-mono text-emerald-400 font-semibold">
+                        {user.paid_conversions}
+                      </td>
+
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => handleDeleteUser(user.id, user.name)}
+                          title="Delete User"
+                          className="p-1.5 rounded-lg bg-zinc-900 hover:bg-red-950/50 border border-zinc-800 hover:border-red-800 text-zinc-400 hover:text-red-300 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredPersonnel.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-12 text-center text-zinc-500 text-xs">
+                        No personnel profiles match the search criteria.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        {/* TAB 3: SCRIPT VAULT (GATED) */}
+        {activeTab === "vault" && (
+          <section className="bg-zinc-900/40 border border-zinc-850 rounded-2xl p-8 backdrop-blur-xl space-y-6">
+            <div className="flex items-center justify-between border-b border-zinc-850 pb-4">
+              <div>
+                <h2 className="text-lg font-bold text-zinc-100 flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-indigo-400" /> Admin Script Vault
+                </h2>
+                <p className="text-xs text-zinc-400 mt-0.5">
+                  Gated JavaScript tracking tags. Only generated for clients who have successfully completed checkout (ACTIVE / TRIAL).
+                </p>
+              </div>
+              <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-mono uppercase font-bold">
+                Admin Privilege
+              </span>
+            </div>
+
+            <div className="space-y-4">
+              {scripts && scripts.length > 0 ? (
+                scripts.map((item) => (
+                  <div
+                    key={item.client_id}
+                    className="p-6 rounded-2xl bg-zinc-950/70 border border-zinc-850 space-y-4 hover:border-zinc-800 transition-colors"
                   >
-                    <t.icon className="h-4 w-4" /> {t.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Tab Contents */}
-              <div className="min-h-[500px]">
-                {/* OVERVIEW TAB */}
-                {detailTab === 'overview' && (
-                  <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                      <div className="relative w-72">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                        <input 
-                          type="text" 
-                          placeholder="Search leads..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="w-full pl-9 pr-4 py-2 rounded border border-zinc-800 bg-zinc-900/50 text-zinc-200 text-sm focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="border border-zinc-800 rounded-lg overflow-hidden bg-zinc-900/20">
-                      <table className="w-full text-left text-sm">
-                        <thead className="bg-zinc-900/80 text-zinc-400 text-xs uppercase border-b border-zinc-800">
-                          <tr>
-                            <th className="px-6 py-3 font-medium">Name</th>
-                            <th className="px-6 py-3 font-medium">Email</th>
-                            <th className="px-6 py-3 font-medium">Company</th>
-                            <th className="px-6 py-3 font-medium">Status</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-zinc-800">
-                          {filteredLeads.map(lead => (
-                            <tr key={lead.id} className="hover:bg-zinc-900/40">
-                              <td className="px-6 py-4 text-zinc-200">{lead.name || 'Anonymous'}</td>
-                              <td className="px-6 py-4 text-zinc-400">{lead.email || 'N/A'}</td>
-                              <td className="px-6 py-4 text-zinc-300">{lead.company?.name || 'Unknown'}</td>
-                              <td className="px-6 py-4">
-                                <span className={`px-2 py-1 rounded text-[10px] uppercase font-bold ${lead.is_warm ? 'bg-green-500/10 text-green-400' : 'bg-zinc-800 text-zinc-500'}`}>
-                                  {lead.is_warm ? 'Warm' : 'Silent'}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                      {filteredLeads.length === 0 && (
-                        <div className="py-12 text-center text-zinc-500 text-sm">No leads match your criteria.</div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* SETTINGS TAB */}
-                {detailTab === 'settings' && (
-                  <div className="max-w-2xl space-y-6">
-                    <div className="p-6 border border-zinc-800 bg-zinc-900/30 rounded-xl space-y-5">
-                      <h3 className="text-sm font-semibold text-zinc-200 mb-4 border-b border-zinc-800 pb-2">Client Preferences</h3>
-                      
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
-                        <label className="block text-xs font-medium text-zinc-400 mb-1.5">Contact / Report Email</label>
-                        <input 
-                          type="email" 
-                          value={contactEmail} 
-                          onChange={e => setContactEmail(e.target.value)} 
-                          className="w-full px-3 py-2 rounded bg-zinc-950 border border-zinc-800 text-zinc-200 text-sm focus:border-indigo-500 focus:outline-none"
-                        />
-                        <p className="text-[10px] text-zinc-500 mt-1">Where automated reports and notifications will be sent.</p>
+                        <h3 className="font-bold text-sm text-zinc-100">{item.company_name}</h3>
+                        <p className="text-[10px] text-zinc-500 font-mono">
+                          Domains: {item.whitelisted_domains.join(", ") || "Unrestricted"}
+                        </p>
                       </div>
 
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-400 mb-1.5">Whitelisted Domains (comma separated)</label>
-                        <input 
-                          type="text" 
-                          value={whitelistedDomains} 
-                          onChange={e => setWhitelistedDomains(e.target.value)} 
-                          className="w-full px-3 py-2 rounded bg-zinc-950 border border-zinc-800 text-zinc-200 text-sm focus:border-indigo-500 focus:outline-none"
-                        />
-                      </div>
-
-                      <div className="flex items-center gap-3 pt-2">
-                        <input 
-                          type="checkbox" 
-                          id="consentToggle"
-                          checked={requireConsent} 
-                          onChange={e => setRequireConsent(e.target.checked)} 
-                          className="h-4 w-4 rounded border-zinc-700 bg-zinc-900 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-zinc-950"
-                        />
-                        <label htmlFor="consentToggle" className="text-sm text-zinc-300">Require Consent Banner (GDPR/POPIA)</label>
-                      </div>
-
-                      <div className="pt-4 border-t border-zinc-800">
-                        <button 
-                          onClick={handleUpdateSettings} 
-                          disabled={isSavingSettings}
-                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-sm font-medium transition-colors flex items-center gap-2"
+                      <div className="flex items-center gap-3">
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold uppercase">
+                          {item.subscription_status}
+                        </span>
+                        <button
+                          onClick={() => copyScript(item.snippet, item.client_id)}
+                          className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                         >
-                          <Save className="h-4 w-4" /> Save Settings
+                          {copiedSnippetId === item.client_id ? (
+                            <>
+                              <Check className="w-3.5 h-3.5 text-emerald-300" /> Copied!
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3.5 h-3.5" /> Copy Script Tag
+                            </>
+                          )}
                         </button>
                       </div>
                     </div>
 
-                    {/* DANGER ZONE */}
-                    <div className="p-6 border border-red-900/30 bg-red-950/10 rounded-xl space-y-4 mt-12">
-                      <div className="flex items-center gap-2 text-red-500 mb-2">
-                        <AlertTriangle className="h-5 w-5" />
-                        <h3 className="text-sm font-bold uppercase tracking-wider">Danger Zone</h3>
-                      </div>
-                      <p className="text-xs text-zinc-400">Permanently delete this client and all associated telemetry data. This action cannot be undone.</p>
-                      <button 
-                        onClick={handleDeleteClient}
-                        className="px-4 py-2 bg-red-900/50 hover:bg-red-600 text-red-200 hover:text-white border border-red-800 hover:border-red-600 rounded text-sm font-medium transition-colors flex items-center gap-2"
-                      >
-                        <Trash2 className="h-4 w-4" /> Delete Client Profile
-                      </button>
+                    <div className="p-3 bg-zinc-900 border border-zinc-800 rounded-xl font-mono text-xs text-zinc-300 break-all select-all">
+                      {item.snippet}
                     </div>
                   </div>
-                )}
-
-                {/* BILLING TAB */}
-                {detailTab === 'billing' && (
-                  <div className="max-w-2xl space-y-6">
-                    <div className="p-6 border border-zinc-800 bg-zinc-900/30 rounded-xl space-y-5">
-                      <h3 className="text-sm font-semibold text-zinc-200 mb-4 border-b border-zinc-800 pb-2">Billing Configuration</h3>
-                      
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <label className="block text-xs font-medium text-zinc-400 mb-1.5">Payment Plan</label>
-                          <select 
-                            value={paymentPlan}
-                            onChange={(e) => setPaymentPlan(e.target.value)}
-                            className="w-full px-3 py-2 rounded bg-zinc-950 border border-zinc-800 text-zinc-200 text-sm focus:border-indigo-500 focus:outline-none"
-                          >
-                            <option value="monthly">Monthly Subscription</option>
-                            <option value="annual">Annual Subscription</option>
-                            <option value="enterprise">Enterprise Custom</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-medium text-zinc-400 mb-1.5">Custom Fee Amount (ZAR)</label>
-                          <div className="relative">
-                            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                            <input 
-                              type="number" 
-                              value={monthlyAmountInput}
-                              onChange={(e) => setMonthlyAmountInput(e.target.value)}
-                              className="w-full pl-9 pr-3 py-2 rounded bg-zinc-950 border border-zinc-800 text-zinc-200 text-sm focus:border-indigo-500 focus:outline-none"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="pt-4 border-t border-zinc-800">
-                        <button 
-                          onClick={handleUpdateBilling} 
-                          disabled={isSavingBilling}
-                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-sm font-medium transition-colors flex items-center gap-2"
-                        >
-                          <Save className="h-4 w-4" /> Update Billing
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* THEMING TAB */}
-                {detailTab === 'theming' && (
-                  <div className="max-w-3xl space-y-6">
-                    <div className="p-6 border border-zinc-800 bg-zinc-900/30 rounded-xl space-y-5">
-                      <h3 className="text-sm font-semibold text-zinc-200 mb-4 border-b border-zinc-800 pb-2">Widget Appearance</h3>
-                      
-                      <div className="grid md:grid-cols-2 gap-8">
-                        {/* Light Theme */}
-                        <div className="space-y-4">
-                          <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Light Mode</h4>
-                          
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <label className="text-sm text-zinc-300">Background</label>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-zinc-500 font-mono">{themeLightBg}</span>
-                                <input type="color" value={themeLightBg} onChange={e=>setThemeLightBg(e.target.value)} className="h-8 w-12 rounded cursor-pointer bg-zinc-950 border border-zinc-700" />
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <label className="text-sm text-zinc-300">Text Color</label>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-zinc-500 font-mono">{themeLightText}</span>
-                                <input type="color" value={themeLightText} onChange={e=>setThemeLightText(e.target.value)} className="h-8 w-12 rounded cursor-pointer bg-zinc-950 border border-zinc-700" />
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <label className="text-sm text-zinc-300">Primary Accent</label>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-zinc-500 font-mono">{themeLightPrimary}</span>
-                                <input type="color" value={themeLightPrimary} onChange={e=>setThemeLightPrimary(e.target.value)} className="h-8 w-12 rounded cursor-pointer bg-zinc-950 border border-zinc-700" />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Dark Theme */}
-                        <div className="space-y-4">
-                          <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Dark Mode</h4>
-                          
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <label className="text-sm text-zinc-300">Background</label>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-zinc-500 font-mono">{themeDarkBg}</span>
-                                <input type="color" value={themeDarkBg} onChange={e=>setThemeDarkBg(e.target.value)} className="h-8 w-12 rounded cursor-pointer bg-zinc-950 border border-zinc-700" />
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <label className="text-sm text-zinc-300">Text Color</label>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-zinc-500 font-mono">{themeDarkText}</span>
-                                <input type="color" value={themeDarkText} onChange={e=>setThemeDarkText(e.target.value)} className="h-8 w-12 rounded cursor-pointer bg-zinc-950 border border-zinc-700" />
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <label className="text-sm text-zinc-300">Primary Accent</label>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-zinc-500 font-mono">{themeDarkPrimary}</span>
-                                <input type="color" value={themeDarkPrimary} onChange={e=>setThemeDarkPrimary(e.target.value)} className="h-8 w-12 rounded cursor-pointer bg-zinc-950 border border-zinc-700" />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="pt-6 border-t border-zinc-800">
-                        <button 
-                          onClick={handleUpdateTheme} 
-                          disabled={isSavingTheme}
-                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-sm font-medium transition-colors flex items-center gap-2"
-                        >
-                          <Save className="h-4 w-4" /> Save Theme
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+                ))
+              ) : (
+                <div className="p-12 text-center text-zinc-500 text-xs border border-zinc-800/60 rounded-2xl bg-zinc-950/40">
+                  No active or trial clients found in the registry. Scripts are unlocked automatically once a client completes checkout.
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="flex items-center justify-center h-full text-zinc-500 text-sm">
-              Select a client to view details
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Snippet Modal */}
-      {showSnippetModal && selectedClient && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-zinc-900 flex justify-between items-center">
-              <h3 className="text-lg font-medium text-zinc-200">Integration Snippet</h3>
-              <button onClick={() => setShowSnippetModal(false)} className="text-zinc-500 hover:text-zinc-300">
-                <LogOut className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="p-6">
-              <p className="text-sm text-zinc-400 mb-4">Paste this tag into the <code>&lt;head&gt;</code> of the client's website.</p>
-              <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 font-mono text-xs text-zinc-300 break-all relative group">
-                {`<script src="https://cdn.auraworks.co.za/aura.js" data-client-id="${selectedClient.id}" defer></script>`}
-                <button 
-                  onClick={() => {
-                    navigator.clipboard.writeText(`<script src="https://cdn.auraworks.co.za/aura.js" data-client-id="${selectedClient.id}" defer></script>`);
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 2000);
-                  }}
-                  className="absolute top-2 right-2 p-2 bg-zinc-800 hover:bg-zinc-700 rounded text-zinc-400 transition-colors opacity-0 group-hover:opacity-100"
-                >
-                  {copied ? <Check className="h-4 w-4 text-green-400" /> : <Code className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Register Modal */}
-      {showRegisterModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-zinc-900 flex justify-between items-center">
-              <h3 className="text-lg font-medium text-zinc-200">Register New Client</h3>
-              <button onClick={() => setShowRegisterModal(false)} className="text-zinc-500 hover:text-zinc-300">
-                <LogOut className="h-5 w-5" />
-              </button>
-            </div>
-            <form onSubmit={handleRegisterClient} className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1">Company Name</label>
-                <input required type="text" value={newCompanyName} onChange={e => setNewCompanyName(e.target.value)} className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-800 text-zinc-200 focus:border-indigo-500 focus:outline-none" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1">Contact Email</label>
-                <input required type="email" value={newContactEmail} onChange={e => setNewContactEmail(e.target.value)} className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-800 text-zinc-200 focus:border-indigo-500 focus:outline-none" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1">Whitelisted Domains</label>
-                <input required type="text" placeholder="e.g. auraworks.co.za" value={newWhitelistedDomains} onChange={e => setNewWhitelistedDomains(e.target.value)} className="w-full px-3 py-2 rounded bg-zinc-900 border border-zinc-800 text-zinc-200 focus:border-indigo-500 focus:outline-none" />
-              </div>
-              <div className="pt-4 flex justify-end gap-3">
-                <button type="button" onClick={() => setShowRegisterModal(false)} className="px-4 py-2 text-sm text-zinc-400 hover:text-zinc-200">Cancel</button>
-                <button type="submit" disabled={formLoading} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-sm font-medium">Register Client</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+          </section>
+        )}
+      </main>
     </div>
   );
 }

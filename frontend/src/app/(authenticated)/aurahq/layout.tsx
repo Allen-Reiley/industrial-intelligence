@@ -1,13 +1,38 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, ShieldAlert, LogOut, Activity } from 'lucide-react';
+import posthog from 'posthog-js';
+import { useSession } from '@/lib/auth-client';
+
+const isPostHogConfigured = Boolean(
+  process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN && process.env.NEXT_PUBLIC_POSTHOG_HOST,
+);
 
 export default function AuraHQLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { data: session } = useSession();
+  const identifiedUserId = useRef<string | null>(null);
+
+  useEffect(() => {
+    const user = session?.user;
+    if (!isPostHogConfigured || !user?.id || identifiedUserId.current === user.id) return;
+
+    if (identifiedUserId.current) {
+      posthog.reset();
+    }
+
+    const role = (user as { role?: string }).role;
+    posthog.identify(user.id, {
+      ...(user.email ? { email: user.email } : {}),
+      ...(user.name ? { name: user.name } : {}),
+      ...(role ? { role } : {}),
+    });
+    identifiedUserId.current = user.id;
+  }, [session]);
 
   const handleLogout = async () => {
     try {
@@ -25,6 +50,9 @@ export default function AuraHQLayout({ children }: { children: React.ReactNode }
     document.cookie = "admin_access_token=; path=/; max-age=0; SameSite=Lax; Secure";
     localStorage.removeItem('admin_token');
     localStorage.removeItem('admin_refresh_token');
+    if (isPostHogConfigured) {
+      posthog.reset();
+    }
     router.push('/login');
   };
 

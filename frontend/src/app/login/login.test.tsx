@@ -2,170 +2,51 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import LoginPage from './page';
+import { signIn } from '@/lib/auth-client';
 
-// Mock next/navigation
+jest.mock('@/lib/auth-client', () => ({
+  signIn: {
+    social: jest.fn(),
+  },
+  useSession: jest.fn(() => ({ data: null, isPending: false })),
+}));
+
 const mockPush = jest.fn();
-const mockGet = jest.fn().mockReturnValue(null);
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
   }),
   useSearchParams: () => ({
-    get: mockGet,
+    get: jest.fn().mockReturnValue(null),
   }),
 }));
 
-jest.mock('@/lib/utils', () => ({
-  ...jest.requireActual('@/lib/utils'),
-  navigateToUrl: jest.fn(),
-}));
-
-describe('LoginPage Component Tests', () => {
-  let cookieVal = '';
-
+describe('LoginPage V2 Astryx SSO Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    cookieVal = '';
-    Object.defineProperty(document, 'cookie', {
-      get: () => cookieVal,
-      set: (val) => {
-        cookieVal = val;
-      },
-      configurable: true,
-    });
-    global.fetch = jest.fn();
   });
 
-  test('renders login form elements correctly', () => {
+  test('renders Google OAuth login button with Astryx design language', () => {
     render(<LoginPage />);
-    
-    expect(screen.getByText('AuraHQ Portal')).toBeInTheDocument();
-    expect(screen.getByText('Login with Google')).toBeInTheDocument();
-    expect(screen.getByLabelText(/System Username/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Security Key/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Initialize Console/i })).toBeInTheDocument();
+
+    expect(screen.getByText(/AuraHQ Operations Portal/i)).toBeInTheDocument();
+    expect(screen.getByText(/Single Sign-On Verified/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Continue with Google/i })).toBeInTheDocument();
   });
 
-  test('handles successful credentials login with redirect', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({}),
-    });
+  test('clicking Google SSO triggers Better Auth signIn.social', async () => {
+    (signIn.social as jest.Mock).mockResolvedValueOnce({ error: null });
 
     render(<LoginPage />);
 
-    fireEvent.change(screen.getByPlaceholderText('admin'), { target: { value: 'admin' } });
-    fireEvent.change(screen.getByPlaceholderText('••••••••••••'), { target: { value: 'secretkey' } });
-    
-    fireEvent.click(screen.getByRole('button', { name: /Initialize Console/i }));
+    const ssoBtn = screen.getByRole('button', { name: /Continue with Google/i });
+    fireEvent.click(ssoBtn);
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v1/auth/login'),
-        expect.objectContaining({
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          credentials: 'include',
-          body: expect.any(URLSearchParams),
-        })
-      );
+      expect(signIn.social).toHaveBeenCalledWith({
+        provider: 'google',
+        callbackURL: '/aurahq/sales',
+      });
     });
-
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/aurahq/dashboard');
-    });
-  });
-
-  test('handles successful 204 No Content login with redirect', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      status: 204,
-    });
-
-    render(<LoginPage />);
-
-    fireEvent.change(screen.getByPlaceholderText('admin'), { target: { value: 'admin' } });
-    fireEvent.change(screen.getByPlaceholderText('••••••••••••'), { target: { value: 'secretkey' } });
-    
-    fireEvent.click(screen.getByRole('button', { name: /Initialize Console/i }));
-
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v1/auth/login'),
-        expect.objectContaining({
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          credentials: 'include',
-          body: expect.any(URLSearchParams),
-        })
-      );
-    });
-
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/aurahq/dashboard');
-    });
-  });
-
-  test('handles Login with Google button click', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ authorization_url: 'https://accounts.google.com/o/oauth2/auth?state=123' }),
-    });
-
-    const { navigateToUrl } = require('@/lib/utils');
-
-    render(<LoginPage />);
-
-    fireEvent.click(screen.getByRole('button', { name: /Login with Google/i }));
-
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringMatching(/\/api\/v1\/auth\/google\/authorize$/)
-      );
-    });
-
-    await waitFor(() => {
-      expect(navigateToUrl).toHaveBeenCalledWith('https://accounts.google.com/o/oauth2/auth?state=123');
-    });
-  });
-
-
-  test('handles login failure and displays error alert', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: false,
-      status: 401,
-    });
-
-    render(<LoginPage />);
-
-    fireEvent.change(screen.getByPlaceholderText('admin'), { target: { value: 'admin' } });
-    fireEvent.change(screen.getByPlaceholderText('••••••••••••'), { target: { value: 'wrongkey' } });
-    
-    fireEvent.click(screen.getByRole('button', { name: /Initialize Console/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText('Invalid administrative credentials.')).toBeInTheDocument();
-      expect(mockPush).not.toHaveBeenCalled();
-    });
-  });
-
-  test('prevents default form submission event behavior', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({}),
-    });
-
-    render(<LoginPage />);
-
-    const form = screen.getByPlaceholderText('admin').closest('form');
-    expect(form).toBeInTheDocument();
-
-    const preventDefaultSpy = jest.spyOn(Event.prototype, 'preventDefault');
-    fireEvent.submit(form!);
-
-    expect(preventDefaultSpy).toHaveBeenCalled();
-    preventDefaultSpy.mockRestore();
   });
 });
-
-

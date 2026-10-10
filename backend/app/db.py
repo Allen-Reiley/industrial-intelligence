@@ -99,7 +99,10 @@ def init_db():
         from app.models.enrichment_queue import EnrichmentQueue, FailedEnrichment
         from app.models.notification_throttle import NotificationThrottle
         from app.models.crm_dead_letter import CrmDeadLetter
-        from app.models.user import User, OAuthAccount
+        from app.models.transaction import Transaction
+        from app.models.checkout_session import CheckoutSession
+        from app.models.user import User, Session as UserSession, Account, Verification
+
 
         
         # Programmatic Alembic migrations

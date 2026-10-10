@@ -201,17 +201,23 @@ async def list_clients(
 ):
     """
     Lists registered clients in the tenant ledger.
-    Superusers can view all, non-superusers can only view their own assigned client.
+    Superusers can view all, sales reps can view their attributed clients,
+    and client users can view their assigned client.
     """
     if not current_user.is_superuser:
-        if current_user.client_id is None:
-            return []
-        stmt = select(Client).where(Client.id == current_user.client_id)
+        conditions = []
+        if current_user.client_id is not None:
+            conditions.append(Client.id == current_user.client_id)
+        conditions.append(Client.sales_rep_id == current_user.id)
+        
+        from sqlalchemy import or_
+        stmt = select(Client).where(or_(*conditions))
     else:
         stmt = select(Client)
         
     res = await session.execute(stmt)
     return res.scalars().all()
+
 
 @router.get("/{client_id}/verify")
 async def verify_client_installation(

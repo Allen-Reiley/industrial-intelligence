@@ -8,10 +8,8 @@ from app.main import app
 from app.core.config import settings
 from app.db import async_session_maker
 from app.models.client import Client
-from app.models.user import User
+from app.models.user import User, UserRole
 from sqlmodel import select
-from fastapi_users.password import PasswordHelper
-from app.core.users import get_jwt_strategy
 
 pytestmark = pytest.mark.anyio
 
@@ -30,15 +28,14 @@ async def get_auth_cookies_for_user(session, email: str, is_superuser: bool, cli
     stmt = select(User).where(User.email == email)
     res = await session.execute(stmt)
     user = res.scalars().first()
+    role = UserRole.ADMIN if is_superuser else UserRole.SALES
     if not user:
-        password_helper = PasswordHelper()
         user = User(
-            id=uuid.uuid4(),
+            id=f"user_{uuid.uuid4().hex[:8]}",
             email=email,
-            hashed_password=password_helper.hash("admin_pass_123"),
+            name=email.split("@")[0],
+            role=role,
             is_active=True,
-            is_verified=True,
-            is_superuser=is_superuser,
             client_id=client_id
         )
         session.add(user)
@@ -46,14 +43,12 @@ async def get_auth_cookies_for_user(session, email: str, is_superuser: bool, cli
         await session.refresh(user)
     else:
         user.client_id = client_id
-        user.is_superuser = is_superuser
+        user.role = role
         session.add(user)
         await session.commit()
         await session.refresh(user)
     
-    jwt_strategy = get_jwt_strategy()
-    token = await jwt_strategy.write_token(user)
-    return {"aurahq_auth": token}
+    return {"aurahq_auth": str(user.id)}
 
 async def test_tenant_gating_leads():
     client = await get_test_client()

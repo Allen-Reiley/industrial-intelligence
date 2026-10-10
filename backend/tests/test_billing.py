@@ -9,10 +9,8 @@ from app.main import app
 from app.core.config import settings
 from app.db import async_session_maker
 from app.models.client import Client
-from app.models.user import User
+from app.models.user import User, UserRole
 from sqlmodel import select
-from fastapi_users.password import PasswordHelper
-from app.core.users import get_jwt_strategy
 
 pytestmark = pytest.mark.anyio
 
@@ -33,22 +31,17 @@ async def get_auth_cookies(session):
     res = await session.execute(stmt)
     user = res.scalars().first()
     if not user:
-        password_helper = PasswordHelper()
         user = User(
-            id=uuid.uuid4(),
+            id=f"admin_{uuid.uuid4().hex[:8]}",
             email=test_email,
-            hashed_password=password_helper.hash("admin_pass_123"),
-            is_active=True,
-            is_verified=True,
-            is_superuser=True
+            name="Admin Billing",
+            role=UserRole.ADMIN,
+            is_active=True
         )
         session.add(user)
         await session.commit()
         await session.refresh(user)
-    
-    jwt_strategy = get_jwt_strategy()
-    token = await jwt_strategy.write_token(user)
-    return {"aurahq_auth": token}
+    return {"aurahq_auth": str(user.id)}
 
 async def test_billing_setup_unauthorized():
     client = await get_test_client()

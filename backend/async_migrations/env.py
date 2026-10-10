@@ -17,7 +17,6 @@ if config.config_file_name is not None:
 from sqlmodel import SQLModel
 from app.core.config import settings
 
-# Import all models to register them on SQLModel.metadata
 from app.models import (
     Client,
     Company,
@@ -33,7 +32,10 @@ from app.models import (
     Transaction,
     AdminUser,
     User,
-    OAuthAccount
+    Session,
+    Account,
+    Verification,
+    CheckoutSession
 )
 
 target_metadata = SQLModel.metadata
