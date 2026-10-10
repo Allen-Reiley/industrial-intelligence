@@ -1,6 +1,5 @@
 "use client";
-
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import posthog from 'posthog-js';
 import { useSession } from '@/lib/auth-client';
@@ -9,6 +8,8 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import AppHeader from '@/layout/AppHeader';
 import AppSidebar from '@/layout/AppSidebar';
 import Backdrop from '@/layout/Backdrop';
+import { NextIntlClientProvider } from 'next-intl';
+import enMessages from '@/messages/en.json';
 
 const isPostHogConfigured = Boolean(
   process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN && process.env.NEXT_PUBLIC_POSTHOG_HOST,
@@ -37,6 +38,8 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
 export default function AuraHQLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const identifiedUserId = useRef<string | null>(null);
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const user = session?.user;
@@ -55,11 +58,26 @@ export default function AuraHQLayout({ children }: { children: React.ReactNode }
     identifiedUserId.current = user.id;
   }, [session]);
 
+  useEffect(() => {
+    if (session?.user) {
+      const role = (session.user as any).role || "sales";
+      if (role !== "admin") {
+        const allowedPaths = ["/aurahq", "/aurahq/analytics", "/aurahq/sales", "/aurahq/calendar", "/aurahq/profile"];
+        if (!allowedPaths.some(p => pathname === p || pathname.startsWith(p + "/"))) {
+          router.push("/aurahq");
+        }
+      }
+    }
+  }, [session, pathname, router]);
+
+
   return (
-    <ThemeProvider>
-      <SidebarProvider>
-        <AdminLayoutInner>{children}</AdminLayoutInner>
-      </SidebarProvider>
-    </ThemeProvider>
+    <NextIntlClientProvider locale="en" messages={enMessages}>
+      <ThemeProvider>
+        <SidebarProvider>
+          <AdminLayoutInner>{children}</AdminLayoutInner>
+        </SidebarProvider>
+      </ThemeProvider>
+    </NextIntlClientProvider>
   );
 }

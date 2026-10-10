@@ -2,6 +2,7 @@
 
 import { useTheme } from "@/context/ThemeContext";
 import { useModal } from "@/hooks/useModal";
+import { useSession } from "@/lib/auth-client";
 import { isRtl } from "@/i18n/languages";
 import type { Locale } from "@/i18n/routing";
 import type {
@@ -106,11 +107,23 @@ const Calendar: React.FC = () => {
     openModal();
   };
 
+  const { data: session } = useSession();
+
   const handleEventClick = (clickInfo: EventClickInfo) => {
     const event = clickInfo.event;
     if (event.url) {
       window.open(event.url);
       clickInfo.jsEvent?.preventDefault();
+      return;
+    }
+
+    const createdBy = event.extendedProps?.createdBy;
+    const userId = session?.user?.id;
+    const userRole = session?.user?.role;
+    
+    // RBAC: Admins can edit anything, Sales Reps can only edit what they created.
+    if (userRole !== 'admin' && createdBy !== userId) {
+      alert("You do not have permission to edit this event.");
       return;
     }
 
@@ -122,7 +135,10 @@ const Calendar: React.FC = () => {
       title: event.title,
       start: event.startStr,
       end: event.endStr,
-      extendedProps: { calendar: event.extendedProps?.calendar || "Primary" },
+      extendedProps: { 
+        calendar: event.extendedProps?.calendar || "Primary",
+        createdBy: createdBy
+      },
     });
     setSelectedStartDate(startStr);
     setSelectedEndDate(endStr);
@@ -145,7 +161,10 @@ const Calendar: React.FC = () => {
                 title: titleVal,
                 start: startDateVal,
                 end: endDateVal || startDateVal,
-                extendedProps: { calendar: levelVal },
+                extendedProps: { 
+                  calendar: levelVal,
+                  createdBy: selectedEvent.extendedProps?.createdBy
+                },
               }
             : ev,
         ),
@@ -157,7 +176,10 @@ const Calendar: React.FC = () => {
         start: startDateVal,
         end: endDateVal || startDateVal,
         allDay: true,
-        extendedProps: { calendar: levelVal },
+        extendedProps: { 
+          calendar: levelVal,
+          createdBy: session?.user?.id
+        },
       };
       setEvents((prevEvents) => [...prevEvents, newEvent]);
     }

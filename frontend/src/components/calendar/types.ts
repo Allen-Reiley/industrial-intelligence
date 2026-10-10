@@ -5,6 +5,7 @@ export type CalendarEventLevel = "Danger" | "Success" | "Primary" | "Warning";
 export interface CalendarEvent extends EventInput {
   extendedProps: {
     calendar: string;
+    createdBy?: string;
   };
 }
 

@@ -1,4 +1,7 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -9,6 +12,11 @@ const nextConfig: NextConfig = {
         hostname: 'ik.imagekit.io',
         //port: '',
         pathname: '/**',
+      },
+    ],
+    localPatterns: [
+      {
+        pathname: "/**",
       },
     ],
   },
@@ -28,13 +36,8 @@ const nextConfig: NextConfig = {
     },
   },
   typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete 
-    // even if your project has type errors.
-    // !! WARN !!
     ignoreBuildErrors: true,
   },
-
   async redirects() {
     return [
       {
@@ -47,4 +50,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

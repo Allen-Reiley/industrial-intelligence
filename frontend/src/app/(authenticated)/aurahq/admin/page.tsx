@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from "react";
 import useSWR from "swr";
 import Link from "next/link";
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { useRouter } from "next/navigation";
 import { 
   Building2, 
@@ -216,56 +217,19 @@ export default function AdminConsole() {
   );
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans">
+    <div>
       {/* Astryx Top Navigation */}
-      <nav className="border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-indigo-400">
-              <Building2 className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-sm tracking-tight text-zinc-100">AuraHQ</span>
-                <span className="px-2 py-0.5 rounded-full bg-red-500/10 border border-red-500/20 text-[9px] font-mono uppercase font-bold text-red-400">
-                  Admin Command
-                </span>
-              </div>
-              <span className="text-[10px] text-zinc-500 font-mono">Global RBAC & Script Vault</span>
-            </div>
-          </div>
+      
 
-          <div className="flex items-center gap-4">
-            <Link
-              href="/aurahq/sales"
-              className="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-xs font-semibold text-zinc-300 transition-colors flex items-center gap-1.5"
-            >
-              <LinkIcon className="w-3.5 h-3.5 text-indigo-400" /> Sales Portal
-            </Link>
-
-            <div className="text-right hidden sm:block">
-              <span className="block text-xs font-semibold text-zinc-200">{session?.user?.name || "Administrator"}</span>
-              <span className="text-[10px] text-zinc-500 font-mono">{session?.user?.email}</span>
-            </div>
-
-            <button
-              onClick={handleSignOut}
-              title="Sign Out"
-              className="p-2 hover:bg-zinc-900 rounded-lg border border-zinc-850 text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      </nav>
-
+      <PageBreadcrumb pageTitle="Admin Command" />
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-8">
         {/* Navigation Tabs */}
-        <div className="flex gap-2 border-b border-zinc-900 pb-px">
+        <div className="flex gap-2 border-b border-gray-200 dark:border-gray-800 pb-px">
           {[
             { id: "overview", icon: Activity, label: "Global Overview" },
             { id: "personnel", icon: Users, label: "Personnel Management" },
+            { id: "registration", icon: Users, label: "User Registration" },
             { id: "vault", icon: Code, label: "Script Vault (Gated)" },
           ].map((tab) => (
             <button
@@ -273,8 +237,8 @@ export default function AdminConsole() {
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-5 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors cursor-pointer ${
                 activeTab === tab.id
-                  ? "border-indigo-500 text-indigo-400 bg-indigo-500/5 rounded-t-xl"
-                  : "border-transparent text-zinc-500 hover:text-zinc-300"
+                  ? "border-brand-500 dark:border-brand-400 text-brand-500 dark:text-brand-400 bg-brand-50 dark:bg-brand-500/10 rounded-t-xl"
+                  : "border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:text-gray-300"
               }`}
             >
               <tab.icon className="w-4 h-4" /> {tab.label}
@@ -286,22 +250,22 @@ export default function AdminConsole() {
         {activeTab === "overview" && (
           <div className="space-y-8">
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-zinc-900/50 border border-zinc-850 rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm">
+              <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Total Pipeline MRR</span>
-                  <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500 dark:text-gray-400">Total Pipeline MRR</span>
+                  <div className="p-2 rounded-xl bg-brand-100 dark:bg-brand-500/20 text-brand-500 dark:text-brand-400">
                     <DollarSign className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="text-3xl font-extrabold text-zinc-100">
+                <div className="text-3xl font-extrabold text-gray-800 dark:text-white/90">
                   R{(overviewMetrics?.total_mrr_zar ?? 0).toLocaleString()}
                 </div>
-                <span className="text-[10px] text-zinc-500 mt-1 block">Active + Trial Subscriptions</span>
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 block">Active + Trial Subscriptions</span>
               </div>
 
-              <div className="bg-zinc-900/50 border border-zinc-850 rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm">
+              <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Total Conversions</span>
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500 dark:text-gray-400">Total Conversions</span>
                   <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
                     <CheckCircle2 className="w-4 h-4" />
                   </div>
@@ -309,35 +273,35 @@ export default function AdminConsole() {
                 <div className="text-3xl font-extrabold text-emerald-400">
                   {overviewMetrics?.total_conversions ?? 0}
                 </div>
-                <span className="text-[10px] text-zinc-500 mt-1 block">Paid Checkout Sessions</span>
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 block">Paid Checkout Sessions</span>
               </div>
 
-              <div className="bg-zinc-900/50 border border-zinc-850 rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm">
+              <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Global Conversion Rate</span>
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500 dark:text-gray-400">Global Conversion Rate</span>
                   <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400">
                     <TrendingUp className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="text-3xl font-extrabold text-zinc-100">
+                <div className="text-3xl font-extrabold text-gray-800 dark:text-white/90">
                   {overviewMetrics?.conversion_rate_percentage ?? 0}%
                 </div>
-                <span className="text-[10px] text-zinc-500 mt-1 block">
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 block">
                   {overviewMetrics?.total_conversions ?? 0} / {overviewMetrics?.total_links_generated ?? 0} Links Closed
                 </span>
               </div>
 
-              <div className="bg-zinc-900/50 border border-zinc-850 rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm">
+              <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Active Personnel</span>
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500 dark:text-gray-400">Active Personnel</span>
                   <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
                     <Users className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="text-3xl font-extrabold text-zinc-100">
+                <div className="text-3xl font-extrabold text-gray-800 dark:text-white/90">
                   {overviewMetrics?.active_sales_reps ?? 0}
                 </div>
-                <span className="text-[10px] text-zinc-500 mt-1 block">Attributed Sales Representatives</span>
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 block">Attributed Sales Representatives</span>
               </div>
             </section>
           </div>
@@ -345,47 +309,48 @@ export default function AdminConsole() {
 
         {/* TAB 2: PERSONNEL MANAGEMENT */}
         {activeTab === "personnel" && (
-          <section className="bg-zinc-900/40 border border-zinc-850 rounded-2xl p-8 backdrop-blur-xl space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-zinc-850 pb-4">
+          <section className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-8 backdrop-blur-xl space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-gray-200 dark:border-gray-700 pb-4">
               <div>
-                <h2 className="text-lg font-bold text-zinc-100 flex items-center gap-2">
-                  <Users className="w-5 h-5 text-indigo-400" /> Sales Representatives & Role Management
+                <h2 className="text-lg font-bold text-gray-800 dark:text-white/90 flex items-center gap-2">
+                  <Users className="w-5 h-5 text-brand-500 dark:text-brand-400" /> Sales Representatives & Role Management
                 </h2>
-                <p className="text-xs text-zinc-400 mt-0.5">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   Configure role assignments (admin / sales), active gating, and review individual attribution performance.
                 </p>
               </div>
 
               <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
                 <input
                   type="text"
                   placeholder="Search personnel..."
                   value={searchPersonnel}
                   onChange={(e) => setSearchPersonnel(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-200 focus:border-indigo-500 focus:outline-none"
+                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-xs text-gray-700 dark:text-gray-200 focus:border-brand-500 dark:border-brand-400 focus:outline-none"
                 />
               </div>
             </div>
 
-            <div className="border border-zinc-800 rounded-xl overflow-hidden bg-zinc-950/40">
+            <div className="border border-gray-300 dark:border-gray-600 rounded-xl overflow-hidden bg-white dark:bg-gray-900">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-900/80 text-zinc-400 text-[10px] uppercase font-bold tracking-wider border-b border-zinc-800">
+                <thead className="bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] uppercase font-bold tracking-wider border-b border-gray-300 dark:border-gray-600">
                   <tr>
                     <th className="px-6 py-3.5">User</th>
                     <th className="px-6 py-3.5">Role</th>
                     <th className="px-6 py-3.5">Status</th>
+                    <th className="px-6 py-3.5">Permissions</th>
                     <th className="px-6 py-3.5">Links Gen</th>
                     <th className="px-6 py-3.5">Paid Closed</th>
                     <th className="px-6 py-3.5 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-850">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                   {filteredPersonnel.map((user) => (
-                    <tr key={user.id} className="hover:bg-zinc-900/30 transition-colors">
+                    <tr key={user.id} className="hover:bg-gray-50 dark:bg-gray-800 transition-colors">
                       <td className="px-6 py-4">
-                        <div className="font-semibold text-zinc-100">{user.name}</div>
-                        <div className="text-[10px] text-zinc-400 font-mono">{user.email}</div>
+                        <div className="font-semibold text-gray-800 dark:text-white/90">{user.name}</div>
+                        <div className="text-[10px] text-gray-500 dark:text-gray-400 font-mono">{user.email}</div>
                       </td>
 
                       <td className="px-6 py-4">
@@ -393,7 +358,7 @@ export default function AdminConsole() {
                           value={user.role}
                           disabled={updatingUserId === user.id}
                           onChange={(e) => handleRoleChange(user.id, e.target.value as any)}
-                          className="px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs font-mono capitalize focus:border-indigo-500 focus:outline-none cursor-pointer"
+                          className="px-2.5 py-1 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-xs font-mono capitalize focus:border-brand-500 dark:border-brand-400 focus:outline-none cursor-pointer"
                         >
                           <option value="sales">Sales</option>
                           <option value="admin">Admin</option>
@@ -414,7 +379,18 @@ export default function AdminConsole() {
                         </button>
                       </td>
 
-                      <td className="px-6 py-4 font-mono text-zinc-300 font-semibold">
+                      <td className="px-6 py-4">
+                        <div className="flex gap-2">
+                          {["Analytics", "Sales", "Vault"].map(page => (
+                            <label key={page} className="flex items-center gap-1 text-[10px] text-gray-600 dark:text-gray-400">
+                              <input type="checkbox" className="rounded border-gray-300" defaultChecked={user.role === 'admin' || page !== 'Vault'} />
+                              {page}
+                            </label>
+                          ))}
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-4 font-mono text-gray-600 dark:text-gray-300 font-semibold">
                         {user.total_links_generated}
                       </td>
 
@@ -426,7 +402,7 @@ export default function AdminConsole() {
                         <button
                           onClick={() => handleDeleteUser(user.id, user.name)}
                           title="Delete User"
-                          className="p-1.5 rounded-lg bg-zinc-900 hover:bg-red-950/50 border border-zinc-800 hover:border-red-800 text-zinc-400 hover:text-red-300 transition-colors cursor-pointer"
+                          className="p-1.5 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-red-950/50 border border-gray-300 dark:border-gray-600 hover:border-red-800 text-gray-500 dark:text-gray-400 hover:text-red-300 transition-colors cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -435,7 +411,7 @@ export default function AdminConsole() {
                   ))}
                   {filteredPersonnel.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center text-zinc-500 text-xs">
+                      <td colSpan={6} className="px-6 py-12 text-center text-gray-400 dark:text-gray-500 text-xs">
                         No personnel profiles match the search criteria.
                       </td>
                     </tr>
@@ -446,15 +422,67 @@ export default function AdminConsole() {
           </section>
         )}
 
+
+        {/* TAB: USER REGISTRATION */}
+        {activeTab === "registration" && (
+          <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 space-y-6">
+            <div>
+              <h2 className="text-lg font-bold text-gray-800 dark:text-white/90">Register New User</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Create a new personnel profile with specific access levels.</p>
+            </div>
+            <form className="space-y-4 max-w-xl" onSubmit={async (e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              try {
+                const res = await fetch(`${cleanApiBase}/api/v1/admin/users`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify(Object.fromEntries(formData))
+                });
+                if (!res.ok) throw new Error('Failed to register user');
+                alert('User registered successfully');
+                e.currentTarget.reset();
+                mutatePersonnel();
+              } catch (err) {
+                alert(err.message);
+              }
+            }}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
+                <input name="name" required className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                <input name="email" type="email" required className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Temporary Password</label>
+                <input name="password" type="password" required className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role</label>
+                <select name="role" required className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent">
+                  <option value="sales">Sales Rep</option>
+                  <option value="admin">Administrator</option>
+                </select>
+              </div>
+              <button type="submit" className="px-6 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 font-medium">
+                Register User
+              </button>
+            </form>
+          </section>
+        )}
+
         {/* TAB 3: SCRIPT VAULT (GATED) */}
         {activeTab === "vault" && (
-          <section className="bg-zinc-900/40 border border-zinc-850 rounded-2xl p-8 backdrop-blur-xl space-y-6">
-            <div className="flex items-center justify-between border-b border-zinc-850 pb-4">
+          <section className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-8 backdrop-blur-xl space-y-6">
+            <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-4">
               <div>
-                <h2 className="text-lg font-bold text-zinc-100 flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-indigo-400" /> Admin Script Vault
+                <h2 className="text-lg font-bold text-gray-800 dark:text-white/90 flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-brand-500 dark:text-brand-400" /> Admin Script Vault
                 </h2>
-                <p className="text-xs text-zinc-400 mt-0.5">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   Gated JavaScript tracking tags. Only generated for clients who have successfully completed checkout (ACTIVE / TRIAL).
                 </p>
               </div>
@@ -468,12 +496,12 @@ export default function AdminConsole() {
                 scripts.map((item) => (
                   <div
                     key={item.client_id}
-                    className="p-6 rounded-2xl bg-zinc-950/70 border border-zinc-850 space-y-4 hover:border-zinc-800 transition-colors"
+                    className="p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 space-y-4 hover:border-gray-300 dark:border-gray-600 transition-colors"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
-                        <h3 className="font-bold text-sm text-zinc-100">{item.company_name}</h3>
-                        <p className="text-[10px] text-zinc-500 font-mono">
+                        <h3 className="font-bold text-sm text-gray-800 dark:text-white/90">{item.company_name}</h3>
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500 font-mono">
                           Domains: {item.whitelisted_domains.join(", ") || "Unrestricted"}
                         </p>
                       </div>
@@ -484,7 +512,7 @@ export default function AdminConsole() {
                         </span>
                         <button
                           onClick={() => copyScript(item.snippet, item.client_id)}
-                          className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                          className="px-3 py-1.5 rounded-lg bg-brand-600 dark:bg-brand-500 hover:bg-brand-500 dark:hover:bg-brand-400 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                         >
                           {copiedSnippetId === item.client_id ? (
                             <>
@@ -499,13 +527,13 @@ export default function AdminConsole() {
                       </div>
                     </div>
 
-                    <div className="p-3 bg-zinc-900 border border-zinc-800 rounded-xl font-mono text-xs text-zinc-300 break-all select-all">
+                    <div className="p-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl font-mono text-xs text-gray-600 dark:text-gray-300 break-all select-all">
                       {item.snippet}
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="p-12 text-center text-zinc-500 text-xs border border-zinc-800/60 rounded-2xl bg-zinc-950/40">
+                <div className="p-12 text-center text-gray-400 dark:text-gray-500 text-xs border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-900">
                   No active or trial clients found in the registry. Scripts are unlocked automatically once a client completes checkout.
                 </div>
               )}

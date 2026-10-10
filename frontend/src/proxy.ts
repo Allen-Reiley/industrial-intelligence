@@ -1,8 +1,11 @@
-// frontend/src/middleware.ts
+import createMiddleware from "next-intl/middleware";
+import { routing } from "./i18n/routing";
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+const intlMiddleware = createMiddleware(routing);
+
+export default function middleware(request: NextRequest) {
   // Check for Better Auth session cookie and legacy fallbacks
   const token = 
     request.cookies.get('better-auth.session_token')?.value || 
@@ -25,7 +28,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Protect all AuraHQ routes (/aurahq/admin, /aurahq/sales, /aurahq/dashboard)
-  if (url.pathname.startsWith('/aurahq')) {
+  if (url.pathname.includes('/aurahq')) {
     if (!token) {
       url.pathname = '/login';
       url.searchParams.set('from', request.nextUrl.pathname);
@@ -34,16 +37,16 @@ export function middleware(request: NextRequest) {
   }
 
   // Redirect authenticated users visiting /login directly to the AuraHQ workspace
-  if (url.pathname === '/login') {
+  if (url.pathname.includes('/login')) {
     if (token) {
       url.pathname = '/aurahq/sales';
       return NextResponse.redirect(url);
     }
   }
 
-  return NextResponse.next();
+  return intlMiddleware(request);
 }
 
 export const config = {
-  matcher: ['/aurahq/:path*', '/admin/:path*', '/dashboard/:path*', '/login'],
+  matcher: ["/((?!api/|_next|_vercel|.*\\..*).*)"],
 };

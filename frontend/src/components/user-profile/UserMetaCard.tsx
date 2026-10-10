@@ -1,4 +1,5 @@
 "use client";
+import { IKContext, IKUpload } from "imagekitio-react";
 import { PencilIcon } from "@/icons";
 import Image from "next/image";
 import { useModal } from "../../hooks/useModal";
@@ -6,6 +7,21 @@ import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import Button from "../ui/button/Button";
 import { Modal } from "../ui/modal";
+
+
+const urlEndpoint = process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || "https://ik.imagekit.io/auraworks";
+const publicKey = process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || "mock_public_key";
+
+const authenticator = async () => {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/v1/auth/imagekit-auth`);
+    if (!response.ok) throw new Error("ImageKit auth failed");
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
 
 export default function UserMetaCard() {
   const { isOpen, openModal, closeModal } = useModal();
@@ -210,12 +226,17 @@ export default function UserMetaCard() {
                       htmlFor="file-upload"
                       className="absolute end-0 bottom-0 flex size-8 cursor-pointer items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400"
                     >
-                      <input
-                        type="file"
-                        name="file-upload"
-                        id="file-upload"
-                        className="hidden"
-                      />
+                      
+                      <IKContext urlEndpoint={urlEndpoint} publicKey={publicKey} authenticator={authenticator}>
+                        <IKUpload
+                          fileName="avatar.png"
+                          id="file-upload"
+                          className="hidden"
+                          onSuccess={(res) => console.log("Uploaded", res)}
+                          onError={(err) => console.error("Upload Error", err)}
+                        />
+                      </IKContext>
+
                       <svg
                         width="20"
                         height="20"

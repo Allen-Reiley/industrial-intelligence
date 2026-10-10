@@ -4,18 +4,14 @@ import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
 import NotificationDropdown from "@/components/header/NotificationDropdown";
 import UserDropdown from "@/components/header/UserDropdown";
 import { useSidebar } from "@/context/SidebarContext";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { Link } from "@/i18n/navigation";
+import { cn } from "@/utils";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { Logo } from "@/components/ui/logo";
 import { useEffect, useRef, useState } from "react";
 
 const AppHeader: React.FC = () => {
-  const t = (key: string) => {
-    if (key === "searchPlaceholder") return "Search...";
-    if (key === "toggleSidebar") return "Toggle Sidebar";
-    return key;
-  };
+  const t = useTranslations("header");
   const inputRef = useRef<HTMLInputElement>(null);
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
 
@@ -94,8 +90,21 @@ const AppHeader: React.FC = () => {
             {/* Cross Icon */}
           </button>
 
-          <Link href="/aurahq" className="xl:hidden">
-            <Logo className="h-8 w-auto" />
+          <Link href="/aurahq/" className="xl:hidden">
+            <Image
+              width={154}
+              height={32}
+              className="dark:hidden"
+              src="/logo.svg"
+              alt="Logo"
+            />
+            <Image
+              width={154}
+              height={32}
+              className="hidden dark:block"
+              src="/logo.svg"
+              alt="Logo"
+            />
           </Link>
 
           <button

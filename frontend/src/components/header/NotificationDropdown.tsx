@@ -1,17 +1,15 @@
 "use client";
 
-import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { Link } from "@/i18n/navigation";
+import { cn } from "@/utils";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 
 export default function NotificationDropdown() {
-  const t = (key: string) => {
-    const parts = key.split(".");
-    return parts[parts.length - 1].replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
-  };
+  const t = useTranslations("header.notifications");
   const [isOpen, setIsOpen] = useState(false);
   const [notifying, setNotifying] = useState(true);
 

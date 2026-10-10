@@ -1,17 +1,17 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";import Image from "next/image";
+import { Link, usePathname } from "@/i18n/navigation";
+import { cn } from "@/utils";
+import { useTranslations } from "next-intl";
+import { useSession } from "@/lib/auth-client";
+import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSidebar } from "../context/SidebarContext";
-import { useSession } from "@/lib/auth-client";
 import {
   BoxCubeIcon,
   CalenderIcon,
   ChevronDownIcon,
   GridIcon,
-  GroupIcon,
   HorizontaLDots,
   ListIcon,
   PageIcon,
@@ -19,8 +19,9 @@ import {
   PlugInIcon,
   TableIcon,
   UserCircleIcon,
+  DollarLineIcon,
 } from "../icons/index";
-import { Logo, LogoIcon } from "@/components/ui/logo";
+
 type NavItem = {
   key: string;
   icon: React.ReactNode;
@@ -36,80 +37,107 @@ type NavItem = {
   }[];
 };
 
+const navItems: NavItem[] = [
+  {
+    icon: <GridIcon />,
+    key: "dashboard",
+    subItems: [{ key: "ecommerceHome", path: "/aurahq/" }],
+  },
+  {
+    icon: <GridIcon />,
+    key: "auraWorks",
+    subItems: [
+      { key: "analytics", path: "/aurahq/analytics", pro: false },
+      { key: "sales", path: "/aurahq/sales", pro: false },
+      { key: "admin", path: "/aurahq/admin", pro: false },
+    ],
+  },
+  {
+    icon: <CalenderIcon />,
+    key: "calendar",
+    path: "/aurahq/calendar",
+  },
+  {
+    icon: <UserCircleIcon />,
+    key: "userProfile",
+    path: "/aurahq/profile",
+  },
+  {
+    key: "forms",
+    icon: <ListIcon />,
+    subItems: [{ key: "formElements", path: "/aurahq/form-elements", pro: false }],
+  },
+  {
+    key: "tables",
+    icon: <TableIcon />,
+    subItems: [{ key: "basicTables", path: "/aurahq/basic-tables", pro: false }],
+  },
+  {
+    key: "pages",
+    icon: <PageIcon />,
+    subItems: [
+      { key: "blankPage", path: "/aurahq/blank" },
+      { key: "error404", path: "/aurahq/error-404" },
+    ],
+  },
+];
 
-
-const getNavItems = (role: string): NavItem[] => {
-  const isSales = role === "sales";
-  
-  const items: NavItem[] = [];
-
-  if (!isSales) {
-    items.push({
-      icon: <GridIcon />,
-      key: "Dashboard",
-      path: "/aurahq/dashboard",
-    });
-  }
-
-  items.push(
-    {
-      icon: <PieChartIcon />,
-      key: "Sales Analytics",
-      path: "/aurahq/sales",
-    },
-    {
-      icon: <CalenderIcon />,
-      key: "Calendar",
-      path: "/aurahq/calendar",
-    },
-    {
-      icon: <ListIcon />,
-      key: "Tasks",
-      path: "/aurahq/tasks",
-    },
-    {
-      icon: <UserCircleIcon />,
-      key: "User Profile",
-      path: "/aurahq/profile",
-    }
-  );
-
-  if (!isSales) {
-    items.push({
-      icon: <GroupIcon />,
-      key: "Personnel Command",
-      path: "/aurahq/admin",
-    });
-  }
-
-  return items;
-};
-
-const getOthersItems = (role: string): NavItem[] => {
-  return [
-    {
-      icon: <PlugInIcon />,
-      key: "Authentication",
-      subItems: [
-        { key: "signIn", path: "/login", pro: false },
-        { key: "signUp", path: "/login", pro: false },
-      ],
-    }
-  ];
-};
+const othersItems: NavItem[] = [
+  {
+    icon: <PieChartIcon />,
+    key: "charts",
+    subItems: [
+      { key: "lineChart", path: "/aurahq/line-chart", pro: false },
+      { key: "barChart", path: "/aurahq/bar-chart", pro: false },
+    ],
+  },
+  {
+    icon: <BoxCubeIcon />,
+    key: "uiElements",
+    subItems: [
+      { key: "alerts", path: "/aurahq/alerts" },
+      { key: "avatar", path: "/aurahq/avatars" },
+      { key: "badge", path: "/aurahq/badge" },
+      { key: "buttons", path: "/aurahq/buttons" },
+      { key: "images", path: "/aurahq/images" },
+      { key: "videos", path: "/aurahq/videos" },
+    ],
+  },
+  {
+    icon: <PlugInIcon />,
+    key: "authentication",
+    subItems: [
+      { key: "signIn", path: "/aurahq/signin", pro: false },
+      { key: "signUp", path: "/aurahq/signup", pro: false },
+    ],
+  },
+];
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
-  const { data: session } = useSession();
-  const role = (session?.user as any)?.role || "sales";
-  
-  const navItems = getNavItems(role);
-  const othersItems = getOthersItems(role);
   const pathname = usePathname();
-  const t = (key: string) => {
-    const parts = key.split(".");
-    return parts[parts.length - 1].replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
-  };
+  const t = useTranslations("sidebar");
+  const { data: session } = useSession();
+  const userRole = (session?.user as any)?.role || "sales";
+
+  
+  
+  const filteredNavItems = navItems.filter(nav => {
+    if (userRole === "admin") return true;
+    if (nav.key === "auraWorks") {
+      // Create a shallow copy and filter subItems
+      const filtered = { ...nav, subItems: nav.subItems?.filter(sub => sub.key !== "admin") };
+      return true; // We map over filteredNavItems later, this simple filter won't change the actual object.
+    }
+    return ["dashboard", "auraWorks", "calendar", "userProfile"].includes(nav.key);
+  }).map(nav => {
+    if (userRole !== "admin" && nav.key === "auraWorks") {
+      return { ...nav, subItems: nav.subItems?.filter(sub => sub.key !== "admin") };
+    }
+    return nav;
+  });
+  
+  const filteredOthersItems = userRole === "admin" ? othersItems : [];
 
   const renderMenuItems = (
     navItems: NavItem[],
@@ -141,7 +169,7 @@ const AppSidebar: React.FC = () => {
                 {nav.icon}
               </span>
               {(isExpanded || isHovered || isMobileOpen) && (
-                <span className="menu-item-text">{nav.key}</span>
+                <span className="menu-item-text">{t(`items.${nav.key}`)}</span>
               )}
               {nav.new && (isExpanded || isHovered || isMobileOpen) && (
                 <span
@@ -192,7 +220,7 @@ const AppSidebar: React.FC = () => {
                 </span>
                 {(isExpanded || isHovered || isMobileOpen) && (
                   <span className="menu-item-text">
-                    {nav.key}
+                    {t(`items.${nav.key}`)}
                   </span>
                 )}
               </Link>
@@ -223,7 +251,7 @@ const AppSidebar: React.FC = () => {
                           : "menu-dropdown-item-inactive"
                       }`}
                     >
-                      {subItem.key}
+                      {t(`items.${subItem.key}`)}
                       <span className="ms-auto flex items-center gap-1">
                         {subItem.new && (
                           <span
@@ -276,7 +304,7 @@ const AppSidebar: React.FC = () => {
     // Check if the current path matches any submenu item
     let submenuMatched = false;
     ["main", "support", "others"].forEach((menuType) => {
-      const items = menuType === "main" ? navItems : othersItems;
+      const items = menuType === "main" ? filteredNavItems : filteredOthersItems;
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
@@ -344,11 +372,37 @@ const AppSidebar: React.FC = () => {
           !isExpanded && !isHovered ? "xl:justify-center" : "justify-start"
         }`}
       >
-        <Link href="/aurahq">
+        <Link href="/aurahq/">
           {isExpanded || isHovered || isMobileOpen ? (
-            <Logo className="h-10 w-auto" priority />
+            <>
+              <Image
+                className="dark:hidden"
+                src="/logo.svg"
+                alt="Logo"
+                width={150}
+                height={40}
+                priority
+                style={{ width: "auto", height: "auto" }}
+              />
+              <Image
+                className="hidden dark:block"
+                src="/logo.svg"
+                alt="Logo"
+                width={150}
+                height={40}
+                priority
+                style={{ width: "auto", height: "auto" }}
+              />
+            </>
           ) : (
-            <LogoIcon className="h-8 w-8" />
+            <Image
+              src="/logo-mobile.svg"
+              alt="Logo"
+              width={32}
+              height={32}
+              priority
+              style={{ width: "auto", height: "auto" }}
+            />
           )}
         </Link>
       </div>
@@ -369,7 +423,7 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(navItems, "main")}
+              {renderMenuItems(filteredNavItems, "main")}
             </div>
 
             <div>
@@ -386,7 +440,7 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(othersItems, "others")}
+              {userRole === "admin" && renderMenuItems(filteredOthersItems, "others")}
             </div>
           </div>
         </nav>

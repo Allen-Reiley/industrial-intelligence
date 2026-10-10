@@ -10,62 +10,53 @@ import {
 } from "../ui/table";
 
 // Define the TypeScript interface for the table rows
-interface Product {
+interface ServiceOrder {
   id: number; // Unique identifier for each product
   name: string; // Product name
-  variants: number; // Number of variants
-  category: "laptop" | "watch" | "smartphone" | "electronics" | "accessories";
+  duration: number; // Duration in months
+  category: "seo" | "geo" | "identity" | "retainer";
   price: string; // Price of the product (as a string with currency symbol)
   image: string; // URL or path to the product image
   status: "delivered" | "pending" | "canceled"; // Status of the product
 }
 
 // Define the table data using the interface
-const tableData: Product[] = [
+const tableData: ServiceOrder[] = [
   {
     id: 1,
-    name: "MacBook Pro 13”",
-    variants: 2,
-    category: "laptop",
-    price: "$2399.00",
+    name: "Technical SEO Audit",
+    duration: 1,
+    category: "seo",
+    price: "$2,500.00",
     status: "delivered",
     image: "/images/product/product-01.jpg", // Replace with actual image URL
   },
   {
     id: 2,
-    name: "Apple Watch Ultra",
-    variants: 1,
-    category: "watch",
-    price: "$879.00",
+    name: "Generative Engine Optimization (GEO)",
+    duration: 3,
+    category: "geo",
+    price: "$5,000.00",
     status: "pending",
     image: "/images/product/product-02.jpg", // Replace with actual image URL
   },
   {
     id: 3,
-    name: "iPhone 15 Pro Max",
-    variants: 2,
-    category: "smartphone",
-    price: "$1869.00",
+    name: "Visitor Identity Resolution",
+    duration: 6,
+    category: "identity",
+    price: "$8,000.00",
     status: "delivered",
     image: "/images/product/product-03.jpg", // Replace with actual image URL
   },
   {
     id: 4,
-    name: "iPad Pro 3rd Gen",
-    variants: 2,
-    category: "electronics",
-    price: "$1699.00",
-    status: "canceled",
+    name: "Full-Service Pipeline Retainer",
+    duration: 12,
+    category: "retainer",
+    price: "$15,000.00",
+    status: "pending",
     image: "/images/product/product-04.jpg", // Replace with actual image URL
-  },
-  {
-    id: 5,
-    name: "AirPods Pro 2nd Gen",
-    variants: 1,
-    category: "accessories",
-    price: "$240.00",
-    status: "delivered",
-    image: "/images/product/product-05.jpg", // Replace with actual image URL
   },
 ];
 
@@ -179,7 +170,7 @@ export default function RecentOrders() {
                         {product.name}
                       </p>
                       <span className="text-theme-xs text-gray-500 dark:text-gray-400">
-                        {t("variants", { count: product.variants })}
+                        {t("duration", { count: product.duration })}
                       </span>
                     </div>
                   </div>
