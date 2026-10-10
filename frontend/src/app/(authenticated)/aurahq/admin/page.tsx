@@ -29,7 +29,6 @@ import {
   Loader2
 } from "lucide-react";
 import { useSession, signOut } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
