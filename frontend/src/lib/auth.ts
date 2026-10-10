@@ -9,7 +9,15 @@ const pool = process.env.DATABASE_URL
 export const auth = betterAuth({
   database: pool,
   secret: process.env.BETTER_AUTH_SECRET || "development-better-auth-secret-key-1234567890",
-  baseURL: process.env.BETTER_AUTH_URL || process.env.NEXTAUTH_URL || "http://localhost:3000",
+  baseURL: process.env.BETTER_AUTH_URL || process.env.NEXTAUTH_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
+  trustedOrigins: [
+    "http://localhost:3000",
+    "https://auraworks.co.za",
+    "https://www.auraworks.co.za",
+    "https://industrial-intelligence-xi.vercel.app",
+    "https://industrial-intelligence-git-main-allen-reileys-projects.vercel.app",
+    "https://industrial-intelligence-lttxeot8z-allen-reileys-projects.vercel.app"
+  ],
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
