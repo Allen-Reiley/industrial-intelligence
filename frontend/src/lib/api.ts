@@ -34,6 +34,7 @@ export async function submitToProspects(formData: Record<string, unknown>) {
     try {
         const response = await fetch(endpoint, {
             method: 'POST',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -84,6 +85,7 @@ export async function trackIntent(payload: {
     try {
         const response = await fetch(endpoint, {
             method: 'POST',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
             },

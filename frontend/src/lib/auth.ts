@@ -18,6 +18,12 @@ export const auth = betterAuth({
     "https://industrial-intelligence-git-main-allen-reileys-projects.vercel.app",
     "https://industrial-intelligence-lttxeot8z-allen-reileys-projects.vercel.app"
   ],
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: true,
+      domain: ".auraworks.co.za"
+    }
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
