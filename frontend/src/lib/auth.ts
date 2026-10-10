@@ -35,12 +35,12 @@ export const auth = betterAuth({
         required: false,
         defaultValue: "sales",
       },
-      isActive: {
+      is_active: {
         type: "boolean",
         required: false,
         defaultValue: true,
       },
-      clientId: {
+      client_id: {
         type: "string",
         required: false,
       },
