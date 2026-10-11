@@ -47,12 +47,16 @@ export const auth = betterAuth({
       role: {
         type: "string",
         required: false,
-        defaultValue: "sales",
+        defaultValue: "unassigned",
       },
       is_active: {
         type: "boolean",
         required: false,
-        defaultValue: true,
+        defaultValue: false,
+      },
+      job_title: {
+        type: "string",
+        required: false,
       },
       client_id: {
         type: "string",

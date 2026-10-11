@@ -1,5 +1,6 @@
 # backend/app/api/v1/admin.py
 import logging
+import uuid
 from typing import List, Optional
 from datetime import datetime, timezone
 from pydantic import BaseModel
@@ -8,8 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select, func, desc, delete
 
 from app.db import get_async_session
-from app.core.security import require_admin
-from app.models.user import User, UserRole
+from app.core.security import require_admin, hash_password
+from app.models.user import User, Account, UserRole
 from app.models.client import Client, SubscriptionStatus
 from app.models.checkout_session import CheckoutSession, CheckoutSessionStatus
 from app.models.transaction import Transaction, TransactionStatus
@@ -21,6 +22,18 @@ class UserUpdatePayload(BaseModel):
     role: Optional[UserRole] = None
     is_active: Optional[bool] = None
     name: Optional[str] = None
+    job_title: Optional[str] = None
+
+class UserCreatePayload(BaseModel):
+    email: str
+    password: str
+    name: str
+    role: UserRole = UserRole.SALES
+    job_title: Optional[str] = None
+    permissions: Optional[List[str]] = None
+
+class UserPermissionsPayload(BaseModel):
+    permissions: List[str]
 
 
 @router.get("/users")
@@ -55,6 +68,8 @@ async def list_personnel(
             "name": u.name,
             "email": u.email,
             "role": u.role,
+            "job_title": u.job_title,
+            "permissions": u.permissions_list,
             "is_active": u.is_active,
             "image": u.image,
             "total_links_generated": total_links,
@@ -65,6 +80,75 @@ async def list_personnel(
     return personnel
 
 
+@router.post("/users", status_code=status.HTTP_201_CREATED)
+async def create_personnel(
+    payload: UserCreatePayload,
+    session: AsyncSession = Depends(get_async_session),
+    current_admin: User = Depends(require_admin)
+):
+    """
+    Admin Personnel Management: Create a new user profile with scrypt hashed password and Better Auth account.
+    """
+    email_clean = payload.email.strip().lower()
+    if not email_clean or "@" not in email_clean:
+        raise HTTPException(status_code=400, detail="Invalid email address")
+    if len(payload.password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+
+    # Check for duplicate email
+    stmt = select(User).where(User.email == email_clean)
+    existing = (await session.execute(stmt)).scalars().first()
+    if existing:
+        raise HTTPException(status_code=400, detail="User with this email already exists")
+
+    new_user_id = f"user_{uuid.uuid4().hex[:12]}"
+    permissions = payload.permissions if payload.permissions is not None else ["analytics", "sales"]
+
+    new_user = User(
+        id=new_user_id,
+        email=email_clean,
+        name=payload.name.strip(),
+        role=payload.role,
+        job_title=payload.job_title.strip() if payload.job_title else None,
+        permissions=permissions,
+        is_active=True,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc)
+    )
+    session.add(new_user)
+    await session.commit()
+
+    # Create Better Auth account credential with scrypt hash
+    hashed_pw = hash_password(payload.password)
+    new_account = Account(
+        id=f"acc_{uuid.uuid4().hex[:12]}",
+        user_id=new_user_id,
+        account_id=new_user_id,
+        provider_id="credential",
+        password=hashed_pw,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc)
+    )
+    session.add(new_account)
+    await session.commit()
+    await session.refresh(new_user)
+
+    logger.info(f"Admin {current_admin.email} created new user {new_user.email} (Role: {new_user.role})")
+    return {
+        "status": "success",
+        "user": {
+            "id": new_user.id,
+            "name": new_user.name,
+            "email": new_user.email,
+            "role": new_user.role,
+            "job_title": new_user.job_title,
+            "permissions": new_user.permissions_list,
+            "is_active": new_user.is_active,
+            "created_at": new_user.created_at.isoformat()
+        }
+    }
+
+
 @router.patch("/users/{user_id}")
 async def update_personnel(
     user_id: str,
@@ -73,7 +157,7 @@ async def update_personnel(
     current_admin: User = Depends(require_admin)
 ):
     """
-    Admin Personnel Management: Modify roles (admin / sales) and active status.
+    Admin Personnel Management: Modify roles (admin / sales), active status, and title.
     """
     user = await session.get(User, user_id)
     if not user:
@@ -85,6 +169,8 @@ async def update_personnel(
         user.is_active = payload.is_active
     if payload.name is not None:
         user.name = payload.name.strip()
+    if payload.job_title is not None:
+        user.job_title = payload.job_title.strip()
 
     user.updated_at = datetime.now(timezone.utc)
     session.add(user)
@@ -100,7 +186,40 @@ async def update_personnel(
             "name": user.name,
             "email": user.email,
             "role": user.role,
+            "job_title": user.job_title,
+            "permissions": user.permissions_list,
             "is_active": user.is_active
+        }
+    }
+
+
+@router.patch("/users/{user_id}/permissions")
+async def update_personnel_permissions(
+    user_id: str,
+    payload: UserPermissionsPayload,
+    session: AsyncSession = Depends(get_async_session),
+    current_admin: User = Depends(require_admin)
+):
+    """
+    Admin Personnel Management: Toggle allowed route permissions for a sales rep.
+    """
+    user = await session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.permissions = payload.permissions
+    user.updated_at = datetime.now(timezone.utc)
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+
+    logger.info(f"Admin {current_admin.email} updated permissions for {user.email}: {payload.permissions}")
+    return {
+        "status": "success",
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "permissions": user.permissions_list
         }
     }
 

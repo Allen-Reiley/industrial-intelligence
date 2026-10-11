@@ -8,7 +8,7 @@ from sqlmodel import select
 
 from app.main import app
 from app.db import async_session_maker
-from app.models.user import User, UserRole
+from app.models.user import User, Session as UserSession, UserRole
 from app.models.client import Client, SubscriptionStatus
 from app.models.checkout_session import CheckoutSession, CheckoutSessionStatus
 
@@ -81,7 +81,8 @@ async def test_generate_checkout_session_flow():
     test_sales_user_id = f"sales_user_{uuid4().hex[:8]}"
     sales_email = f"rep_{uuid4().hex[:8]}@auraworks.co.za"
 
-    # Seed sales user in DB
+    sales_session_token = f"sess_token_{uuid4().hex[:12]}"
+    # Seed sales user and session in DB
     async with async_session_maker() as session:
         sales_user = User(
             id=test_sales_user_id,
@@ -90,11 +91,19 @@ async def test_generate_checkout_session_flow():
             role=UserRole.SALES,
             is_active=True
         )
+        sales_session = UserSession(
+            id=f"sess_{uuid4().hex[:8]}",
+            user_id=test_sales_user_id,
+            token=sales_session_token,
+            expires_at=datetime.now(timezone.utc) + timedelta(days=7)
+        )
         session.add(sales_user)
+        await session.commit()
+        session.add(sales_session)
         await session.commit()
 
     client = await get_test_client()
-    headers = {"Authorization": f"Bearer {test_sales_user_id}"}
+    headers = {"Authorization": f"Bearer {sales_session_token}"}
     payload = {
         "business_name": "Apex Mining Corp",
         "contact_email": "procurement@apexmining.co.za",

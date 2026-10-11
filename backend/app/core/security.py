@@ -60,6 +60,32 @@ def decrypt_field(encrypted_data_b64: str) -> str:
     except Exception as e:
         raise ValueError(f"Decryption failed: {str(e)}")
 
+import unicodedata
+
+def hash_password(password: str) -> str:
+    """
+    Hashes a password using scrypt matching Better Auth's standard:
+    `${salt_hex}:${scrypt_key_hex}`
+    """
+    salt_hex = os.urandom(16).hex()
+    norm_pw = unicodedata.normalize("NFKC", password).encode("utf-8")
+    salt_bytes = salt_hex.encode("utf-8")
+    key = hashlib.scrypt(norm_pw, salt=salt_bytes, n=16384, r=16, p=1, maxmem=67108864, dklen=64)
+    return f"{salt_hex}:{key.hex()}"
+
+def verify_password(password: str, hashed_password: str) -> bool:
+    """
+    Verifies a password against the Better Auth scrypt hash.
+    """
+    try:
+        salt_hex, key_hex = hashed_password.split(":")
+        norm_pw = unicodedata.normalize("NFKC", password).encode("utf-8")
+        salt_bytes = salt_hex.encode("utf-8")
+        key = hashlib.scrypt(norm_pw, salt=salt_bytes, n=16384, r=16, p=1, maxmem=67108864, dklen=64)
+        return key.hex() == key_hex
+    except Exception:
+        return False
+
 async def get_session_token_from_request(
     request: Request,
     auth_header: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme)
@@ -151,20 +177,6 @@ async def get_current_user(
             )
 
         return user_record
-
-    # 2. Check for direct User ID or Email matching in test/dev environment
-    user_stmt = select(User).where(
-        (User.id == token) | (User.email == token)
-    )
-    res_u = await db.execute(user_stmt)
-    direct_user = res_u.scalars().first()
-    if direct_user:
-        if not direct_user.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Account inactive"
-            )
-        return direct_user
 
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 
 from app.core.config import settings
 from app.db import init_db, get_async_session
-from app.api.v1 import track, clients, identity, prospects, leads, webhook, auth, billing, checkout, scripts, sales, admin
+from app.api.v1 import track, clients, identity, prospects, leads, webhook, auth, billing, checkout, scripts, sales, admin, calendar, tasks
 from app.models import Prospect, Company
 from app.tasks.janitor import cleanup_unverified_visits
 from app.core.scheduler import start_scheduler
@@ -289,6 +289,8 @@ app.include_router(checkout.router, prefix=f"{settings.API_V1_STR}/checkout", ta
 app.include_router(scripts.router, prefix=f"{settings.API_V1_STR}/scripts", tags=["scripts"])
 app.include_router(sales.router, prefix=f"{settings.API_V1_STR}/sales", tags=["sales"])
 app.include_router(admin.router, prefix=f"{settings.API_V1_STR}/admin", tags=["admin_personnel"])
+app.include_router(calendar.router, prefix=f"{settings.API_V1_STR}/calendar", tags=["calendar"])
+app.include_router(tasks.router, prefix=f"{settings.API_V1_STR}/tasks", tags=["tasks"])
 
 
 @app.get("/health")

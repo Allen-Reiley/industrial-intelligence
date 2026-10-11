@@ -7,7 +7,7 @@ from sqlmodel import select
 
 from app.main import app
 from app.db import async_session_maker
-from app.models.user import User, UserRole
+from app.models.user import User, Session as UserSession, UserRole
 from app.models.client import Client, SubscriptionStatus
 from app.models.checkout_session import CheckoutSession, CheckoutSessionStatus
 
@@ -43,7 +43,10 @@ async def test_script_generation_rbac_and_gating():
     suspended_client_id = uuid4()
 
     async with async_session_maker() as session:
-        # 1. Seed Admin User
+        admin_token = f"admin_tok_{uuid4().hex[:12]}"
+        sales_token = f"sales_tok_{uuid4().hex[:12]}"
+
+        # 1. Seed Admin User and Session
         admin_user = User(
             id=admin_id,
             email=f"admin_{uuid4().hex[:6]}@auraworks.co.za",
@@ -51,7 +54,14 @@ async def test_script_generation_rbac_and_gating():
             role=UserRole.ADMIN,
             is_active=True
         )
-        # 2. Seed Sales Rep User
+        admin_session = UserSession(
+            id=f"sess_{uuid4().hex[:8]}",
+            user_id=admin_id,
+            token=admin_token,
+            expires_at=datetime.now(timezone.utc) + timedelta(days=7)
+        )
+
+        # 2. Seed Sales Rep User and Session
         sales_user = User(
             id=sales_id,
             email=f"sales_{uuid4().hex[:6]}@auraworks.co.za",
@@ -59,7 +69,16 @@ async def test_script_generation_rbac_and_gating():
             role=UserRole.SALES,
             is_active=True
         )
+        sales_session = UserSession(
+            id=f"sess_{uuid4().hex[:8]}",
+            user_id=sales_id,
+            token=sales_token,
+            expires_at=datetime.now(timezone.utc) + timedelta(days=7)
+        )
         session.add_all([admin_user, sales_user])
+        await session.commit()
+        session.add_all([admin_session, sales_session])
+        await session.commit()
 
         # 3. Seed Clients with varying statuses
         c_active = Client(
@@ -91,13 +110,13 @@ async def test_script_generation_rbac_and_gating():
     assert resp_anon.status_code == 401
 
     # Step 2: Sales Rep request -> Expect 403 Forbidden
-    sales_headers = {"Authorization": f"Bearer {sales_id}"}
+    sales_headers = {"Authorization": f"Bearer {sales_token}"}
     resp_sales = await client.get(f"/api/v1/scripts/{active_client_id}", headers=sales_headers)
     assert resp_sales.status_code == 403
     assert "administrative privileges required" in resp_sales.json()["detail"].lower()
 
     # Step 3: Admin request for ACTIVE client -> Expect 200 OK with snippet
-    admin_headers = {"Authorization": f"Bearer {admin_id}"}
+    admin_headers = {"Authorization": f"Bearer {admin_token}"}
     resp_admin_active = await client.get(f"/api/v1/scripts/{active_client_id}", headers=admin_headers)
     assert resp_admin_active.status_code == 200
     data_active = resp_admin_active.json()
@@ -134,12 +153,21 @@ async def test_sales_rep_bounded_attribution_and_metrics():
     c_a_id = uuid4()
     c_b_id = uuid4()
 
+    tok_a = f"tok_a_{uuid4().hex[:12]}"
+    tok_b = f"tok_b_{uuid4().hex[:12]}"
+    tok_admin = f"tok_adm_{uuid4().hex[:12]}"
+
     async with async_session_maker() as session:
         # Users
         rep_a = User(id=rep_a_id, email=f"repa_{uuid4().hex[:6]}@auraworks.co.za", name="Rep Alpha", role=UserRole.SALES, is_active=True)
         rep_b = User(id=rep_b_id, email=f"repb_{uuid4().hex[:6]}@auraworks.co.za", name="Rep Beta", role=UserRole.SALES, is_active=True)
         admin = User(id=admin_id, email=f"admin_{uuid4().hex[:6]}@auraworks.co.za", name="Admin Chief", role=UserRole.ADMIN, is_active=True)
+        sess_a = UserSession(id=f"sess_{uuid4().hex[:8]}", user_id=rep_a_id, token=tok_a, expires_at=datetime.now(timezone.utc) + timedelta(days=7))
+        sess_b = UserSession(id=f"sess_{uuid4().hex[:8]}", user_id=rep_b_id, token=tok_b, expires_at=datetime.now(timezone.utc) + timedelta(days=7))
+        sess_admin = UserSession(id=f"sess_{uuid4().hex[:8]}", user_id=admin_id, token=tok_admin, expires_at=datetime.now(timezone.utc) + timedelta(days=7))
         session.add_all([rep_a, rep_b, admin])
+        await session.commit()
+        session.add_all([sess_a, sess_b, sess_admin])
         await session.commit()
 
         # Clients
@@ -158,9 +186,9 @@ async def test_sales_rep_bounded_attribution_and_metrics():
         session.add_all([sess_a1, sess_a2, sess_b1])
         await session.commit()
 
-    headers_a = {"Authorization": f"Bearer {rep_a_id}"}
-    headers_b = {"Authorization": f"Bearer {rep_b_id}"}
-    headers_admin = {"Authorization": f"Bearer {admin_id}"}
+    headers_a = {"Authorization": f"Bearer {tok_a}"}
+    headers_b = {"Authorization": f"Bearer {tok_b}"}
+    headers_admin = {"Authorization": f"Bearer {tok_admin}"}
 
     # 1. Rep A fetches checkouts -> Must contain 2 sessions, none belonging to Rep B
     resp_checkouts_a = await client.get("/api/v1/sales/checkouts", headers=headers_a)

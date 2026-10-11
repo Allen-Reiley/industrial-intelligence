@@ -1,10 +1,11 @@
 # backend/app/models/user.py
 from enum import Enum
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime, timezone
 from uuid import UUID
+import json
 from sqlmodel import SQLModel, Field, Column, DateTime
-from sqlalchemy import String, Boolean, ForeignKey
+from sqlalchemy import String, Boolean, ForeignKey, JSON
 
 class UserRole(str, Enum):
     ADMIN = "admin"
@@ -21,9 +22,17 @@ class User(SQLModel, table=True):
         sa_column=Column("emailVerified", Boolean, default=False, nullable=False)
     )
     image: Optional[str] = Field(default=None, nullable=True)
+    job_title: Optional[str] = Field(
+        default=None,
+        sa_column=Column("jobTitle", String, nullable=True)
+    )
     role: UserRole = Field(
         default=UserRole.SALES,
         sa_column=Column(String, default=UserRole.SALES, index=True, nullable=False)
+    )
+    permissions: Optional[List[str]] = Field(
+        default_factory=lambda: ["analytics", "sales"],
+        sa_column=Column(JSON, nullable=True)
     )
     is_active: bool = Field(default=True, index=True, nullable=False)
     client_id: Optional[UUID] = Field(default=None, index=True, nullable=True)
@@ -35,6 +44,17 @@ class User(SQLModel, table=True):
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column("updatedAt", DateTime(timezone=True), nullable=False)
     )
+
+    @property
+    def permissions_list(self) -> List[str]:
+        if isinstance(self.permissions, list):
+            return self.permissions
+        if isinstance(self.permissions, str):
+            try:
+                return json.loads(self.permissions)
+            except Exception:
+                pass
+        return ["analytics", "sales"]
 
     @property
     def is_superuser(self) -> bool:

@@ -85,7 +85,10 @@ class Settings(BaseSettings):
         "https://banner.auraworks.co.za",
         "https://api.auraworks.co.za/v1/track/event"
     ]
-    ALLOWED_ORIGIN_REGEX: Optional[str] = r"^https:\/\/[a-zA-Z0-9_.-]+\.vercel\.app$"
+    # --- IMAGEKIT INTEGRATION ---
+    IMAGEKIT_PUBLIC_KEY: Optional[str] = "mock_public_key"
+    IMAGEKIT_PRIVATE_KEY: Optional[str] = "mock_private_key"
+    IMAGEKIT_URL_ENDPOINT: Optional[str] = "https://ik.imagekit.io/auraworks"
 
     # Modern Pydantic V2 Configuration
     model_config = SettingsConfigDict(

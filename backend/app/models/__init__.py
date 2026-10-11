@@ -14,5 +14,7 @@ from .transaction import Transaction, TransactionStatus
 from .admin_user import AdminUser
 from .user import User, Session, Account, Verification, UserRole
 from .checkout_session import CheckoutSession, CheckoutSessionStatus
+from .calendar import CalendarEvent
+from .task import Task
 
 # Do NOT include router logic here

@@ -128,3 +128,50 @@ async def test_admin_summary_route_protection():
     data = resp_admin.json()
     assert "total_warm_leads" in data
     assert "high_intent_companies" in data
+
+
+async def test_reject_raw_user_id_or_email_backdoor():
+    """
+    CRITICAL SECURITY REGRESSION TEST:
+    Asserts that passing a raw user ID or email in the Bearer header or session cookie
+    is strictly rejected with HTTP 401 Unauthorized and cannot bypass authentication.
+    """
+    client = await get_test_client()
+
+    # Seed an admin user WITHOUT any session
+    admin_user_id = f"admin_{uuid.uuid4().hex[:8]}"
+    test_email = f"backdoor_target_{uuid.uuid4().hex[:6]}@auraworks.co.za"
+
+    async for session in get_async_session():
+        admin_user = User(
+            id=admin_user_id,
+            email=test_email,
+            name="Target Admin",
+            role=UserRole.ADMIN,
+            is_active=True
+        )
+        session.add(admin_user)
+        await session.commit()
+        break
+
+    # 1. Try raw email as Bearer token -> 401
+    resp_email_bearer = await client.get(
+        f"{settings.API_V1_STR}/auth/me",
+        headers={"Authorization": f"Bearer {test_email}"}
+    )
+    assert resp_email_bearer.status_code == 401, f"Expected 401, got {resp_email_bearer.status_code}"
+
+    # 2. Try raw user ID as Bearer token -> 401
+    resp_id_bearer = await client.get(
+        f"{settings.API_V1_STR}/auth/me",
+        headers={"Authorization": f"Bearer {admin_user_id}"}
+    )
+    assert resp_id_bearer.status_code == 401, f"Expected 401, got {resp_id_bearer.status_code}"
+
+    # 3. Try raw email as cookie -> 401
+    resp_email_cookie = await client.get(
+        f"{settings.API_V1_STR}/auth/me",
+        cookies={"better-auth.session_token": test_email}
+    )
+    assert resp_email_cookie.status_code == 401, f"Expected 401, got {resp_email_cookie.status_code}"
+
