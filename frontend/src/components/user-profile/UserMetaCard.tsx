@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import useSWR from "swr";
 import { IKContext, IKUpload } from "imagekitio-react";
@@ -47,7 +47,7 @@ export default function UserMetaCard() {
     fetcher
   );
 
-  const currentUser = profile || session?.user || {};
+  const currentUser = useMemo(() => profile || session?.user || {}, [profile, session?.user]);
   const { isOpen, openModal, closeModal } = useModal();
 
   const [formName, setFormName] = useState("");

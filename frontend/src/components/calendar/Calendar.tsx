@@ -1,19 +1,12 @@
 "use client";
 
-import { useTheme } from "@/context/ThemeContext";
 import { useModal } from "@/hooks/useModal";
 import { useSession } from "@/lib/auth-client";
 import { isRtl } from "@/i18n/languages";
 import type { Locale } from "@/i18n/routing";
 import type {
   DateSelectInfo,
-  DayCellInfo,
-  DayHeaderInfo,
-  DayLaneInfo,
   EventClickInfo,
-  EventDisplayInfo,
-  MoreLinkInfo,
-  ToolbarSectionInfo,
 } from "@fullcalendar/react";
 import FullCalendar, { CalendarRef } from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -23,15 +16,8 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import { useLocale } from "next-intl";
 import React, { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
-import CalendarEventItem from "./CalendarEventItem";
 import CalendarEventModal from "./CalendarEventModal";
 import CalendarViewSelect from "./CalendarViewSelect";
-import {
-  BookmarkIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  CloseIcon,
-} from "./icons";
 import type { CalendarEvent, EventFormData } from "./types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -48,7 +34,6 @@ const fetcher = async (url: string) => {
 const Calendar: React.FC = () => {
   const locale = useLocale();
   const isRtlLayout = isRtl(locale as Locale);
-  const { theme } = useTheme();
   const { data: session } = useSession();
 
   const { data: eventsData, mutate: mutateEvents } = useSWR<CalendarEvent[]>(
@@ -62,8 +47,6 @@ const Calendar: React.FC = () => {
   const [selectedStartDate, setSelectedStartDate] = useState("");
   const [selectedEndDate, setSelectedEndDate] = useState("");
   const [currentView, setCurrentView] = useState("dayGridMonth");
-  const [portalNode, setPortalNode] = useState<Element | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
 
   const calendarRef = useRef<CalendarRef>(null);
   const calendarContainerRef = useRef<HTMLDivElement>(null);
@@ -194,9 +177,8 @@ const Calendar: React.FC = () => {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const handleResize = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      if (mobile) {
+      const isSmallScreen = window.innerWidth < 768;
+      if (isSmallScreen) {
         setCurrentView("timeGridDay");
         calendarRef.current?.getApi()?.changeView("timeGridDay");
       } else {

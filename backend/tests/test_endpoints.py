@@ -29,7 +29,11 @@ class MockSession:
 async def override_get_async_session():
     yield MockSession()
 
-app.dependency_overrides[get_async_session] = override_get_async_session
+@pytest.fixture(autouse=True)
+def override_session():
+    app.dependency_overrides[get_async_session] = override_get_async_session
+    yield
+    app.dependency_overrides.clear()
 
 client = TestClient(app)
 
