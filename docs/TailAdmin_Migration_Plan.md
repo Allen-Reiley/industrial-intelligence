@@ -65,24 +65,24 @@
 ## Phase 1: Environment Preparation, CSS, & Server-Side Route Guarding
 **Goal:** Prepare the Next.js environment, align Tailwind CSS v4 design tokens, and enforce server-side RBAC in Next.js middleware.
 
-- [ ] **Task 1.1: Design Tokens & CSS Merge**
+- [x] **Task 1.1: Design Tokens & CSS Merge**
   - Audit `frontend/src/app/globals.css` against `frontend/os_dashboard_source/src/app/globals.css`.
   - Ensure all Tailwind CSS v4 `@theme` design tokens (colors, fonts, box shadows, borders) are identical.
   - Purge any remaining Astryx color variables or legacy CSS rules.
-- [ ] **Task 1.2: Server-Side RBAC & Middleware Hardening (`proxy.ts`)**
+- [x] **Task 1.2: Server-Side RBAC & Middleware Hardening (`proxy.ts`)**
   - Refactor `frontend/src/proxy.ts`:
     - Protect `/aurahq/*`: Redirect unauthenticated requests to `/login`.
     - Authenticated `/login` visits: Inspect user role from session token/cookie and redirect Admins to `/aurahq/admin` and Sales Reps to `/aurahq/sales`.
     - Role barrier on `/aurahq/admin`: Validate role server-side; redirect Sales Reps to `/aurahq/sales` before the page bundle or layout renders (preventing flash of unauthorized content).
-- [ ] **Task 1.3: Clean URL & Route Alignment**
+- [x] **Task 1.3: Clean URL & Route Alignment**
   - Align root `/aurahq`: Redirect to `/aurahq/admin` for Admins and `/aurahq/sales` for Sales Reps.
   - Remove dead 404 routes (`/aurahq/error-404`, `/aurahq/signin`, `/aurahq/signup`).
   - Ensure clean dynamic routing without legacy broken paths.
 
 ### Verification Gate (Phase 1)
-- [ ] Vitest middleware test: Unauthenticated user accessing `/aurahq/admin` or `/aurahq/sales` redirects to `/login`.
-- [ ] Vitest middleware test: Authenticated Sales Rep accessing `/aurahq/admin` redirects to `/aurahq/sales`.
-- [ ] Next.js build: Run `npm run build` with zero errors.
+- [x] Vitest middleware test: Unauthenticated user accessing `/aurahq/admin` or `/aurahq/sales` redirects to `/login`.
+- [x] Vitest middleware test: Authenticated Sales Rep accessing `/aurahq/admin` redirects to `/aurahq/sales`.
+- [x] Next.js build: Run `npm run build` with zero errors.
 
 ---
 

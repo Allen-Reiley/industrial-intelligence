@@ -9,6 +9,7 @@ export default function proxy(request: NextRequest) {
     request.cookies.get('aurahq_auth')?.value || 
     request.cookies.get('admin_access_token')?.value;
 
+  const role = request.cookies.get('user_role')?.value;
   const url = request.nextUrl.clone();
 
   // Redirect legacy /admin routes to /aurahq/admin
@@ -17,25 +18,37 @@ export default function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect legacy /dashboard routes to /aurahq/dashboard
+  // Redirect legacy /dashboard routes to /aurahq/sales
   if (url.pathname === '/dashboard' || url.pathname.startsWith('/dashboard/')) {
-    url.pathname = url.pathname.replace('/dashboard', '/aurahq/dashboard');
+    url.pathname = url.pathname.replace('/dashboard', '/aurahq/sales');
     return NextResponse.redirect(url);
   }
 
-  // Protect all AuraHQ routes (/aurahq/admin, /aurahq/sales, /aurahq/dashboard)
+  // Protect all AuraHQ routes
   if (url.pathname.startsWith('/aurahq')) {
     if (!token) {
       url.pathname = '/login';
       url.searchParams.set('from', request.nextUrl.pathname);
       return NextResponse.redirect(url);
     }
+
+    // Role barrier on /aurahq/admin: Sales Reps are blocked before loading bundle
+    if (url.pathname.startsWith('/aurahq/admin') && role && role !== 'admin') {
+      url.pathname = '/aurahq/sales';
+      return NextResponse.redirect(url);
+    }
+
+    // Root /aurahq redirects to designated workspace
+    if (url.pathname === '/aurahq' || url.pathname === '/aurahq/') {
+      url.pathname = role === 'admin' ? '/aurahq/admin' : '/aurahq/sales';
+      return NextResponse.redirect(url);
+    }
   }
 
-  // Redirect authenticated users visiting /login directly to the AuraHQ workspace
+  // Redirect authenticated users visiting /login directly to the appropriate workspace
   if (url.pathname === '/login') {
     if (token) {
-      url.pathname = '/aurahq/sales';
+      url.pathname = role === 'admin' ? '/aurahq/admin' : '/aurahq/sales';
       return NextResponse.redirect(url);
     }
   }

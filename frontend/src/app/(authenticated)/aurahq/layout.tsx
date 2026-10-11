@@ -61,10 +61,20 @@ export default function AuraHQLayout({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (session?.user) {
       const role = (session.user as any).role || "sales";
+      if (typeof document !== 'undefined') {
+        document.cookie = `user_role=${role}; path=/; max-age=604800; SameSite=Lax`;
+      }
       if (role !== "admin") {
-        const allowedPaths = ["/aurahq", "/aurahq/analytics", "/aurahq/sales", "/aurahq/calendar", "/aurahq/profile"];
+        const allowedPaths = [
+          "/aurahq",
+          "/aurahq/sales",
+          "/aurahq/analytics",
+          "/aurahq/calendar",
+          "/aurahq/tasks",
+          "/aurahq/profile"
+        ];
         if (!allowedPaths.some(p => pathname === p || pathname.startsWith(p + "/"))) {
-          router.push("/aurahq");
+          router.push("/aurahq/sales");
         }
       }
     }
