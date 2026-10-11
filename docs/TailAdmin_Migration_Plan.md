@@ -89,7 +89,7 @@
 ## Phase 2: Layout, AppHeader, AppSidebar, & Branding Integration
 **Goal:** Transplant the exact TailAdmin shell layout from `frontend/os_dashboard_source`, swap in AuraWorks branding, and fix top-level navigation defects.
 
-- [ ] **Task 2.1: AppSidebar Transplant & Branding**
+- [x] **Task 2.1: AppSidebar Transplant & Branding**
   - Re-architect `frontend/src/layout/AppSidebar.tsx` using `frontend/os_dashboard_source/src/layout/AppSidebar.tsx` as the verbatim reference.
   - Replace TailAdmin logo with the official AuraWorks SVG logo (`/images/logo/auraworks-logo.svg`).
   - Remove "Logistics" menu entry and route.
@@ -98,18 +98,18 @@
   - Implement role-filtered navigation:
     - Admin: Admin Console, Sales Portal, Analytics, Calendar, Tasks, User Profile.
     - Sales Rep: Sales Portal, Analytics, Calendar, Tasks, User Profile.
-- [ ] **Task 2.2: AppHeader & UserDropdown Fix**
+- [x] **Task 2.2: AppHeader & UserDropdown Fix**
   - Re-architect `frontend/src/layout/AppHeader.tsx` and `frontend/src/components/header/UserDropdown.tsx` matching `frontend/os_dashboard_source`.
   - Fix User Identity: Dynamically populate user name, email, role, and avatar from `useSession()`.
   - Fix Profile Link: Change target to `/aurahq/profile` (resolving the previous 404 error).
   - Fix Sign Out: Replace dead `<Link href="/signin">` with an interactive button executing `authClient.signOut()` and redirecting to `/login`.
-- [ ] **Task 2.3: NotificationDropdown Cleanup**
+- [x] **Task 2.3: NotificationDropdown Cleanup**
   - Replace hardcoded dummy notifications in `NotificationDropdown.tsx` with real notification telemetry (or a clean, styled empty state).
 
 ### Verification Gate (Phase 2)
-- [ ] Vitest component test: `AppSidebar` renders correct role-scoped items for Admin vs. Sales Rep.
-- [ ] Vitest component test: `UserDropdown` displays active session profile and calls `signOut()` on click.
-- [ ] Visual verification: Mobile drawer collapse/expand and responsive backdrop work smoothly.
+- [x] Vitest component test: `AppSidebar` renders correct role-scoped items for Admin vs. Sales Rep.
+- [x] Vitest component test: `UserDropdown` displays active session profile and calls `signOut()` on click.
+- [x] Visual verification: Mobile drawer collapse/expand and responsive backdrop work smoothly.
 
 ---
 

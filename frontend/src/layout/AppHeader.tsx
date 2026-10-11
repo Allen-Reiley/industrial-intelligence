@@ -90,20 +90,20 @@ const AppHeader: React.FC = () => {
             {/* Cross Icon */}
           </button>
 
-          <Link href="/aurahq/" className="xl:hidden">
+          <Link href="/aurahq" className="xl:hidden">
             <Image
-              width={154}
-              height={32}
+              width={150}
+              height={36}
               className="dark:hidden"
-              src="/logo.svg"
-              alt="Logo"
+              src="/images/logo/auraworks-logo.svg"
+              alt="AuraWorks"
             />
             <Image
-              width={154}
-              height={32}
+              width={150}
+              height={36}
               className="hidden dark:block"
-              src="/logo.svg"
-              alt="Logo"
+              src="/images/logo/auraworks-logo.svg"
+              alt="AuraWorks"
             />
           </Link>
 

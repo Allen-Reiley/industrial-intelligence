@@ -5,111 +5,63 @@ import { cn } from "@/utils";
 import { useTranslations } from "next-intl";
 import { useSession } from "@/lib/auth-client";
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback } from "react";
 import { useSidebar } from "../context/SidebarContext";
 import {
-  BoxCubeIcon,
   CalenderIcon,
-  ChevronDownIcon,
+  DollarLineIcon,
   GridIcon,
   HorizontaLDots,
   ListIcon,
-  PageIcon,
   PieChartIcon,
-  PlugInIcon,
-  TableIcon,
   UserCircleIcon,
-  DollarLineIcon,
 } from "../icons/index";
 
-type NavItem = {
+export type NavItem = {
+  name: string;
   key: string;
   icon: React.ReactNode;
-  path?: string;
-  new?: boolean;
-  target?: string;
-  subItems?: {
-    key: string;
-    path: string;
-    pro?: boolean;
-    new?: boolean;
-    target?: string;
-  }[];
+  path: string;
+  adminOnly?: boolean;
 };
 
-const navItems: NavItem[] = [
+export const navItems: NavItem[] = [
   {
+    name: "Admin Console",
+    key: "admin",
     icon: <GridIcon />,
-    key: "dashboard",
-    subItems: [{ key: "ecommerceHome", path: "/aurahq/" }],
+    path: "/aurahq/admin",
+    adminOnly: true,
   },
   {
-    icon: <GridIcon />,
-    key: "auraWorks",
-    subItems: [
-      { key: "analytics", path: "/aurahq/analytics", pro: false },
-      { key: "sales", path: "/aurahq/sales", pro: false },
-      { key: "admin", path: "/aurahq/admin", pro: false },
-    ],
+    name: "Sales Portal",
+    key: "sales",
+    icon: <DollarLineIcon />,
+    path: "/aurahq/sales",
   },
   {
-    icon: <CalenderIcon />,
+    name: "Analytics",
+    key: "analytics",
+    icon: <PieChartIcon />,
+    path: "/aurahq/analytics",
+  },
+  {
+    name: "Calendar",
     key: "calendar",
+    icon: <CalenderIcon />,
     path: "/aurahq/calendar",
   },
   {
-    icon: <UserCircleIcon />,
-    key: "userProfile",
-    path: "/aurahq/profile",
-  },
-  {
-    key: "forms",
+    name: "Tasks",
+    key: "tasks",
     icon: <ListIcon />,
-    subItems: [{ key: "formElements", path: "/aurahq/form-elements", pro: false }],
+    path: "/aurahq/tasks",
   },
   {
-    key: "tables",
-    icon: <TableIcon />,
-    subItems: [{ key: "basicTables", path: "/aurahq/basic-tables", pro: false }],
-  },
-  {
-    key: "pages",
-    icon: <PageIcon />,
-    subItems: [
-      { key: "blankPage", path: "/aurahq/blank" },
-      { key: "error404", path: "/aurahq/error-404" },
-    ],
-  },
-];
-
-const othersItems: NavItem[] = [
-  {
-    icon: <PieChartIcon />,
-    key: "charts",
-    subItems: [
-      { key: "lineChart", path: "/aurahq/line-chart", pro: false },
-      { key: "barChart", path: "/aurahq/bar-chart", pro: false },
-    ],
-  },
-  {
-    icon: <BoxCubeIcon />,
-    key: "uiElements",
-    subItems: [
-      { key: "alerts", path: "/aurahq/alerts" },
-      { key: "avatar", path: "/aurahq/avatars" },
-      { key: "badge", path: "/aurahq/badge" },
-      { key: "buttons", path: "/aurahq/buttons" },
-      { key: "images", path: "/aurahq/images" },
-      { key: "videos", path: "/aurahq/videos" },
-    ],
-  },
-  {
-    icon: <PlugInIcon />,
-    key: "authentication",
-    subItems: [
-      { key: "signIn", path: "/aurahq/signin", pro: false },
-      { key: "signUp", path: "/aurahq/signup", pro: false },
-    ],
+    name: "User Profile",
+    key: "userProfile",
+    icon: <UserCircleIcon />,
+    path: "/aurahq/profile",
   },
 ];
 
@@ -118,242 +70,23 @@ const AppSidebar: React.FC = () => {
   const pathname = usePathname();
   const t = useTranslations("sidebar");
   const { data: session } = useSession();
-  const userRole = (session?.user as any)?.role || "sales";
+  const userRole = ((session?.user as any)?.role || "sales").toLowerCase();
 
-  
-  
-  const filteredNavItems = navItems.filter(nav => {
-    if (userRole === "admin") return true;
-    if (nav.key === "auraWorks") {
-      // Create a shallow copy and filter subItems
-      const filtered = { ...nav, subItems: nav.subItems?.filter(sub => sub.key !== "admin") };
-      return true; // We map over filteredNavItems later, this simple filter won't change the actual object.
+  const visibleNavItems = navItems.filter((item) => {
+    if (item.adminOnly && userRole !== "admin") {
+      return false;
     }
-    return ["dashboard", "auraWorks", "calendar", "userProfile"].includes(nav.key);
-  }).map(nav => {
-    if (userRole !== "admin" && nav.key === "auraWorks") {
-      return { ...nav, subItems: nav.subItems?.filter(sub => sub.key !== "admin") };
-    }
-    return nav;
+    return true;
   });
-  
-  const filteredOthersItems = userRole === "admin" ? othersItems : [];
 
-  const renderMenuItems = (
-    navItems: NavItem[],
-    menuType: "main" | "support" | "others",
-  ) => (
-    <ul className="flex flex-col gap-1">
-      {navItems.map((nav, index) => (
-        <li key={nav.key}>
-          {nav.subItems ? (
-            <button
-              onClick={() => handleSubmenuToggle(index, menuType)}
-              className={cn(
-                "group menu-item cursor-pointer",
-                openSubmenu?.type === menuType && openSubmenu?.index === index
-                  ? "menu-item-active"
-                  : "menu-item-inactive",
-                !isExpanded && !isHovered
-                  ? "lg:justify-center"
-                  : "lg:justify-start",
-              )}
-            >
-              <span
-                className={cn(
-                  openSubmenu?.type === menuType && openSubmenu?.index === index
-                    ? "menu-item-icon-active"
-                    : "menu-item-icon-inactive",
-                )}
-              >
-                {nav.icon}
-              </span>
-              {(isExpanded || isHovered || isMobileOpen) && (
-                <span className="menu-item-text">{t(`items.${nav.key}`)}</span>
-              )}
-              {nav.new && (isExpanded || isHovered || isMobileOpen) && (
-                <span
-                  className={cn(
-                    "inset-e-10 absolute ms-auto",
-                    openSubmenu?.type === menuType &&
-                      openSubmenu?.index === index
-                      ? "menu-dropdown-badge-active"
-                      : "menu-dropdown-badge-inactive",
-                    "menu-dropdown-badge",
-                  )}
-                >
-                  {t("badges.new")}
-                </span>
-              )}
-              {(isExpanded || isHovered || isMobileOpen) && (
-                <ChevronDownIcon
-                  className={cn(
-                    "ms-auto h-5 w-5 transition-transform duration-200",
-                    openSubmenu?.type === menuType &&
-                      openSubmenu?.index === index
-                      ? "rotate-180 text-brand-500"
-                      : "",
-                  )}
-                />
-              )}
-            </button>
-          ) : (
-            nav.path && (
-              <Link
-                href={nav.path}
-                target={nav.target}
-                className={cn(
-                  "group menu-item",
-                  isActive(nav.path)
-                    ? "menu-item-active"
-                    : "menu-item-inactive",
-                )}
-              >
-                <span
-                  className={cn(
-                    isActive(nav.path)
-                      ? "menu-item-icon-active"
-                      : "menu-item-icon-inactive",
-                  )}
-                >
-                  {nav.icon}
-                </span>
-                {(isExpanded || isHovered || isMobileOpen) && (
-                  <span className="menu-item-text">
-                    {t(`items.${nav.key}`)}
-                  </span>
-                )}
-              </Link>
-            )
-          )}
-          {nav.subItems && (isExpanded || isHovered || isMobileOpen) && (
-            <div
-              ref={(el) => {
-                subMenuRefs.current[`${menuType}-${index}`] = el;
-              }}
-              className="overflow-hidden transition-all duration-300"
-              style={{
-                height:
-                  openSubmenu?.type === menuType && openSubmenu?.index === index
-                    ? `${subMenuHeight[`${menuType}-${index}`]}px`
-                    : "0px",
-              }}
-            >
-              <ul className="ms-9 mt-2 space-y-1">
-                {nav.subItems.map((subItem) => (
-                  <li key={subItem.key}>
-                    <Link
-                      href={subItem.path}
-                      target={subItem.target}
-                      className={`menu-dropdown-item ${
-                        isActive(subItem.path)
-                          ? "menu-dropdown-item-active"
-                          : "menu-dropdown-item-inactive"
-                      }`}
-                    >
-                      {t(`items.${subItem.key}`)}
-                      <span className="ms-auto flex items-center gap-1">
-                        {subItem.new && (
-                          <span
-                            className={`ms-auto ${
-                              isActive(subItem.path)
-                                ? "menu-dropdown-badge-active"
-                                : "menu-dropdown-badge-inactive"
-                            } menu-dropdown-badge`}
-                          >
-                            {t("badges.new")}
-                          </span>
-                        )}
-                        {subItem.pro && (
-                          <span
-                            className={`ms-auto ${
-                              isActive(subItem.path)
-                                ? "menu-dropdown-badge-pro-active"
-                                : "menu-dropdown-badge-pro-inactive"
-                            } menu-dropdown-badge-pro`}
-                          >
-                            {t("badges.pro")}
-                          </span>
-                        )}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </li>
-      ))}
-    </ul>
+  const isActive = useCallback(
+    (path: string) => {
+      if (pathname === path) return true;
+      if (path !== "/aurahq" && pathname.startsWith(path + "/")) return true;
+      return false;
+    },
+    [pathname]
   );
-
-  const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "support" | "others";
-    index: number;
-  } | null>(null);
-  const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
-    {},
-  );
-  const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-  // const isActive = (path: string) => path === pathname;
-
-  const isActive = useCallback((path: string) => path === pathname, [pathname]);
-
-  useEffect(() => {
-    // Check if the current path matches any submenu item
-    let submenuMatched = false;
-    ["main", "support", "others"].forEach((menuType) => {
-      const items = menuType === "main" ? filteredNavItems : filteredOthersItems;
-      items.forEach((nav, index) => {
-        if (nav.subItems) {
-          nav.subItems.forEach((subItem) => {
-            if (isActive(subItem.path)) {
-              setOpenSubmenu({
-                type: menuType as "main" | "support" | "others",
-                index,
-              });
-              submenuMatched = true;
-            }
-          });
-        }
-      });
-    });
-
-    // If no submenu item matches, close the open submenu
-    if (!submenuMatched) {
-      setOpenSubmenu(null);
-    }
-  }, [pathname, isActive]);
-
-  useEffect(() => {
-    // Set the height of the submenu items when the submenu is opened
-    if (openSubmenu !== null) {
-      const key = `${openSubmenu.type}-${openSubmenu.index}`;
-      if (subMenuRefs.current[key]) {
-        setSubMenuHeight((prevHeights) => ({
-          ...prevHeights,
-          [key]: subMenuRefs.current[key]?.scrollHeight || 0,
-        }));
-      }
-    }
-  }, [openSubmenu]);
-
-  const handleSubmenuToggle = (
-    index: number,
-    menuType: "main" | "support" | "others",
-  ) => {
-    setOpenSubmenu((prevOpenSubmenu) => {
-      if (
-        prevOpenSubmenu &&
-        prevOpenSubmenu.type === menuType &&
-        prevOpenSubmenu.index === index
-      ) {
-        return null;
-      }
-      return { type: menuType, index };
-    });
-  };
 
   return (
     <aside
@@ -366,19 +99,20 @@ const AppSidebar: React.FC = () => {
       } xl:translate-x-0 xl:rtl:translate-x-0`}
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      aria-label="Sidebar Navigation"
     >
       <div
         className={`flex py-8 ${
           !isExpanded && !isHovered ? "xl:justify-center" : "justify-start"
         }`}
       >
-        <Link href="/aurahq/">
+        <Link href="/aurahq">
           {isExpanded || isHovered || isMobileOpen ? (
             <>
               <Image
                 className="dark:hidden"
-                src="/logo.svg"
-                alt="Logo"
+                src="/images/logo/auraworks-logo.svg"
+                alt="AuraWorks"
                 width={150}
                 height={40}
                 priority
@@ -386,8 +120,8 @@ const AppSidebar: React.FC = () => {
               />
               <Image
                 className="hidden dark:block"
-                src="/logo.svg"
-                alt="Logo"
+                src="/images/logo/auraworks-logo.svg"
+                alt="AuraWorks"
                 width={150}
                 height={40}
                 priority
@@ -396,8 +130,8 @@ const AppSidebar: React.FC = () => {
             </>
           ) : (
             <Image
-              src="/logo-mobile.svg"
-              alt="Logo"
+              src="/images/logo/logo-icon.svg"
+              alt="AuraWorks"
               width={32}
               height={32}
               priority
@@ -406,6 +140,7 @@ const AppSidebar: React.FC = () => {
           )}
         </Link>
       </div>
+
       <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
         <nav className="mb-6">
           <div className="flex flex-col gap-4">
@@ -423,24 +158,34 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(filteredNavItems, "main")}
-            </div>
-
-            <div>
-              <h2
-                className={`mb-4 flex text-xs leading-5 text-gray-400 uppercase ${
-                  !isExpanded && !isHovered
-                    ? "xl:justify-center"
-                    : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  t("groups.others")
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {userRole === "admin" && renderMenuItems(filteredOthersItems, "others")}
+              <ul className="flex flex-col gap-1">
+                {visibleNavItems.map((nav) => (
+                  <li key={nav.key}>
+                    <Link
+                      href={nav.path}
+                      className={cn(
+                        "group menu-item",
+                        isActive(nav.path)
+                          ? "menu-item-active"
+                          : "menu-item-inactive"
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          isActive(nav.path)
+                            ? "menu-item-icon-active"
+                            : "menu-item-icon-inactive"
+                        )}
+                      >
+                        {nav.icon}
+                      </span>
+                      {(isExpanded || isHovered || isMobileOpen) && (
+                        <span className="menu-item-text">{nav.name}</span>
+                      )}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </nav>

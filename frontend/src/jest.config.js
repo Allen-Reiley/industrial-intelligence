@@ -10,11 +10,26 @@ const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'jest-environment-jsdom',
   moduleNameMapper: {
-    // Handle module aliases
-    '^@/(.*)$': '<rootDir>/$1',
+    '^@/icons$': '<rootDir>/__mocks__/iconsMock.js',
+    '^@/icons/(.*)$': '<rootDir>/__mocks__/iconsMock.js',
+    '\\.\\./icons/index$': '<rootDir>/__mocks__/iconsMock.js',
+    '\\./icons/index$': '<rootDir>/__mocks__/iconsMock.js',
     '^.+\\.svg$': '<rootDir>/__mocks__/svgMock.js',
+    '^@/(.*)$': '<rootDir>/$1',
   },
 }
 
-// createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
-module.exports = createJestConfig(customJestConfig)
+module.exports = async () => {
+  const config = await createJestConfig(customJestConfig)()
+  return {
+    ...config,
+    moduleNameMapper: {
+      '^@/icons$': '<rootDir>/__mocks__/iconsMock.js',
+      '^@/icons/(.*)$': '<rootDir>/__mocks__/iconsMock.js',
+      '\\.\\./icons/index$': '<rootDir>/__mocks__/iconsMock.js',
+      '\\./icons/index$': '<rootDir>/__mocks__/iconsMock.js',
+      '^.+\\.svg$': '<rootDir>/__mocks__/svgMock.js',
+      ...config.moduleNameMapper,
+    },
+  }
+}

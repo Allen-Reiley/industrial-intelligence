@@ -1,7 +1,10 @@
 const React = require('react');
-module.exports = {
-  __esModule: true,
-  default: function MockSvg() {
-    return React.createElement('svg', null);
-  }
-};
+
+function MockSvg(props) {
+  return React.createElement('svg', props);
+}
+
+MockSvg.default = MockSvg;
+MockSvg.__esModule = true;
+
+module.exports = MockSvg;

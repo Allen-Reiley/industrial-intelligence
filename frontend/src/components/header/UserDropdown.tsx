@@ -2,7 +2,7 @@
 
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { getLanguage, languages } from "@/i18n/languages";
-import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { ChevronDownIcon } from "@/icons";
 import { cn } from "@/utils";
@@ -11,6 +11,7 @@ import Image from "next/image";
 import { useRef, useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
+import { useSession, signOut } from "@/lib/auth-client";
 
 export default function UserDropdown() {
   const t = useTranslations("userDropdown");
@@ -20,6 +21,14 @@ export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubDropdownOpen, setIsSubDropdownOpen] = useState(false);
   const subDropdownRef = useRef<HTMLLIElement>(null);
+
+  const { data: session } = useSession();
+  const user = session?.user;
+  const displayName = user?.name || "AuraWorks User";
+  const firstName = displayName.split(" ")[0] || displayName;
+  const email = user?.email || "";
+  const role = (user as any)?.role || "User";
+  const avatarSrc = user?.image || "/images/user/owner.png";
 
   const currentLang = getLanguage(locale);
   const CurrentFlagIcon = currentLang.FlagIcon;
@@ -45,22 +54,38 @@ export default function UserDropdown() {
     setIsSubDropdownOpen(false);
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            window.location.href = "/login";
+          },
+        },
+      });
+    } catch {
+      window.location.href = "/login";
+    }
+  };
+
   return (
     <div className="relative">
       <button
         onClick={toggleDropdown}
-        className="dropdown-toggle flex items-center text-gray-700 dark:text-gray-400"
+        className="dropdown-toggle flex items-center text-gray-700 dark:text-gray-400 cursor-pointer"
+        aria-label="User menu"
       >
-        <span className="me-3 h-11 w-11 overflow-hidden rounded-full">
+        <span className="me-3 h-11 w-11 overflow-hidden rounded-full border border-gray-200 dark:border-gray-700">
           <Image
             width={44}
             height={44}
-            src="/images/user/owner.png"
-            alt="User"
+            src={avatarSrc}
+            alt={displayName}
+            className="h-full w-full object-cover"
           />
         </span>
 
-        <span className="me-1 block text-theme-sm font-medium">Musharof</span>
+        <span className="me-1 block text-theme-sm font-medium">{firstName}</span>
 
         <ChevronDownIcon
           className={`size-5 text-gray-500 transition-transform duration-200 dark:text-gray-400 ${
@@ -75,11 +100,16 @@ export default function UserDropdown() {
         className="absolute mt-4.25 flex w-65 flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg ltr:right-0 rtl:right-auto rtl:left-0 dark:border-gray-800 dark:bg-gray-dark"
       >
         <div>
-          <span className="block text-theme-sm font-medium text-gray-700 dark:text-gray-400">
-            Musharof Chowdhury
+          <span className="block text-theme-sm font-semibold text-gray-800 dark:text-white/90">
+            {displayName}
           </span>
-          <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            randomuser@pimjo.com
+          {email && (
+            <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400 truncate">
+              {email}
+            </span>
+          )}
+          <span className="inline-block mt-1.5 text-[10px] font-bold uppercase tracking-wider text-brand-600 bg-brand-50 dark:bg-brand-500/10 dark:text-brand-400 px-2 py-0.5 rounded-full">
+            {role}
           </span>
         </div>
 
@@ -88,7 +118,7 @@ export default function UserDropdown() {
             <DropdownItem
               onItemClick={closeDropdown}
               tag="a"
-              href="/profile"
+              href="/aurahq/profile"
               className="group flex items-center gap-3 rounded-lg px-3! py-2 text-theme-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
               <svg
@@ -113,7 +143,7 @@ export default function UserDropdown() {
             <DropdownItem
               onItemClick={closeDropdown}
               tag="a"
-              href="/profile"
+              href="/aurahq/profile"
               className="group flex items-center gap-3 rounded-lg px-3! py-2 text-theme-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
               <svg
@@ -134,40 +164,15 @@ export default function UserDropdown() {
               {t("accountSettings")}
             </DropdownItem>
           </li>
-          <li>
-            <DropdownItem
-              onItemClick={closeDropdown}
-              tag="a"
-              href="/profile"
-              className="group flex items-center gap-3 rounded-lg px-3! py-2 text-theme-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-            >
-              <svg
-                className="fill-gray-500 group-hover:fill-gray-700 dark:fill-gray-400 dark:group-hover:fill-gray-300"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M3.5 12C3.5 7.30558 7.30558 3.5 12 3.5C16.6944 3.5 20.5 7.30558 20.5 12C20.5 16.6944 16.6944 20.5 12 20.5C7.30558 20.5 3.5 16.6944 3.5 12ZM12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM11.0991 7.52507C11.0991 8.02213 11.5021 8.42507 11.9991 8.42507H12.0001C12.4972 8.42507 12.9001 8.02213 12.9001 7.52507C12.9001 7.02802 12.4972 6.62507 12.0001 6.62507H11.9991C11.5021 6.62507 11.0991 7.02802 11.0991 7.52507ZM12.0001 17.3714C11.5859 17.3714 11.2501 17.0356 11.2501 16.6214V10.9449C11.2501 10.5307 11.5859 10.1949 12.0001 10.1949C12.4143 10.1949 12.7501 10.5307 12.7501 10.9449V16.6214C12.7501 17.0356 12.4143 17.3714 12.0001 17.3714Z"
-                  fill=""
-                />
-              </svg>
-              {t("support")}
-            </DropdownItem>
-          </li>
           <li className="relative" ref={subDropdownRef}>
             <button
               type="button"
               onClick={() => setIsSubDropdownOpen((prev) => !prev)}
               className={cn(
-                "group flex max-h-10 w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-theme-sm font-medium transition-colors",
+                "group flex max-h-10 w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-theme-sm font-medium transition-colors cursor-pointer",
                 isSubDropdownOpen
                   ? "bg-gray-100 text-gray-900 dark:bg-white/5 dark:text-white"
-                  : "text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300",
+                  : "text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
               )}
             >
               <span className="flex items-center gap-3 text-theme-sm">
@@ -212,10 +217,10 @@ export default function UserDropdown() {
                             handleSelectLanguage(language.id);
                           }}
                           className={cn(
-                            "flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-start text-theme-sm font-medium transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white",
+                            "flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-start text-theme-sm font-medium transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white cursor-pointer",
                             isSelected
                               ? "bg-brand-50 dark:bg-brand-500/15"
-                              : "hover:bg-gray-100 dark:hover:bg-white/5",
+                              : "hover:bg-gray-100 dark:hover:bg-white/5"
                           )}
                         >
                           <span className="flex items-center gap-2">
@@ -224,7 +229,7 @@ export default function UserDropdown() {
                                 "size-1.5 shrink-0 rounded-full transition-opacity",
                                 isSelected
                                   ? "bg-brand-500 opacity-100 dark:bg-brand-400"
-                                  : "opacity-0",
+                                  : "opacity-0"
                               )}
                             />
                             <FlagIcon className="size-5 shrink-0 overflow-hidden rounded-full" />
@@ -245,12 +250,12 @@ export default function UserDropdown() {
             )}
           </li>
         </ul>
-        <Link
-          href="/signin"
-          className="group mt-3 flex items-center justify-center gap-3 rounded-lg border border-gray-200 px-3 py-2 text-theme-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+        <button
+          onClick={handleSignOut}
+          className="group mt-3 flex w-full cursor-pointer items-center justify-center gap-3 rounded-lg border border-gray-200 px-3 py-2 text-theme-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
         >
           {t("signOut")}
-        </Link>
+        </button>
       </Dropdown>
     </div>
   );
