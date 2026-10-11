@@ -183,17 +183,17 @@
 ## Phase 6: Forensic Analytics Portal (`/aurahq/analytics`) Restyling
 **Goal:** Rebuild `/aurahq/analytics` using TailAdmin's forensic design language, fix auth token headers, and unify API endpoints.
 
-- [ ] **Task 6.1: Eradicate Astryx Forensic Card View**
+- [x] **Task 6.1: Eradicate Astryx Forensic Card View**
   - Completely restyle the juristic ledger / forensics cards using TailAdmin's `ComponentCard`, `BasicTableOne`, and native badges.
   - Remove `<LinkGenerator />` from the analytics header to maintain clean separation of concerns.
-- [ ] **Task 6.2: Fix Authentication & API Endpoints**
+- [x] **Task 6.2: Fix Authentication & API Endpoints**
   - Delete obsolete `localStorage.getItem('admin_token')` references.
   - Rely on Better Auth HTTP-only session cookies (`credentials: 'include'`).
   - Replace hardcoded Railway production fallback URLs with standard `NEXT_PUBLIC_API_URL` environment variables.
 
 ### Verification Gate (Phase 6)
-- [ ] Vitest integration test: Analytics page fetches signal data using cookie authentication.
-- [ ] Visual verification: Page renders 100% TailAdmin styling with zero Astryx artifacts.
+- [x] Vitest integration test: Analytics page fetches signal data using cookie authentication.
+- [x] Visual verification: Page renders 100% TailAdmin styling with zero Astryx artifacts.
 
 ---
 
