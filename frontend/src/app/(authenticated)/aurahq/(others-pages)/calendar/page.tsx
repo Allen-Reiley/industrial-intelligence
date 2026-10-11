@@ -4,10 +4,8 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Next.js Calender | TailAdmin - Next.js Dashboard Template",
-  description:
-    "This is Next.js Calender page for TailAdmin  Tailwind CSS Admin Dashboard Template",
-  // other metadata
+  title: "Calendar | AuraHQ",
+  description: "Company event and schedule management portal.",
 };
 export default function page() {
   return (

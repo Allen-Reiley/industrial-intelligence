@@ -200,17 +200,17 @@
 ## Phase 7: Calendar, Tasks Board, & User Profile Modules (Zero Mock Data)
 **Goal:** Transplant Calendar, Tasks, and User Profile from `frontend/os_dashboard_source` and wire them to real PostgreSQL backend models.
 
-- [ ] **Task 7.1: Calendar Module (`/aurahq/calendar`)**
+- [x] **Task 7.1: Calendar Module (`/aurahq/calendar`)**
   - Transplant `Calendar.tsx` and `CalendarEventModal.tsx` from `frontend/os_dashboard_source/src/components/calendar/`.
   - Replace in-memory `INITIAL_EVENTS` with real SWR/React Query calls to `/api/v1/calendar/events`.
   - Implement FullCalendar event creation, editing, and deletion with RBAC enforcement:
     - Admins: Edit/delete any event.
     - Sales Reps: Edit/delete only self-created events.
-- [ ] **Task 7.2: Tasks Board Module (`/aurahq/tasks`)**
+- [x] **Task 7.2: Tasks Board Module (`/aurahq/tasks`)**
   - Build the missing Tasks page (`/aurahq/tasks`) using TailAdmin card and drag-and-drop / column components.
   - Wire to `/api/v1/tasks/` endpoints for status transitions (`Todo`, `In Progress`, `Done`).
   - Add task assignment and creator filtering for Sales Reps.
-- [ ] **Task 7.3: User Profile Module (`/aurahq/profile`)**
+- [x] **Task 7.3: User Profile Module (`/aurahq/profile`)**
   - Re-architect `UserMetaCard.tsx`, `UserAddressCard.tsx`, `Security.tsx`, and `DangerZone.tsx` using `frontend/os_dashboard_source/src/components/user-profile/`.
   - Replace hardcoded "Musharof Chowdhury" mock identity with dynamic `useSession()` user data.
   - Wire profile update modal to `PATCH /api/v1/users/me` (persisting name, phone, bio).
@@ -219,9 +219,9 @@
   - Wire "Sign out all devices" and "Delete account" to real session handlers.
 
 ### Verification Gate (Phase 7)
-- [ ] Vitest integration test: Calendar creates, edits, and deletes events against backend API with RBAC checks.
-- [ ] Vitest integration test: Tasks board renders and updates task status.
-- [ ] Vitest integration test: User Profile loads active session, updates profile info, and executes ImageKit upload flow.
+- [x] Vitest integration test: Calendar creates, edits, and deletes events against backend API with RBAC checks.
+- [x] Vitest integration test: Tasks board renders and updates task status.
+- [x] Vitest integration test: User Profile loads active session, updates profile info, and executes ImageKit upload flow.
 
 ---
 

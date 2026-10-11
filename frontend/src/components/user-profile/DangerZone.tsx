@@ -1,73 +1,166 @@
+"use client";
+
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { signOut } from "@/lib/auth-client";
+import { Modal } from "@/components/ui/modal";
+import Button from "@/components/ui/button/Button";
+import { AlertIcon } from "@/icons";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const cleanApiBase = API_BASE.replace(/\/$/, "");
+
 export default function DangerZone() {
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const handleLogoutAllDevices = async () => {
+    setIsLoggingOut(true);
+    try {
+      await fetch(`${cleanApiBase}/api/v1/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+      await signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            router.push("/login");
+          },
+        },
+      });
+      router.push("/login");
+    } catch (err) {
+      console.error("Logout error:", err);
+      router.push("/login");
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
   return (
-    <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-5 lg:p-6 dark:border-gray-800 dark:bg-white/3">
-      <h4 className="mb-4 text-lg font-semibold text-gray-800 lg:mb-6 dark:text-white/90">
-        Danger Zone
-      </h4>
-      <div>
-        <div className="flex flex-col justify-between gap-4 border-b border-gray-200 py-4 first:pt-0 last:border-b-0 last:pb-0 sm:flex-row sm:items-end dark:border-gray-800">
-          <div>
-            <span className="mb-1 block text-base font-medium text-gray-800 dark:text-white/90">
-              Logout all devices
-            </span>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Sign out from every active session.
-            </p>
-          </div>
-          <div>
-            <button className="flex h-10 items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white py-2.5 pe-4 ps-3.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
-              <svg
-                className="rtl:-scale-x-100"
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
+    <>
+      <div className="mb-6 rounded-2xl border border-error-200 bg-white p-5 lg:p-6 dark:border-error-500/20 dark:bg-white/[0.03]">
+        <h4 className="mb-4 text-lg font-semibold text-gray-800 lg:mb-6 dark:text-white/90">
+          Danger Zone
+        </h4>
+        <div>
+          {/* Logout all devices row */}
+          <div className="flex flex-col justify-between gap-4 border-b border-gray-200 py-4 first:pt-0 last:border-b-0 last:pb-0 sm:flex-row sm:items-center dark:border-gray-800">
+            <div>
+              <span className="mb-1 block text-base font-medium text-gray-800 dark:text-white/90">
+                Logout all devices
+              </span>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Invalidate all active session tokens and sign out across all browsers.
+              </p>
+            </div>
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowLogoutModal(true)}
+                className="flex h-10 items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200 cursor-pointer"
               >
-                <path
-                  d="M3.33325 10.0003L9.79159 10.0003M6.66599 6.66699L3.33488 10.0002L6.66599 13.3337M8.12492 4.16374V3.54199C8.12492 2.85164 8.68456 2.29199 9.37492 2.29199H14.3749C15.0653 2.29199 15.6249 2.85164 15.6249 3.54199V16.4587C15.6249 17.149 15.0653 17.7087 14.3749 17.7087H9.37492C8.68456 17.7087 8.12492 17.149 8.12492 16.4587V15.8337"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Logout
-            </button>
+                Logout All Sessions
+              </button>
+            </div>
           </div>
-        </div>
-        <div className="flex flex-col justify-between gap-4 border-b border-gray-200 py-4 first:pt-0 last:border-b-0 last:pb-0 sm:flex-row sm:items-end dark:border-gray-800">
-          <div>
-            <span className="mb-1 block text-base font-medium text-gray-800 dark:text-white/90">
-              Delete account
-            </span>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Once you delete your account, there is no going back. Please be
-              certain.
-            </p>
-          </div>
-          <div>
-            <button className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-error-500 py-2.5 pe-4 ps-3.5 text-sm font-medium text-error-500 transition-all hover:bg-error-100 dark:border-error-500/15 dark:hover:bg-red-500/15">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
+
+          {/* Delete account row */}
+          <div className="flex flex-col justify-between gap-4 border-b border-gray-200 py-4 first:pt-0 last:border-b-0 last:pb-0 sm:flex-row sm:items-center dark:border-gray-800">
+            <div>
+              <span className="mb-1 block text-base font-medium text-gray-800 dark:text-white/90">
+                Personnel Account Termination
+              </span>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Corporate personnel deletion requires administrator approval and data archiving.
+              </p>
+            </div>
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+                className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-error-500 px-4 py-2.5 text-sm font-medium text-error-600 transition-all hover:bg-error-50 dark:border-error-500/30 dark:text-error-400 dark:hover:bg-error-500/10"
               >
-                <path
-                  d="M4.37492 4.79199V16.4587C4.37492 17.149 4.93456 17.7087 5.62492 17.7087H14.3749C15.0653 17.7087 15.6249 17.149 15.6249 16.4587V4.79199M3.33325 4.79199H16.6658M4.37492 13.2466V8.24658M15.6249 13.2466V8.24658M8.33325 13.7503V8.75033M11.6666 13.7503V8.75033M12.7078 4.79199V3.54199C12.7078 2.85164 12.1482 2.29199 11.4578 2.29199H8.54118C7.85082 2.29199 7.29118 2.85164 7.29118 3.54199V4.79199H12.7078Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Delete account
-            </button>
+                Request Termination
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Logout All Modal */}
+      <Modal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        className="m-4 max-w-[450px]"
+      >
+        <div className="w-full rounded-2xl bg-white p-6 text-center dark:bg-gray-900">
+          <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-error-50 text-error-500 dark:bg-error-500/15">
+            <AlertIcon className="size-6" />
+          </div>
+          <h4 className="mb-2 text-xl font-bold text-gray-800 dark:text-white/90">
+            Sign Out All Sessions?
+          </h4>
+          <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+            This will terminate all active Better Auth sessions on all browsers and devices. You will need to log in again.
+          </p>
+          <div className="flex items-center justify-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowLogoutModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={isLoggingOut}
+              onClick={handleLogoutAllDevices}
+              className="bg-error-500 hover:bg-error-600"
+            >
+              {isLoggingOut ? "Signing out..." : "Sign Out Everywhere"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Account Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        className="m-4 max-w-[500px]"
+      >
+        <div className="w-full rounded-2xl bg-white p-6 dark:bg-gray-900">
+          <h4 className="mb-2 text-xl font-bold text-gray-800 dark:text-white/90">
+            Account Termination Policy
+          </h4>
+          <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+            AuraWorks accounts are managed by your corporate administrator under enterprise compliance rules.
+          </p>
+          <div className="mb-6 rounded-lg bg-gray-50 p-4 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+            <p className="font-semibold text-gray-800 dark:text-white">To delete or offboard this account:</p>
+            <ul className="mt-2 list-disc space-y-1 pl-4">
+              <li>Admins: Manage and remove accounts via the Personnel Console.</li>
+              <li>Sales Reps: Contact your company administrator to revoke access.</li>
+              <li>Or email compliance@auraworks.co.za with your workspace ID.</li>
+            </ul>
+          </div>
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowDeleteModal(false)}
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 }
