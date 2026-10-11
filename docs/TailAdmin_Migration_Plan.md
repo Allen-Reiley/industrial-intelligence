@@ -116,10 +116,10 @@
 ## Phase 3: Authentication Portal Modernization (`/login`)
 **Goal:** Refactor `/login` to match TailAdmin's split-screen authentication UI while closing security gaps.
 
-- [ ] **Task 3.1: Split-Screen Auth Layout Alignment**
+- [x] **Task 3.1: Split-Screen Auth Layout Alignment**
   - Model `/login` on `frontend/os_dashboard_source/src/app/[locale]/(full-width-pages)/(auth)/layout.tsx` and `components/auth/SignInForm.tsx`.
   - Display AuraWorks branding, dark/light theme switcher, and modern TailAdmin input styling.
-- [ ] **Task 3.2: Form Wiring & Interaction Polish**
+- [x] **Task 3.2: Form Wiring & Interaction Polish**
   - Eliminate the public "Sign Up" toggle or replace it with a notice that accounts are provisioned by AuraWorks administrators.
   - Wire "Forgot password?" with a modern modal/toast notification.
   - Pass the "Keep me logged in" checkbox state to Better Auth `signIn.email()` options.
@@ -127,8 +127,8 @@
   - Integrate Microsoft OAuth button alongside Google and GitHub buttons.
 
 ### Verification Gate (Phase 3)
-- [ ] Vitest component test: Sign-in form validates input, displays error banners via TailAdmin `Alert`, and invokes Better Auth client.
-- [ ] Vitest component test: "Keep me logged in" passes session parameters.
+- [x] Vitest component test: Sign-in form validates input, displays error banners via TailAdmin `Alert`, and invokes Better Auth client.
+- [x] Vitest component test: "Keep me logged in" passes session parameters.
 
 ---
 
