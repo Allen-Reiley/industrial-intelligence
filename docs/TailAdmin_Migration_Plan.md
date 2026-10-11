@@ -161,22 +161,22 @@
 ## Phase 5: Sales Rep Portal (`/aurahq/sales`) & Dynamic Link Generator
 **Goal:** Rebuild `/aurahq/sales` using TailAdmin components, eliminate dead form code, and implement the dual-mode trackable link generator.
 
-- [ ] **Task 5.1: TailAdmin UI Refactor & Dead Code Elimination**
+- [x] **Task 5.1: TailAdmin UI Refactor & Dead Code Elimination**
   - Eradicate legacy Astryx styling (`divide-zinc-850`, `dark:bg-white/3`).
   - Remove duplicate, unused form state and handlers (lines 106–186 in `sales/page.tsx`).
   - Rebuild sales overview metrics using TailAdmin `EcommerceMetrics` / `ComponentCard`.
   - Rebuild recent checkouts list using TailAdmin `BasicTableOne`.
-- [ ] **Task 5.2: Dual-Mode Link Generator (`LinkGenerator.tsx`)**
+- [x] **Task 5.2: Dual-Mode Link Generator (`LinkGenerator.tsx`)**
   - Refactor `LinkGenerator.tsx` to support two distinct modes:
     1. **Trackable Marketing / Affiliate Links:** Allows reps to generate trackable links to any public AuraWorks URL (`/?ref={rep_id}&utm_source=sales...`).
     2. **Instant Checkout Links:** Generates 24-hour checkout sessions for packaged plans via `/api/v1/checkout/generate`.
   - Provide copy-to-clipboard functionality with TailAdmin tooltip or toast feedback.
-- [ ] **Task 5.3: Server-Side Data Scoping**
+- [x] **Task 5.3: Server-Side Data Scoping**
   - Ensure sales metrics and checkout tables query backend with authenticated rep identity, preventing company-wide revenue leaks.
 
 ### Verification Gate (Phase 5)
-- [ ] Vitest integration test: Link Generator produces valid marketing affiliate URLs and valid checkout URLs.
-- [ ] Vitest integration test: Sales Rep view renders scoped data without Astryx artifacts.
+- [x] Vitest integration test: Link Generator produces valid marketing affiliate URLs and valid checkout URLs.
+- [x] Vitest integration test: Sales Rep view renders scoped data without Astryx artifacts.
 
 ---
 

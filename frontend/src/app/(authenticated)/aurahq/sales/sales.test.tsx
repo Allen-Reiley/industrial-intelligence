@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { SWRConfig } from 'swr';
 import SalesPortalPage from './page';
 
 jest.mock('@/lib/auth-client', () => ({
@@ -25,10 +26,20 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
-describe('Sales Portal V2 Component Tests', () => {
+const renderWithSWR = (ui: React.ReactElement) => {
+  return render(
+    <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>
+      {ui}
+    </SWRConfig>
+  );
+};
+
+describe('Sales Portal V2 Component & Integration Tests', () => {
+  let mockFetch: jest.Mock;
+
   beforeEach(() => {
     jest.clearAllMocks();
-    global.fetch = jest.fn().mockImplementation((url) => {
+    mockFetch = jest.fn().mockImplementation((url: string, options?: any) => {
       if (url.includes('/api/v1/sales/metrics')) {
         return Promise.resolve({
           ok: true,
@@ -44,6 +55,7 @@ describe('Sales Portal V2 Component Tests', () => {
           }),
         });
       }
+
       if (url.includes('/api/v1/sales/checkouts')) {
         return Promise.resolve({
           ok: true,
@@ -55,15 +67,18 @@ describe('Sales Portal V2 Component Tests', () => {
               sales_rep_id: 'sales_rep_1',
               status: 'paid',
               expires_at: new Date(Date.now() + 10 * 3600 * 1000).toISOString(),
+              created_at: new Date(Date.now() - 3600 * 1000).toISOString(),
               amount: 1850000,
               amount_zar: 18500,
               plan: 'category-leader',
               business_name: 'Transnet Engineering',
               contact_email: 'procurement@transnet.co.za',
+              is_expired: false,
             },
           ],
         });
       }
+
       if (url.includes('/api/v1/checkout/generate')) {
         return Promise.resolve({
           ok: true,
@@ -79,28 +94,32 @@ describe('Sales Portal V2 Component Tests', () => {
           }),
         });
       }
+
       return Promise.resolve({
         ok: true,
         json: async () => ({}),
       });
     });
+
+    global.fetch = mockFetch;
   });
 
-  test('renders KPI cards, link generator form, and polling feed', async () => {
-    render(<SalesPortalPage />);
+  test('renders Sales Portal KPI cards, link generator form, and polling feed', async () => {
+    renderWithSWR(<SalesPortalPage />);
 
-    expect(screen.getByText('Sales Portal')).toBeInTheDocument();
-    expect(screen.getByText(/Generate Dynamic 24-Hour Checkout Link/i)).toBeInTheDocument();
+    expect(screen.getAllByText('Sales Portal').length).toBeGreaterThan(0);
+    expect(screen.getByText(/Dynamic Link Generator/i)).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText('Transnet Engineering')).toBeInTheDocument();
       expect(screen.getByText('R92,500')).toBeInTheDocument();
       expect(screen.getByText('41.7%')).toBeInTheDocument();
+      expect(screen.getByText('Payment Confirmed')).toBeInTheDocument();
     });
   });
 
-  test('generating a checkout link displays the copyable URL card', async () => {
-    render(<SalesPortalPage />);
+  test('generating a checkout link sends POST to /api/v1/checkout/generate and displays copyable URL card', async () => {
+    renderWithSWR(<SalesPortalPage />);
 
     const nameInput = screen.getByPlaceholderText(/e\.g\. Rand Mining Technologies/i);
     const emailInput = screen.getByPlaceholderText(/director@miningtech\.co\.za/i);
@@ -112,8 +131,57 @@ describe('Sales Portal V2 Component Tests', () => {
     fireEvent.click(generateBtn);
 
     await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/checkout/generate'),
+        expect.objectContaining({
+          method: 'POST',
+          body: expect.stringContaining('"business_name":"Anglo American"'),
+        })
+      );
       expect(screen.getByText(/Active Checkout Link for Anglo American/i)).toBeInTheDocument();
       expect(screen.getByDisplayValue(/new-session-uuid/i)).toBeInTheDocument();
+    });
+  });
+
+  test('dual-mode link generator switches to Marketing Affiliate mode and produces trackable URL', async () => {
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: jest.fn().mockResolvedValue(undefined),
+      },
+    });
+
+    renderWithSWR(<SalesPortalPage />);
+
+    // Switch to Marketing Affiliate mode
+    const affiliateTab = screen.getByRole('button', { name: /Marketing Affiliate/i });
+    fireEvent.click(affiliateTab);
+
+    expect(screen.getByText(/Live Trackable Link Preview/i)).toBeInTheDocument();
+    expect(screen.getByDisplayValue(/ref=sales_rep_1/i)).toBeInTheDocument();
+    expect(screen.getByDisplayValue(/utm_source=sales/i)).toBeInTheDocument();
+    expect(screen.getByDisplayValue(/utm_campaign=outreach/i)).toBeInTheDocument();
+
+    // Copy affiliate link
+    const copyBtn = screen.getByRole('button', { name: /Copy Link/i });
+    fireEvent.click(copyBtn);
+
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+      expect.stringContaining('ref=sales_rep_1')
+    );
+  });
+
+  test('scopes checkout and metrics queries with authenticated sales_rep_id', async () => {
+    renderWithSWR(<SalesPortalPage />);
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/sales/checkouts?sales_rep_id=sales_rep_1'),
+        expect.anything()
+      );
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/sales/metrics?sales_rep_id=sales_rep_1'),
+        expect.anything()
+      );
     });
   });
 });

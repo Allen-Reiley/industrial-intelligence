@@ -3,34 +3,31 @@
 
 import React, { useState } from "react";
 import useSWR from "swr";
-import Link from "next/link";
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import LinkGenerator from "@/components/LinkGenerator";
-import { 
-  Building2, 
-  TrendingUp, 
-  Link as LinkIcon, 
-  CheckCircle2, 
-  Clock, 
-  AlertCircle, 
-  Copy, 
-  Check, 
-  Plus, 
-  Loader2, 
-  DollarSign, 
-  ShieldCheck, 
-  Sparkles, 
-  LogOut,
+import {
+  Link as LinkIcon,
+  CheckCircle2,
+  Clock,
+  Copy,
+  Check,
+  Loader2,
+  DollarSign,
   ExternalLink,
-  Users
+  TrendingUp,
 } from "lucide-react";
-import { useSession, signOut } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
-import posthog from "posthog-js";
+import { useSession } from "@/lib/auth-client";
+
+import Badge from "@/components/ui/badge/Badge";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const isPostHogConfigured = Boolean(
-  process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN && process.env.NEXT_PUBLIC_POSTHOG_HOST,
-);
 const cleanApiBase = API_BASE.replace(/\/$/, "");
 
 const fetcher = async (url: string) => {
@@ -41,7 +38,7 @@ const fetcher = async (url: string) => {
   return res.json();
 };
 
-interface CheckoutSessionItem {
+export interface CheckoutSessionItem {
   session_id: string;
   client_id: string;
   sales_rep_id: string;
@@ -57,7 +54,7 @@ interface CheckoutSessionItem {
   is_expired: boolean;
 }
 
-interface SalesMetrics {
+export interface SalesMetrics {
   sales_rep_id: string;
   sales_rep_name: string;
   total_links_generated: number;
@@ -68,122 +65,34 @@ interface SalesMetrics {
   active_pipeline_zar: number;
 }
 
-const PLAN_OPTIONS = [
-  { id: "growth-foundation", name: "Growth Foundation", priceZar: 10000, cents: 1000000 },
-  { id: "category-leader", name: "Industrial Category Leader", priceZar: 18500, cents: 1850000 },
-  { id: "enterprise-corridor", name: "Enterprise SADC Corridor", priceZar: 32000, cents: 3200000 },
-  { id: "custom", name: "Custom Enterprise Plan", priceZar: 15000, cents: 1500000 },
-];
-
 export default function SalesPortal() {
-  const router = useRouter();
   const { data: session } = useSession();
-  
-  const userRole = session?.user?.role;
-  const userId = session?.user?.id;
-  const urlSuffix = userRole !== 'admin' && userId ? `?sales_rep_id=${userId}` : '';
 
-  // 1. SWR Real-Time Polling (Every 5 seconds)
-  const { 
-    data: checkouts, 
-    mutate: mutateCheckouts, 
-    isLoading: loadingCheckouts 
+  const userRole = (session?.user as any)?.role;
+  const userId = session?.user?.id;
+  const urlSuffix = userRole !== "admin" && userId ? `?sales_rep_id=${userId}` : "";
+
+  // SWR Real-Time Polling (Every 5 seconds)
+  const {
+    data: checkouts,
+    mutate: mutateCheckouts,
+    isLoading: loadingCheckouts,
   } = useSWR<CheckoutSessionItem[]>(
     `${cleanApiBase}/api/v1/sales/checkouts${urlSuffix}`,
     fetcher,
     { refreshInterval: 5000 }
   );
 
-  const { 
-    data: metrics, 
-    mutate: mutateMetrics 
+  const {
+    data: metrics,
+    mutate: mutateMetrics,
   } = useSWR<SalesMetrics>(
     `${cleanApiBase}/api/v1/sales/metrics${urlSuffix}`,
     fetcher,
     { refreshInterval: 5000 }
   );
 
-  // Form states
-  const [businessName, setBusinessName] = useState("");
-  const [contactEmail, setContactEmail] = useState("");
-  const [contactPhone, setContactPhone] = useState("");
-  const [selectedPlan, setSelectedPlan] = useState("growth-foundation");
-  const [priceInput, setPriceInput] = useState("10000");
-  const [domain, setDomain] = useState("");
-  const [generating, setGenerating] = useState(false);
-  const [formError, setFormError] = useState("");
-  const [generatedLink, setGeneratedLink] = useState<{ url: string; sessionId: string; businessName: string } | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-
-  const handlePlanChange = (planId: string) => {
-    setSelectedPlan(planId);
-    const found = PLAN_OPTIONS.find((p) => p.id === planId);
-    if (found) {
-      setPriceInput(found.priceZar.toString());
-    }
-  };
-
-  const handleGenerateCheckout = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError("");
-    setGenerating(true);
-
-    const parsedPrice = parseFloat(priceInput);
-    if (isNaN(parsedPrice) || parsedPrice <= 0) {
-      setFormError("Please enter a valid monthly price in ZAR.");
-      setGenerating(false);
-      return;
-    }
-
-    try {
-      const res = await fetch(`${cleanApiBase}/api/v1/checkout/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          business_name: businessName,
-          contact_email: contactEmail,
-          contact_phone: contactPhone || null,
-          selected_plan: selectedPlan,
-          custom_pricing: Math.round(parsedPrice * 100), // in cents
-          domain: domain || null,
-        }),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.detail || "Failed to generate checkout session.");
-      }
-
-      const data = await res.json();
-      const fullCheckoutUrl = `${window.location.origin}${data.checkout_url}`;
-      setGeneratedLink({
-        url: fullCheckoutUrl,
-        sessionId: data.session_id,
-        businessName: data.business_name,
-      });
-      if (isPostHogConfigured) {
-        posthog.capture("checkout_link_generated", {
-          plan: selectedPlan,
-          monthly_price_zar: parsedPrice,
-        });
-      }
-
-      // Clear Form
-      setBusinessName("");
-      setContactEmail("");
-      setContactPhone("");
-      setDomain("");
-
-      // Trigger immediate SWR refresh
-      mutateCheckouts();
-      mutateMetrics();
-    } catch (err: any) {
-      setFormError(err.message || "An unexpected error occurred.");
-    } finally {
-      setGenerating(false);
-    }
-  };
 
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -191,200 +100,263 @@ export default function SalesPortal() {
     setTimeout(() => setCopiedId(null), 2500);
   };
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-    } finally {
-      if (isPostHogConfigured) {
-        posthog.reset();
-      }
-      router.push("/login");
-    }
-  };
-
-
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4">
+      <PageBreadcrumb pageTitle="Sales Portal" />
+
+      <main className="mx-auto max-w-7xl w-full space-y-6">
         {/* KPI Metrics Banner */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-white/3 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500 dark:text-gray-400">Links Generated</span>
-              <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
-                <LinkIcon className="w-4 h-4" />
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 md:gap-6">
+          {/* Metric 1 */}
+          <div className="rounded-2xl border border-gray-200 bg-white p-5 md:p-6 dark:border-gray-800 dark:bg-white/3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-500 dark:bg-brand-500/15 dark:text-brand-400">
+              <LinkIcon className="h-6 w-6" />
+            </div>
+            <div className="mt-5 flex items-end justify-between">
+              <div>
+                <span className="text-theme-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                  Links Generated
+                </span>
+                <h4 className="mt-2 text-title-sm font-bold text-gray-800 dark:text-white/90">
+                  {metrics?.total_links_generated ?? 0}
+                </h4>
               </div>
+              <Badge size="sm" color="primary">Active Attribution</Badge>
             </div>
-            <div className="text-3xl font-extrabold text-gray-800 dark:text-white/90">
-              {metrics?.total_links_generated ?? 0}
-            </div>
-            <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 block">Active attribution tokens</span>
           </div>
 
-          <div className="bg-white dark:bg-white/3 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500 dark:text-gray-400">Paid Conversions</span>
-              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
-                <CheckCircle2 className="w-4 h-4" />
+          {/* Metric 2 */}
+          <div className="rounded-2xl border border-gray-200 bg-white p-5 md:p-6 dark:border-gray-800 dark:bg-white/3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500">
+              <CheckCircle2 className="h-6 w-6" />
+            </div>
+            <div className="mt-5 flex items-end justify-between">
+              <div>
+                <span className="text-theme-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                  Paid Conversions
+                </span>
+                <h4 className="mt-2 text-title-sm font-bold text-gray-800 dark:text-white/90">
+                  {metrics?.successful_conversions ?? 0}
+                </h4>
               </div>
+              <Badge size="sm" color="success">Paid Closed</Badge>
             </div>
-            <div className="text-3xl font-extrabold text-emerald-400">
-              {metrics?.successful_conversions ?? 0}
-            </div>
-            <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 block">Verified client checkouts</span>
           </div>
 
-          <div className="bg-white dark:bg-white/3 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500 dark:text-gray-400">Conversion Rate</span>
-              <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400">
-                <TrendingUp className="w-4 h-4" />
+          {/* Metric 3 */}
+          <div className="rounded-2xl border border-gray-200 bg-white p-5 md:p-6 dark:border-gray-800 dark:bg-white/3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-500 dark:bg-brand-500/15 dark:text-brand-400">
+              <TrendingUp className="h-6 w-6" />
+            </div>
+            <div className="mt-5 flex items-end justify-between">
+              <div>
+                <span className="text-theme-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                  Conversion Rate
+                </span>
+                <h4 className="mt-2 text-title-sm font-bold text-gray-800 dark:text-white/90">
+                  {metrics?.conversion_rate_percentage ?? 0}%
+                </h4>
               </div>
+              <Badge size="sm" color="info">Gen vs Closed</Badge>
             </div>
-            <div className="text-3xl font-extrabold text-gray-800 dark:text-white/90">
-              {metrics?.conversion_rate_percentage ?? 0}%
-            </div>
-            <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 block">Generated vs Closed</span>
           </div>
 
-          <div className="bg-white dark:bg-white/3 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500 dark:text-gray-400">Active Pipeline</span>
-              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
-                <DollarSign className="w-4 h-4" />
+          {/* Metric 4 */}
+          <div className="rounded-2xl border border-gray-200 bg-white p-5 md:p-6 dark:border-gray-800 dark:bg-white/3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">
+              <DollarSign className="h-6 w-6" />
+            </div>
+            <div className="mt-5 flex items-end justify-between">
+              <div>
+                <span className="text-theme-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                  Active Pipeline
+                </span>
+                <h4 className="mt-2 text-title-sm font-bold text-gray-800 dark:text-white/90">
+                  R{(metrics?.active_pipeline_zar ?? 0).toLocaleString()}
+                </h4>
               </div>
+              <Badge size="sm" color="warning">Attributed Monthly</Badge>
             </div>
-            <div className="text-3xl font-extrabold text-gray-800 dark:text-white/90">
-              R{(metrics?.active_pipeline_zar ?? 0).toLocaleString()}
-            </div>
-            <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 block">Attributed monthly revenue</span>
           </div>
         </section>
 
-        {/* Dynamic Link Generator Form */}
-        <LinkGenerator onSuccess={() => { mutateCheckouts(); mutateMetrics(); }} />
+        {/* Dynamic Dual-Mode Link Generator Form */}
+        <LinkGenerator
+          onSuccess={() => {
+            mutateCheckouts();
+            mutateMetrics();
+          }}
+        />
 
         {/* Live Attribution Feed (Polling every 5 seconds) */}
-        <section className="bg-white dark:bg-white/3 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 backdrop-blur-xl space-y-6">
-          <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 pb-4">
+        <section className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-200 pb-4 dark:border-gray-800">
             <div>
-              <h2 className="text-lg font-bold text-gray-800 dark:text-white/90 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-indigo-400" /> Active Checkout Links Feed
-              </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              <h3 className="text-base font-semibold text-gray-800 dark:text-white/90 flex items-center gap-2">
+                <Clock className="h-5 w-5 text-brand-500 dark:text-brand-400" />
+                Active Checkout Links Feed
+              </h3>
+              <p className="text-theme-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 Real-time attribution telemetry polled every 5 seconds. Automatically updates on payment confirmation.
               </p>
             </div>
             <div className="flex items-center gap-2">
               <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-success-500"></span>
               </span>
-              <span className="text-[10px] font-mono text-gray-500 dark:text-gray-400 uppercase">Live Polling (5s)</span>
+              <span className="font-mono text-theme-xs text-gray-500 dark:text-gray-400 uppercase">
+                Live Polling (5s)
+              </span>
             </div>
           </div>
 
-          <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden bg-white dark:bg-gray-900/40">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-gray-50 dark:bg-white/3/80 text-gray-500 dark:text-gray-400 text-[10px] uppercase font-bold tracking-wider border-b border-gray-200 dark:border-gray-800">
-                <tr>
-                  <th className="px-6 py-3.5">Business & Contact</th>
-                  <th className="px-6 py-3.5">Plan Tier</th>
-                  <th className="px-6 py-3.5">Price</th>
-                  <th className="px-6 py-3.5">Status</th>
-                  <th className="px-6 py-3.5">Created</th>
-                  <th className="px-6 py-3.5 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-850">
-                {checkouts && checkouts.length > 0 ? (
-                  checkouts.map((item, idx) => {
-                    const sId = item.session_id || (item as any).id || `sess-${idx}`;
-                    const fullUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/checkout/${sId}`;
-                    return (
-                      <tr key={sId} className="hover:bg-white dark:bg-white/3 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="font-semibold text-gray-800 dark:text-white/90">{item.business_name}</div>
-                          <div className="text-[10px] text-gray-500 dark:text-gray-400 font-mono">{item.contact_email}</div>
-                          {item.contact_phone && (
-                            <div className="text-[10px] text-gray-400 dark:text-gray-500 font-mono">{item.contact_phone}</div>
-                          )}
-                        </td>
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
+            <div className="max-w-full overflow-x-auto">
+              <Table>
+                <TableHeader className="border-b border-gray-100 dark:border-white/5">
+                  <TableRow>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
+                    >
+                      Business & Contact
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
+                    >
+                      Plan Tier
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
+                    >
+                      Monthly Price
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
+                    >
+                      Status
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
+                    >
+                      Created
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 text-end text-theme-xs font-medium text-gray-500 dark:text-gray-400"
+                    >
+                      Actions
+                    </TableCell>
+                  </TableRow>
+                </TableHeader>
 
-                        <td className="px-6 py-4 capitalize text-gray-600 dark:text-gray-400 font-medium">
-                          {item.plan.replace("-", " ")}
-                        </td>
+                <TableBody className="divide-y divide-gray-100 dark:divide-white/5">
+                  {checkouts && checkouts.length > 0 ? (
+                    checkouts.map((item, idx) => {
+                      const sId = item.session_id || (item as any).id || `sess-${idx}`;
+                      const fullUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/checkout/${sId}`;
+                      return (
+                        <TableRow key={sId}>
+                          <TableCell className="px-5 py-4 text-start sm:px-6">
+                            <div className="font-semibold text-gray-800 dark:text-white/90">
+                              {item.business_name}
+                            </div>
+                            <div className="font-mono text-theme-xs text-gray-500 dark:text-gray-400">
+                              {item.contact_email}
+                            </div>
+                            {item.contact_phone && (
+                              <div className="font-mono text-theme-xs text-gray-400 dark:text-gray-500">
+                                {item.contact_phone}
+                              </div>
+                            )}
+                          </TableCell>
 
-                        <td className="px-6 py-4 font-bold text-gray-700 dark:text-gray-300">
-                          R{(item.amount_zar ?? (item.amount ? item.amount / 100 : 0)).toLocaleString()}/mo
-                        </td>
+                          <TableCell className="px-5 py-4 text-start capitalize text-gray-700 dark:text-gray-300 font-medium">
+                            {item.plan.replace(/-/g, " ")}
+                          </TableCell>
 
-                        <td className="px-6 py-4">
-                          {item.status === "paid" ? (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold uppercase tracking-wider animate-pulse">
-                              <CheckCircle2 className="w-3 h-3" /> Payment Confirmed
-                            </span>
-                          ) : item.is_expired || item.status === "expired" ? (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-400 dark:text-gray-500 text-[10px] font-bold uppercase tracking-wider">
-                              <Clock className="w-3 h-3" /> Expired (24h)
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-bold uppercase tracking-wider">
-                              <Clock className="w-3 h-3" /> Active Window
-                            </span>
-                          )}
-                        </td>
+                          <TableCell className="px-5 py-4 text-start font-mono text-theme-sm font-semibold text-gray-800 dark:text-white/90">
+                            R{(item.amount_zar ?? (item.amount ? item.amount / 100 : 0)).toLocaleString()}/mo
+                          </TableCell>
 
-                        <td className="px-6 py-4 text-gray-400 dark:text-gray-500 text-[10px] font-mono">
-                          {new Date(item.created_at).toLocaleString()}
-                        </td>
+                          <TableCell className="px-5 py-4 text-start">
+                            {item.status === "paid" ? (
+                              <Badge size="sm" color="success">
+                                <CheckCircle2 className="h-3 w-3" /> Payment Confirmed
+                              </Badge>
+                            ) : item.is_expired || item.status === "expired" ? (
+                              <Badge size="sm" color="error">
+                                <Clock className="h-3 w-3" /> Expired (24h)
+                              </Badge>
+                            ) : (
+                              <Badge size="sm" color="warning">
+                                <Clock className="h-3 w-3" /> Active Window
+                              </Badge>
+                            )}
+                          </TableCell>
 
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => copyToClipboard(fullUrl, item.session_id)}
-                              title="Copy Checkout Link"
-                              className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/3 hover:bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 transition-colors cursor-pointer"
-                            >
-                              {copiedId === item.session_id ? (
-                                <Check className="w-3.5 h-3.5 text-emerald-400" />
-                              ) : (
-                                <Copy className="w-3.5 h-3.5" />
-                              )}
-                            </button>
-                            <a
-                              href={fullUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              title="Open Checkout Link"
-                              className="p-1.5 rounded-lg bg-gray-50 dark:bg-white/3 hover:bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 transition-colors"
-                            >
-                              <ExternalLink className="w-3.5 h-3.5" />
-                            </a>
+                          <TableCell className="px-5 py-4 text-start font-mono text-theme-xs text-gray-500 dark:text-gray-400">
+                            {new Date(item.created_at).toLocaleString()}
+                          </TableCell>
+
+                          <TableCell className="px-5 py-4 text-end">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => copyToClipboard(fullUrl, item.session_id)}
+                                title="Copy Checkout Link"
+                                aria-label="Copy Checkout Link"
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-white cursor-pointer"
+                              >
+                                {copiedId === item.session_id ? (
+                                  <Check className="h-3.5 w-3.5 text-success-500" />
+                                ) : (
+                                  <Copy className="h-3.5 w-3.5" />
+                                )}
+                              </button>
+                              <a
+                                href={fullUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Open Checkout Link"
+                                aria-label="Open Checkout Link"
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-white"
+                              >
+                                <ExternalLink className="h-3.5 w-3.5" />
+                              </a>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={6}
+                        className="px-5 py-12 text-center text-theme-sm text-gray-500 dark:text-gray-400"
+                      >
+                        {loadingCheckouts ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin text-brand-500" />
+                            <span>Loading active sales links...</span>
                           </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-gray-400 dark:text-gray-500 text-xs">
-                      {loadingCheckouts ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
-                          <span>Loading active sales links...</span>
-                        </div>
-                      ) : (
-                        "No checkout sessions generated yet. Use the form above to create your first link."
-                      )}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                        ) : (
+                          "No checkout sessions generated yet. Use the form above to create your first link."
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </section>
-      </div>
+      </main>
     </div>
   );
 }
