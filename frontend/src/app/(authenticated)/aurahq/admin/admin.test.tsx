@@ -19,16 +19,62 @@ jest.mock('@/lib/auth-client', () => ({
 }));
 
 const mockPush = jest.fn();
+const mockReplace = jest.fn();
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
+    replace: mockReplace,
   }),
 }));
 
-describe('Admin Console V2 Component Tests', () => {
+describe('Admin Console V2 Component & Integration Tests', () => {
+  let mockFetch: jest.Mock;
+
   beforeEach(() => {
     jest.clearAllMocks();
-    global.fetch = jest.fn().mockImplementation((url) => {
+    mockFetch = jest.fn().mockImplementation((url: string, options?: any) => {
+      if (url.includes('/api/v1/admin/users') && options?.method === 'POST') {
+        const body = JSON.parse(options.body);
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            status: 'success',
+            user: {
+              id: 'rep_new',
+              name: body.name,
+              email: body.email,
+              role: body.role,
+              job_title: body.job_title,
+              permissions: body.permissions,
+              is_active: true,
+              total_links_generated: 0,
+              paid_conversions: 0,
+            },
+          }),
+        });
+      }
+
+      if (url.includes('/api/v1/admin/users/') && options?.method === 'PATCH') {
+        const body = JSON.parse(options.body);
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            status: 'success',
+            user: {
+              id: 'rep_1',
+              ...body,
+            },
+          }),
+        });
+      }
+
+      if (url.includes('/api/v1/admin/users/') && options?.method === 'DELETE') {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ status: 'success' }),
+        });
+      }
+
       if (url.includes('/api/v1/admin/users')) {
         return Promise.resolve({
           ok: true,
@@ -38,6 +84,8 @@ describe('Admin Console V2 Component Tests', () => {
               name: 'Sarah Connor',
               email: 'sarah@auraworks.co.za',
               role: 'sales',
+              job_title: 'Senior Account Executive',
+              permissions: ['analytics', 'sales'],
               is_active: true,
               total_links_generated: 15,
               paid_conversions: 6,
@@ -46,6 +94,7 @@ describe('Admin Console V2 Component Tests', () => {
           ],
         });
       }
+
       if (url.includes('/api/v1/admin/overview-metrics')) {
         return Promise.resolve({
           ok: true,
@@ -62,6 +111,7 @@ describe('Admin Console V2 Component Tests', () => {
           }),
         });
       }
+
       if (url.includes('/api/v1/scripts')) {
         return Promise.resolve({
           ok: true,
@@ -77,25 +127,33 @@ describe('Admin Console V2 Component Tests', () => {
           ],
         });
       }
+
       return Promise.resolve({
         ok: true,
         json: async () => ({}),
       });
     });
+
+    global.fetch = mockFetch;
   });
 
-  test('renders Astryx Admin console with tabs: Personnel, Global Overview, Script Vault', async () => {
+  test('renders Admin console and loads Global Overview metrics', async () => {
     render(<AdminDashboardPage />);
 
-    expect(screen.getByText('Admin Command')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Personnel Management/i })).toBeInTheDocument();
+    expect(screen.getAllByText('Admin Command').length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: /Global Overview/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Personnel Management/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Script Vault/i })).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText('R250,000')).toBeInTheDocument();
       expect(screen.getByText('40%')).toBeInTheDocument();
+      expect(screen.getByText('18')).toBeInTheDocument();
     });
+  });
+
+  test('loads real personnel data in TailAdmin table', async () => {
+    render(<AdminDashboardPage />);
 
     // Switch to Personnel Management tab
     const personnelTab = screen.getByRole('button', { name: /Personnel Management/i });
@@ -104,6 +162,116 @@ describe('Admin Console V2 Component Tests', () => {
     await waitFor(() => {
       expect(screen.getByText('Sarah Connor')).toBeInTheDocument();
       expect(screen.getByText('sarah@auraworks.co.za')).toBeInTheDocument();
+      expect(screen.getByText('Senior Account Executive')).toBeInTheDocument();
+      expect(screen.getByText('Active')).toBeInTheDocument();
+    });
+  });
+
+  test('submits user registration modal and calls POST /api/v1/admin/users', async () => {
+    render(<AdminDashboardPage />);
+
+    const personnelTab = screen.getByRole('button', { name: /Personnel Management/i });
+    fireEvent.click(personnelTab);
+
+    await waitFor(() => {
+      expect(screen.getByText('Sarah Connor')).toBeInTheDocument();
+    });
+
+    // Open Register Modal
+    const registerBtn = screen.getByRole('button', { name: /Register User/i });
+    fireEvent.click(registerBtn);
+
+    expect(screen.getByText('Register New Personnel')).toBeInTheDocument();
+
+    // Fill form fields
+    fireEvent.change(screen.getByPlaceholderText(/e\.g\. Jane Doe/i), {
+      target: { value: 'John Matrix' },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/jane@auraworks\.co\.za/i), {
+      target: { value: 'john@auraworks.co.za' },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Minimum 6 characters/i), {
+      target: { value: 'SecurePass123!' },
+    });
+
+    // Submit form
+    const submitBtn = screen.getByRole('button', { name: /Register Personnel/i });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/admin/users'),
+        expect.objectContaining({
+          method: 'POST',
+          body: expect.stringContaining('"name":"John Matrix"'),
+        })
+      );
+    });
+  });
+
+  test('permission toggles dispatch PATCH /api/v1/admin/users/{id}/permissions', async () => {
+    render(<AdminDashboardPage />);
+
+    const personnelTab = screen.getByRole('button', { name: /Personnel Management/i });
+    fireEvent.click(personnelTab);
+
+    await waitFor(() => {
+      expect(screen.getByText('Sarah Connor')).toBeInTheDocument();
+    });
+
+    // Find Calendar permission checkbox for Sarah Connor
+    const calendarCheckbox = screen.getByLabelText(/Calendar permission for Sarah Connor/i);
+    expect(calendarCheckbox).not.toBeChecked();
+
+    fireEvent.click(calendarCheckbox);
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/admin/users/rep_1/permissions'),
+        expect.objectContaining({
+          method: 'PATCH',
+          body: expect.stringContaining('"permissions":["analytics","sales","calendar"]'),
+        })
+      );
+    });
+  });
+
+  test('role and status changes dispatch PATCH /api/v1/admin/users/{id}', async () => {
+    render(<AdminDashboardPage />);
+
+    const personnelTab = screen.getByRole('button', { name: /Personnel Management/i });
+    fireEvent.click(personnelTab);
+
+    await waitFor(() => {
+      expect(screen.getByText('Sarah Connor')).toBeInTheDocument();
+    });
+
+    // Change role select
+    const roleSelect = screen.getByLabelText(/Role for Sarah Connor/i);
+    fireEvent.change(roleSelect, { target: { value: 'admin' } });
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/admin/users/rep_1'),
+        expect.objectContaining({
+          method: 'PATCH',
+          body: JSON.stringify({ role: 'admin' }),
+        })
+      );
+    });
+
+    // Toggle active status
+    const statusBtn = screen.getByTitle(/Click to mark inactive/i);
+    fireEvent.click(statusBtn);
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/admin/users/rep_1'),
+        expect.objectContaining({
+          method: 'PATCH',
+          body: JSON.stringify({ is_active: false }),
+        })
+      );
     });
   });
 
@@ -124,7 +292,7 @@ describe('Admin Console V2 Component Tests', () => {
       expect(screen.getByText(/cdn\.auraworks\.co\.za\/aura\.js/i)).toBeInTheDocument();
     });
 
-    const copyBtn = screen.getByRole('button', { name: /Copy Script/i });
+    const copyBtn = screen.getByRole('button', { name: /Copy Script Tag/i });
     fireEvent.click(copyBtn);
 
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(

@@ -135,26 +135,26 @@
 ## Phase 4: Admin Console (`/aurahq/admin`) & Personnel Management
 **Goal:** Completely rewrite `/aurahq/admin` using TailAdmin components and wire to the new backend personnel APIs.
 
-- [ ] **Task 4.1: Eradicate Astryx UI & Rebuild with TailAdmin Components**
+- [x] **Task 4.1: Eradicate Astryx UI & Rebuild with TailAdmin Components**
   - Remove all legacy Astryx classes (`divide-zinc-800`, `bg-emerald-500/10`, `text-emerald-400`).
   - Rebuild personnel directory table using `frontend/os_dashboard_source/src/components/tables/basic-tables/BasicTableOne.tsx`.
   - Fix table header and empty state column alignment (`colSpan={7}`).
   - Use TailAdmin `Badge` for roles and active status.
-- [ ] **Task 4.2: Wire User Registration Modal**
+- [x] **Task 4.2: Wire User Registration Modal**
   - Rebuild user registration form inside a TailAdmin `Modal` component.
   - Wire submission to `POST /api/v1/admin/users` (built in Phase 0).
   - Handle loading spinners and inline error/success alerts without native browser popups.
-- [ ] **Task 4.3: Wire Dynamic Permission Toggles**
+- [x] **Task 4.3: Wire Dynamic Permission Toggles**
   - Wire the permission checkboxes ("Analytics", "Sales", "Vault") to the user record.
   - Attach `onChange` handlers dispatching `PATCH /api/v1/admin/users/{user_id}/permissions`.
   - Implement optimistic UI updates with error rollback.
-- [ ] **Task 4.4: Wire Personnel Status & Role Management**
+- [x] **Task 4.4: Wire Personnel Status & Role Management**
   - Connect status toggles (`is_active`) and role changes to `PATCH /api/v1/admin/users/{user_id}`.
 
 ### Verification Gate (Phase 4)
-- [ ] Vitest integration test: Admin table loads real personnel data.
-- [ ] Vitest integration test: User creation modal successfully submits and adds a new user to the list.
-- [ ] Vitest integration test: Permission toggles fire PATCH network requests with correct payload.
+- [x] Vitest integration test: Admin table loads real personnel data.
+- [x] Vitest integration test: User creation modal successfully submits and adds a new user to the list.
+- [x] Vitest integration test: Permission toggles fire PATCH network requests with correct payload.
 
 ---
 
