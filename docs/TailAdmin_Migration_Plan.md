@@ -228,7 +228,7 @@
 ## Phase 8: Final Polish, E-Commerce Overview, & End-to-End Audit
 **Goal:** Replace raw template placeholders on root `/aurahq`, audit all table alignments, and run full test suites.
 
-- [ ] **Task 8.1: Root Overview (`/aurahq/`) Alignment**
+- [x] **Task 8.1: Root Overview (`/aurahq/`) Alignment**
   - Update page title and metadata (remove raw TailAdmin template title).
   - Replace raw dummy electronics/fashion demo with a unified AuraWorks overview dashboard, or route to `/aurahq/admin` / `/aurahq/sales`.
   - Fix table column alignment bug in `RecentOrders.tsx` (swap swapped Price/Category columns).
