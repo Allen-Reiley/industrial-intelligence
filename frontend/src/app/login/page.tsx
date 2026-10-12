@@ -6,6 +6,7 @@ import { signIn } from "@/lib/auth-client";
 import Image from "next/image";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
+import { ThemeProvider } from "@/context/ThemeContext";
 
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
@@ -33,6 +34,7 @@ function AuthForm() {
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  const wasLoggedOut = searchParams.get("logout") === "true";
   const redirectUrl = searchParams.get("from") || "/aurahq";
 
   const handleSocialSignIn = async (provider: "google" | "github" | "microsoft") => {
@@ -128,6 +130,15 @@ function AuthForm() {
             </div>
 
             {/* TailAdmin Alerts */}
+            {wasLoggedOut && !error && !infoMessage && (
+              <div className="mb-5">
+                <Alert
+                  variant="info"
+                  title="Signed Out"
+                  message="You have been signed out of your account."
+                />
+              </div>
+            )}
             {error && (
               <div className="mb-5">
                 <Alert
@@ -296,10 +307,22 @@ function AuthForm() {
                       )}
                     </Button>
                   </div>
+
+                  <div className="text-center pt-2">
+                    <p className="text-sm font-normal text-gray-700 dark:text-gray-400">
+                      Need a sales team account?{" "}
+                      <Link
+                        href="/signup"
+                        className="text-brand-500 font-medium hover:text-brand-600 dark:text-brand-400 cursor-pointer"
+                      >
+                        Sign Up
+                      </Link>
+                    </p>
+                  </div>
                 </div>
               </form>
 
-              {/* Administrative Provisioning Notice (replaces self-signup) */}
+              {/* Administrative Provisioning Notice */}
               <div className="mt-8 rounded-xl border border-gray-100 bg-gray-50/70 p-4 dark:border-gray-800 dark:bg-white/2">
                 <div className="flex items-start gap-3">
                   <div className="text-gray-400 dark:text-gray-500 mt-0.5">
@@ -313,7 +336,7 @@ function AuthForm() {
                       Organization Access Only
                     </h4>
                     <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                      AuraWorks accounts are provisioned exclusively by system administrators. Contact your team lead or operations administrator to request access.
+                      Sales accounts gain instant access to sales pipelines and telemetry. Administrative elevation is controlled by system governance.
                     </p>
                   </div>
                 </div>
@@ -360,14 +383,16 @@ function AuthForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-brand-500" />
-        </div>
-      }
-    >
-      <AuthForm />
-    </Suspense>
+    <ThemeProvider>
+      <Suspense
+        fallback={
+          <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-brand-500" />
+          </div>
+        }
+      >
+        <AuthForm />
+      </Suspense>
+    </ThemeProvider>
   );
 }

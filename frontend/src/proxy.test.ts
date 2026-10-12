@@ -80,6 +80,15 @@ describe('proxy.ts Middleware Routing & RBAC Tests', () => {
     expect(proxy(salesReq).headers.get('location')).toBe('http://localhost:3000/aurahq/sales');
   });
 
+  it('allows access to /login when logout=true even if auth cookies are still present', () => {
+    const req = createRequest('http://localhost:3000/login?logout=true', {
+      'better-auth.session_token': 'valid_token_123',
+      'user_role': 'sales',
+    });
+    const res = proxy(req);
+    expect(res.status).toBe(200); // Does NOT redirect to /aurahq/sales
+  });
+
   it('redirects legacy /admin and /dashboard routes to modern aurahq equivalents', () => {
     const adminReq = createRequest('http://localhost:3000/admin');
     expect(proxy(adminReq).headers.get('location')).toBe('http://localhost:3000/aurahq/admin');

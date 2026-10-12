@@ -13,6 +13,31 @@ import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { useSession, signOut } from "@/lib/auth-client";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const cleanApiBase = API_BASE.replace(/\/$/, "");
+
+const purgeAuthCookiesAndStorage = () => {
+  if (typeof document === "undefined") return;
+  const cookieNames = [
+    "better-auth.session_token",
+    "__Secure-better-auth.session_token",
+    "aurahq_auth",
+    "admin_access_token",
+    "user_role",
+  ];
+  cookieNames.forEach((name) => {
+    document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+    document.cookie = `${name}=; path=/; domain=.auraworks.co.za; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+  });
+  try {
+    localStorage.removeItem("admin_token");
+    localStorage.removeItem("better-auth.session_token");
+    sessionStorage.clear();
+  } catch {
+    // Ignore storage errors in non-browser envs
+  }
+};
+
 export default function UserDropdown() {
   const t = useTranslations("userDropdown");
   const locale = useLocale() as Locale;
@@ -56,15 +81,23 @@ export default function UserDropdown() {
 
   const handleSignOut = async () => {
     try {
+      if (typeof window !== "undefined" && typeof fetch !== "undefined") {
+        await fetch(`${cleanApiBase}/api/v1/auth/logout`, {
+          method: "POST",
+          credentials: "include",
+        }).catch(() => null);
+      }
       await signOut({
         fetchOptions: {
           onSuccess: () => {
-            window.location.href = "/login";
+            purgeAuthCookiesAndStorage();
+            window.location.href = "/login?logout=true";
           },
         },
-      });
-    } catch {
-      window.location.href = "/login";
+      }).catch(() => null);
+    } finally {
+      purgeAuthCookiesAndStorage();
+      window.location.href = "/login?logout=true";
     }
   };
 

@@ -45,8 +45,23 @@ export default function proxy(request: NextRequest) {
     }
   }
 
-  // Redirect authenticated users visiting /login directly to the appropriate workspace
+  // Handling /login
   if (url.pathname === '/login') {
+    if (url.searchParams.get('logout') === 'true') {
+      const response = NextResponse.next();
+      const authCookies = [
+        'better-auth.session_token',
+        '__Secure-better-auth.session_token',
+        'aurahq_auth',
+        'admin_access_token',
+        'user_role',
+      ];
+      authCookies.forEach((cookieName) => {
+        response.cookies.delete(cookieName);
+      });
+      return response;
+    }
+
     if (token) {
       url.pathname = role === 'admin' ? '/aurahq/admin' : '/aurahq/sales';
       return NextResponse.redirect(url);

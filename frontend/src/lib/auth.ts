@@ -20,7 +20,7 @@ export const auth = betterAuth({
   ],
   advanced: {
     crossSubDomainCookies: {
-      enabled: true,
+      enabled: process.env.NODE_ENV === "production" && Boolean(process.env.BETTER_AUTH_URL?.includes("auraworks.co.za")),
       domain: ".auraworks.co.za"
     }
   },
@@ -47,12 +47,12 @@ export const auth = betterAuth({
       role: {
         type: "string",
         required: false,
-        defaultValue: "unassigned",
+        defaultValue: "sales",
       },
       is_active: {
         type: "boolean",
         required: false,
-        defaultValue: false,
+        defaultValue: true,
       },
       job_title: {
         type: "string",
@@ -77,6 +77,13 @@ export const auth = betterAuth({
               },
             };
           }
+          return {
+            data: {
+              ...user,
+              role: user.role && user.role !== "unassigned" ? user.role : "sales",
+              is_active: user.is_active !== undefined ? user.is_active : true,
+            },
+          };
         },
       },
     },

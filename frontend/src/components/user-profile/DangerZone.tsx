@@ -10,6 +10,28 @@ import { AlertIcon } from "@/icons";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const cleanApiBase = API_BASE.replace(/\/$/, "");
 
+const purgeAuthCookiesAndStorage = () => {
+  if (typeof document === "undefined") return;
+  const cookieNames = [
+    "better-auth.session_token",
+    "__Secure-better-auth.session_token",
+    "aurahq_auth",
+    "admin_access_token",
+    "user_role",
+  ];
+  cookieNames.forEach((name) => {
+    document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+    document.cookie = `${name}=; path=/; domain=.auraworks.co.za; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+  });
+  try {
+    localStorage.removeItem("admin_token");
+    localStorage.removeItem("better-auth.session_token");
+    sessionStorage.clear();
+  } catch {
+    // Ignore storage errors in non-browser envs
+  }
+};
+
 export default function DangerZone() {
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -19,22 +41,25 @@ export default function DangerZone() {
   const handleLogoutAllDevices = async () => {
     setIsLoggingOut(true);
     try {
-      await fetch(`${cleanApiBase}/api/v1/auth/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
+      if (typeof window !== "undefined" && typeof fetch !== "undefined") {
+        await fetch(`${cleanApiBase}/api/v1/auth/logout`, {
+          method: "POST",
+          credentials: "include",
+        }).catch(() => null);
+      }
       await signOut({
         fetchOptions: {
           onSuccess: () => {
+            purgeAuthCookiesAndStorage();
             router.push("/login");
+            window.location.href = "/login?logout=true";
           },
         },
-      });
-      router.push("/login");
-    } catch (err) {
-      console.error("Logout error:", err);
-      router.push("/login");
+      }).catch(() => null);
     } finally {
+      purgeAuthCookiesAndStorage();
+      router.push("/login");
+      window.location.href = "/login?logout=true";
       setIsLoggingOut(false);
     }
   };

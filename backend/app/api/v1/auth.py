@@ -131,7 +131,8 @@ async def logout_user(
         "better-auth.session_token",
         "__Secure-better-auth.session_token",
         "aurahq_auth",
-        "admin_access_token"
+        "admin_access_token",
+        "user_role",
     ]:
         response.delete_cookie(cookie_name, path="/")
 
