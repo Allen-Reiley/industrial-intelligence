@@ -66,6 +66,8 @@ export interface GroupedEntity {
   paths: { url: string; duration: number; hits: number }[];
 }
 
+import { authFetch } from "@/lib/auth-fetch";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const cleanApiBase = API_BASE.replace(/\/$/, "");
 
@@ -124,10 +126,10 @@ export default function ForensicAnalytics() {
     );
   }, [groupedEntities, searchQuery]);
 
-  // Fetch client profiles using HTTP-only cookies
+  // Fetch client profiles using HTTP-only cookies and Bearer auth header
   const fetchClients = async () => {
     try {
-      const res = await fetch(`${cleanApiBase}/api/v1/clients/`, {
+      const res = await authFetch(`${cleanApiBase}/api/v1/clients/`, {
         credentials: "include",
       });
       if (res.ok) {
@@ -147,7 +149,7 @@ export default function ForensicAnalytics() {
     }
   };
 
-  // Fetch leads telemetry for active client using HTTP-only cookies
+  // Fetch leads telemetry for active client using Bearer token authorization bridge
   const fetchData = async (clientId: string) => {
     setIsRefreshing(true);
     try {
@@ -159,7 +161,7 @@ export default function ForensicAnalytics() {
         url += `&sales_rep_id=${userId}`;
       }
 
-      const res = await fetch(url, {
+      const res = await authFetch(url, {
         credentials: "include",
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

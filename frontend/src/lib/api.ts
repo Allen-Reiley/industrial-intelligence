@@ -1,4 +1,6 @@
-// src/lib/api.ts
+import { authFetch, authFetcher, getSessionToken } from "./auth-fetch";
+
+export { authFetch, authFetcher, getSessionToken };
 
 /**
  * The BASE_URL resolves the backend address.
@@ -32,7 +34,7 @@ export async function submitToProspects(formData: Record<string, unknown>) {
                      (typeof window !== 'undefined' ? (window as unknown as Record<string, unknown>).AURA_AGENCY_ID : null);
 
     try {
-        const response = await fetch(endpoint, {
+        const response = await authFetch(endpoint, {
             method: 'POST',
             credentials: 'include',
             headers: {

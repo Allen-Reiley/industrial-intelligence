@@ -6,6 +6,7 @@ export default function proxy(request: NextRequest) {
   const token = 
     request.cookies.get('better-auth.session_token')?.value || 
     request.cookies.get('__Secure-better-auth.session_token')?.value ||
+    request.cookies.get('aura_session_token')?.value ||
     request.cookies.get('aurahq_auth')?.value || 
     request.cookies.get('admin_access_token')?.value;
 
@@ -52,6 +53,7 @@ export default function proxy(request: NextRequest) {
       const authCookies = [
         'better-auth.session_token',
         '__Secure-better-auth.session_token',
+        'aura_session_token',
         'aurahq_auth',
         'admin_access_token',
         'user_role',
@@ -68,9 +70,22 @@ export default function proxy(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  // Inject Authorization: Bearer <token> into request headers for downstream handlers
+  const requestHeaders = new Headers(request.headers);
+  if (token) {
+    if (!requestHeaders.has('authorization')) {
+      requestHeaders.set('authorization', `Bearer ${token}`);
+    }
+    requestHeaders.set('x-session-token', token);
+  }
+
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 export const config = {
-  matcher: ['/aurahq/:path*', '/admin/:path*', '/dashboard/:path*', '/login'],
+  matcher: ['/aurahq/:path*', '/admin/:path*', '/dashboard/:path*', '/login', '/api/:path*'],
 };

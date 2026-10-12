@@ -20,6 +20,7 @@ import Badge from "@/components/ui/badge/Badge";
 import Alert from "@/components/ui/alert/Alert";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
+import { authFetch } from "@/lib/auth-fetch";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const isPostHogConfigured = Boolean(
@@ -112,7 +113,7 @@ export default function LinkGenerator({ onSuccess }: LinkGeneratorProps) {
     }
 
     try {
-      const res = await fetch(`${cleanApiBase}/api/v1/checkout/generate`, {
+      const res = await authFetch(`${cleanApiBase}/api/v1/checkout/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

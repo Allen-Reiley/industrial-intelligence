@@ -12,6 +12,7 @@ import { useRef, useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { useSession, signOut } from "@/lib/auth-client";
+import { authFetch } from "@/lib/auth-fetch";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const cleanApiBase = API_BASE.replace(/\/$/, "");
@@ -21,6 +22,7 @@ const purgeAuthCookiesAndStorage = () => {
   const cookieNames = [
     "better-auth.session_token",
     "__Secure-better-auth.session_token",
+    "aura_session_token",
     "aurahq_auth",
     "admin_access_token",
     "user_role",
@@ -81,8 +83,8 @@ export default function UserDropdown() {
 
   const handleSignOut = async () => {
     try {
-      if (typeof window !== "undefined" && typeof fetch !== "undefined") {
-        await fetch(`${cleanApiBase}/api/v1/auth/logout`, {
+      if (typeof window !== "undefined") {
+        await authFetch(`${cleanApiBase}/api/v1/auth/logout`, {
           method: "POST",
           credentials: "include",
         }).catch(() => null);

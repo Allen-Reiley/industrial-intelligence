@@ -96,4 +96,13 @@ describe('proxy.ts Middleware Routing & RBAC Tests', () => {
     const dashReq = createRequest('http://localhost:3000/dashboard');
     expect(proxy(dashReq).headers.get('location')).toBe('http://localhost:3000/aurahq/sales');
   });
+
+  it('injects Authorization Bearer header and x-session-token for downstream requests', () => {
+    const req = createRequest('http://localhost:3000/api/v1/leads', {
+      'better-auth.session_token': 'valid_token_123',
+    });
+    const res = proxy(req);
+    expect(res.headers.get('x-middleware-request-authorization')).toBe('Bearer valid_token_123');
+    expect(res.headers.get('x-middleware-request-x-session-token')).toBe('valid_token_123');
+  });
 });

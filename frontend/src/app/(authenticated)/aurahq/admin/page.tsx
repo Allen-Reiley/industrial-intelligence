@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/table";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
+import { authFetch } from "@/lib/auth-fetch";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const isPostHogConfigured = Boolean(
@@ -44,7 +45,7 @@ const isPostHogConfigured = Boolean(
 const cleanApiBase = API_BASE.replace(/\/$/, "");
 
 const fetcher = async (url: string) => {
-  const res = await fetch(url, { credentials: "include" });
+  const res = await authFetch(url);
   if (!res.ok) {
     throw new Error("Failed to fetch data.");
   }
@@ -165,7 +166,7 @@ export default function AdminConsole() {
     );
 
     try {
-      const res = await fetch(`${cleanApiBase}/api/v1/admin/users/${userId}`, {
+      const res = await authFetch(`${cleanApiBase}/api/v1/admin/users/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -198,7 +199,7 @@ export default function AdminConsole() {
     );
 
     try {
-      const res = await fetch(`${cleanApiBase}/api/v1/admin/users/${userId}`, {
+      const res = await authFetch(`${cleanApiBase}/api/v1/admin/users/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -240,7 +241,7 @@ export default function AdminConsole() {
     );
 
     try {
-      const res = await fetch(`${cleanApiBase}/api/v1/admin/users/${userId}/permissions`, {
+      const res = await authFetch(`${cleanApiBase}/api/v1/admin/users/${userId}/permissions`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -261,7 +262,7 @@ export default function AdminConsole() {
     setRegisterAlert(null);
 
     try {
-      const res = await fetch(`${cleanApiBase}/api/v1/admin/users`, {
+      const res = await authFetch(`${cleanApiBase}/api/v1/admin/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -313,7 +314,7 @@ export default function AdminConsole() {
     setIsDeleting(true);
 
     try {
-      const res = await fetch(`${cleanApiBase}/api/v1/admin/users/${deleteModalUser.id}`, {
+      const res = await authFetch(`${cleanApiBase}/api/v1/admin/users/${deleteModalUser.id}`, {
         method: "DELETE",
         credentials: "include",
       });

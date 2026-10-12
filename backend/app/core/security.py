@@ -91,27 +91,43 @@ async def get_session_token_from_request(
     auth_header: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme)
 ) -> Optional[str]:
     """
-    Extracts the Better Auth session token from cookies or Authorization Bearer header.
+    Extracts the Better Auth session token from Authorization Bearer header, custom headers, or cookies.
+    Strictly prioritizes the Authorization: Bearer <session_token> header for cross-subdomain API bridge.
     """
-    # 1. Check Bearer header
+    # 1. Check HTTPBearer dependency
     if auth_header and auth_header.credentials:
-        return auth_header.credentials.strip()
+        token = auth_header.credentials.strip()
+        if token:
+            return token
 
-    # 2. Check Better Auth Cookies
+    # 2. Check raw Authorization header directly (case-insensitive)
+    raw_auth = request.headers.get("authorization") or request.headers.get("Authorization")
+    if raw_auth:
+        raw_auth = raw_auth.strip()
+        if raw_auth.lower().startswith("bearer "):
+            token = raw_auth[7:].strip()
+            if token:
+                return token
+        elif raw_auth:
+            return raw_auth
+
+    # 3. Check custom headers
+    for header_name in ["x-session-token", "x-better-auth-token", "X-Session-Token", "X-Better-Auth-Token"]:
+        val = request.headers.get(header_name)
+        if val and val.strip():
+            return val.strip()
+
+    # 4. Check Better Auth Cookies (same-domain or local fallback)
     for cookie_name in [
         "better-auth.session_token",
         "__Secure-better-auth.session_token",
+        "aura_session_token",
         "aurahq_auth",
         "admin_access_token"
     ]:
         val = request.cookies.get(cookie_name)
-        if val:
+        if val and val.strip():
             return val.strip()
-
-    # 3. Check custom headers
-    custom_token = request.headers.get("x-session-token") or request.headers.get("x-better-auth-token")
-    if custom_token:
-        return custom_token.strip()
 
     return None
 

@@ -13,6 +13,8 @@ import { Modal } from "@/components/ui/modal";
 import Badge from "@/components/ui/badge/Badge";
 import { PencilIcon } from "@/icons";
 
+import { authFetch } from "@/lib/auth-fetch";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const cleanApiBase = API_BASE.replace(/\/$/, "");
 
@@ -23,7 +25,7 @@ const publicKey =
 
 const authenticator = async () => {
   try {
-    const response = await fetch(`${cleanApiBase}/api/v1/auth/imagekit-auth`, {
+    const response = await authFetch(`${cleanApiBase}/api/v1/auth/imagekit-auth`, {
       credentials: "include",
     });
     if (!response.ok) throw new Error("ImageKit auth failed");
@@ -35,7 +37,7 @@ const authenticator = async () => {
 };
 
 const fetcher = async (url: string) => {
-  const res = await fetch(url, { credentials: "include" });
+  const res = await authFetch(url, { credentials: "include" });
   if (!res.ok) throw new Error("Failed to load user profile");
   return res.json();
 };
@@ -80,7 +82,7 @@ export default function UserMetaCard() {
     setSaveError("");
 
     try {
-      const res = await fetch(`${cleanApiBase}/api/v1/auth/me`, {
+      const res = await authFetch(`${cleanApiBase}/api/v1/auth/me`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

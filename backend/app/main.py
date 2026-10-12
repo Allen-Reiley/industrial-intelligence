@@ -223,10 +223,12 @@ app.add_middleware(IngestionCORSMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://www.auraworks.co.za", "https://auraworks.co.za"],
+    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origin_regex=r"^https://.*\.vercel\.app$|^https://.*\.auraworks\.co\.za$",
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["Authorization", "Content-Type", "x-session-token", "x-better-auth-token", "x-aura-token", "*"],
+    expose_headers=["Authorization", "*"],
 )
 
 # --- PROXY HEADER STACK ---

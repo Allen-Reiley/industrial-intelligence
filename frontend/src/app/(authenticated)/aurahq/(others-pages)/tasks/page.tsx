@@ -19,6 +19,8 @@ import {
   ChevronLeftIcon,
 } from "@/icons";
 
+import { authFetch } from "@/lib/auth-fetch";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const cleanApiBase = API_BASE.replace(/\/$/, "");
 
@@ -36,7 +38,7 @@ export interface TaskItem {
 }
 
 const fetcher = async (url: string) => {
-  const res = await fetch(url, { credentials: "include" });
+  const res = await authFetch(url);
   if (!res.ok) {
     throw new Error("Failed to load tasks");
   }
@@ -135,7 +137,7 @@ export default function TasksPage() {
 
     try {
       if (editingTask) {
-        const res = await fetch(`${cleanApiBase}/api/v1/tasks/${editingTask.id}`, {
+        const res = await authFetch(`${cleanApiBase}/api/v1/tasks/${editingTask.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -146,7 +148,7 @@ export default function TasksPage() {
           throw new Error(errData.detail || "Failed to update task");
         }
       } else {
-        const res = await fetch(`${cleanApiBase}/api/v1/tasks`, {
+        const res = await authFetch(`${cleanApiBase}/api/v1/tasks`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -169,7 +171,7 @@ export default function TasksPage() {
 
   const handleStatusChange = async (taskId: string, newStatus: "todo" | "in_progress" | "done") => {
     try {
-      const res = await fetch(`${cleanApiBase}/api/v1/tasks/${taskId}`, {
+      const res = await authFetch(`${cleanApiBase}/api/v1/tasks/${taskId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -184,7 +186,7 @@ export default function TasksPage() {
 
   const handleDeleteTask = async (taskId: string) => {
     try {
-      const res = await fetch(`${cleanApiBase}/api/v1/tasks/${taskId}`, {
+      const res = await authFetch(`${cleanApiBase}/api/v1/tasks/${taskId}`, {
         method: "DELETE",
         credentials: "include",
       });

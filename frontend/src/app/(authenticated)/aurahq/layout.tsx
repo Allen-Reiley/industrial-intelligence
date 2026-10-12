@@ -64,6 +64,18 @@ export default function AuraHQLayout({ children }: { children: React.ReactNode }
       if (typeof document !== 'undefined') {
         document.cookie = `user_role=${role}; path=/; max-age=604800; SameSite=Lax`;
       }
+
+      // Cache session token for cross-subdomain Bearer authorization header injection
+      const token =
+        (session as any)?.session?.token ||
+        (session as any)?.token ||
+        (session as any)?.sessionToken;
+      if (token && typeof window !== 'undefined') {
+        try {
+          localStorage.setItem("better-auth.session_token", token);
+          document.cookie = `aura_session_token=${token}; path=/; max-age=604800; SameSite=Lax`;
+        } catch {}
+      }
       if (role !== "admin") {
         const allowedPaths = [
           "/aurahq",

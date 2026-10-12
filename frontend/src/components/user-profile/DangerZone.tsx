@@ -6,6 +6,7 @@ import { signOut } from "@/lib/auth-client";
 import { Modal } from "@/components/ui/modal";
 import Button from "@/components/ui/button/Button";
 import { AlertIcon } from "@/icons";
+import { authFetch } from "@/lib/auth-fetch";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const cleanApiBase = API_BASE.replace(/\/$/, "");
@@ -15,6 +16,7 @@ const purgeAuthCookiesAndStorage = () => {
   const cookieNames = [
     "better-auth.session_token",
     "__Secure-better-auth.session_token",
+    "aura_session_token",
     "aurahq_auth",
     "admin_access_token",
     "user_role",
@@ -41,8 +43,8 @@ export default function DangerZone() {
   const handleLogoutAllDevices = async () => {
     setIsLoggingOut(true);
     try {
-      if (typeof window !== "undefined" && typeof fetch !== "undefined") {
-        await fetch(`${cleanApiBase}/api/v1/auth/logout`, {
+      if (typeof window !== "undefined") {
+        await authFetch(`${cleanApiBase}/api/v1/auth/logout`, {
           method: "POST",
           credentials: "include",
         }).catch(() => null);

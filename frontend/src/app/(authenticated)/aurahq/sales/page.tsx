@@ -27,11 +27,13 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
+import { authFetch } from "@/lib/auth-fetch";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const cleanApiBase = API_BASE.replace(/\/$/, "");
 
 const fetcher = async (url: string) => {
-  const res = await fetch(url, { credentials: "include" });
+  const res = await authFetch(url);
   if (!res.ok) {
     throw new Error("Failed to fetch data.");
   }

@@ -19,12 +19,13 @@ import useSWR from "swr";
 import CalendarEventModal from "./CalendarEventModal";
 import CalendarViewSelect from "./CalendarViewSelect";
 import type { CalendarEvent, EventFormData } from "./types";
+import { authFetch } from "@/lib/auth-fetch";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const cleanApiBase = API_BASE.replace(/\/$/, "");
 
 const fetcher = async (url: string) => {
-  const res = await fetch(url, { credentials: "include" });
+  const res = await authFetch(url);
   if (!res.ok) {
     throw new Error("Failed to fetch calendar events.");
   }
@@ -119,7 +120,7 @@ const Calendar: React.FC = () => {
     try {
       if (selectedEvent) {
         // Update existing event
-        const res = await fetch(`${cleanApiBase}/api/v1/calendar/events/${selectedEvent.id}`, {
+        const res = await authFetch(`${cleanApiBase}/api/v1/calendar/events/${selectedEvent.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -133,7 +134,7 @@ const Calendar: React.FC = () => {
         if (!res.ok) throw new Error("Failed to update event");
       } else {
         // Create new event
-        const res = await fetch(`${cleanApiBase}/api/v1/calendar/events`, {
+        const res = await authFetch(`${cleanApiBase}/api/v1/calendar/events`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -155,7 +156,7 @@ const Calendar: React.FC = () => {
 
   const handleDeleteEvent = async (eventId: string) => {
     try {
-      const res = await fetch(`${cleanApiBase}/api/v1/calendar/events/${eventId}`, {
+      const res = await authFetch(`${cleanApiBase}/api/v1/calendar/events/${eventId}`, {
         method: "DELETE",
         credentials: "include",
       });
