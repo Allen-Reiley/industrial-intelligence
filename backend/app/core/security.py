@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from fastapi import Depends, HTTPException, Request, Header, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
+from sqlmodel import select, or_
 
 from app.core.config import settings
 from app.db import get_async_session
@@ -14,6 +14,7 @@ from app.models.user import User, Session as UserSession, UserRole
 import os
 import base64
 import hashlib
+import urllib.parse
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 logger = logging.getLogger("auraworks.security")
@@ -86,17 +87,36 @@ def verify_password(password: str, hashed_password: str) -> bool:
     except Exception:
         return False
 
+def normalize_session_token(token: Optional[str]) -> Optional[str]:
+    """
+    Normalizes a session token extracted from headers or cookies:
+    - URL-decodes (handles %3D etc)
+    - Trims whitespace and quotes
+    - If token is from a signed cookie (format: '<token>.<signature>'),
+      extracts the raw token prefix before the dot.
+    """
+    if not token:
+        return None
+    cleaned = urllib.parse.unquote(str(token).strip()).strip("\"'")
+    if not cleaned:
+        return None
+    # Better Auth signed cookies have format '<token>.<hmac_signature>'
+    if "." in cleaned:
+        cleaned = cleaned.split(".")[0].strip()
+    return cleaned if cleaned else None
+
 async def get_session_token_from_request(
     request: Request,
     auth_header: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme)
 ) -> Optional[str]:
     """
     Extracts the Better Auth session token from Authorization Bearer header, custom headers, or cookies.
-    Strictly prioritizes the Authorization: Bearer <session_token> header for cross-subdomain API bridge.
+    Strictly prioritizes the Authorization: Bearer <session_token> header for cross-subdomain API bridge,
+    with seamless cookie fallback handling signed cookies (<token>.<signature>).
     """
     # 1. Check HTTPBearer dependency
     if auth_header and auth_header.credentials:
-        token = auth_header.credentials.strip()
+        token = normalize_session_token(auth_header.credentials)
         if token:
             return token
 
@@ -105,29 +125,35 @@ async def get_session_token_from_request(
     if raw_auth:
         raw_auth = raw_auth.strip()
         if raw_auth.lower().startswith("bearer "):
-            token = raw_auth[7:].strip()
+            token = normalize_session_token(raw_auth[7:])
             if token:
                 return token
         elif raw_auth:
-            return raw_auth
+            token = normalize_session_token(raw_auth)
+            if token:
+                return token
 
     # 3. Check custom headers
     for header_name in ["x-session-token", "x-better-auth-token", "X-Session-Token", "X-Better-Auth-Token"]:
         val = request.headers.get(header_name)
         if val and val.strip():
-            return val.strip()
+            token = normalize_session_token(val)
+            if token:
+                return token
 
-    # 4. Check Better Auth Cookies (same-domain or local fallback)
+    # 4. Check Better Auth Cookies (same-domain or wildcard domain .auraworks.co.za)
     for cookie_name in [
-        "better-auth.session_token",
         "__Secure-better-auth.session_token",
+        "better-auth.session_token",
         "aura_session_token",
         "aurahq_auth",
         "admin_access_token"
     ]:
         val = request.cookies.get(cookie_name)
         if val and val.strip():
-            return val.strip()
+            token = normalize_session_token(val)
+            if token:
+                return token
 
     return None
 
@@ -164,11 +190,17 @@ async def get_current_user(
             detail="Authentication required: No session token provided"
         )
 
-    # 1. Query Better Auth Session from DB
+    # 1. Query Better Auth Session from DB (matching raw or signed token variants)
+    clean_token = normalize_session_token(token) or token
     stmt = (
         select(UserSession, User)
         .join(User, UserSession.user_id == User.id)
-        .where(UserSession.token == token)
+        .where(
+            or_(
+                UserSession.token == token,
+                UserSession.token == clean_token
+            )
+        )
     )
     res = await db.execute(stmt)
     row = res.first()

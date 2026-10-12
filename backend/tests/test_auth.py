@@ -67,11 +67,28 @@ async def test_auth_me_authenticated_and_unauthenticated():
     assert data["role"] == "sales"
     assert data["is_superuser"] is False
 
-    # 4. Authenticated request with Bearer header
+    # 4. Authenticated request with Better Auth signed cookie (__Secure-better-auth.session_token)
+    signed_cookie_val = f"{session_token}.c2lnbmF0dXJlX2htYWNfc2hhMjU2X3Rlc3Q="
+    resp_signed_cookie = await client.get(
+        f"{settings.API_V1_STR}/auth/me",
+        cookies={"__Secure-better-auth.session_token": signed_cookie_val}
+    )
+    assert resp_signed_cookie.status_code == 200
+    assert resp_signed_cookie.json()["id"] == user_id
+
+    # 5. Authenticated request with Bearer header
     headers = {"Authorization": f"Bearer {session_token}"}
     resp_bearer = await client.get(f"{settings.API_V1_STR}/auth/me", headers=headers)
     assert resp_bearer.status_code == 200
     assert resp_bearer.json()["id"] == user_id
+
+    # 6. Authenticated request with signed Bearer header
+    resp_signed_bearer = await client.get(
+        f"{settings.API_V1_STR}/auth/me",
+        headers={"Authorization": f"Bearer {signed_cookie_val}"}
+    )
+    assert resp_signed_bearer.status_code == 200
+    assert resp_signed_bearer.json()["id"] == user_id
 
 
 async def test_admin_summary_route_protection():
