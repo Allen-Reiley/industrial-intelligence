@@ -103,12 +103,13 @@ async def create_personnel(
 
     new_user_id = f"user_{uuid.uuid4().hex[:12]}"
     permissions = payload.permissions if payload.permissions is not None else ["analytics", "sales"]
+    role_assigned = UserRole.ADMIN if email_clean == "reitumetse@auraworks.co.za" else payload.role
 
     new_user = User(
         id=new_user_id,
         email=email_clean,
         name=payload.name.strip(),
-        role=payload.role,
+        role=role_assigned,
         job_title=payload.job_title.strip() if payload.job_title else None,
         permissions=permissions,
         is_active=True,
@@ -162,6 +163,19 @@ async def update_personnel(
     user = await session.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    # Guard: Permanent Super Admin immunity
+    if user.email and user.email.lower() == "reitumetse@auraworks.co.za":
+        if payload.role is not None and payload.role != UserRole.ADMIN:
+            raise HTTPException(
+                status_code=400,
+                detail="reitumetse@auraworks.co.za is a permanent Super Admin and cannot be demoted."
+            )
+        if payload.is_active is False:
+            raise HTTPException(
+                status_code=400,
+                detail="reitumetse@auraworks.co.za is a permanent Super Admin and cannot be deactivated."
+            )
 
     if payload.role is not None:
         user.role = payload.role

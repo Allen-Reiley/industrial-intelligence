@@ -142,3 +142,99 @@ async def test_admin_personnel_creation_and_permissions():
     assert resp_patch.status_code == 200
     assert resp_patch.json()["user"]["job_title"] == "Senior Partner"
     assert resp_patch.json()["user"]["role"] == "admin"
+
+
+@pytest.mark.asyncio
+async def test_reitumetse_permanent_super_admin_immunity():
+    """
+    Guarantees:
+    1. Creating reitumetse@auraworks.co.za even with role="sales" forces role="admin".
+    2. Attempting to demote reitumetse@auraworks.co.za to "sales" via PATCH is rejected (400).
+    3. Attempting to deactivate reitumetse@auraworks.co.za via PATCH is rejected (400).
+    4. Session authentication for reitumetse@auraworks.co.za runtime-resolves and self-heals to active ADMIN.
+    """
+    client = await get_test_client()
+    admin_id = f"admin_{uuid4().hex[:8]}"
+    admin_token = f"adm_tok_{uuid4().hex[:12]}"
+    reitumetse_id = f"reitumetse_{uuid4().hex[:8]}"
+    reitumetse_token = f"reit_tok_{uuid4().hex[:12]}"
+
+    async with async_session_maker() as session:
+        admin_user = User(
+            id=admin_id,
+            email=f"temp_admin_{uuid4().hex[:6]}@auraworks.co.za",
+            name="Temp Admin",
+            role=UserRole.ADMIN,
+            is_active=True
+        )
+        session.add(admin_user)
+
+        # Check if reitumetse user already exists
+        stmt_find = select(User).where(User.email == "reitumetse@auraworks.co.za")
+        existing_reitumetse = (await session.execute(stmt_find)).scalars().first()
+        if existing_reitumetse:
+            reitumetse_id = existing_reitumetse.id
+            existing_reitumetse.role = UserRole.SALES
+            existing_reitumetse.is_active = False
+            session.add(existing_reitumetse)
+        else:
+            reitumetse_user = User(
+                id=reitumetse_id,
+                email="reitumetse@auraworks.co.za",
+                name="Reitumetse Sethabela",
+                role=UserRole.SALES,
+                is_active=False
+            )
+            session.add(reitumetse_user)
+        await session.commit()
+
+        admin_sess = UserSession(
+            id=f"sess_{uuid4().hex[:8]}",
+            user_id=admin_id,
+            token=admin_token,
+            expires_at=datetime.now(timezone.utc) + timedelta(days=7)
+        )
+        reitumetse_sess = UserSession(
+            id=f"sess_{uuid4().hex[:8]}",
+            user_id=reitumetse_id,
+            token=reitumetse_token,
+            expires_at=datetime.now(timezone.utc) + timedelta(days=7)
+        )
+        session.add_all([admin_sess, reitumetse_sess])
+        await session.commit()
+
+    admin_headers = {"Authorization": f"Bearer {admin_token}"}
+    reitumetse_headers = {"Authorization": f"Bearer {reitumetse_token}"}
+
+    # 1. Runtime self-healing: Query /api/v1/auth/me with reitumetse's session
+    resp_me = await client.get("/api/v1/auth/me", headers=reitumetse_headers)
+    assert resp_me.status_code == 200, resp_me.text
+    me_data = resp_me.json()
+    assert me_data["email"] == "reitumetse@auraworks.co.za"
+    assert me_data["role"] == "admin"
+    assert me_data["is_active"] is True
+
+    # Verify DB record was healed to admin & active
+    async with async_session_maker() as session:
+        db_user = await session.get(User, reitumetse_id)
+        assert db_user.role == UserRole.ADMIN
+        assert db_user.is_active is True
+
+    # 2. Demotion attempt via PATCH /users/{user_id} -> 400 Bad Request
+    resp_demote = await client.patch(
+        f"/api/v1/admin/users/{reitumetse_id}",
+        json={"role": "sales"},
+        headers=admin_headers
+    )
+    assert resp_demote.status_code == 400
+    assert "cannot be demoted" in resp_demote.json()["detail"].lower()
+
+    # 3. Deactivation attempt via PATCH /users/{user_id} -> 400 Bad Request
+    resp_deact = await client.patch(
+        f"/api/v1/admin/users/{reitumetse_id}",
+        json={"is_active": False},
+        headers=admin_headers
+    )
+    assert resp_deact.status_code == 400
+    assert "cannot be deactivated" in resp_deact.json()["detail"].lower()
+

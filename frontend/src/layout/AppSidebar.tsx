@@ -70,7 +70,8 @@ const AppSidebar: React.FC = () => {
   const pathname = usePathname();
   const t = useTranslations("sidebar");
   const { data: session } = useSession();
-  const userRole = ((session?.user as any)?.role || "sales").toLowerCase();
+  const isSuperAdminEmail = session?.user?.email?.toLowerCase() === "reitumetse@auraworks.co.za";
+  const userRole = isSuperAdminEmail ? "admin" : ((session?.user as any)?.role || "sales").toLowerCase();
 
   const visibleNavItems = navItems.filter((item) => {
     if (item.adminOnly && userRole !== "admin") {

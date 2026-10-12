@@ -232,7 +232,7 @@
   - Update page title and metadata (remove raw TailAdmin template title).
   - Replace raw dummy electronics/fashion demo with a unified AuraWorks overview dashboard, or route to `/aurahq/admin` / `/aurahq/sales`.
   - Fix table column alignment bug in `RecentOrders.tsx` (swap swapped Price/Category columns).
-- [ ] **Task 8.2: End-to-End Build & Lint Verification**
+- [x] **Task 8.2: End-to-End Build & Lint Verification**
   - Run `npm run lint` and `npm run build` in `frontend` with zero errors or warnings.
   - Run full Pytest test suite in `backend` with 100% pass rate.
   - Run full Vitest test suite in `frontend` with 100% pass rate.

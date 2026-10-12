@@ -64,4 +64,21 @@ export const auth = betterAuth({
       },
     },
   },
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          if (user.email?.toLowerCase() === "reitumetse@auraworks.co.za") {
+            return {
+              data: {
+                ...user,
+                role: "admin",
+                is_active: true,
+              },
+            };
+          }
+        },
+      },
+    },
+  },
 });
