@@ -27,18 +27,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
-import { authFetch } from "@/lib/auth-fetch";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const cleanApiBase = API_BASE.replace(/\/$/, "");
-
-const fetcher = async (url: string) => {
-  const res = await authFetch(url);
-  if (!res.ok) {
-    throw new Error("Failed to fetch data.");
-  }
-  return res.json();
-};
+import { authFetch, apiFetcher, cleanApiBase } from "@/lib/api";
 
 export interface CheckoutSessionItem {
   session_id: string;
@@ -81,7 +70,7 @@ export default function SalesPortal() {
     isLoading: loadingCheckouts,
   } = useSWR<CheckoutSessionItem[]>(
     `${cleanApiBase}/api/v1/sales/checkouts${urlSuffix}`,
-    fetcher,
+    apiFetcher,
     { refreshInterval: 5000 }
   );
 
@@ -90,7 +79,7 @@ export default function SalesPortal() {
     mutate: mutateMetrics,
   } = useSWR<SalesMetrics>(
     `${cleanApiBase}/api/v1/sales/metrics${urlSuffix}`,
-    fetcher,
+    apiFetcher,
     { refreshInterval: 5000 }
   );
 

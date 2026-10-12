@@ -19,10 +19,7 @@ import {
   ChevronLeftIcon,
 } from "@/icons";
 
-import { authFetch } from "@/lib/auth-fetch";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const cleanApiBase = API_BASE.replace(/\/$/, "");
+import { authFetch, apiFetcher, cleanApiBase } from "@/lib/api";
 
 export interface TaskItem {
   id: string;
@@ -36,14 +33,6 @@ export interface TaskItem {
   created_at: string;
   updated_at: string;
 }
-
-const fetcher = async (url: string) => {
-  const res = await authFetch(url);
-  if (!res.ok) {
-    throw new Error("Failed to load tasks");
-  }
-  return res.json();
-};
 
 const COLUMNS: { id: "todo" | "in_progress" | "done"; label: string; dotColor: string }[] = [
   { id: "todo", label: "To Do", dotColor: "bg-blue-500" },
@@ -71,7 +60,7 @@ export default function TasksPage() {
     error,
     isLoading,
     mutate,
-  } = useSWR<TaskItem[]>(`${cleanApiBase}/api/v1/tasks`, fetcher);
+  } = useSWR<TaskItem[]>(`${cleanApiBase}/api/v1/tasks`, apiFetcher);
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState("");

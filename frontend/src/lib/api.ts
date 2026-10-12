@@ -4,16 +4,17 @@ export { authFetch, authFetcher, getSessionToken };
 
 /**
  * The BASE_URL resolves the backend address.
- * In Production: https://dynamic-flow-production-a5d6.up.railway.app
+ * In Production: https://api.auraworks.co.za
  * In Local: http://localhost:8000
  */
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+export const cleanApiBase = BASE_URL.replace(/\/$/, '');
 
 /**
  * Normalizes the API URL. 
  * Removes trailing slashes to prevent 307 Temporary Redirects or 404s in FastAPI.
  */
-const getEndpoint = (path: string) => {
+export const getEndpoint = (path: string) => {
     // Check if BASE_URL is valid to prevent silent failures
     if (!BASE_URL) {
         console.warn("⚠️ AuraWorks OS: NEXT_PUBLIC_API_URL is undefined.");
@@ -22,6 +23,29 @@ const getEndpoint = (path: string) => {
     const cleanPath = path.replace(/^\//, '').replace(/\/$/, '');
     return `${cleanBase}/${cleanPath}`;
 };
+
+/**
+ * Global authenticated API fetch client targeting NEXT_PUBLIC_API_URL.
+ * Supports both relative paths ('/api/v1/...') and fully qualified URLs.
+ */
+export async function apiFetch(
+    pathOrUrl: string | URL | Request,
+    init: RequestInit = {}
+): Promise<Response> {
+    if (typeof pathOrUrl === 'string' && pathOrUrl.startsWith('/')) {
+        return authFetch(getEndpoint(pathOrUrl), init);
+    }
+    return authFetch(pathOrUrl, init);
+}
+
+/**
+ * Global SWR fetcher utility that automatically injects the Bearer session token.
+ * Supports both relative paths ('/api/v1/...') and fully qualified URLs.
+ */
+export async function apiFetcher<T = any>(pathOrUrl: string): Promise<T> {
+    const target = pathOrUrl.startsWith('/') ? getEndpoint(pathOrUrl) : pathOrUrl;
+    return authFetcher<T>(target);
+}
 
 export async function submitToProspects(formData: Record<string, unknown>) {
     /**
@@ -85,7 +109,7 @@ export async function trackIntent(payload: {
 }) {
     const endpoint = getEndpoint('api/v1/track/intent');
     try {
-        const response = await fetch(endpoint, {
+        const response = await authFetch(endpoint, {
             method: 'POST',
             credentials: 'include',
             headers: {

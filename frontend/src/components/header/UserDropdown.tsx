@@ -12,10 +12,7 @@ import { useRef, useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { useSession, signOut } from "@/lib/auth-client";
-import { authFetch } from "@/lib/auth-fetch";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const cleanApiBase = API_BASE.replace(/\/$/, "");
+import { authFetch, cleanApiBase } from "@/lib/api";
 
 const purgeAuthCookiesAndStorage = () => {
   if (typeof document === "undefined") return;

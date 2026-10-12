@@ -1,74 +1,104 @@
 // frontend/src/lib/auth-fetch.ts
-import { authClient } from "./auth-client";
+import { authClient, getSession } from "./auth-client";
+
+let inMemoryToken: string | null = null;
+let activeSessionFetch: Promise<string | null> | null = null;
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const cleanApiBase = API_BASE.replace(/\/$/, "");
 
 /**
- * Retrieves the active session token from browser storage, cookies, or Better Auth client.
+ * Actively retrieves the active session token from Better Auth,
+ * falling back to local storage caches if needed.
  */
 export async function getSessionToken(): Promise<string | null> {
   if (typeof window === "undefined") {
     return null;
   }
 
-  // 1. Check localStorage / sessionStorage
+  // 1. Actively query Better Auth client getSession()
   try {
-    const stored =
-      localStorage.getItem("better-auth.session_token") ||
-      sessionStorage.getItem("better-auth.session_token") ||
-      localStorage.getItem("admin_token");
-    if (stored && stored.trim()) {
-      return stored.trim();
+    const sessionGetter =
+      typeof authClient?.getSession === "function"
+        ? authClient.getSession
+        : typeof getSession === "function"
+        ? getSession
+        : null;
+
+    if (sessionGetter) {
+      // Deduplicate concurrent getSession calls
+      if (!activeSessionFetch) {
+        activeSessionFetch = sessionGetter()
+          .then((sessionRes: any) => {
+            const token =
+              sessionRes?.data?.session?.token ||
+              sessionRes?.data?.token ||
+              sessionRes?.session?.token ||
+              sessionRes?.token;
+
+            if (token && typeof token === "string" && token.trim()) {
+              const clean = token.trim();
+              inMemoryToken = clean;
+              try {
+                localStorage.setItem("better-auth.session_token", clean);
+                sessionStorage.setItem("better-auth.session_token", clean);
+                document.cookie = `aura_session_token=${clean}; path=/; max-age=604800; SameSite=Lax`;
+              } catch {}
+              return clean;
+            }
+            return null;
+          })
+          .catch((err: any) => {
+            console.warn("⚠️ [auth-fetch] authClient.getSession() call failed:", err);
+            return null;
+          })
+          .finally(() => {
+            activeSessionFetch = null;
+          });
+      }
+
+      const activeToken = await activeSessionFetch;
+      if (activeToken) {
+        return activeToken;
+      }
     }
-  } catch {
-    // Ignore storage access errors
+  } catch (err) {
+    console.warn("⚠️ [auth-fetch] getSessionToken error:", err);
   }
 
-  // 2. Check document.cookie
+  // 2. Fallback to memory cache
+  if (inMemoryToken) {
+    return inMemoryToken;
+  }
+
+  // 3. Fallback to storage (sessionStorage first, then localStorage)
+  try {
+    const stored =
+      sessionStorage.getItem("better-auth.session_token") ||
+      localStorage.getItem("better-auth.session_token") ||
+      sessionStorage.getItem("aura_session_token") ||
+      localStorage.getItem("aura_session_token");
+    if (stored && stored.trim()) {
+      inMemoryToken = stored.trim();
+      return inMemoryToken;
+    }
+  } catch {}
+
+  // 4. Fallback to cookie (custom aura_session_token)
   try {
     const cookies = document.cookie.split(";");
     for (const cookie of cookies) {
       const [name, ...rest] = cookie.trim().split("=");
       const val = rest.join("=");
-      if (
-        [
-          "better-auth.session_token",
-          "__Secure-better-auth.session_token",
-          "aura_session_token",
-          "admin_access_token",
-          "aurahq_auth",
-        ].includes(name) &&
-        val
-      ) {
+      if (name === "aura_session_token" && val) {
         const decoded = decodeURIComponent(val.trim());
         if (decoded) {
-          // Cache in localStorage for subsequent fast synchronous reads
-          try {
-            localStorage.setItem("better-auth.session_token", decoded);
-          } catch {}
+          inMemoryToken = decoded;
           return decoded;
         }
       }
     }
-  } catch {
-    // Ignore cookie read errors
-  }
-
-  // 3. Query Better Auth client session
-  try {
-    const sessionRes = await authClient.getSession();
-    const token =
-      (sessionRes as any)?.data?.session?.token ||
-      (sessionRes as any)?.session?.token ||
-      (sessionRes as any)?.token;
-    if (token) {
-      try {
-        localStorage.setItem("better-auth.session_token", token);
-        document.cookie = `aura_session_token=${token}; path=/; max-age=604800; SameSite=Lax`;
-      } catch {}
-      return token;
-    }
-  } catch {
-    // Ignore network/session errors
-  }
+  } catch {}
 
   return null;
 }
@@ -79,13 +109,17 @@ export async function getSessionToken(): Promise<string | null> {
 export function getSessionTokenSync(): string | null {
   if (typeof window === "undefined") return null;
 
+  if (inMemoryToken) return inMemoryToken;
+
   try {
     const stored =
-      localStorage.getItem("better-auth.session_token") ||
       sessionStorage.getItem("better-auth.session_token") ||
-      localStorage.getItem("admin_token");
+      localStorage.getItem("better-auth.session_token") ||
+      sessionStorage.getItem("aura_session_token") ||
+      localStorage.getItem("aura_session_token");
     if (stored && stored.trim()) {
-      return stored.trim();
+      inMemoryToken = stored.trim();
+      return inMemoryToken;
     }
   } catch {}
 
@@ -94,17 +128,12 @@ export function getSessionTokenSync(): string | null {
     for (const cookie of cookies) {
       const [name, ...rest] = cookie.trim().split("=");
       const val = rest.join("=");
-      if (
-        [
-          "better-auth.session_token",
-          "__Secure-better-auth.session_token",
-          "aura_session_token",
-          "admin_access_token",
-          "aurahq_auth",
-        ].includes(name) &&
-        val
-      ) {
-        return decodeURIComponent(val.trim());
+      if (name === "aura_session_token" && val) {
+        const decoded = decodeURIComponent(val.trim());
+        if (decoded) {
+          inMemoryToken = decoded;
+          return decoded;
+        }
       }
     }
   } catch {}
@@ -126,6 +155,13 @@ export async function authFetch(
   const token = await getSessionToken();
   const headers = new Headers(init.headers || {});
 
+  const urlString =
+    typeof input === "string"
+      ? input
+      : input instanceof URL
+      ? input.toString()
+      : (input as Request).url || "";
+
   if (token) {
     if (!headers.has("Authorization")) {
       headers.set("Authorization", `Bearer ${token}`);
@@ -133,6 +169,14 @@ export async function authFetch(
     if (!headers.has("x-session-token")) {
       headers.set("x-session-token", token);
     }
+  } else {
+    if (urlString.includes(cleanApiBase) || urlString.startsWith("/api/v1")) {
+      console.warn("⚠️ [authFetch] Outgoing request to backend without session token:", urlString);
+    }
+  }
+
+  if (!headers.has("Accept")) {
+    headers.set("Accept", "application/json");
   }
 
   return fetch(input, {
@@ -158,3 +202,7 @@ export async function authFetcher<T = any>(url: string): Promise<T> {
   }
   return res.json();
 }
+
+export const apiFetch = authFetch;
+export const apiFetcher = authFetcher;
+

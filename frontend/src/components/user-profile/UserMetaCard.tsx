@@ -13,10 +13,7 @@ import { Modal } from "@/components/ui/modal";
 import Badge from "@/components/ui/badge/Badge";
 import { PencilIcon } from "@/icons";
 
-import { authFetch } from "@/lib/auth-fetch";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const cleanApiBase = API_BASE.replace(/\/$/, "");
+import { authFetch, cleanApiBase } from "@/lib/api";
 
 const urlEndpoint =
   process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || "https://ik.imagekit.io/auraworks";

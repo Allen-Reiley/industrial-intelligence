@@ -6,10 +6,7 @@ import { signOut } from "@/lib/auth-client";
 import { Modal } from "@/components/ui/modal";
 import Button from "@/components/ui/button/Button";
 import { AlertIcon } from "@/icons";
-import { authFetch } from "@/lib/auth-fetch";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const cleanApiBase = API_BASE.replace(/\/$/, "");
+import { authFetch, cleanApiBase } from "@/lib/api";
 
 const purgeAuthCookiesAndStorage = () => {
   if (typeof document === "undefined") return;

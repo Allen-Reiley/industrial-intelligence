@@ -19,18 +19,7 @@ import useSWR from "swr";
 import CalendarEventModal from "./CalendarEventModal";
 import CalendarViewSelect from "./CalendarViewSelect";
 import type { CalendarEvent, EventFormData } from "./types";
-import { authFetch } from "@/lib/auth-fetch";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const cleanApiBase = API_BASE.replace(/\/$/, "");
-
-const fetcher = async (url: string) => {
-  const res = await authFetch(url);
-  if (!res.ok) {
-    throw new Error("Failed to fetch calendar events.");
-  }
-  return res.json();
-};
+import { authFetch, apiFetcher, cleanApiBase } from "@/lib/api";
 
 const Calendar: React.FC = () => {
   const locale = useLocale();
@@ -39,7 +28,7 @@ const Calendar: React.FC = () => {
 
   const { data: eventsData, mutate: mutateEvents } = useSWR<CalendarEvent[]>(
     `${cleanApiBase}/api/v1/calendar/events`,
-    fetcher
+    apiFetcher
   );
 
   const events = eventsData || [];

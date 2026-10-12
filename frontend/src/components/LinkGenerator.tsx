@@ -20,13 +20,11 @@ import Badge from "@/components/ui/badge/Badge";
 import Alert from "@/components/ui/alert/Alert";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
-import { authFetch } from "@/lib/auth-fetch";
+import { authFetch, cleanApiBase } from "@/lib/api";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const isPostHogConfigured = Boolean(
   process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN && process.env.NEXT_PUBLIC_POSTHOG_HOST,
 );
-const cleanApiBase = API_BASE.replace(/\/$/, "");
 
 const PLAN_OPTIONS = [
   { id: "growth-foundation", name: "Growth Foundation", priceZar: 10000, cents: 1000000 },

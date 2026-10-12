@@ -36,21 +36,11 @@ import {
 } from "@/components/ui/table";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
-import { authFetch } from "@/lib/auth-fetch";
+import { authFetch, apiFetcher, cleanApiBase } from "@/lib/api";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const isPostHogConfigured = Boolean(
   process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN && process.env.NEXT_PUBLIC_POSTHOG_HOST,
 );
-const cleanApiBase = API_BASE.replace(/\/$/, "");
-
-const fetcher = async (url: string) => {
-  const res = await authFetch(url);
-  if (!res.ok) {
-    throw new Error("Failed to fetch data.");
-  }
-  return res.json();
-};
 
 export interface Personnel {
   id: string;
@@ -133,17 +123,17 @@ export default function AdminConsole() {
   // SWR Queries
   const { data: overviewMetrics } = useSWR<OverviewMetrics>(
     `${cleanApiBase}/api/v1/admin/overview-metrics`,
-    fetcher
+    apiFetcher
   );
 
   const { data: personnel, mutate: mutatePersonnel } = useSWR<Personnel[]>(
     `${cleanApiBase}/api/v1/admin/users`,
-    fetcher
+    apiFetcher
   );
 
   const { data: scripts } = useSWR<ScriptItem[]>(
     `${cleanApiBase}/api/v1/scripts/`,
-    fetcher
+    apiFetcher
   );
 
   if (isPending || ((session?.user as any)?.role !== "admin")) {

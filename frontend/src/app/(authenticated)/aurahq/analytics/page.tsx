@@ -66,10 +66,7 @@ export interface GroupedEntity {
   paths: { url: string; duration: number; hits: number }[];
 }
 
-import { authFetch } from "@/lib/auth-fetch";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const cleanApiBase = API_BASE.replace(/\/$/, "");
+import { authFetch, cleanApiBase } from "@/lib/api";
 
 export default function ForensicAnalytics() {
   const { data: session } = useSession();
