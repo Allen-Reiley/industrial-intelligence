@@ -6,6 +6,10 @@ const pool = process.env.DATABASE_URL
   ? new Pool({ connectionString: process.env.DATABASE_URL })
   : undefined;
 
+const isProduction = process.env.NODE_ENV === "production";
+const cookieDomain = process.env.COOKIE_DOMAIN || (isProduction ? ".auraworks.co.za" : undefined);
+const isCrossSubdomainEnabled = Boolean(cookieDomain && (isProduction || process.env.COOKIE_DOMAIN));
+
 export const auth = betterAuth({
   database: pool,
   secret: process.env.BETTER_AUTH_SECRET || "development-better-auth-secret-key-1234567890",
@@ -14,14 +18,19 @@ export const auth = betterAuth({
     "http://localhost:3000",
     "https://auraworks.co.za",
     "https://www.auraworks.co.za",
+    "https://api.auraworks.co.za",
     "https://industrial-intelligence-xi.vercel.app",
     "https://industrial-intelligence-git-main-allen-reileys-projects.vercel.app",
     "https://industrial-intelligence-lttxeot8z-allen-reileys-projects.vercel.app"
   ],
   advanced: {
     crossSubDomainCookies: {
-      enabled: process.env.NODE_ENV === "production" && Boolean(process.env.BETTER_AUTH_URL?.includes("auraworks.co.za")),
-      domain: ".auraworks.co.za"
+      enabled: isCrossSubdomainEnabled,
+      domain: cookieDomain
+    },
+    defaultCookieAttributes: {
+      sameSite: "lax",
+      secure: isProduction,
     }
   },
   emailAndPassword: {
