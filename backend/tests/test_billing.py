@@ -25,6 +25,9 @@ async def get_test_client():
     except AttributeError:
         return httpx.AsyncClient(app=app, base_url="http://test")
 
+from app.models.user import User, Session as UserSession, UserRole
+from datetime import datetime, timezone, timedelta
+
 async def get_auth_cookies(session):
     test_email = "admin-billing-test@auraworks.co.za"
     stmt = select(User).where(User.email == test_email)
@@ -41,7 +44,17 @@ async def get_auth_cookies(session):
         session.add(user)
         await session.commit()
         await session.refresh(user)
-    return {"aurahq_auth": str(user.id)}
+
+    session_token = f"sess_billing_{uuid.uuid4().hex[:12]}"
+    user_session = UserSession(
+        id=f"sess_{uuid.uuid4().hex[:8]}",
+        user_id=user.id,
+        token=session_token,
+        expires_at=datetime.now(timezone.utc) + timedelta(days=7)
+    )
+    session.add(user_session)
+    await session.commit()
+    return {"better-auth.session_token": session_token}
 
 async def test_billing_setup_unauthorized():
     client = await get_test_client()

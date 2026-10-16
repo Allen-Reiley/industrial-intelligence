@@ -29,6 +29,7 @@ class Company(SQLModel, table=True):
 
     company_name: str = Field(index=True)
     industry: Optional[str] = Field(default=None, index=True)
+    status: str = Field(default="active", index=True, nullable=False)
     parent_company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", nullable=True)
     is_headquarters: bool = Field(default=False)
     intent_summary: Optional[str] = Field(default=None, nullable=True)

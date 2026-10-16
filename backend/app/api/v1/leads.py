@@ -95,6 +95,7 @@ async def get_leads(
 @router.get("/intelligence")
 async def get_lead_intelligence(
     aura_id: str, 
+    client_id: Optional[str] = Query(default=None),
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(get_current_admin_user)
 ):
@@ -103,17 +104,38 @@ async def get_lead_intelligence(
     behavioral journey and facility activity clusters.
     """
     try:
-        # 1. Resolve Lead Identity
+        # Resolve target client ID
+        target_client_id = None
+        if not current_user.is_superuser:
+            if not current_user.client_id:
+                raise HTTPException(
+                    status_code=403, 
+                    detail="Forbidden: Tenant data access violation. You are not assigned to this client."
+                )
+            target_client_id = current_user.client_id
+        else:
+            if client_id:
+                try:
+                    target_client_id = UUID(client_id)
+                except ValueError:
+                    target_client_id = client_id
+
+        # 1. Resolve Lead Identity strictly within tenant boundary
         prospect_stmt = select(Prospect).where(Prospect.aura_id == aura_id)
+        if target_client_id is not None:
+            prospect_stmt = prospect_stmt.where(Prospect.client_id == target_client_id)
+
         res_lead = await session.execute(prospect_stmt)
         lead = res_lead.scalars().first()
         
         if not lead:
             raise HTTPException(status_code=404, detail="Lead signature not found.")
 
+        effective_client_id = target_client_id or lead.client_id
+
         # Tenant Isolation Gate
         if not current_user.is_superuser:
-            if current_user.client_id is None or current_user.client_id != lead.client_id:
+            if current_user.client_id != lead.client_id:
                 raise HTTPException(
                     status_code=403, 
                     detail="Forbidden: Tenant data access violation. You are not assigned to this client."
@@ -124,12 +146,16 @@ async def get_lead_intelligence(
         if lead.company_id:
             company = await session.get(Company, lead.company_id)
 
-        # 3. Pull PageView History for Activity Heatmap
+        # 3. Pull PageView History strictly scoped to tenant perimeter
         from app.models.pageview import PageView
         pv_stmt = (
             select(PageView)
             .join(Visit, PageView.visit_id == Visit.id)
-            .where(Visit.aura_id == aura_id)
+            .where(
+                Visit.aura_id == aura_id,
+                Visit.client_id == effective_client_id,
+                PageView.client_id == effective_client_id
+            )
             .order_by(PageView.created_at.desc())
         )
         res_pv = await session.execute(pv_stmt)

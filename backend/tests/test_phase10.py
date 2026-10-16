@@ -50,8 +50,9 @@ async def test_intent_telemetry_updates_models():
 
         company_row = Company(
             id=company_id,
+            client_id=client_id,
             company_name="Apex Mining Group",
-            domain="apexmining.co.za",
+            domain=f"apexmining-{uuid4().hex[:8]}.co.za",
             industry="Mining"
         )
         session.add(company_row)

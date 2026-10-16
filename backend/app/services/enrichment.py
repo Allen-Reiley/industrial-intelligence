@@ -31,14 +31,21 @@ async def perform_local_reverse_dns(ip_address: str) -> Dict[str, Any]:
     """
     Layer 1: Zero-Cost Classification.
     Identifies cloud providers and obvious ISPs without burning API credits.
+    Uses cached reverse DNS where available; executes non-blocking lookup with strict timeout.
     """
     import asyncio
     try:
-        loop = asyncio.get_running_loop()
-        hostname, _, _ = await asyncio.wait_for(
-            loop.run_in_executor(None, socket.gethostbyaddr, ip_address),
-            timeout=1.0
-        )
+        from app.services.intelligence import get_cached_dns, set_cached_dns
+        hostname = await get_cached_dns(ip_address)
+        if not hostname:
+            loop = asyncio.get_running_loop()
+            res = await asyncio.wait_for(
+                loop.run_in_executor(None, socket.gethostbyaddr, ip_address),
+                timeout=1.0
+            )
+            hostname = res[0]
+            await set_cached_dns(ip_address, hostname)
+
         hostname = hostname.lower()
         
         # Cloud/Data Center filtration
@@ -52,6 +59,8 @@ async def perform_local_reverse_dns(ip_address: str) -> Dict[str, Any]:
         return {"type": "business_static", "provider": hostname, "confidence": 0.7}
     except Exception:
         return {"type": "unknown", "provider": "Unknown", "confidence": 0.0}
+
+from app.services.intelligence import resolve_reverse_dns, get_cached_dns, set_cached_dns
 
 async def enrich_visitor_data(ip_address: str, volunteered_company: Optional[str] = None) -> dict:
     """

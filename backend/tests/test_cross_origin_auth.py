@@ -4,9 +4,10 @@ import httpx
 import uuid
 from app.main import app
 from app.core.config import settings
-from app.models.user import User, UserRole
+from app.models.user import User, Session as UserSession, UserRole
 from app.db import get_async_session
 from sqlmodel import select
+from datetime import datetime, timezone, timedelta
 
 pytestmark = pytest.mark.anyio
 
@@ -24,8 +25,9 @@ async def test_cross_origin_cookie_auth():
     """
     client = await get_test_client()
     
-    # 1. Create a test admin user
+    # 1. Create a test admin user and session
     user_id = f"cross_user_{uuid.uuid4().hex[:8]}"
+    session_token = f"sess_cross_{uuid.uuid4().hex[:12]}"
     test_email = f"cross-origin-user-{uuid.uuid4().hex[:6]}@auraworks.co.za"
     
     async for session in get_async_session():
@@ -38,6 +40,15 @@ async def test_cross_origin_cookie_auth():
         )
         session.add(user)
         await session.commit()
+
+        user_session = UserSession(
+            id=f"sess_{uuid.uuid4().hex[:8]}",
+            user_id=user_id,
+            token=session_token,
+            expires_at=datetime.now(timezone.utc) + timedelta(days=7)
+        )
+        session.add(user_session)
+        await session.commit()
         break
 
     # 2. Perform a request simulating www.auraworks.co.za origin with session cookie
@@ -47,7 +58,7 @@ async def test_cross_origin_cookie_auth():
     }
     
     cookies = {
-        "better-auth.session_token": user_id
+        "better-auth.session_token": session_token
     }
     
     response = await client.get(
@@ -62,12 +73,18 @@ async def test_cross_origin_cookie_auth():
     assert "total_warm_leads" in data
     assert "high_intent_companies" in data
     
-    # Clean up test user
+    # Clean up test user and session
     async for session in get_async_session():
+        stmt_sess = select(UserSession).where(UserSession.token == session_token)
+        res_sess = await session.execute(stmt_sess)
+        existing_sess = res_sess.scalars().first()
+        if existing_sess:
+            await session.delete(existing_sess)
+
         stmt_cleanup = select(User).where(User.id == user_id)
         res_cleanup = await session.execute(stmt_cleanup)
         existing_user = res_cleanup.scalars().first()
         if existing_user:
             await session.delete(existing_user)
-            await session.commit()
+        await session.commit()
         break

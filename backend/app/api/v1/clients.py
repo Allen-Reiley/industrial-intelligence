@@ -150,14 +150,16 @@ async def get_client_config(
         if not is_whitelisted:
             from app.core.config import settings
             import re
-            if settings.ALLOWED_ORIGIN_REGEX:
-                origin_with_scheme = f"https://{req_domain_lower}"
-                if re.match(settings.ALLOWED_ORIGIN_REGEX, origin_with_scheme):
+            allowed_regex = getattr(settings, "ALLOWED_ORIGIN_REGEX", None)
+            if allowed_regex:
+                origin_https = f"https://{req_domain_lower}"
+                origin_http = f"http://{req_domain_lower}"
+                if re.match(allowed_regex, origin_https) or re.match(allowed_regex, origin_http):
                     is_whitelisted = True
 
         if not is_whitelisted:
             logger.warning(f"AuraTracker: Strictly unauthorized domain match attempt: origin='{request_domain}', registered={client.whitelisted_domains}")
-            raise HTTPException(status_code=403, detail="Unauthorized website tag origin.")
+            raise HTTPException(status_code=403, detail="Origin not permitted by tenant policy")
 
     # 2. Timezone-Based Compliance Routing
     compliance_mode = "POPIA"

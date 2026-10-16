@@ -2,7 +2,7 @@
   "name": "industrial-tracker",
   "version": "1.0.0",
   "scripts": {
-    "build": "terser src/public/aura.js -o dist/aura.min.js --compress --mangle && terser src/banner/banner.js -o dist/banner.min.js --compress --mangle",
+    "build": "terser src/public/aura.js -o dist/aura.min.js --compress --mangle --comments false && terser src/banner/banner.js -o dist/banner.min.js --compress --mangle --comments false",
     "test": "jest"
   },
   "devDependencies": {

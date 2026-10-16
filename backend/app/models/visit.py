@@ -45,7 +45,14 @@ class Visit(SQLModel, table=True):
     rtt: Optional[int] = Field(default=None, nullable=True)
     fingerprint_hash: Optional[str] = Field(default=None, index=True, nullable=True)
     capture_source: Optional[str] = Field(default="banner", nullable=True)
+    user_agent: Optional[str] = Field(default=None, nullable=True)
+    hostname: Optional[str] = Field(default=None, nullable=True)
     duration: int = Field(default=0)
+    duration_seconds: Optional[int] = Field(default=None, nullable=True)
+    exited_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
     vsl_completion_percentage: Optional[int] = Field(default=None, nullable=True)
     vsl_completed_at: Optional[datetime] = Field(
         default=None,
@@ -62,9 +69,18 @@ class Visit(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), nullable=False)
     )
 
+    @property
+    def client_user_agent(self) -> Optional[str]:
+        """Deprecated synonym mapping to authoritative user_agent."""
+        return self.user_agent
+
+    @client_user_agent.setter
+    def client_user_agent(self, value: Optional[str]):
+        self.user_agent = value
+
     company: Optional["Company"] = Relationship(back_populates="visits")
-    page_views: List["PageView"] = Relationship(back_populates="visit")
-    events: List["Event"] = Relationship(back_populates="visit")
+    page_views: List["PageView"] = Relationship(back_populates="visit", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+    events: List["Event"] = Relationship(back_populates="visit", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
 
 class VisitCreate(BaseModel):
     client_id: UUID
@@ -72,6 +88,7 @@ class VisitCreate(BaseModel):
     url: str
     referrer: Optional[str] = "direct"
     screen_resolution: Optional[str] = None
+    user_agent: Optional[str] = None
     effective_connection_type: Optional[str] = None
     downlink_speed: Optional[float] = None
     rtt: Optional[int] = None

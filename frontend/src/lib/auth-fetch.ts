@@ -8,6 +8,38 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const cleanApiBase = API_BASE.replace(/\/$/, "");
 
 /**
+ * Explicitly sets or clears the session token across in-memory cache,
+ * localStorage, sessionStorage, and root subdomain cookies (.auraworks.co.za).
+ */
+export function setSessionToken(token: string | null) {
+  if (typeof window === "undefined") return;
+  const hostname = window.location.hostname;
+  const isApexOrSubdomain = hostname.includes("auraworks.co.za");
+  const rootDomain = isApexOrSubdomain ? "; domain=.auraworks.co.za" : "";
+  const secureFlag = window.location.protocol === "https:" ? "; Secure" : "";
+
+  if (!token) {
+    inMemoryToken = null;
+    try {
+      localStorage.removeItem("better-auth.session_token");
+      sessionStorage.removeItem("better-auth.session_token");
+      localStorage.removeItem("aura_session_token");
+      sessionStorage.removeItem("aura_session_token");
+      document.cookie = `aura_session_token=; path=/; max-age=0; SameSite=Lax${secureFlag}${rootDomain}`;
+    } catch {}
+    return;
+  }
+
+  const clean = token.trim();
+  inMemoryToken = clean;
+  try {
+    localStorage.setItem("better-auth.session_token", clean);
+    sessionStorage.setItem("better-auth.session_token", clean);
+    document.cookie = `aura_session_token=${encodeURIComponent(clean)}; path=/; max-age=604800; SameSite=Lax${secureFlag}${rootDomain}`;
+  } catch {}
+}
+
+/**
  * Actively retrieves the active session token from Better Auth,
  * falling back to local storage caches if needed.
  */
@@ -38,12 +70,7 @@ export async function getSessionToken(): Promise<string | null> {
 
             if (token && typeof token === "string" && token.trim()) {
               const clean = token.trim();
-              inMemoryToken = clean;
-              try {
-                localStorage.setItem("better-auth.session_token", clean);
-                sessionStorage.setItem("better-auth.session_token", clean);
-                document.cookie = `aura_session_token=${clean}; path=/; max-age=604800; SameSite=Lax`;
-              } catch {}
+              setSessionToken(clean);
               return clean;
             }
             return null;

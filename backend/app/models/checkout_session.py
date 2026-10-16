@@ -16,7 +16,7 @@ class CheckoutSession(SQLModel, table=True):
     __tablename__ = "checkout_session"
 
     id: UUID = Field(default_factory=uuid7, primary_key=True)
-    client_id: UUID = Field(foreign_key="client.id", index=True, nullable=False)
+    client_id: UUID = Field(foreign_key="client.id", ondelete="CASCADE", index=True, nullable=False)
     sales_rep_id: str = Field(foreign_key="user.id", index=True, nullable=False)
     status: CheckoutSessionStatus = Field(
         default=CheckoutSessionStatus.PENDING,

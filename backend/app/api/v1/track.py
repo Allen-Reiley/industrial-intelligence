@@ -1,11 +1,14 @@
 from fastapi import APIRouter, BackgroundTasks, Request, Header, HTTPException, Depends
 from typing import Optional, Dict, Any
 from sqlmodel import select
+from sqlalchemy import or_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from cachetools import TTLCache
+import urllib.parse
+import re
 
 # Internal AuraWorks Imports
 from app.models.visit import Visit, VisitCreate, PageViewCreate, EventCreate
@@ -23,6 +26,64 @@ logger = logging.getLogger("uvicorn")
 # --- ANTI-SPAM LOCK ---
 # Prevents duplicate exit notifications if the browser fires multiple exit beacons
 exit_notification_cache = TTLCache(maxsize=2000, ttl=43200) # 12 hour cooldown
+
+# --- ORIGIN CACHE ---
+# Caches approved tenant domains for 10 minutes to protect database during traffic spikes
+client_domains_cache = TTLCache(maxsize=2048, ttl=600)
+
+async def validate_telemetry_origin(client_id: Any, request: Request, session: AsyncSession) -> bool:
+    """
+    Validates that incoming telemetry Origin or Referer is permitted for the tenant.
+    Permits local/staging environments, preview regex matching, and registered whitelisted_domains.
+    """
+    origin = request.headers.get("origin") or request.headers.get("Origin") or request.headers.get("referer") or request.headers.get("Referer")
+    if not origin:
+        return True
+
+    try:
+        parsed = urllib.parse.urlparse(origin)
+        hostname = (parsed.hostname or "").lower()
+    except Exception:
+        hostname = origin.lower()
+
+    if not hostname or hostname in ["localhost", "127.0.0.1", "::1", "test"]:
+        return True
+
+    from app.core.config import settings
+    allowed_regex = getattr(settings, "ALLOWED_ORIGIN_REGEX", None)
+    if allowed_regex:
+        if re.match(allowed_regex, f"https://{hostname}") or re.match(allowed_regex, f"http://{hostname}"):
+            return True
+
+    cid_str = str(client_id)
+    whitelisted = client_domains_cache.get(cid_str)
+    if whitelisted is None:
+        from app.models.client import Client
+        try:
+            cid_uuid = UUID(cid_str) if isinstance(client_id, str) else client_id
+            client = await session.get(Client, cid_uuid)
+            if not client:
+                return False
+            domains = []
+            if client.domain:
+                domains.append(client.domain.lower())
+            for d in (client.whitelisted_domains or []):
+                if ":" in d:
+                    d = d.split(":")[0]
+                domains.append(d.lower())
+            whitelisted = set(domains)
+            client_domains_cache[cid_str] = whitelisted
+        except Exception:
+            return True
+
+    if not whitelisted:
+        return True
+
+    for wd in whitelisted:
+        if hostname == wd or hostname.endswith(f".{wd}"):
+            return True
+
+    return False
 
 class ConsentPayload(BaseModel):
     client_id: str
@@ -44,7 +105,7 @@ class IdentityPayload(BaseModel):
     capture_source: Optional[str] = "authorized_blur"
     signature: Optional[Dict[str, Any]] = None
 
-async def process_entry_logic(payload: VisitCreate, client_ip: str):
+async def process_entry_logic(payload: VisitCreate, client_ip: str, user_agent: Optional[str] = None):
     """
     SILENT INGESTION ENGINE:
     Records raw traffic trails and resolves firmographics without triggering DeepSeek or Slack pings.
@@ -98,16 +159,23 @@ async def process_entry_logic(payload: VisitCreate, client_ip: str):
                 asyncio.create_task(enrich_company_departments(company.id, company.domain))
 
             # 3. Persistence of the Forensic Trail
+            effective_ua = user_agent or getattr(payload, "user_agent", None)
             db_visit = Visit(
                 company_id=company.id if company else None,
                 client_id=payload.client_id,
                 aura_id=payload.aura_id,
                 ip_address=client_ip,
+                user_agent=effective_ua,
                 verification_status="verified" if (company and company.cipc_verified) else "verifying"
             )
             session.add(db_visit)
             await session.commit()
             await session.refresh(db_visit)
+
+            # Asynchronous Non-Blocking Reverse DNS Lookup (Task 34.1)
+            import asyncio
+            from app.services.intelligence import resolve_reverse_dns
+            asyncio.create_task(resolve_reverse_dns(db_visit.id, client_ip))
 
             # Check and trigger company intent surge alerts
             if company:
@@ -187,7 +255,7 @@ async def process_exit_logic(aura_id: str, client_id: str, duration: int = 0, ha
                 return
 
             if not lead and company:
-                journey = await get_visitor_journey(aura_id, session)
+                journey = await get_visitor_journey(client_id, aura_id, session)
                 
                 # Check if duration criteria breach the 15-second baseline tracking floor
                 # Sum the durations of all visits for this session
@@ -209,7 +277,7 @@ async def process_exit_logic(aura_id: str, client_id: str, duration: int = 0, ha
             logger.info(f"🚪 High-Intent Exit Flagged for {aura_id}. Compiling full DeepSeek journey matrix...")
 
             # 2. Compile the full session ledger into a single operational object
-            journey = await get_visitor_journey(aura_id, session)
+            journey = await get_visitor_journey(client_id, aura_id, session)
 
             # 3. Resolve Company Reference parameters
             company_name = lead.company_name_raw or "Anonymous Entity"
@@ -222,6 +290,7 @@ async def process_exit_logic(aura_id: str, client_id: str, duration: int = 0, ha
             complete_prospect_payload = {
                 "id": lead.id,
                 "aura_id": lead.aura_id,
+                "client_id": client_id,
                 "name": lead.name or "Unknown Lead",
                 "email": lead.email,
                 "company_name_final": company_name,
@@ -245,10 +314,10 @@ async def process_exit_logic(aura_id: str, client_id: str, duration: int = 0, ha
             from app.services.vault import sync_to_airtable, sync_to_notion
             
             # Push completed session summary metrics out to Airtable
-            await sync_to_airtable(complete_prospect_payload, journey)
+            await sync_to_airtable(client_id, complete_prospect_payload, journey)
             
             # Spin up the comprehensive canvas log layout space inside Notion
-            await sync_to_notion(complete_prospect_payload, journey)
+            await sync_to_notion(client_id, complete_prospect_payload, journey)
 
             logger.info(f"✅ DeepSeek Batch Processing synchronized delivery complete for {aura_id}")
 
@@ -258,7 +327,8 @@ async def process_exit_logic(aura_id: str, client_id: str, duration: int = 0, ha
 @router.post("/entry")
 async def track_entry(payload: VisitCreate, request: Request, background_tasks: BackgroundTasks):
     client_ip = request.headers.get("x-forwarded-for", request.client.host).split(',')[0]
-    background_tasks.add_task(process_entry_logic, payload, client_ip)
+    user_agent = request.headers.get("user-agent") or request.headers.get("User-Agent")
+    background_tasks.add_task(process_entry_logic, payload, client_ip, user_agent)
     return {"status": "accepted"}
 
 @router.post("/identity")
@@ -290,9 +360,11 @@ async def track_identity(
             visit.downlink_speed = net.get("downlink")
             visit.rtt = net.get("rtt")
 
-    if payload.email:
-        visit.capture_source = payload.capture_source
-        visit.verification_status = "verified" # Activate Janitor Shield
+    has_lead_data = bool(payload.email or payload.phone or payload.first_name or payload.last_name or payload.name)
+
+    if has_lead_data:
+        visit.capture_source = payload.capture_source or "banner_warm_lead"
+        visit.verification_status = "verified"
         visit.is_consented = True
 
         from sqlalchemy import or_
@@ -302,35 +374,42 @@ async def track_identity(
                 Prospect.client_id == payload.client_id,
                 or_(
                     Prospect.aura_id == payload.aura_id,
-                    Prospect.email == payload.email
+                    Prospect.email == payload.email if payload.email else False
                 )
             ).order_by(Prospect.created_at.desc())
         )
         lead = res_lead.scalars().first()
 
+        import uuid
         if not lead:
             lead = Prospect(
                 client_id=payload.client_id,
                 aura_id=payload.aura_id,
-                email=payload.email
+                email=payload.email or f"lead_{str(payload.aura_id or uuid.uuid4())[:12]}@unverified.aura"
             )
         
         # Always ensure aura_id is synced to the latest session if matched by email
-        lead.aura_id = payload.aura_id
-        lead.email = payload.email
+        if payload.aura_id:
+            lead.aura_id = payload.aura_id
+        if payload.email:
+            lead.email = payload.email
         
         # Resolve full name
         resolved_name = payload.name
         if not resolved_name and (payload.first_name or payload.last_name):
             resolved_name = f"{payload.first_name or ''} {payload.last_name or ''}".strip()
             
-        if resolved_name: lead.name = resolved_name
+        if resolved_name:
+            lead.name = resolved_name
         if payload.phone:
             from app.core.security import encrypt_field
             lead.phone_encrypted = encrypt_field(payload.phone)
-        if payload.company_name: lead.company_name_raw = payload.company_name
-        if payload.department: lead.department = payload.department
-        if payload.position: lead.position = payload.position
+        if payload.company_name:
+            lead.company_name_raw = payload.company_name
+        if payload.department:
+            lead.department = payload.department
+        if payload.position:
+            lead.position = payload.position
         session.add(lead)
 
     session.add(visit)
@@ -343,25 +422,65 @@ async def track_identity(
         # But we'll try to just return success since we handled the OR condition
         return {"status": "error", "detail": str(e)}
 
-    return {"status": "success", "lead_captured": True}
+    if has_lead_data:
+        return {"status": "success", "lead_captured": True}
+    return {"status": "identity_locked"}
 
 @router.post("/event")
 async def track_event(
     payload: EventCreate,
+    request: Request,
     session: AsyncSession = Depends(get_async_session)
 ):
     import traceback
     try:
-        target_aura_id = payload.aura_id if getattr(payload, "aura_id", None) else str(payload.client_id)
-        res = await session.execute(
-            select(Visit).where(
-                Visit.client_id == payload.client_id,
-                Visit.aura_id == target_aura_id
-            ).order_by(Visit.created_at.desc())
-        )
-        visit = res.scalars().first()
+        if not await validate_telemetry_origin(payload.client_id, request, session):
+            raise HTTPException(status_code=403, detail="Origin not permitted by tenant policy")
+
+        forwarded = request.headers.get("x-forwarded-for")
+        client_ip = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "127.0.0.1")
+
+        visit = None
+        target_aura_id = payload.aura_id
+
+        if target_aura_id:
+            res = await session.execute(
+                select(Visit).where(
+                    Visit.client_id == payload.client_id,
+                    Visit.aura_id == target_aura_id
+                ).order_by(Visit.created_at.desc())
+            )
+            visit = res.scalars().first()
+
         if not visit:
-            raise HTTPException(status_code=404, detail="Visit not found or mismatched client_id.")
+            # Check legacy stringified client_id or active visit within 30 minutes
+            res = await session.execute(
+                select(Visit).where(
+                    Visit.client_id == payload.client_id,
+                    or_(
+                        Visit.aura_id == str(payload.client_id),
+                        and_(
+                            Visit.ip_address == client_ip,
+                            Visit.created_at >= datetime.now(timezone.utc) - timedelta(minutes=30)
+                        )
+                    )
+                ).order_by(Visit.created_at.desc())
+            )
+            visit = res.scalars().first()
+
+        if not visit:
+            import uuid
+            target_aura_id = f"aura_{uuid.uuid4().hex}"
+            user_agent = request.headers.get("user-agent") or request.headers.get("User-Agent")
+            visit = Visit(
+                client_id=payload.client_id,
+                aura_id=target_aura_id,
+                ip_address=client_ip,
+                user_agent=user_agent,
+                created_at=datetime.now(timezone.utc)
+            )
+            session.add(visit)
+            await session.flush()
 
         if getattr(payload, "event_type", None) == "intent_click":
             visit.intent_cluster = getattr(payload, "intent_cluster", "General")
@@ -377,6 +496,13 @@ async def track_event(
         session.add(new_event)
         session.add(visit)
         await session.commit()
+
+        # Asynchronous Non-Blocking Reverse DNS Lookup (Task 34.1)
+        if not visit.hostname and client_ip not in ("127.0.0.1", "localhost", "::1", "test"):
+            import asyncio
+            from app.services.intelligence import resolve_reverse_dns
+            asyncio.create_task(resolve_reverse_dns(visit.id, client_ip))
+
         return {"status": "event_logged"}
     except HTTPException:
         raise
@@ -406,6 +532,7 @@ async def track_consent(
 @router.post("/exit")
 async def track_exit(
     payload: PageViewCreate,
+    request: Request,
     background_tasks: BackgroundTasks,
     session: AsyncSession = Depends(get_async_session)
 ):
@@ -415,21 +542,61 @@ async def track_exit(
     except (ValueError, TypeError):
         processed_duration = 0
 
-    target_aura_id = payload.aura_id if getattr(payload, "aura_id", None) else str(payload.client_id)
+    forwarded = request.headers.get("x-forwarded-for")
+    client_ip = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "127.0.0.1")
 
-    res = await session.execute(
-        select(Visit).where(
-            Visit.client_id == payload.client_id,
-            Visit.aura_id == target_aura_id
-        ).order_by(Visit.created_at.desc())
-    )
-    visit = res.scalars().first()
-    
+    visit = None
+    target_aura_id = payload.aura_id
+
+    if target_aura_id:
+        res = await session.execute(
+            select(Visit).where(
+                Visit.client_id == payload.client_id,
+                Visit.aura_id == target_aura_id
+            ).order_by(Visit.created_at.desc())
+        )
+        visit = res.scalars().first()
+
     if not visit:
-        raise HTTPException(status_code=404, detail="Visit not found or mismatched client_id.")
+        res = await session.execute(
+            select(Visit).where(
+                Visit.client_id == payload.client_id,
+                or_(
+                    Visit.aura_id == str(payload.client_id),
+                    and_(
+                        Visit.ip_address == client_ip,
+                        Visit.created_at >= datetime.now(timezone.utc) - timedelta(minutes=30)
+                    )
+                )
+            ).order_by(Visit.created_at.desc())
+        )
+        visit = res.scalars().first()
 
-    if processed_duration > (visit.duration or 0):
-        visit.duration = processed_duration
+    now_utc = datetime.now(timezone.utc)
+    new_visit_created = False
+    if not visit:
+        import uuid
+        target_aura_id = f"aura_{uuid.uuid4().hex}"
+        user_agent = request.headers.get("user-agent") or request.headers.get("User-Agent")
+        visit = Visit(
+            client_id=payload.client_id,
+            aura_id=target_aura_id,
+            ip_address=client_ip,
+            user_agent=user_agent,
+            duration=processed_duration,
+            duration_seconds=processed_duration,
+            exited_at=now_utc,
+            created_at=now_utc
+        )
+        session.add(visit)
+        await session.flush()
+        new_visit_created = True
+    else:
+        target_aura_id = visit.aura_id
+        visit.exited_at = now_utc
+        if processed_duration > (visit.duration or 0):
+            visit.duration = processed_duration
+            visit.duration_seconds = processed_duration
         session.add(visit)
         
     from app.models.pageview import PageView
@@ -442,6 +609,11 @@ async def track_exit(
     )
     session.add(new_page_view)
     await session.commit()
+
+    if new_visit_created and client_ip not in ("127.0.0.1", "localhost", "::1", "test"):
+        import asyncio
+        from app.services.intelligence import resolve_reverse_dns
+        asyncio.create_task(resolve_reverse_dns(visit.id, client_ip))
 
     # Launch Batch Intelligence processing sequentially when the session closes down
     if target_aura_id and payload.client_id:

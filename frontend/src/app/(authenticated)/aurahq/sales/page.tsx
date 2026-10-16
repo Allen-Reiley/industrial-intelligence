@@ -57,19 +57,20 @@ export interface SalesMetrics {
 }
 
 export default function SalesPortal() {
-  const { data: session } = useSession();
+  const { data: session, isPending } = useSession();
 
   const userRole = (session?.user as any)?.role;
   const userId = session?.user?.id;
   const urlSuffix = userRole !== "admin" && userId ? `?sales_rep_id=${userId}` : "";
+  const isReady = !isPending && !!session;
 
-  // SWR Real-Time Polling (Every 5 seconds)
+  // SWR Real-Time Polling (Every 5 seconds, guarded by isReady)
   const {
     data: checkouts,
     mutate: mutateCheckouts,
     isLoading: loadingCheckouts,
   } = useSWR<CheckoutSessionItem[]>(
-    `${cleanApiBase}/api/v1/sales/checkouts${urlSuffix}`,
+    isReady ? `${cleanApiBase}/api/v1/sales/checkouts${urlSuffix}` : null,
     apiFetcher,
     { refreshInterval: 5000 }
   );
@@ -78,7 +79,7 @@ export default function SalesPortal() {
     data: metrics,
     mutate: mutateMetrics,
   } = useSWR<SalesMetrics>(
-    `${cleanApiBase}/api/v1/sales/metrics${urlSuffix}`,
+    isReady ? `${cleanApiBase}/api/v1/sales/metrics${urlSuffix}` : null,
     apiFetcher,
     { refreshInterval: 5000 }
   );

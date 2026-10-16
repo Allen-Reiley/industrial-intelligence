@@ -120,19 +120,21 @@ export default function AdminConsole() {
   const [deleteModalUser, setDeleteModalUser] = useState<Personnel | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // SWR Queries
+  // SWR Queries: Guarded by isReady to prevent premature unauthenticated 401 fetches
+  const isReady = !isPending && (session?.user as any)?.role === "admin";
+
   const { data: overviewMetrics } = useSWR<OverviewMetrics>(
-    `${cleanApiBase}/api/v1/admin/overview-metrics`,
+    isReady ? `${cleanApiBase}/api/v1/admin/overview-metrics` : null,
     apiFetcher
   );
 
   const { data: personnel, mutate: mutatePersonnel } = useSWR<Personnel[]>(
-    `${cleanApiBase}/api/v1/admin/users`,
+    isReady ? `${cleanApiBase}/api/v1/admin/users` : null,
     apiFetcher
   );
 
   const { data: scripts } = useSWR<ScriptItem[]>(
-    `${cleanApiBase}/api/v1/scripts/`,
+    isReady ? `${cleanApiBase}/api/v1/scripts/` : null,
     apiFetcher
   );
 

@@ -1,6 +1,6 @@
-import { authFetch, authFetcher, getSessionToken } from "./auth-fetch";
+import { authFetch, authFetcher, getSessionToken, setSessionToken } from "./auth-fetch";
 
-export { authFetch, authFetcher, getSessionToken };
+export { authFetch, authFetcher, getSessionToken, setSessionToken };
 
 /**
  * The BASE_URL resolves the backend address.

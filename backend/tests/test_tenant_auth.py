@@ -24,6 +24,9 @@ async def get_test_client():
     except AttributeError:
         return httpx.AsyncClient(app=app, base_url="https://test")
 
+from app.models.user import User, Session as UserSession, UserRole
+from datetime import datetime, timezone, timedelta
+
 async def get_auth_cookies_for_user(session, email: str, is_superuser: bool, client_id: uuid.UUID = None):
     stmt = select(User).where(User.email == email)
     res = await session.execute(stmt)
@@ -48,7 +51,16 @@ async def get_auth_cookies_for_user(session, email: str, is_superuser: bool, cli
         await session.commit()
         await session.refresh(user)
     
-    return {"aurahq_auth": str(user.id)}
+    session_token = f"sess_{uuid.uuid4().hex[:12]}"
+    user_session = UserSession(
+        id=f"sess_{uuid.uuid4().hex[:8]}",
+        user_id=user.id,
+        token=session_token,
+        expires_at=datetime.now(timezone.utc) + timedelta(days=7)
+    )
+    session.add(user_session)
+    await session.commit()
+    return {"better-auth.session_token": session_token}
 
 async def test_tenant_gating_leads():
     client = await get_test_client()

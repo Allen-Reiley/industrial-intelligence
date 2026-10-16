@@ -35,13 +35,24 @@ def get_sanitized_db_url(url: str, is_async: bool = False) -> str:
 # 1. Synchronous Engine (For Migrations and Admin Dashboards)
 sync_url = get_sanitized_db_url(settings.DATABASE_URL, is_async=False)
 
+sync_connect_args = {}
+if sync_url and "postgres" in sync_url:
+    sync_connect_args = {
+        "keepalives": 1,
+        "keepalives_idle": 30,
+        "keepalives_interval": 10,
+        "keepalives_count": 5
+    }
+
 if sync_url:
     engine = create_engine(
         sync_url,
         echo=False,
         pool_pre_ping=True,
+        pool_recycle=300,
         pool_size=10,
-        max_overflow=20
+        max_overflow=20,
+        connect_args=sync_connect_args
     )
 else:
     logger.critical("🚨 DATABASE_URL missing. System entering Fail-Fast mode.")
@@ -50,13 +61,25 @@ else:
 # 2. Asynchronous Engine (For Forensic Tracking, Janitor Cycles & Identity API)
 async_url = get_sanitized_db_url(settings.DATABASE_URL, is_async=True)
 
+async_connect_args = {}
+if async_url and "postgres" in async_url:
+    async_connect_args = {
+        "server_settings": {
+            "tcp_keepalives_idle": "30",
+            "tcp_keepalives_interval": "10",
+            "tcp_keepalives_count": "5"
+        }
+    }
+
 if async_url:
     async_engine = create_async_engine(
         async_url,
         echo=False,
         pool_pre_ping=True,
+        pool_recycle=300,
         pool_size=10,
-        max_overflow=20
+        max_overflow=20,
+        connect_args=async_connect_args
     )
     async_session_maker = sessionmaker(
         async_engine, class_=AsyncSession, expire_on_commit=False

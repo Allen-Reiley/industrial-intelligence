@@ -22,5 +22,9 @@ class Event(SQLModel, table=True):
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(DateTime(timezone=True), nullable=False, index=True)
     )
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column("created_at", DateTime(timezone=True), nullable=False)
+    )
 
     visit: Optional["Visit"] = Relationship(back_populates="events")

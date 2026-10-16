@@ -174,7 +174,7 @@ async def test_client_config_origin_subdomain_and_vercel_preview():
         app.dependency_overrides.pop(get_async_session, None)
 
 from app.api.v1.auth import get_current_admin_user
-from app.models.user import User
+from app.models.user import User, UserRole
 
 async def test_update_client_invalidates_config_cache():
     """
@@ -197,10 +197,9 @@ async def test_update_client_invalidates_config_cache():
     mock_session.refresh = AsyncMock()
 
     mock_admin = User(
-        id=uuid.uuid4(),
+        id=str(uuid.uuid4()),
         email="admin@auraworks.co.za",
-        hashed_password="hash",
-        is_superuser=True,
+        role=UserRole.ADMIN,
         is_active=True
     )
 

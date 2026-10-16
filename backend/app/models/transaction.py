@@ -17,7 +17,7 @@ class Transaction(SQLModel, table=True):
     __tablename__ = "transaction"
 
     id: UUID = Field(default_factory=uuid7, primary_key=True)
-    client_id: UUID = Field(foreign_key="client.id", index=True, nullable=False)
+    client_id: UUID = Field(foreign_key="client.id", ondelete="CASCADE", index=True, nullable=False)
     sales_rep_id: Optional[str] = Field(default=None, foreign_key="user.id", index=True, nullable=True)
     checkout_session_id: Optional[UUID] = Field(default=None, foreign_key="checkout_session.id", index=True, nullable=True)
     amount: int = Field(nullable=False)  # stored in cents

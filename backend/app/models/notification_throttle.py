@@ -8,7 +8,7 @@ class NotificationThrottle(SQLModel, table=True):
     __tablename__ = "notification_throttle"
     
     id: UUID = Field(default_factory=uuid7, primary_key=True)
-    client_id: UUID = Field(foreign_key="client.id", index=True)
+    client_id: UUID = Field(foreign_key="client.id", ondelete="CASCADE", index=True)
     company_id: UUID = Field(index=True)
     last_notification_sent_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),

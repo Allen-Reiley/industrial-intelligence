@@ -92,13 +92,14 @@ def normalize_session_token(token: Optional[str]) -> Optional[str]:
     Normalizes a session token extracted from headers or cookies:
     - URL-decodes (handles %3D etc)
     - Trims whitespace and quotes
+    - Rejects invalid string literals ('undefined', 'null', 'none')
     - If token is from a signed cookie (format: '<token>.<signature>'),
       extracts the raw token prefix before the dot.
     """
     if not token:
         return None
     cleaned = urllib.parse.unquote(str(token).strip()).strip("\"'")
-    if not cleaned:
+    if not cleaned or cleaned.lower() in ["undefined", "null", "none"]:
         return None
     # Better Auth signed cookies have format '<token>.<hmac_signature>'
     if "." in cleaned:
@@ -146,8 +147,11 @@ async def get_session_token_from_request(
         "__Secure-better-auth.session_token",
         "better-auth.session_token",
         "aura_session_token",
+        "better_auth.session_token",
+        "__Secure-better_auth.session_token",
         "aurahq_auth",
-        "admin_access_token"
+        "admin_access_token",
+        "session_token"
     ]:
         val = request.cookies.get(cookie_name)
         if val and val.strip():
@@ -187,7 +191,8 @@ async def get_current_user(
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication required: No session token provided"
+            detail="Authentication required: No session token provided",
+            headers={"WWW-Authenticate": "Bearer"}
         )
 
     # 1. Query Better Auth Session from DB (matching raw or signed token variants)
@@ -215,7 +220,8 @@ async def get_current_user(
         if session_expires < now:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Session expired: Please sign in again"
+                detail="Session expired: Please sign in again",
+                headers={"WWW-Authenticate": "Bearer"}
             )
 
         # Permanent Super Admin Invariant: reitumetse@auraworks.co.za is ALWAYS active ADMIN
@@ -239,7 +245,8 @@ async def get_current_user(
 
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Unauthorized: Invalid session credentials"
+        detail="Unauthorized: Invalid session credentials",
+        headers={"WWW-Authenticate": "Bearer"}
     )
 
 

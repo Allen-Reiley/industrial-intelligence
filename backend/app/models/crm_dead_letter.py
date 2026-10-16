@@ -11,7 +11,7 @@ class CrmDeadLetter(SQLModel, table=True):
     __tablename__ = "crm_dead_letter"
     
     id: UUID = Field(default_factory=uuid7, primary_key=True)
-    client_id: UUID = Field(foreign_key="client.id", index=True)
+    client_id: UUID = Field(foreign_key="client.id", ondelete="CASCADE", index=True)
     payload: dict = Field(
         default_factory=dict, 
         sa_column=Column(JSONB().with_variant(JSON, "sqlite"), nullable=False)

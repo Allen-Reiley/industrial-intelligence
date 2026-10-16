@@ -2,8 +2,9 @@
 import httpx
 import logging
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional, Dict, Any
-from sqlmodel import select
+from typing import List, Optional, Dict, Any, Union
+from uuid import UUID
+from sqlmodel import select, or_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from cachetools import TTLCache
 import redis.asyncio as aioredis
@@ -12,12 +13,93 @@ from bs4 import BeautifulSoup
 from app.models import Visit, Company, Prospect, PageView, Client, VerificationStatus
 from app.core.config import settings
 
+import socket
+import asyncio
+from app.core.cache import get_redis_client
+
 logger = logging.getLogger("uvicorn")
 
 # --- INDUSTRIAL CACHE LAYER ---
 # TTLCache: Retains up to 2000 IP addresses with a 24-hour Time-To-Live (86400 seconds).
 # Prevents redundant, costly HTTP requests to IPinfo.io and avoids token exhaustion on repeat traffic.
 ip_cache = TTLCache(maxsize=2000, ttl=86400)
+
+# --- REVERSE DNS CACHE LAYER (Task 34.1) ---
+# 7-day TTL (604800 seconds) fallback cache for reverse DNS resolution
+dns_fallback_cache = TTLCache(maxsize=5000, ttl=604800)
+
+async def get_cached_dns(ip_address: str) -> Optional[str]:
+    """Retrieve cached reverse DNS hostname from Redis (Tier 1) or in-memory TTLCache (Tier 2)."""
+    key = f"ip_dns:{ip_address}"
+    redis_client = get_redis_client()
+    if redis_client:
+        try:
+            val = await redis_client.get(key)
+            if val is not None:
+                return val
+        except Exception as e:
+            logger.warning(f"Redis GET DNS failed (key={key}): {e}")
+    return dns_fallback_cache.get(key)
+
+async def set_cached_dns(ip_address: str, hostname: str) -> None:
+    """Cache resolved reverse DNS hostname in Redis with 7-day TTL (604800s) and in-memory TTLCache fallback."""
+    key = f"ip_dns:{ip_address}"
+    redis_client = get_redis_client()
+    if redis_client:
+        try:
+            await redis_client.set(key, hostname, ex=604800)
+            return
+        except Exception as e:
+            logger.warning(f"Redis SET DNS failed (key={key}): {e}")
+    dns_fallback_cache[key] = hostname
+
+async def resolve_reverse_dns(visit_id: Any, ip_address: str) -> Optional[str]:
+    """
+    Task 34.1: Asynchronous Non-Blocking Reverse DNS Lookups.
+    Runs out-of-band to prevent blocking the HTTP ingestion cycle.
+    Enforces a strict 1.5-second timeout, caches results with a 7-day TTL (ip_dns:{ip}),
+    and asynchronously updates Visit.hostname in the database.
+    """
+    if not ip_address or ip_address in ("127.0.0.1", "localhost", "::1", "test"):
+        return None
+
+    # 1. Tier 1 / Tier 2 Cache check
+    hostname = await get_cached_dns(ip_address)
+    
+    # 2. If uncached, perform non-blocking PTR lookup with strict 1.5s timeout
+    if not hostname:
+        try:
+            loop = asyncio.get_running_loop()
+            res = await asyncio.wait_for(
+                loop.run_in_executor(None, socket.gethostbyaddr, ip_address),
+                timeout=1.5
+            )
+            hostname = res[0]
+            await set_cached_dns(ip_address, hostname)
+        except asyncio.TimeoutError:
+            logger.warning(f"⏳ Reverse DNS lookup timed out (1.5s) for IP {ip_address}")
+            return None
+        except Exception as e:
+            logger.debug(f"Reverse DNS lookup failed for IP {ip_address}: {e}")
+            return None
+
+    # 3. Asynchronously update Visit.hostname if visit_id provided
+    if visit_id and hostname:
+        try:
+            from app.db import async_session_maker
+            if async_session_maker:
+                async with async_session_maker() as session:
+                    v_uuid = UUID(str(visit_id)) if not isinstance(visit_id, UUID) else visit_id
+                    visit = await session.get(Visit, v_uuid)
+                    if visit:
+                        visit.hostname = hostname
+                        session.add(visit)
+                        await session.commit()
+        except Exception as e:
+            logger.error(f"Failed to update Visit.hostname for visit {visit_id}: {e}")
+
+    return hostname
+
 
 # --- UTILS: Industrial Formatting ---
 def format_zar(value: str) -> str:
@@ -147,16 +229,55 @@ async def analyze_corporate_intent(
 
 # --- PHASE 03: Unified Journey & Ghost Enrichment ---
 
-async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
+async def get_visitor_journey(
+    client_id: Union[UUID, str, int],
+    aura_id: str,
+    session: AsyncSession,
+    ip_address: Optional[str] = None
+) -> Dict:
     """
-    The Behavioral Ledger: Maps touchpoints and executes IP correlation.
-    Identifies 'Ghost Links' where anonymous users share an IP with known Warm Leads.
+    The Behavioral Ledger: Maps touchpoints and executes IP correlation within strict tenant boundaries.
+    Identifies 'Ghost Links' where anonymous users share an IP with known Warm Leads belonging to the SAME client.
     """
+    # Handle parameter order fallback if called as get_visitor_journey(aura_id, session)
+    if isinstance(aura_id, AsyncSession):
+        session = aura_id
+        aura_id = client_id
+        client_id = None
+
     if not aura_id:
         return {"total_touches": 0, "pathway": "Direct", "intent_summary": "No signature."}
 
-    # 1. Forensic History Retrieval
-    stmt = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at)
+    cid = None
+    if client_id is not None:
+        try:
+            cid = UUID(str(client_id)) if isinstance(client_id, (str, UUID)) else client_id
+        except ValueError:
+            cid = client_id
+
+    # 1. Forensic History Retrieval - strictly scoped to tenant perimeter
+    if ip_address:
+        if cid is not None:
+            stmt = select(Visit).where(
+                Visit.client_id == cid,
+                or_(
+                    Visit.aura_id == aura_id,
+                    and_(Visit.ip_address == ip_address, Visit.client_id == cid)
+                )
+            ).order_by(Visit.created_at)
+        else:
+            stmt = select(Visit).where(
+                or_(
+                    Visit.aura_id == aura_id,
+                    Visit.ip_address == ip_address
+                )
+            ).order_by(Visit.created_at)
+    else:
+        stmt = select(Visit).where(Visit.aura_id == aura_id)
+        if cid is not None:
+            stmt = stmt.where(Visit.client_id == cid)
+        stmt = stmt.order_by(Visit.created_at)
+
     res = await session.execute(stmt)
     history = res.scalars().all()
     
@@ -164,23 +285,29 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
         return {"total_touches": 0, "pathway": "First Contact", "intent_summary": "Initial touchpoint recorded."}
 
     last_visit = history[-1]
+    target_ip = ip_address or last_visit.ip_address
 
-    # 2. Timezone-Aware DB Parity Safe Guard Check
-    # Evaluates visits sharing the same IP address over the last 72 hours.
-    # If 3 or more unique device IDs are detected, it signals a corporate site facility/Buying Committee cluster.
+    # 2. Timezone-Aware DB Parity Safe Guard Check (Tenant-scoped)
     time_offset = datetime.now(timezone.utc) - timedelta(hours=72)
 
     cluster_stmt = select(Visit).where(
-        Visit.ip_address == last_visit.ip_address,
+        Visit.ip_address == target_ip,
         Visit.created_at >= time_offset
     )
+    if cid is not None:
+        cluster_stmt = cluster_stmt.where(Visit.client_id == cid)
+
     cluster_res = await session.execute(cluster_stmt)
     cluster_records = cluster_res.scalars().all()
     unique_id_count = len({v.aura_id for v in cluster_records})
     is_buying_committee = unique_id_count >= 3
 
-    # 3. Pathway Mapping (Cleanup URL flow to show sequential pages visited)
-    pv_stmt = select(PageView).join(Visit, PageView.visit_id == Visit.id).where(Visit.aura_id == aura_id).order_by(PageView.created_at)
+    # 3. Pathway Mapping (Cleanup URL flow to show sequential pages visited, strictly tenant-scoped)
+    pv_stmt = select(PageView).join(Visit, PageView.visit_id == Visit.id).where(Visit.aura_id == aura_id)
+    if cid is not None:
+        pv_stmt = pv_stmt.where(Visit.client_id == cid, PageView.client_id == cid)
+    pv_stmt = pv_stmt.order_by(PageView.created_at)
+
     pv_res = await session.execute(pv_stmt)
     page_views = pv_res.scalars().all()
     pages = [pv.url_path.split('auraworks.co.za')[-1] if pv.url_path else "/" for pv in page_views]
@@ -190,12 +317,14 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
             unique_pathway.append(p if p != "" else "/")
     pathway_str = " → ".join(unique_pathway)
 
-    # 4. Resolve Identity Context
+    # 4. Resolve Identity Context (Tenant-scoped)
     company = None
     lead = None
     
     # Check for volunteered data (The 'Warm' Check)
     prospect_stmt = select(Prospect).where(Prospect.aura_id == aura_id)
+    if cid is not None:
+        prospect_stmt = prospect_stmt.where(Prospect.client_id == cid)
     res_lead = await session.execute(prospect_stmt)
     lead = res_lead.scalars().first()
 
@@ -206,18 +335,18 @@ async def get_visitor_journey(aura_id: str, session: AsyncSession) -> Dict:
     elif lead and lead.company_id:
         company = await session.get(Company, lead.company_id)
 
-    # 5. Ghost-Enrichment (IP-based Corporate Mapping)
-    # The Ghost Bridge: If visitor X is completely anonymous but is visiting from an IP address
-    # that visitor Y (who submitted waitlist/consent details) shares, we can propagate the identity
-    # match. This resolves corporate profiles for colleague groups accessing the site.
+    # 5. Ghost-Enrichment (IP-based Corporate Mapping, strictly tenant-scoped)
     cluster_info = f"📍 Facility Activity: {unique_id_count} device(s)"
     
-    if not company and last_visit.ip_address:
-        # If we don't know who this is, check if ANYONE from this IP ever identified themselves.
-        # This is how we deanonymize colleagues in the same building.
+    if not company and target_ip:
         past_prospect_stmt = select(Prospect).join(
             Visit, Prospect.aura_id == Visit.aura_id
-        ).where(Visit.ip_address == last_visit.ip_address)
+        ).where(Visit.ip_address == target_ip)
+        if cid is not None:
+            past_prospect_stmt = past_prospect_stmt.where(
+                Prospect.client_id == cid,
+                Visit.client_id == cid
+            )
         
         past_prospect_res = await session.execute(past_prospect_stmt)
         past_lead = past_prospect_res.scalars().first()

@@ -145,7 +145,7 @@ async def background_prospect_analysis(prospect_id: Any, aura_id: str, payload: 
                     logger.error(f"❌ Immediate Apollo Enrichment failed: {e}")
 
             # 5. Compile Unified Journey & Ghost Enrichment
-            journey = await get_visitor_journey(aura_id, session)
+            journey = await get_visitor_journey(lead.client_id, aura_id, session)
 
             # 6. Pack the complete, unified data dictionary
             complete_prospect_payload = {
@@ -171,9 +171,9 @@ async def background_prospect_analysis(prospect_id: Any, aura_id: str, payload: 
 
             # 7. Dispatch completed data packets
             from app.services.notifications import post_to_slack
-            await post_to_slack(prospect_data=complete_prospect_payload, journey=journey)
-            await sync_to_airtable(complete_prospect_payload, journey)
-            await sync_to_notion(complete_prospect_payload, journey)
+            await post_to_slack(prospect_data=complete_prospect_payload, journey=journey, client_id=lead.client_id)
+            await sync_to_airtable(lead.client_id, complete_prospect_payload, journey)
+            await sync_to_notion(lead.client_id, complete_prospect_payload, journey)
 
             logger.info(f"✅ Full Synchronization & Enrichment Cycle Complete for Lead ID: {prospect_id}")
 

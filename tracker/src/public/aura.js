@@ -34,6 +34,55 @@
     const API_URL = getApiPath("track");
     const CONFIG_URL = getApiPath("clients/config");
 
+    let currentConfig = null;
+    let currentAuraId = null;
+
+    const injectBannerScript = (callback, cfg, id) => {
+        if (cfg) currentConfig = cfg;
+        if (id) currentAuraId = id;
+
+        const notifyReady = () => {
+            window.dispatchEvent(new CustomEvent('aura:ready', {
+                detail: { 
+                    auraId: currentAuraId || (AuraTracker && AuraTracker.auraId) || window.AURA_UID, 
+                    clientId: agencyId, 
+                    config: currentConfig || window.AURA_REMOTE_CONFIG 
+                }
+            }));
+        };
+
+        if (window.__AURA_BANNER_MOUNTED__ || (typeof document !== 'undefined' && document.getElementById('aura-banner-root'))) {
+            notifyReady();
+            if (callback) callback();
+            return;
+        }
+        if (typeof document !== 'undefined' && (document.getElementById('aura-banner-script') || document.querySelector('script[src*="banner.js"]'))) {
+            if (callback) {
+                window.addEventListener('aura:banner_mounted', () => {
+                    notifyReady();
+                    callback();
+                }, { once: true });
+            }
+            return;
+        }
+        if (typeof document === 'undefined') return;
+        const s = document.createElement('script');
+        s.id = 'aura-banner-script';
+        s.src = window.AURA_CONFIG?.bannerUrl || "https://banner.auraworks.co.za/banner.js";
+        s.defer = true;
+        s.onload = () => {
+            notifyReady();
+            if (callback) {
+                if (window.__AURA_BANNER_MOUNTED__ || document.getElementById('aura-banner-root')) {
+                    callback();
+                } else {
+                    window.addEventListener('aura:banner_mounted', () => callback(), { once: true });
+                }
+            }
+        };
+        document.head.appendChild(s);
+    };
+
     /**
      * Identity Persistence Layer:
      * Dual-redundancy storage mechanism syncing tracking IDs across Document Cookies 
@@ -190,10 +239,14 @@
 
             const url = `${API_URL}/${endpoint}`;
 
-            if (useBeacon && navigator.sendBeacon) {
-                const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-                const success = navigator.sendBeacon(url, blob);
-                if (success) return true;
+            if (useBeacon && typeof navigator !== 'undefined' && navigator.sendBeacon) {
+                try {
+                    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+                    const success = navigator.sendBeacon(url, blob);
+                    if (success) return true;
+                } catch (e) {
+                    // SendBeacon failed or quota exceeded; fall through to fetch keepalive
+                }
             }
 
             if (!navigator.onLine) {
@@ -234,30 +287,159 @@
                 return false;
             }
         },
-        setupSensors() {
-            document.addEventListener('blur', (e) => {
-                const target = e.target;
-                const fieldName = target.name?.toLowerCase() || "";
-                
-                if (target.type === 'email' || fieldName.includes('email')) {
-                    if (target.value.includes('@')) {
-                        this.dispatch('identity', { email: target.value, capture_source: 'field_blur' });
+        blurDebounceTimer: null,
+        handleFieldBlur(e) {
+            const target = e.target;
+            if (!target || !target.tagName || target.tagName.toLowerCase() !== 'input') return;
+            const val = (target.value || '').trim();
+            if (!val) return;
+
+            const type = (target.type || '').toLowerCase();
+            const name = (target.name || '').toLowerCase();
+            const id = (target.id || '').toLowerCase();
+
+            if (this.blurDebounceTimer) clearTimeout(this.blurDebounceTimer);
+            this.blurDebounceTimer = setTimeout(() => {
+                if (type === 'email' || name.includes('email') || id.includes('email')) {
+                    if (val.includes('@')) {
+                        this.dispatch('identity', { email: val, capture_source: 'field_blur' });
                     }
-                } else if (fieldName.includes('company') && target.value.length > 2) {
-                    this.dispatch('identity', { company_name: target.value, capture_source: 'field_blur' });
+                } else if (type === 'tel' || name.includes('phone') || name.includes('tel') || id.includes('phone') || id.includes('tel')) {
+                    if (val.replace(/\D/g, '').length >= 7) {
+                        this.dispatch('identity', { phone: val, capture_source: 'field_blur' });
+                    }
+                } else if ((name.includes('company') || id.includes('company')) && val.length > 2) {
+                    this.dispatch('identity', { company_name: val, capture_source: 'field_blur' });
+                }
+            }, 300);
+        },
+        handleFormSubmit(form) {
+            try {
+                if (!form || !form.elements) return;
+                const data = {};
+                for (let i = 0; i < form.elements.length; i++) {
+                    const el = form.elements[i];
+                    if (!el || !el.value) continue;
+                    const val = el.value.trim();
+                    if (!val) continue;
+
+                    const type = (el.type || '').toLowerCase();
+                    const name = (el.name || '').toLowerCase();
+                    const id = (el.id || '').toLowerCase();
+
+                    if (type === 'email' || name.includes('email') || id.includes('email') || (val.includes('@') && val.includes('.'))) {
+                        data.email = val;
+                    } else if (type === 'tel' || name.includes('phone') || name.includes('tel') || id.includes('phone') || id.includes('tel')) {
+                        data.phone = val;
+                    } else if (name.includes('company') || id.includes('company') || name.includes('organization')) {
+                        data.company_name = val;
+                    } else if (name.includes('first') || id.includes('first')) {
+                        data.first_name = val;
+                    } else if (name.includes('last') || id.includes('last')) {
+                        data.last_name = val;
+                    } else if ((name === 'name' || id === 'name') && !data.first_name) {
+                        data.first_name = val;
+                    }
+                }
+
+                if (data.email || data.phone || data.company_name) {
+                    this.dispatch('identity', {
+                        ...data,
+                        capture_source: 'form_submit'
+                    });
+                }
+
+                this.dispatch('event', {
+                    event_type: 'form_submit',
+                    form_id: form.id || form.getAttribute('name') || 'unnamed_form',
+                    form_action: form.action || (typeof window !== 'undefined' && window.location ? window.location.pathname : '')
+                });
+            } catch (_) {}
+        },
+        setupObserver() {
+            if (typeof document === 'undefined' || !document.body || typeof MutationObserver === 'undefined') return;
+
+            const boundForms = new WeakSet();
+            const self = this;
+
+            const bindForm = (form) => {
+                if (!form || boundForms.has(form)) return;
+                boundForms.add(form);
+                form.addEventListener('submit', () => self.handleFormSubmit(form), true);
+                form.addEventListener('change', (e) => self.handleFieldBlur(e), true);
+            };
+
+            document.querySelectorAll('form').forEach(bindForm);
+
+            const checkNode = (node) => {
+                if (!node || node.nodeType !== 1) return;
+                if (node.tagName === 'FORM') {
+                    bindForm(node);
+                } else if (node.querySelectorAll) {
+                    node.querySelectorAll('form').forEach(bindForm);
+
+                    // Scan for embedded iframe containers (HubSpot, Marketo, Typeform)
+                    const iframes = node.tagName === 'IFRAME' ? [node] : node.querySelectorAll('iframe');
+                    iframes.forEach(iframe => {
+                        const src = (iframe.src || '').toLowerCase();
+                        if (src.includes('hsforms') || src.includes('hubspot') || src.includes('marketo') || src.includes('typeform')) {
+                            self.dispatch('event', {
+                                event_type: 'embedded_form_detected',
+                                provider: src.includes('typeform') ? 'typeform' : (src.includes('marketo') ? 'marketo' : 'hubspot')
+                            });
+                        }
+                    });
+                }
+            };
+
+            const observer = new MutationObserver((mutations) => {
+                for (const m of mutations) {
+                    for (const node of m.addedNodes) {
+                        checkNode(node);
+                    }
+                }
+            });
+
+            observer.observe(document.body, { childList: true, subtree: true });
+
+            window.addEventListener('message', (e) => {
+                try {
+                    if (e.data && e.data.type === 'hsFormCallback' && e.data.eventName === 'onFormSubmitted') {
+                        const vals = e.data.data?.submissionValues || {};
+                        const email = vals.email || undefined;
+                        const phone = vals.phone || vals.mobilephone || undefined;
+                        if (email || phone) {
+                            self.dispatch('identity', { email, phone, capture_source: 'hubspot_embed' });
+                        }
+                        self.dispatch('event', { event_type: 'form_submit', provider: 'hubspot' });
+                    }
+                } catch (_) {}
+            });
+        },
+        setupSensors() {
+            // Input blur listener with debouncing for email, phone, and company
+            document.addEventListener('blur', (e) => this.handleFieldBlur(e), true);
+
+            // Form submission interceptor
+            document.addEventListener('submit', (e) => {
+                if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'form') {
+                    this.handleFormSubmit(e.target);
                 }
             }, true);
+
+            // Dynamic MutationObserver for SPA forms, dialogs, embeds
+            this.setupObserver();
 
             document.addEventListener('click', (e) => {
                 const btn = e.target.closest('a, button');
                 if (!btn) return;
-                const text = btn.innerText?.toLowerCase();
+                const text = btn.innerText?.toLowerCase() || '';
                 const intentKeywords = ['pricing', 'audit', 'feature', 'solution', 'prospect', 'get started'];
                 if (intentKeywords.some(kw => text.includes(kw))) {
                     this.dispatch('event', { 
                         event_type: 'intent_click', 
                         intent_cluster: text.substring(0, 20), 
-                        url: window.location.href 
+                        url: (window.location && window.location.href) || ''
                     });
                 }
             });
@@ -272,20 +454,31 @@
                         if (!hasConsent) {
                             e.preventDefault();
                             
-                            let released = false;
+                            let modalMounted = false;
                             const fallbackTimer = setTimeout(() => {
-                                if (!released) {
-                                    released = true;
+                                if (!modalMounted && !document.getElementById('aura-banner-root')) {
                                     window.location.href = href; // Fail-safe release
                                 }
-                            }, 1200);
+                            }, 2500);
 
-                            window.addEventListener('aura:banner_mounted', () => {
+                            const triggerBanner = () => {
+                                modalMounted = true;
                                 clearTimeout(fallbackTimer);
-                            }, { once: true });
+                                window.dispatchEvent(new CustomEvent('aura:trigger_banner', { 
+                                    detail: { phase: 4, assetUrl: href } 
+                                }));
+                            };
 
-                            // Dispatch trigger to mount banner
-                            window.dispatchEvent(new CustomEvent('aura:trigger_banner', { detail: { phase: 4, assetUrl: href } }));
+                            if (document.getElementById('aura-banner-root') || window.__AURA_BANNER_MOUNTED__) {
+                                triggerBanner();
+                            } else {
+                                window.addEventListener('aura:banner_mounted', () => {
+                                    triggerBanner();
+                                }, { once: true });
+                                injectBannerScript(() => {
+                                    triggerBanner();
+                                });
+                            }
                         }
                     }
                 }
@@ -296,38 +489,65 @@
             });
 
             window.addEventListener('pagehide', () => this.trackExit());
+            window.addEventListener('beforeunload', () => this.trackExit());
         },
         trackEntry() {
             const conn = AuraFingerprint.getNetworkInfo();
             this.dispatch('entry', { 
-                url: window.location.href, 
-                referrer: document.referrer || "direct",
-                screen_resolution: `${window.innerWidth}x${window.innerHeight}`,
+                url: (window.location && window.location.href) || '', 
+                referrer: (typeof document !== 'undefined' && document.referrer) || "direct",
+                screen_resolution: typeof window !== 'undefined' ? `${window.innerWidth}x${window.innerHeight}` : '',
                 effective_connection_type: conn.type,
                 downlink_speed: conn.downlink,
                 rtt: conn.rtt
             });
         },
+        lastExitDuration: -1,
         trackExit() {
             const duration = Math.round((performance.now() - window.AURA_START_TIME) / 1000);
-            if (duration < 1) return;
+            if (duration < 1 || duration === this.lastExitDuration) return;
+            this.lastExitDuration = duration;
             
             this.dispatch('exit', {
                 event_type: 'exit',
                 duration: duration,
-                url: window.location.href
+                url: (window.location && window.location.href) || ''
             }, true); 
         },
         patchSPA() {
             const self = this;
+            let currentPath = (typeof window !== 'undefined' && window.location && window.location.href) || '';
+
+            const handleSpanNav = () => {
+                setTimeout(() => {
+                    const newPath = (window.location && window.location.href) || '';
+                    if (newPath !== currentPath) {
+                        const referrer = currentPath;
+                        currentPath = newPath;
+                        window.AURA_START_TIME = performance.now();
+                        self.trackEntry();
+                        self.dispatch('event', {
+                            event_type: 'pageview',
+                            url: newPath,
+                            referrer: referrer,
+                            title: typeof document !== 'undefined' ? document.title : ''
+                        });
+                    }
+                }, 50);
+            };
+
             ['pushState', 'replaceState'].forEach(m => {
                 const orig = history[m];
-                history[m] = function() {
-                    const r = orig.apply(this, arguments);
-                    setTimeout(() => self.trackEntry(), 0);
-                    return r;
-                };
+                if (typeof orig === 'function') {
+                    history[m] = function() {
+                        const r = orig.apply(this, arguments);
+                        handleSpanNav();
+                        return r;
+                    };
+                }
             });
+
+            window.addEventListener('popstate', handleSpanNav);
         }
     };
 
@@ -569,15 +789,7 @@
             }
             
             // Load banner script dynamically
-            const s = document.createElement('script');
-            s.src = window.AURA_CONFIG?.bannerUrl || "https://banner.auraworks.co.za/banner.js";
-            s.defer = true;
-            s.onload = () => {
-                window.dispatchEvent(new CustomEvent('aura:ready', {
-                    detail: { auraId, clientId: agencyId, config }
-                }));
-            };
-            document.head.appendChild(s);
+            injectBannerScript(null, config, auraId);
         } else {
             // Already consented or consent banner is bypassed
             AuraTracker.isArmed = true;

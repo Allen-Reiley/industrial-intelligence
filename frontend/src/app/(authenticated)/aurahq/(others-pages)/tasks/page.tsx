@@ -51,16 +51,17 @@ const PRIORITY_CONFIG: Record<
 };
 
 export default function TasksPage() {
-  const { data: session } = useSession();
+  const { data: session, isPending } = useSession();
   const currentUserId = session?.user?.id;
   const isAdmin = (session?.user as any)?.role === "admin";
+  const isReady = !isPending && !!session;
 
   const {
     data: tasks = [],
     error,
     isLoading,
     mutate,
-  } = useSWR<TaskItem[]>(`${cleanApiBase}/api/v1/tasks`, apiFetcher);
+  } = useSWR<TaskItem[]>(isReady ? `${cleanApiBase}/api/v1/tasks` : null, apiFetcher);
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState("");

@@ -63,6 +63,14 @@ class ClientBase(SQLModel):
         default=None,
         sa_column=Column(JSON)
     )
+    integrations: Optional[dict] = Field(
+        default=None,
+        sa_column=Column(JSON)
+    )
+    notification_config: Optional[dict] = Field(
+        default=None,
+        sa_column=Column(JSON)
+    )
 
 
     def __init__(self, **data: Any):

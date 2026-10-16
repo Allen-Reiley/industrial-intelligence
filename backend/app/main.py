@@ -277,6 +277,7 @@ async def override_proxy_headers(request: Request, call_next):
 
 # --- ROUTE REGISTRATION ---
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["authentication"])
+app.include_router(auth.router, prefix="/v1/auth", tags=["authentication"])
 app.include_router(track.router, prefix=f"{settings.API_V1_STR}/track", tags=["tracking"])
 app.include_router(track.router, prefix="/v1/track", tags=["tracking"])
 app.include_router(clients.router, prefix=f"{settings.API_V1_STR}/clients", tags=["clients"])

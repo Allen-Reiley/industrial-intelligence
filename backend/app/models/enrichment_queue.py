@@ -16,7 +16,7 @@ class EnrichmentQueue(SQLModel, table=True):
     __tablename__ = "enrichment_queue"
     
     id: UUID = Field(default_factory=uuid7, primary_key=True)
-    client_id: UUID = Field(foreign_key="client.id", index=True)
+    client_id: UUID = Field(foreign_key="client.id", ondelete="CASCADE", index=True)
     visit_id: Optional[UUID] = Field(default=None, index=True, nullable=True)
     aura_id: Optional[str] = Field(default=None, index=True)
     queue_type: QueueType = Field(index=True)
@@ -40,7 +40,7 @@ class FailedEnrichment(SQLModel, table=True):
     __tablename__ = "failed_enrichment"
     
     id: UUID = Field(default_factory=uuid7, primary_key=True)
-    client_id: UUID = Field(foreign_key="client.id", index=True)
+    client_id: UUID = Field(foreign_key="client.id", ondelete="CASCADE", index=True)
     visit_id: Optional[UUID] = Field(default=None, index=True, nullable=True)
     aura_id: Optional[str] = Field(default=None, index=True)
     queue_type: QueueType = Field(index=True)

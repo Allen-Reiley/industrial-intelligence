@@ -2,7 +2,7 @@
 import logging
 import httpx
 import urllib.parse
-from typing import Optional
+from typing import Optional, Union
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 from sqlmodel import select
@@ -11,8 +11,44 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.db import async_session_maker
 from app.models.notification_throttle import NotificationThrottle
+from app.models.client import Client
 
 logger = logging.getLogger("uvicorn")
+
+async def resolve_tenant_slack_webhook(
+    client: Optional[Client] = None, 
+    client_id: Optional[Union[UUID, str]] = None
+) -> Optional[str]:
+    """
+    Tenant-Isolated Slack Alert Routing:
+    Inspects client.notification_config or client.slack_webhook_url.
+    Dispatches to tenant-specific webhook. Only falls back to settings.SLACK_WEBHOOK_URL
+    if no tenant webhook exists and internal monitoring is explicitly configured.
+    """
+    if client:
+        if hasattr(client, "notification_config") and isinstance(client.notification_config, dict):
+            url = client.notification_config.get("slack_webhook_url")
+            if url:
+                return url
+        if getattr(client, "slack_webhook_url", None):
+            return client.slack_webhook_url
+
+    if client_id and async_session_maker:
+        try:
+            cid = UUID(str(client_id)) if isinstance(client_id, (str, UUID)) else client_id
+            async with async_session_maker() as session:
+                db_client = await session.get(Client, cid)
+                if db_client:
+                    if hasattr(db_client, "notification_config") and isinstance(db_client.notification_config, dict):
+                        url = db_client.notification_config.get("slack_webhook_url")
+                        if url:
+                            return url
+                    if getattr(db_client, "slack_webhook_url", None):
+                        return db_client.slack_webhook_url
+        except Exception as e:
+            logger.warning(f"Error resolving client slack webhook for {client_id}: {e}")
+
+    return getattr(settings, "SLACK_WEBHOOK_URL", None)
 
 async def is_slack_notification_throttled(client_id: UUID, company_id: UUID) -> bool:
     """
@@ -158,27 +194,22 @@ async def post_to_visit_channel(visit_data: dict, journey: dict):
 
 # --- PHASE 02: Lead Notifications (Identity Promotion) ---
 
-async def post_to_slack(prospect_data: dict, journey: dict = None, client_id: Optional[UUID] = None):
+async def post_to_slack(
+    prospect_data: dict, 
+    journey: dict = None, 
+    client_id: Optional[UUID] = None,
+    client: Optional[Client] = None
+):
     """
     Standard lead notification for identified conversions (Promotion / Form Submission).
     Structures firmographic and forensic profile data clearly.
     """
-    if not client_id:
+    if not client_id and not client:
         client_id_raw = prospect_data.get("client_id")
         if client_id_raw:
             client_id = UUID(str(client_id_raw))
 
-    webhook_url = None
-    if client_id and async_session_maker:
-        from app.models.client import Client
-        async with async_session_maker() as session:
-            client = await session.get(Client, client_id)
-            if client and client.slack_webhook_url:
-                webhook_url = client.slack_webhook_url
-
-    if not webhook_url:
-        webhook_url = settings.SLACK_WEBHOOK_URL
-
+    webhook_url = await resolve_tenant_slack_webhook(client=client, client_id=client_id)
     if not webhook_url:
         return
 
@@ -247,14 +278,11 @@ async def post_to_slack(prospect_data: dict, journey: dict = None, client_id: Op
             logger.error(f"Lead Channel Dispatch Failure: {e}")
 
 
-async def post_meeting_booked_to_slack(prospect_id: UUID, webhook_payload: dict):
+async def post_meeting_booked_to_slack(prospect_id: UUID, webhook_payload: dict, client: Optional[Client] = None):
     """
     Formulates and posts a Slack notification when a prospect books a Calendly call.
     Translates meeting times into SAST (UTC+2) and includes full firmographic context.
     """
-    if not settings.SLACK_WEBHOOK_URL:
-        return
-        
     if not async_session_maker:
         logger.error("❌ post_meeting_booked_to_slack: Async Session Maker offline.")
         return
@@ -267,6 +295,10 @@ async def post_meeting_booked_to_slack(prospect_id: UUID, webhook_payload: dict)
             prospect = await session.get(Prospect, prospect_id)
             if not prospect:
                 logger.error(f"❌ post_meeting_booked_to_slack: Prospect {prospect_id} not found.")
+                return
+
+            webhook_url = await resolve_tenant_slack_webhook(client=client, client_id=prospect.client_id)
+            if not webhook_url:
                 return
 
             company_name = "Anonymous Entity"
@@ -317,7 +349,7 @@ async def post_meeting_booked_to_slack(prospect_id: UUID, webhook_payload: dict)
             journey = {}
             if prospect.aura_id:
                 try:
-                    journey = await get_visitor_journey(prospect.aura_id, session)
+                    journey = await get_visitor_journey(prospect.client_id, prospect.aura_id, session)
                 except Exception:
                     pass
 
@@ -352,17 +384,17 @@ async def post_meeting_booked_to_slack(prospect_id: UUID, webhook_payload: dict)
             }
 
             async with httpx.AsyncClient() as client:
-                response = await client.post(settings.SLACK_WEBHOOK_URL, json=payload, timeout=10.0)
+                response = await client.post(webhook_url, json=payload, timeout=10.0)
                 response.raise_for_status()
                 logger.info(f"Slack notification sent successfully for booked meeting (Prospect ID: {prospect_id}).")
         except Exception as e:
             logger.error(f"🚨 post_meeting_booked_to_slack Failure: {e}")
 
-async def handle_juristic_only_alert(company, journey: dict, client_id: str):
+async def handle_juristic_only_alert(company, journey: dict, client_id: str, client: Optional[Client] = None):
     """
     Alerts Slack when high-intent juristic visitor leaves the site (no personal data).
     """
-    webhook_url = settings.SLACK_WEBHOOK_URL or settings.SLACK_VISIT_WEBHOOK_URL
+    webhook_url = await resolve_tenant_slack_webhook(client=client, client_id=client_id) or settings.SLACK_VISIT_WEBHOOK_URL
     if not webhook_url:
         return
 
@@ -488,11 +520,17 @@ async def post_inbound_email_to_slack(
             logger.error(f"🚨 Inbound Email Slack Dispatch Failure: {e}")
 
 
-async def post_vsl_completion_to_slack(company_name: str, client_id: UUID, aura_id: str):
+async def post_vsl_completion_to_slack(
+    company_name: str,
+    client_id: UUID,
+    aura_id: str,
+    client: Optional[Client] = None
+):
     """
     Alerts the prospects Slack channel when a known company completes watching the VSL.
     """
-    if not settings.SLACK_WEBHOOK_URL:
+    webhook_url = await resolve_tenant_slack_webhook(client=client, client_id=client_id) or settings.SLACK_WEBHOOK_URL
+    if not webhook_url:
         return
         
     dashboard_url = f"https://auraworks.co.za/admin/prospects?aura_id={aura_id}"
@@ -531,21 +569,28 @@ async def post_vsl_completion_to_slack(company_name: str, client_id: UUID, aura_
         ]
     }
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient() as http_client:
         try:
-            response = await client.post(settings.SLACK_WEBHOOK_URL, json=payload, timeout=10.0)
+            response = await http_client.post(webhook_url, json=payload, timeout=10.0)
             response.raise_for_status()
             logger.info(f"VSL completion Slack alert successfully sent for company: {company_name}")
         except Exception as e:
             logger.error(f"🚨 post_vsl_completion_to_slack Failure: {e}")
 
 
-async def post_surge_alert_to_slack(company_name: str, client_id: UUID, company_id: UUID, unique_visitor_count: int):
+async def post_surge_alert_to_slack(
+    company_name: str,
+    client_id: UUID,
+    company_id: UUID,
+    unique_visitor_count: int,
+    client: Optional[Client] = None
+):
     """
     Alerts the Slack channel when an Account Surge is detected for a company.
     Enforces a 1-hour throttle per company to prevent duplicate alerts.
     """
-    if not settings.SLACK_WEBHOOK_URL:
+    webhook_url = await resolve_tenant_slack_webhook(client=client, client_id=client_id) or settings.SLACK_WEBHOOK_URL
+    if not webhook_url:
         return
 
     # Check and apply throttle (1 hour throttle per client/company)
@@ -590,13 +635,20 @@ async def post_surge_alert_to_slack(company_name: str, client_id: UUID, company_
         ]
     }
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient() as http_client:
         try:
-            response = await client.post(settings.SLACK_WEBHOOK_URL, json=payload, timeout=10.0)
+            response = await http_client.post(webhook_url, json=payload, timeout=10.0)
             response.raise_for_status()
             logger.info(f"⚡ Surge Slack alert successfully sent for company: {company_name}")
         except Exception as e:
             logger.error(f"🚨 post_surge_alert_to_slack Failure: {e}")
+
+
+# Aliases conforming to Remediation Implementation Plan
+send_juristic_alert = handle_juristic_only_alert
+send_calendly_alert = post_meeting_booked_to_slack
+send_vsl_completion_alert = post_vsl_completion_to_slack
+send_surge_alert = post_surge_alert_to_slack
 
 
 async def check_and_trigger_company_surge(company_id: UUID, client_id: UUID, session: AsyncSession):

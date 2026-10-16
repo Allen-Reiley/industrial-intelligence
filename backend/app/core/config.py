@@ -85,6 +85,8 @@ class Settings(BaseSettings):
         "https://banner.auraworks.co.za",
         "https://api.auraworks.co.za/v1/track/event"
     ]
+    ALLOWED_ORIGIN_REGEX: Optional[str] = r"^https?://([a-zA-Z0-9-]+\.)*(auraworks\.co\.za|vercel\.app)(:[0-9]+)?$"
+    
     # --- IMAGEKIT INTEGRATION ---
     IMAGEKIT_PUBLIC_KEY: Optional[str] = "mock_public_key"
     IMAGEKIT_PRIVATE_KEY: Optional[str] = "mock_private_key"

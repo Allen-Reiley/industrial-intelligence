@@ -16,6 +16,7 @@ class Prospect(SQLModel, table=True):
     company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", ondelete="CASCADE", index=True, nullable=True)
     name: Optional[str] = Field(default=None)
     email: str = Field(index=True)
+    phone: Optional[str] = Field(default=None, nullable=True)
     phone_encrypted: Optional[str] = Field(default=None)
     company_name_raw: Optional[str] = Field(default=None)
     department: Optional[str] = Field(default=None)

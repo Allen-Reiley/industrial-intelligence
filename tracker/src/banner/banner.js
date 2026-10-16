@@ -52,13 +52,22 @@
         init();
     });
 
+    let currentAssetUrl = null;
+
     // Listen for custom trigger events (e.g. Asset Gate)
     window.addEventListener('aura:trigger_banner', (e) => {
         const phase = e.detail?.phase || 4;
+        if (e.detail?.assetUrl) {
+            currentAssetUrl = e.detail.assetUrl;
+        }
+        if (!shadow) {
+            createDOM();
+        }
         showPhase(phase);
     });
     
     // Signal to aura.js that banner listeners are bound
+    window.__AURA_BANNER_MOUNTED__ = true;
     window.dispatchEvent(new CustomEvent('aura:banner_mounted'));
 
     function init() {
@@ -935,14 +944,35 @@ position: fixed;
                 document.cookie = `aura_consent=true; expires=${exp.toUTCString()}; path=/; SameSite=Lax; Secure`;
                 localStorage.setItem('aura_consent_given', 'true');
 
+                const leadDetail = {
+                    email,
+                    capture_source: 'banner_asset_gate'
+                };
+                if (currentAssetUrl) {
+                    leadDetail.asset_url = currentAssetUrl;
+                }
                 window.dispatchEvent(new CustomEvent('aura_warm_lead', {
-                    detail: {
-                        email,
-                        capture_source: 'banner_asset_gate'
-                    }
+                    detail: leadDetail
                 }));
 
+                const downloadUrl = currentAssetUrl;
                 dismissBanner();
+
+                if (downloadUrl) {
+                    try {
+                        const a = document.createElement('a');
+                        a.href = downloadUrl;
+                        a.target = '_blank';
+                        a.download = '';
+                        document.body.appendChild(a);
+                        a.click();
+                        setTimeout(() => {
+                            if (a.parentNode) a.parentNode.removeChild(a);
+                        }, 200);
+                    } catch (err) {
+                        window.location.href = downloadUrl;
+                    }
+                }
             });
         }
     }
