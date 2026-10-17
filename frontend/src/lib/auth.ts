@@ -1,5 +1,6 @@
 // frontend/src/lib/auth.ts
 import { betterAuth } from "better-auth";
+import { jwt } from "better-auth/plugins";
 import { Pool } from "pg";
 
 const pool = process.env.DATABASE_URL
@@ -33,6 +34,13 @@ export const auth = betterAuth({
       secure: isProduction,
     }
   },
+  plugins: [
+    jwt({
+      jwt: {
+        expirationTime: "1h",
+      },
+    }),
+  ],
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,

@@ -10,6 +10,7 @@ import AppSidebar from '@/layout/AppSidebar';
 import Backdrop from '@/layout/Backdrop';
 import { NextIntlClientProvider } from 'next-intl';
 import enMessages from '@/messages/en.json';
+import { SWRConfig } from 'swr';
 
 const isPostHogConfigured = Boolean(
   process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN && process.env.NEXT_PUBLIC_POSTHOG_HOST,
@@ -95,11 +96,25 @@ export default function AuraHQLayout({ children }: { children: React.ReactNode }
 
   return (
     <NextIntlClientProvider locale="en" messages={enMessages}>
-      <ThemeProvider>
-        <SidebarProvider>
-          <AdminLayoutInner>{children}</AdminLayoutInner>
-        </SidebarProvider>
-      </ThemeProvider>
+      <SWRConfig
+        value={{
+          onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
+            // Never retry on 401 (Unauthorized) or 403 (Forbidden) to eliminate runaway retry storms
+            if (error?.status === 401 || error?.status === 403) return;
+            // Cap transient error retries at 3 attempts
+            if (retryCount >= 3) return;
+            // Exponential backoff for network/500 errors
+            setTimeout(() => revalidate({ retryCount }), Math.min(1000 * 2 ** retryCount, 30000));
+          },
+          revalidateOnFocus: false,
+        }}
+      >
+        <ThemeProvider>
+          <SidebarProvider>
+            <AdminLayoutInner>{children}</AdminLayoutInner>
+          </SidebarProvider>
+        </ThemeProvider>
+      </SWRConfig>
     </NextIntlClientProvider>
   );
 }

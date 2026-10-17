@@ -60,8 +60,21 @@ export async function getSessionToken(): Promise<string | null> {
     if (sessionGetter) {
       // Deduplicate concurrent getSession calls
       if (!activeSessionFetch) {
-        activeSessionFetch = sessionGetter()
-          .then((sessionRes: any) => {
+        activeSessionFetch = (async () => {
+          try {
+            // Priority 1: Check if Better Auth JWT client token is available
+            if (typeof (authClient as any)?.token === "function") {
+              const jwtRes: any = await (authClient as any).token().catch(() => null);
+              const jwtToken = jwtRes?.data?.token || jwtRes?.token;
+              if (jwtToken && typeof jwtToken === "string" && jwtToken.trim()) {
+                const cleanJwt = jwtToken.trim();
+                setSessionToken(cleanJwt);
+                return cleanJwt;
+              }
+            }
+
+            // Priority 2: Standard Better Auth getSession()
+            const sessionRes: any = await sessionGetter();
             const token =
               sessionRes?.data?.session?.token ||
               sessionRes?.data?.token ||
@@ -74,14 +87,13 @@ export async function getSessionToken(): Promise<string | null> {
               return clean;
             }
             return null;
-          })
-          .catch((err: any) => {
-            console.warn("⚠️ [auth-fetch] authClient.getSession() call failed:", err);
+          } catch (err: any) {
+            console.warn("⚠️ [auth-fetch] authClient token extraction failed:", err);
             return null;
-          })
-          .finally(() => {
+          } finally {
             activeSessionFetch = null;
-          });
+          }
+        })();
       }
 
       const activeToken = await activeSessionFetch;

@@ -1,5 +1,6 @@
 # backend/tests/test_auth_unification.py
 import pytest
+import os
 import uuid
 from uuid import uuid4
 from datetime import datetime, timezone, timedelta
@@ -165,3 +166,59 @@ async def test_auth_401_handling():
     )
     assert resp_expired.status_code == 401
     assert "Session expired" in resp_expired.json()["detail"]
+
+
+async def test_stateless_jwt_authentication():
+    """
+    Validates that a stateless JWT signed with the shared secret is decoded by FastAPI,
+    authenticating the user and returning 200 OK from /v1/auth/me.
+    """
+    from jose import jwt as jose_jwt
+    from app.core.config import settings
+
+    client = await get_test_client()
+    user_email = f"jwt_user_{uuid4().hex[:6]}@auraworks.co.za"
+    jwt_secret = settings.SECRET_KEY or os.getenv("BETTER_AUTH_SECRET") or "development-better-auth-secret-key-1234567890"
+
+    # 1. Valid active JWT token
+    payload = {
+        "sub": f"user_jwt_{uuid4().hex[:8]}",
+        "email": user_email,
+        "role": "admin",
+        "name": "JWT Admin User",
+        "exp": int((datetime.now(timezone.utc) + timedelta(hours=1)).timestamp())
+    }
+    signed_jwt = jose_jwt.encode(payload, jwt_secret, algorithm="HS256")
+
+    resp = await client.get(
+        "/v1/auth/me",
+        headers={"Authorization": f"Bearer {signed_jwt}"}
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["email"] == user_email
+    assert data["role"] == "admin"
+
+    # 2. Expired JWT -> 401 Unauthorized
+    expired_payload = {
+        "sub": f"user_jwt_{uuid4().hex[:8]}",
+        "email": f"jwt_exp_{uuid4().hex[:6]}@auraworks.co.za",
+        "role": "sales",
+        "exp": int((datetime.now(timezone.utc) - timedelta(hours=1)).timestamp())
+    }
+    expired_jwt = jose_jwt.encode(expired_payload, jwt_secret, algorithm="HS256")
+    resp_exp = await client.get(
+        "/v1/auth/me",
+        headers={"Authorization": f"Bearer {expired_jwt}"}
+    )
+    assert resp_exp.status_code == 401
+    assert "Session expired" in resp_exp.json()["detail"]
+
+    # 3. Forged JWT (signed with wrong secret) -> 401 Unauthorized
+    forged_jwt = jose_jwt.encode(payload, "wrong-forged-secret-key-99999999999", algorithm="HS256")
+    resp_forged = await client.get(
+        "/v1/auth/me",
+        headers={"Authorization": f"Bearer {forged_jwt}"}
+    )
+    assert resp_forged.status_code == 401
+    assert "Unauthorized" in resp_forged.json()["detail"]
