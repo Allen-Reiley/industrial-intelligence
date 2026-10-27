@@ -132,7 +132,7 @@ export default function BookDemoPage() {
                             <div className="w-full shrink-0 p-8 md:p-12">
                                 <div className="mb-10">
                                     <h1 className="text-3xl font-bold tracking-tight">Identity</h1>
-                                    <p className="text-muted-foreground mt-2 text-sm">Basic credentials for the 100-partner cohort.</p>
+                                    <p className="text-muted-foreground mt-2 text-sm">Tell us about you and your organization.</p>
                                 </div>
 
                                 <form onSubmit={handleNext} className="grid gap-6">

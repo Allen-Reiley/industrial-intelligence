@@ -324,7 +324,7 @@ export default function DeAnonymizingTrafficPage() {
                 </li>
               </ul>
               <p>
-                AuraWorks provides full contractual indemnity across all Growth Foundation, Industrial Category Leader, and Enterprise retainers, ensuring that your commercial sales team can act on high-value intelligence with total regulatory confidence.
+                AuraWorks provides full contractual indemnity across all custom client engagements and retainers, ensuring that your commercial sales team can act on high-value intelligence with total regulatory confidence.
               </p>
             </section>
           </article>

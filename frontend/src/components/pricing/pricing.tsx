@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { 
     Check, 
-    X, 
     ArrowRight, 
     Calculator, 
     ShieldCheck, 
@@ -12,267 +11,144 @@ import {
     Building2, 
     TrendingUp, 
     Layers, 
-    Cpu, 
-    Network, 
     ChevronDown, 
     HelpCircle,
-    CheckCircle2
+    CheckCircle2,
+    Code2,
+    Globe2,
+    Sparkles,
+    Cpu,
+    Wrench
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { HeroHeader } from '../header/header'
 import Footer from '../footer/footer'
 import { TextEffect } from '../ui/text-effect'
 
-interface PricingTier {
-    id: string
-    name: string
-    badge?: string
-    popular?: boolean
-    monthlyPrice: number
-    annualPrice: number
-    description: string
-    idealFor: string
-    highlights: string[]
-    ctaText: string
-    ctaHref: string
-}
-
-const pricingTiers: PricingTier[] = [
-    {
-        id: 'growth-foundation',
-        name: 'Growth Foundation',
-        monthlyPrice: 10000,
-        annualPrice: 100000,
-        description: 'Establish high-velocity organic search visibility, sub-second edge performance, and foundational visitor de-anonymization for single-vertical industrial suppliers.',
-        idealFor: 'Mid-sized manufacturers, regional engineering service providers, and specialized distributors looking to outrank legacy competitors in local South African hubs.',
-        highlights: [
-            'Next.js 15 edge web platform or existing site acceleration',
-            'Sub-300ms Time-to-First-Byte (TTFB) and 100/100 Core Web Vitals guarantee',
-            'Targeted B2B SEO architecture covering up to 45 high-intent industrial keywords',
-            'aura.js juristic visitor identification (up to 500 corporate accounts unmasked/mo)',
-            'Weekly Monday morning executive pipeline digest delivered via email',
-            'Google Search Console indexing and technical crawl health monitoring',
-            'Strict POPIA Chapter 3 juristic-first entity resolution indemnity',
-            'Quarterly strategic keyword and competitor discoverability audit'
-        ],
-        ctaText: 'Deploy Growth Foundation',
-        ctaHref: '/book-demo?plan=growth-foundation'
-    },
-    {
-        id: 'category-leader',
-        name: 'Industrial Category Leader',
-        badge: 'Most Popular for Heavy Industry',
-        popular: true,
-        monthlyPrice: 18500,
-        annualPrice: 185000,
-        description: 'Complete organic dominance across traditional Google SERPs and modern generative AI engines (ChatGPT, Perplexity, Gemini) paired with uncapped corporate visitor forensics.',
-        idealFor: 'Established mining equipment OEMs, pump & valve manufacturers, commercial logistics operators, and fabrication specialists commanding national market share.',
-        highlights: [
-            'Next.js enterprise architecture with dedicated dynamic edge routing',
-            'Generative Engine Optimization (GEO) knowledge graph and entity schema deployment',
-            'Active citation engineering for ChatGPT Search, Perplexity AI, and Google AI Overviews',
-            'Uncapped aura.js juristic corporate identification with forensic session playback',
-            'Targeted B2B SEO architecture covering up to 120 high-intent technical keywords',
-            'Real-time instant webhook push routing into Slack, Microsoft Teams, HubSpot, or Salesforce',
-            'Technical spec-sheet, CAD blueprint, and PDF download intent telemetry',
-            'Bi-weekly technical SEO sprint reviews with dedicated senior solutions engineer',
-            'Priority 4-hour SLA on technical schema updates and catalog expansions'
-        ],
-        ctaText: 'Scale Category Dominance',
-        ctaHref: '/book-demo?plan=category-leader'
-    },
-    {
-        id: 'enterprise-corridor',
-        name: 'Enterprise SADC Corridor',
-        badge: 'Multi-Region & Cross-Border',
-        monthlyPrice: 32000,
-        annualPrice: 320000,
-        description: 'Unrestricted regional discoverability architecture spanning South Africa and key SADC industrial corridors (Zambia, DRC, Mozambique, Zimbabwe, Namibia) with custom data lake integration.',
-        idealFor: 'JSE-listed industrial holdings, multinational engineering groups, bulk commodity logistics, and continental equipment distributors with complex procurement cycles.',
-        highlights: [
-            'Multi-territory internationalized SEO and hreflang architecture for cross-border SADC hubs',
-            'Localized digital landing corridors for Copperbelt, Katanga, Maputo, and Walvis Bay',
-            'High-authority SA trade media syndication via Creamer Media, Bizcommunity & MechChem Africa',
-            'Uncapped enterprise de-anonymization with multi-tenant CRM and ERP data pipelines',
-            'Dedicated real-time streaming into custom data lakes (Snowflake, BigQuery, AWS S3)',
-            'Unlimited high-intent keywords across English, French, and Portuguese industrial catalogs',
-            'Quarterly board-ready competitive intelligence and procurement share-of-voice reports',
-            '24/7 dedicated solutions architect with 1-hour critical response SLA'
-        ],
-        ctaText: 'Consult Enterprise Solutions',
-        ctaHref: '/book-demo?plan=enterprise-corridor'
-    }
-]
-
-interface MatrixRow {
+interface ScopeRow {
     feature: string
-    growth: string | boolean
-    leader: string | boolean
-    enterprise: string | boolean
-    tooltip?: string
+    scope: string
+    enterpriseAddon?: string
 }
 
-interface MatrixCategory {
+interface ScopeCategory {
     category: string
-    rows: MatrixRow[]
+    rows: ScopeRow[]
 }
 
-const comparisonMatrix: MatrixCategory[] = [
+const customScopeMatrix: ScopeCategory[] = [
     {
-        category: 'Technical Architecture & Performance SLA',
+        category: '1. High-Performance Web Development & Platform Architecture',
         rows: [
             {
-                feature: 'Modern Web Framework & Hosting',
-                growth: 'Next.js 15 Edge Platform',
-                leader: 'Next.js 15 Edge Platform',
-                enterprise: 'Multi-Region Edge Cluster'
+                feature: 'Modern Framework Architecture',
+                scope: 'Custom Next.js 15 edge web application or existing platform acceleration',
+                enterpriseAddon: 'Multi-region edge cluster & custom subdomain routing'
             },
             {
-                feature: 'Time-to-First-Byte (TTFB) Guarantee',
-                growth: '< 300ms SLA',
-                leader: '< 200ms SLA',
-                enterprise: '< 150ms Global SLA'
+                feature: 'Performance & Speed Guarantee',
+                scope: 'Sub-300ms Time-to-First-Byte (TTFB) and 100/100 Core Web Vitals targets',
+                enterpriseAddon: 'Dedicated CDN optimization & asset streaming'
             },
             {
-                feature: 'Google Core Web Vitals SLA',
-                growth: '100% Passing Score',
-                leader: '100% Passing Score',
-                enterprise: '100% Passing Score'
+                feature: 'Industrial Document & CAD Asset Delivery',
+                scope: 'Fast, secure viewing and download tracking for technical spec-sheets, drawings & PDFs',
+                enterpriseAddon: 'Gated drawing vaults & role-based procurement downloads'
             },
             {
-                feature: 'Platform Migration Timeline',
-                growth: '21 Business Days',
-                leader: '14 Business Days',
-                enterprise: '10 Business Days (Dedicated Sprint)'
-            },
-            {
-                feature: 'Existing Website Acceleration Bridge',
-                growth: true,
-                leader: true,
-                enterprise: true
-            },
-            {
-                feature: 'Cloudflare Enterprise WAF & DDoS Shield',
-                growth: true,
-                leader: true,
-                enterprise: true
+                feature: 'Security & Edge Protection',
+                scope: 'Cloudflare enterprise WAF, DDoS protection, and SSL encryption',
+                enterpriseAddon: 'Custom IP access controls & network isolation'
             }
         ]
     },
     {
-        category: 'Search Engine & Generative AI (GEO) Dominance',
+        category: '2. Technical SEO & Generative Engine Optimization (GEO)',
         rows: [
             {
-                feature: 'High-Intent B2B Tracked Keywords',
-                growth: '45 Keywords',
-                leader: '120 Keywords',
-                enterprise: 'Unlimited Cross-Border'
+                feature: 'B2B Search Keyword Dominance',
+                scope: 'Targeted high-intent keyword mapping tailored to your equipment, materials & services',
+                enterpriseAddon: 'Unlimited pan-African & cross-border SADC keyword indexing'
             },
             {
                 feature: 'Generative Engine Optimization (GEO)',
-                growth: 'Foundational Schemas',
-                leader: 'Active Entity Knowledge Graph',
-                enterprise: 'Full Multi-Engine Citability Matrix'
+                scope: 'Authoritative schema knowledge graphs built for ChatGPT Search, Perplexity AI & Google AI',
+                enterpriseAddon: 'Continuous citation tuning and multi-model brand verification'
             },
             {
-                feature: 'AI Engine Citability (ChatGPT, Perplexity, Gemini)',
-                growth: 'Quarterly Audit',
-                leader: 'Bi-Weekly Citation Tuning',
-                enterprise: 'Continuous Weekly AI Calibration'
+                feature: 'Local & Regional SADC Targeting',
+                scope: 'Dominance across primary industrial hubs (Gauteng, Mpumalanga, Vaal, Durban Corridor)',
+                enterpriseAddon: 'Multi-territory hreflang architecture (Copperbelt, Mozambique, Namibia)'
             },
             {
-                feature: 'Technical Spec-Sheet & CAD PDF SEO',
-                growth: 'Up to 25 Documents',
-                leader: 'Up to 150 Documents',
-                enterprise: 'Unlimited Engineering Documents'
-            },
-            {
-                feature: 'Local Gauteng Hub Authority (JHB, East Rand, Vaal)',
-                growth: true,
-                leader: true,
-                enterprise: true
-            },
-            {
-                feature: 'Cross-Border SADC Internationalized Targeting',
-                growth: false,
-                leader: 'Optional Add-on',
-                enterprise: true
-            },
-            {
-                feature: 'Trade Media Syndication (Creamer Media / Bizcommunity)',
-                growth: false,
-                leader: 'Semi-Annual Placement',
-                enterprise: 'Quarterly Sponsored Features'
+                feature: 'Search Console & Crawl Health',
+                scope: 'Proactive indexation management, sitemap orchestration, and broken link mitigation',
+                enterpriseAddon: 'Automated search index anomaly alerting'
             }
         ]
     },
     {
-        category: 'aura.js Visitor Intelligence Engine & Forensics',
+        category: '3. aura.js Juristic De-Anonymization & Visitor Forensics',
         rows: [
             {
-                feature: 'Monthly Corporate Identification Volume',
-                growth: '500 Accounts / mo',
-                leader: 'Uncapped Enterprise',
-                enterprise: 'Uncapped Enterprise Multi-Tenant'
+                feature: 'Corporate Account De-Anonymization',
+                scope: 'Deterministic juristic identification of companies, mining houses & contractors visiting your site',
+                enterpriseAddon: 'Uncapped volume with multi-subsidiary identification'
             },
             {
-                feature: 'Juristic Entity Resolution Accuracy',
-                growth: 'Deterministic ISP Filtering',
-                leader: 'Multi-Factor Canvas & ASN',
-                enterprise: 'Enterprise Carrier-Grade Resolution'
+                feature: 'POPIA Compliance Guarantee',
+                scope: 'Strict Chapter 3 juristic-only ASN and network resolution without consumer personal tracking',
+                enterpriseAddon: 'Full contractual compliance indemnification documentation'
             },
             {
-                feature: 'POPIA Juristic Indemnity Guarantee',
-                growth: true,
-                leader: true,
-                enterprise: true
+                feature: 'Weekly Executive Lead Digest',
+                scope: 'Curated Monday morning PDF/email report summarizing high-intent accounts and visited specs',
+                enterpriseAddon: 'Automated real-time instant alerts via Slack, Teams, or Webhooks'
             },
             {
-                feature: 'Real-Time Webhook Routing (Slack / Teams)',
-                growth: false,
-                leader: true,
-                enterprise: true
-            },
-            {
-                feature: 'Direct CRM Pipeline Sync (HubSpot / Salesforce)',
-                growth: false,
-                leader: true,
-                enterprise: true
-            },
-            {
-                feature: 'Executive Monday Morning Lead Digest',
-                growth: true,
-                leader: true,
-                enterprise: true
-            },
-            {
-                feature: 'Custom Enterprise Data Lake Streaming',
-                growth: false,
-                leader: false,
-                enterprise: true
+                feature: 'CRM & Pipeline Integration',
+                scope: 'Direct export pipelines compatible with HubSpot, Salesforce, Zoho, or custom ERPs',
+                enterpriseAddon: 'Bidirectional sync & custom REST API data feeds'
             }
         ]
     },
     {
-        category: 'Governance, Strategy & Engineering Support',
+        category: '4. Bespoke Industrial Tools & Custom Solutions',
         rows: [
             {
-                feature: 'Dedicated Senior Solutions Architect',
-                growth: 'Shared Support Desk',
-                leader: 'Named Principal Engineer',
-                enterprise: 'Dedicated Strategic Lead + Slack Channel'
+                feature: 'Custom B2B Calculators & Estimators',
+                scope: 'Interactive sizing, load calculation, or tonnage estimators built to engineering specifications',
+                enterpriseAddon: 'Complex multi-variable engineering logic & proposal generators'
             },
             {
-                feature: 'Strategic Review & Advisory Rhythm',
-                growth: 'Quarterly Review',
-                leader: 'Bi-Weekly Sprint',
-                enterprise: 'Weekly Strategic Sync'
+                feature: 'Customer & Distributor Portals',
+                scope: 'Tailored client dashboards, order status trackers, or specification libraries',
+                enterpriseAddon: 'SSO authentication & legacy ERP database connectivity'
             },
             {
-                feature: 'Technical Response Time SLA',
-                growth: '24 Hours',
-                leader: '4 Hours',
-                enterprise: '1 Hour Critical SLA'
+                feature: 'Custom Workflow Automation',
+                scope: 'Automated RFQ routing, spec verification forms, and internal notifications',
+                enterpriseAddon: 'Custom webhook pipelines to internal industrial software'
+            }
+        ]
+    },
+    {
+        category: '5. Governance, Engineering Support & SLAs',
+        rows: [
+            {
+                feature: 'Dedicated Solutions Engineer',
+                scope: 'Senior solutions engineer and web architect assigned directly to your account',
+                enterpriseAddon: 'Dedicated Slack/Teams communication channel'
+            },
+            {
+                feature: 'Technical Support SLA',
+                scope: 'Direct email support via contact@auraworks.co.za with 24-hour response during business hours',
+                enterpriseAddon: 'Priority 4-hour critical response SLA'
+            },
+            {
+                feature: 'Review & Optimization Rhythm',
+                scope: 'Structured monthly or bi-weekly technical sprint reviews and search analytics reports',
+                enterpriseAddon: 'Executive quarterly board-ready intelligence briefings'
             }
         ]
     }
@@ -280,33 +156,32 @@ const comparisonMatrix: MatrixCategory[] = [
 
 const commercialFaqs = [
     {
-        question: 'What is the contractual commitment structure and cancelation policy?',
-        answer: 'All AuraWorks enterprise engagements are structured on either a flexible month-to-month retainer or an annual partnership agreement with an upfront 15% rate advantage. Unlike traditional digital marketing agencies that lock clients into multi-year contracts with opaque billable hours, our retainers require a standard 60-day written notice after the initial 90-day technical sprint. The initial 90-day sprint ensures sufficient runway to deploy our Next.js infrastructure, crawl and index proprietary technical schemas, establish generative AI citations, and calibrate the aura.js juristic telemetry engine for your target vertical.'
+        question: 'How does AuraWorks structure pricing without rigid, generic tiers?',
+        answer: 'Every industrial enterprise has distinct technical requirements—ranging from high-speed Next.js web application engineering and catalog refactoring to localized SADC search dominance and bespoke de-anonymization pipelines. Instead of forcing you into a rigid tier with arbitrary feature limits, we evaluate your current infrastructure, target market, and operational goals during a technical discovery session. We then provide a transparent, consolidated quotation covering both deployment and ongoing retainer support tailored exactly to your business.'
     },
     {
-        question: 'How does AuraWorks indemnify and protect our company under POPIA regulations?',
-        answer: 'AuraWorks operates on a strict juristic-first entity resolution architecture. Under Chapter 3 of the Protection of Personal Information Act (POPIA), juristic persons (such as registered private companies, close corporations, state-owned enterprises, and mining houses) are treated separately from natural personal data. aura.js deterministically resolves autonomous system numbers (ASNs), corporate IP telemetry, and commercial network blocks back to corporate entities—never scraping, tracking, or harvesting private natural individual identities without consent. All telemetry is encrypted with server-side AES-256 protocols, and our enterprise contracts include explicit POPIA compliance indemnification clauses.'
+        question: 'What is included in the consolidated service offering?',
+        answer: 'Our single unified offering brings together all critical digital capabilities for modern industrial suppliers: (1) High-Performance Web Development engineered with Next.js 15 for sub-second speeds and interactive spec sheets; (2) Technical SEO & Generative Engine Optimization (GEO) ensuring your brand ranks #1 on Google and is cited as the primary authority in AI engines like ChatGPT, Perplexity, and Gemini; (3) aura.js juristic visitor de-anonymization that identifies visiting corporate accounts in real-time under POPIA; and (4) Custom Industrial Tools tailored to your operations, such as engineering calculators, client portals, and CRM/ERP integrations.'
     },
     {
-        question: 'What is the onboarding timeline and SLA for launching our Next.js platform?',
-        answer: 'For clients commissioning a full Next.js web platform, standard deployment requires between 14 and 21 business days from contract execution. During this period, our engineering team extracts and migrates existing content, refactors outdated schemas into high-fidelity JSON-LD knowledge graphs, optimizes technical spec-sheets and CAD assets for sub-second edge delivery, and configures automated 301 redirects to eliminate broken legacy URLs. For clients retaining their existing corporate web infrastructure, our aura.js visitor intelligence snippet and edge proxy can be integrated via Google Tag Manager or direct header injection within 48 business hours.'
+        question: 'How does AuraWorks protect and indemnify our business under POPIA regulations?',
+        answer: 'AuraWorks operates on a strict juristic-first entity resolution architecture. Under Chapter 3 of South Africa\'s Protection of Personal Information Act (POPIA), juristic persons (such as registered corporate entities, mining houses, and engineering firms) are distinct from natural personal records. aura.js deterministically resolves autonomous system numbers (ASNs), corporate IP telemetry, and commercial network blocks back to corporate entities—never scraping, tracking, or harvesting private natural individual identities without consent. All telemetry is encrypted with AES-256 protocols.'
     },
     {
-        question: 'How does Generative Engine Optimization (GEO) differ from traditional monthly SEO deliverables?',
-        answer: 'Traditional SEO focuses strictly on ranking keyword strings on blue-link Google search result pages. While AuraWorks maintains best-in-class technical SEO for search engines, modern procurement engineers and corporate supply chain executives increasingly prompt generative models like ChatGPT Search, Perplexity AI, and Google AI Overviews to evaluate industrial vendors. Generative Engine Optimization (GEO) structures your technical specifications, ISO certifications, and metallurgical ratings using authoritative entity relationships and semantic knowledge graphs. This guarantees that when an AI engine synthesizes recommendations for complex queries—such as "heavy slurry pump manufacturers in Gauteng with SABS compliance"—your brand is cited directly as the trusted primary source.'
+        question: 'What is the typical deployment timeline for a custom industrial solution?',
+        answer: 'For clients commissioning a full custom Next.js web platform with built-in SEO and telemetry, deployment typically takes 14 to 28 business days depending on catalog size and bespoke tool requirements. For clients wishing to accelerate and de-anonymize an existing website, our aura.js tracking script and edge proxy can be integrated via Google Tag Manager or direct code injection within 48 business hours.'
     },
     {
-        question: 'We already run an established website. Can we partner without doing a full rebuild?',
-        answer: 'Yes. While our dedicated Next.js web architecture provides the fastest route to 100/100 Core Web Vitals and edge latency under 200ms, our Industrial Category Leader and Enterprise retainers can be deployed on top of existing corporate WordPress, Drupal, or custom frameworks. In this upgrade configuration, we install a lightweight edge acceleration proxy, deploy our schema injection pipelines, and embed the aura.js tracking script directly. Our solutions engineering team conducts a complimentary technical audit prior to onboarding to verify whether your existing CMS can support the required schema depth.'
+        question: 'Can you build custom tools, calculators, or integrate with our legacy ERP?',
+        answer: 'Yes. Beyond standard web development and SEO, our engineering team regularly builds specialized tools for industrial clients—such as metallurgical sizing calculators, interactive pump curve selectors, customer documentation vaults, and automated webhook pipelines into HubSpot, Salesforce, Microsoft Dynamics, or on-premise industrial ERPs.'
     },
     {
-        question: 'Which CRM, email, and messaging platforms support real-time lead dispatches?',
-        answer: 'The AuraWorks Intelligence Engine integrates out of the box with major enterprise sales workflows. Real-time de-anonymization alerts can be pushed instantly into dedicated internal Slack or Microsoft Teams procurement channels, allowing sales engineers to act within minutes of a tier-1 mining house reviewing equipment specs. Furthermore, aura.js supports bidirectional webhooks compatible with HubSpot, Salesforce, Zoho CRM, and Microsoft Dynamics 365. For custom industrial ERPs and legacy SQL databases, we provide secure REST API endpoints and automated SFTP/CSV pipeline exports.'
+        question: 'How do we get started and receive a quote?',
+        answer: 'Schedule a 30-minute discovery call or submit our quote request form. We will review your current website, assess your search and AI visibility, identify your target industrial sectors, and deliver a detailed scope of work and quotation within 2 business days.'
     }
 ]
 
 export default function Pricing() {
-    const [isAnnual, setIsAnnual] = useState(false)
     const [monthlyVisitors, setMonthlyVisitors] = useState<number>(2500)
     const [avgDealSize, setAvgDealSize] = useState<number>(180000)
     const [opportunityRate, setOpportunityRate] = useState<number>(8)
@@ -321,12 +196,6 @@ export default function Pricing() {
     const monthlyPipelineUnlocked = qualifiedOpportunitiesPerMonth * avgDealSize
     // Annual pipeline unlocked
     const annualPipelineUnlocked = monthlyPipelineUnlocked * 12
-    // Assuming conservative 15% win rate on qualified sales pipeline
-    const projectedAnnualNewRevenue = Math.round(annualPipelineUnlocked * 0.15)
-    // Annual cost of Category Leader tier
-    const categoryLeaderAnnualCost = 18500 * 12
-    // Calculated ROI multiple
-    const calculatedRoiMultiple = (projectedAnnualNewRevenue / categoryLeaderAnnualCost).toFixed(1)
 
     const toggleFaq = (index: number) => {
         setOpenFaqIndex(openFaqIndex === index ? null : index)
@@ -347,14 +216,14 @@ export default function Pricing() {
                     <div className="max-w-3xl mx-auto text-center space-y-4">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
                             <ShieldCheck className="size-3.5" />
-                            <span>Predictable Industrial Pipeline Infrastructure</span>
+                            <span>Consolidated Industrial Engineering & Intelligence</span>
                         </div>
                         <TextEffect
                             preset="fade-in-blur"
                             speedSegment={0.3}
                             as="h1"
                             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
-                            B2B SEO, Generative AI & Lead Intelligence Retainers
+                            Custom Web Engineering, SEO, GEO & De-Anonymization
                         </TextEffect>
                         <TextEffect
                             preset="fade-in-blur"
@@ -363,127 +232,167 @@ export default function Pricing() {
                             speedSegment={0.3}
                             as="p"
                             className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                            Stop paying legacy digital agencies for abstract billable hours and vanity impressions. AuraWorks delivers high-performance Next.js edge platforms, top-tier Google rankings, generative AI citability, and proprietary juristic visitor de-anonymization engineered exclusively for South African and SADC heavy industry.
+                            No rigid tiers or generic agency retainers. We consolidate modern web development, search and generative AI dominance, and real-time juristic visitor de-anonymization into a single tailored solution built for your industrial operations.
                         </TextEffect>
-
-                        {/* Billing Switcher */}
-                        <div className="pt-6 flex items-center justify-center gap-3">
-                            <span className={`text-sm font-medium ${!isAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>
-                                Monthly Retainer
-                            </span>
-                            <button
-                                type="button"
-                                onClick={() => setIsAnnual(!isAnnual)}
-                                className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                                    isAnnual ? 'bg-primary' : 'bg-muted'
-                                }`}
-                                role="switch"
-                                aria-checked={isAnnual}>
-                                <span
-                                    className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-background shadow-lg ring-0 transition duration-200 ease-in-out ${
-                                        isAnnual ? 'translate-x-7' : 'translate-x-0'
-                                    }`}
-                                />
-                            </button>
-                            <span className={`text-sm font-medium inline-flex items-center gap-1.5 ${isAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>
-                                Annual Partnership
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-primary/15 text-primary">
-                                    Save ~17% (2 Months Free)
-                                </span>
-                            </span>
-                        </div>
                     </div>
 
-                    {/* Tier Cards Grid */}
-                    <div className="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-                        {pricingTiers.map((tier) => {
-                            const currentPrice = isAnnual 
-                                ? Math.round(tier.annualPrice / 12) 
-                                : tier.monthlyPrice
-
-                            return (
-                                <div
-                                    key={tier.id}
-                                    className={`relative flex flex-col rounded-3xl p-8 transition-all duration-200 ${
-                                        tier.popular
-                                            ? 'bg-card border-2 border-primary shadow-2xl shadow-primary/10 z-10'
-                                            : 'bg-card/70 border border-border shadow-md hover:border-border/80'
-                                    }`}>
-                                    {tier.badge && (
-                                        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-primary text-primary-foreground shadow-md">
-                                            {tier.badge}
-                                        </div>
-                                    )}
-
-                                    <div className="flex-1">
-                                        <div className="flex items-center justify-between gap-2">
-                                            <h2 className="text-2xl font-bold tracking-tight text-foreground">
-                                                {tier.name}
-                                            </h2>
-                                        </div>
-
-                                        <p className="mt-3 text-xs md:text-sm text-muted-foreground leading-relaxed min-h-[48px]">
-                                            {tier.description}
-                                        </p>
-
-                                        {/* Price block */}
-                                        <div className="mt-6 pt-6 border-t border-border/60">
-                                            <div className="flex items-baseline gap-1">
-                                                <span className="text-xl font-semibold text-muted-foreground">R</span>
-                                                <span className="text-4xl sm:text-5xl font-extrabold tracking-tight text-foreground">
-                                                    {currentPrice.toLocaleString('en-ZA')}
-                                                </span>
-                                                <span className="text-sm font-normal text-muted-foreground">
-                                                    / month
-                                                </span>
-                                            </div>
-                                            <div className="mt-1 text-xs text-muted-foreground">
-                                                {isAnnual 
-                                                    ? `Billed annually at R${tier.annualPrice.toLocaleString('en-ZA')} ex VAT`
-                                                    : 'Flat-rate monthly retainer ex VAT, 60-day terms'}
-                                            </div>
-                                        </div>
-
-                                        {/* Target Audience Profile */}
-                                        <div className="mt-5 p-3.5 rounded-xl bg-muted/40 border border-border/40 text-xs text-muted-foreground leading-relaxed">
-                                            <span className="font-semibold text-foreground">Ideal fit: </span>
-                                            {tier.idealFor}
-                                        </div>
-
-                                        {/* Highlights list */}
-                                        <div className="mt-6 space-y-3">
-                                            <div className="text-xs font-semibold uppercase tracking-wider text-foreground">
-                                                Core Infrastructure Deliverables:
-                                            </div>
-                                            <ul className="space-y-3">
-                                                {tier.highlights.map((highlight, idx) => (
-                                                    <li key={idx} className="flex items-start gap-3 text-xs sm:text-sm">
-                                                        <Check className="size-4 text-primary shrink-0 mt-0.5" />
-                                                        <span className="text-foreground/90 font-medium leading-snug">
-                                                            {highlight}
-                                                        </span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
+                    {/* Consolidated Solution Showcase Card */}
+                    <div className="mt-16 max-w-5xl mx-auto">
+                        <div className="relative rounded-3xl border-2 border-primary/30 bg-card/80 p-8 sm:p-12 shadow-2xl backdrop-blur-sm overflow-hidden">
+                            {/* Decorative Corner Badge */}
+                            <div className="absolute top-0 right-0 transform translate-x-4 -translate-y-4 w-32 h-32 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
+                            
+                            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-8 border-b border-border/60">
+                                <div>
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-primary text-primary-foreground mb-3 shadow-md">
+                                        <Sparkles className="size-3.5" />
+                                        <span>Unified Industrial Solution</span>
                                     </div>
-
-                                    {/* Action button */}
-                                    <div className="mt-8 pt-6 border-t border-border/60">
-                                        <Button
-                                            asChild
-                                            size="lg"
-                                            variant={tier.popular ? 'default' : 'outline'}
-                                            className="w-full font-semibold text-sm sm:text-base py-6 shadow-sm">
-                                            <Link href={tier.ctaHref}>
-                                                {tier.ctaText}
-                                                <ArrowRight className="ml-2 size-4" />
-                                            </Link>
-                                        </Button>
-                                    </div>
+                                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">
+                                        Complete Industrial Digital Infrastructure
+                                    </h2>
+                                    <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
+                                        Custom-architected around your equipment catalogs, target procurement sectors, and sales team requirements across South Africa and the SADC region.
+                                    </p>
                                 </div>
-                            )
-                        })}
+                                <div className="text-left md:text-right shrink-0">
+                                    <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground block">Engagement Model</span>
+                                    <span className="text-2xl sm:text-3xl font-extrabold text-primary block mt-1">Custom Quote</span>
+                                    <span className="text-xs text-muted-foreground">Tailored SOW & Service Order</span>
+                                </div>
+                            </div>
+
+                            {/* 4 Core Pillars */}
+                            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="p-6 rounded-2xl bg-muted/30 border border-border/50 space-y-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+                                            <Code2 className="size-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-base text-foreground">1. High-Performance Web Engineering</h3>
+                                            <span className="text-xs text-muted-foreground">Next.js 15 Edge Architecture</span>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                                        Custom-engineered web platform with sub-300ms response times, 100/100 Core Web Vitals, dynamic specification sheets, interactive CAD viewers, and edge security.
+                                    </p>
+                                    <ul className="space-y-1.5 pt-1 text-xs text-foreground/90">
+                                        <li className="flex items-center gap-2">
+                                            <Check className="size-3.5 text-primary shrink-0" />
+                                            <span>Sub-second page speeds for heavy industrial catalogs</span>
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <Check className="size-3.5 text-primary shrink-0" />
+                                            <span>Full platform migration or existing CMS acceleration</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div className="p-6 rounded-2xl bg-muted/30 border border-border/50 space-y-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+                                            <Globe2 className="size-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-base text-foreground">2. Technical SEO & Generative AI (GEO)</h3>
+                                            <span className="text-xs text-muted-foreground">Search Engine & AI Citability</span>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                                        Dominance on Google SERPs paired with authoritative entity schemas ensuring ChatGPT, Perplexity, and Gemini cite your products as primary industrial answers.
+                                    </p>
+                                    <ul className="space-y-1.5 pt-1 text-xs text-foreground/90">
+                                        <li className="flex items-center gap-2">
+                                            <Check className="size-3.5 text-primary shrink-0" />
+                                            <span>Comprehensive high-intent B2B keyword architecture</span>
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <Check className="size-3.5 text-primary shrink-0" />
+                                            <span>Generative Engine Optimization schema graphs</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div className="p-6 rounded-2xl bg-muted/30 border border-border/50 space-y-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+                                            <Zap className="size-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-base text-foreground">3. aura.js Juristic De-Anonymization</h3>
+                                            <span className="text-xs text-muted-foreground">Real-Time Lead Intelligence</span>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                                        Unmask visiting mining houses, Tier-1 contractors, and plant engineers in real-time using deterministic corporate ASN resolution—100% POPIA compliant.
+                                    </p>
+                                    <ul className="space-y-1.5 pt-1 text-xs text-foreground/90">
+                                        <li className="flex items-center gap-2">
+                                            <Check className="size-3.5 text-primary shrink-0" />
+                                            <span>Weekly Monday morning executive pipeline dispatches</span>
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <Check className="size-3.5 text-primary shrink-0" />
+                                            <span>Spec-sheet and CAD drawing download intent tracking</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div className="p-6 rounded-2xl bg-muted/30 border border-border/50 space-y-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+                                            <Wrench className="size-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-base text-foreground">4. Custom Industrial Tools & Integrations</h3>
+                                            <span className="text-xs text-muted-foreground">Tailored to Your Operations</span>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                                        Bespoke calculators, customer specification portals, RFQ capture workflows, and direct webhook integrations into HubSpot, Salesforce, Teams, or custom ERPs.
+                                    </p>
+                                    <ul className="space-y-1.5 pt-1 text-xs text-foreground/90">
+                                        <li className="flex items-center gap-2">
+                                            <Check className="size-3.5 text-primary shrink-0" />
+                                            <span>Custom engineering tools, sizing calculators & portals</span>
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <Check className="size-3.5 text-primary shrink-0" />
+                                            <span>Direct CRM, Slack, Microsoft Teams, and ERP sync</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {/* Call to Action Bar */}
+                            <div className="mt-10 pt-8 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-6">
+                                <div className="text-sm text-muted-foreground text-center sm:text-left">
+                                    <span className="font-semibold text-foreground">Need a custom scope? </span>
+                                    We evaluate your website, market footprint, and technical requirements.
+                                </div>
+                                <div className="flex flex-wrap items-center justify-center gap-4 w-full sm:w-auto">
+                                    <Button
+                                        asChild
+                                        size="lg"
+                                        className="w-full sm:w-auto font-bold px-8 py-6 text-base shadow-xl shadow-primary/20">
+                                        <Link href="/book-demo">
+                                            Book a Quote Consultation
+                                            <ArrowRight className="ml-2 size-4" />
+                                        </Link>
+                                    </Button>
+                                    <Button
+                                        asChild
+                                        variant="outline"
+                                        size="lg"
+                                        className="w-full sm:w-auto font-semibold px-6 py-6 text-base">
+                                        <Link href="/book-call">
+                                            Schedule Strategy Call
+                                        </Link>
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Section: Interactive ROI Calculator */}
@@ -497,7 +406,7 @@ export default function Pricing() {
                                 Calculate the Value of Unmasking 12% of Corporate Traffic
                             </h2>
                             <p className="mt-2 text-sm sm:text-base text-muted-foreground leading-relaxed">
-                                In heavy industry and B2B procurement, 98% of visiting corporate engineers, procurement specialists, and plant managers abandon websites without filling out contact forms. Adjust the sliders below to calculate the pipeline unlocked by our proprietary juristic de-anonymization engine.
+                                In heavy industry and B2B procurement, over 95% of visiting corporate engineers, procurement specialists, and plant managers leave websites without completing contact forms. Adjust the sliders below to simulate the active pipeline unlocked by our juristic de-anonymization engine.
                             </p>
                         </div>
 
@@ -577,7 +486,7 @@ export default function Pricing() {
                                     />
                                     <div className="flex justify-between text-[11px] text-muted-foreground mt-1">
                                         <span>2% (Conservative)</span>
-                                        <span>10% (Average)</span>
+                                        <span>8% (Average)</span>
                                         <span>20% (High-Touch)</span>
                                     </div>
                                 </div>
@@ -607,33 +516,20 @@ export default function Pricing() {
                                         R {(monthlyPipelineUnlocked / 1000000).toFixed(2)}M
                                     </div>
                                     <p className="mt-1 text-xs text-muted-foreground">
-                                        Active commercial opportunity value generated from previously invisible visitors.
+                                        Active commercial opportunity value identified from previously invisible visits.
                                     </p>
                                 </div>
 
-                                <div className="p-5 rounded-2xl bg-card border border-border shadow-sm">
+                                <div className="p-5 rounded-2xl bg-card border border-border shadow-sm sm:col-span-2">
                                     <div className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
                                         <Layers className="size-4 text-primary" />
-                                        <span>Annual Gross Pipeline</span>
+                                        <span>Estimated Annual Pipeline Unlocked</span>
                                     </div>
-                                    <div className="mt-2 text-3xl font-extrabold text-foreground">
+                                    <div className="mt-2 text-3xl sm:text-4xl font-extrabold text-primary">
                                         R {(annualPipelineUnlocked / 1000000).toFixed(1)}M
                                     </div>
                                     <p className="mt-1 text-xs text-muted-foreground">
-                                        Cumulative 12-month commercial pipeline unmasked across target industrial sectors.
-                                    </p>
-                                </div>
-
-                                <div className="p-5 rounded-2xl bg-primary/10 border border-primary/20 shadow-sm">
-                                    <div className="flex items-center gap-2 text-xs font-semibold uppercase text-primary">
-                                        <Zap className="size-4 text-primary" />
-                                        <span>Projected ROI Multiple</span>
-                                    </div>
-                                    <div className="mt-2 text-3xl font-extrabold text-primary">
-                                        {calculatedRoiMultiple}x
-                                    </div>
-                                    <p className="mt-1 text-xs text-muted-foreground">
-                                        Estimated annual pipeline ROI multiple measured against our Category Leader retainer.
+                                        Cumulative 12-month commercial pipeline unmasked across target mining, engineering, and industrial sectors.
                                     </p>
                                 </div>
                             </div>
@@ -649,18 +545,18 @@ export default function Pricing() {
                         </div>
                     </section>
 
-                    {/* Section: Comprehensive Feature Comparison Matrix */}
+                    {/* Section: Capabilities & Scope Matrix */}
                     <section className="mt-28">
                         <div className="max-w-3xl">
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
-                                <Network className="size-3.5" />
-                                <span>Detailed Technical Specifications</span>
+                                <Cpu className="size-3.5" />
+                                <span>Complete Solution Architecture</span>
                             </div>
                             <h2 className="mt-3 text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">
-                                Full Retainer Infrastructure Comparison Matrix
+                                Capabilities & Custom Scope Breakdown
                             </h2>
                             <p className="mt-2 text-sm sm:text-base text-muted-foreground leading-relaxed">
-                                Review detailed technical specifications, SLAs, Core Web Vitals commitments, and integration scopes across each enterprise partnership level.
+                                Explore the comprehensive capabilities included in our custom industrial engineering and intelligence engagements.
                             </p>
                         </div>
 
@@ -668,29 +564,23 @@ export default function Pricing() {
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="border-b border-border bg-muted/30">
-                                        <th className="py-4 px-6 text-sm font-bold text-foreground w-2/5">
+                                        <th className="py-4 px-6 text-sm font-bold text-foreground w-1/3">
                                             Capability & Deliverable
                                         </th>
-                                        <th className="py-4 px-6 text-sm font-bold text-foreground w-1/5 text-center">
-                                            Growth Foundation
-                                            <div className="text-xs font-normal text-muted-foreground">R10,000/mo</div>
+                                        <th className="py-4 px-6 text-sm font-bold text-foreground w-1/3">
+                                            Core Industrial Scope
                                         </th>
-                                        <th className="py-4 px-6 text-sm font-bold text-primary w-1/5 text-center bg-primary/5">
-                                            Category Leader
-                                            <div className="text-xs font-normal text-primary/80">R18,500/mo</div>
-                                        </th>
-                                        <th className="py-4 px-6 text-sm font-bold text-foreground w-1/5 text-center">
-                                            Enterprise Corridor
-                                            <div className="text-xs font-normal text-muted-foreground">R32,000/mo</div>
+                                        <th className="py-4 px-6 text-sm font-bold text-primary w-1/3">
+                                            Bespoke & Enterprise Add-ons
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {comparisonMatrix.map((cat, catIdx) => (
+                                    {customScopeMatrix.map((cat, catIdx) => (
                                         <React.Fragment key={catIdx}>
                                             <tr className="bg-muted/50 border-t border-b border-border">
                                                 <td
-                                                    colSpan={4}
+                                                    colSpan={3}
                                                     className="py-3 px-6 text-xs font-bold uppercase tracking-wider text-foreground">
                                                     {cat.category}
                                                 </td>
@@ -699,40 +589,23 @@ export default function Pricing() {
                                                 <tr
                                                     key={rowIdx}
                                                     className="border-b border-border/60 hover:bg-muted/10 transition-colors">
-                                                    <td className="py-3.5 px-6 text-xs sm:text-sm font-medium text-foreground/90">
+                                                    <td className="py-3.5 px-6 text-xs sm:text-sm font-medium text-foreground">
                                                         {row.feature}
                                                     </td>
-                                                    <td className="py-3.5 px-6 text-xs sm:text-sm text-center text-muted-foreground">
-                                                        {typeof row.growth === 'boolean' ? (
-                                                            row.growth ? (
-                                                                <Check className="size-4 text-primary mx-auto" />
-                                                            ) : (
-                                                                <X className="size-4 text-muted-foreground/40 mx-auto" />
-                                                            )
-                                                        ) : (
-                                                            row.growth
-                                                        )}
+                                                    <td className="py-3.5 px-6 text-xs sm:text-sm text-muted-foreground leading-snug">
+                                                        <div className="flex items-start gap-2">
+                                                            <Check className="size-3.5 text-primary shrink-0 mt-0.5" />
+                                                            <span>{row.scope}</span>
+                                                        </div>
                                                     </td>
-                                                    <td className="py-3.5 px-6 text-xs sm:text-sm text-center font-medium text-foreground bg-primary/5">
-                                                        {typeof row.leader === 'boolean' ? (
-                                                            row.leader ? (
-                                                                <Check className="size-4 text-primary mx-auto" />
-                                                            ) : (
-                                                                <X className="size-4 text-muted-foreground/40 mx-auto" />
-                                                            )
+                                                    <td className="py-3.5 px-6 text-xs sm:text-sm text-muted-foreground leading-snug">
+                                                        {row.enterpriseAddon ? (
+                                                            <div className="flex items-start gap-2">
+                                                                <CheckCircle2 className="size-3.5 text-primary/80 shrink-0 mt-0.5" />
+                                                                <span>{row.enterpriseAddon}</span>
+                                                            </div>
                                                         ) : (
-                                                            row.leader
-                                                        )}
-                                                    </td>
-                                                    <td className="py-3.5 px-6 text-xs sm:text-sm text-center text-foreground font-medium">
-                                                        {typeof row.enterprise === 'boolean' ? (
-                                                            row.enterprise ? (
-                                                                <Check className="size-4 text-primary mx-auto" />
-                                                            ) : (
-                                                                <X className="size-4 text-muted-foreground/40 mx-auto" />
-                                                            )
-                                                        ) : (
-                                                            row.enterprise
+                                                            <span className="text-muted-foreground/40">—</span>
                                                         )}
                                                     </td>
                                                 </tr>
@@ -755,7 +628,7 @@ export default function Pricing() {
                                 Frequently Asked Commercial & Governance Questions
                             </h2>
                             <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
-                                Clear, binding answers on onboarding timelines, POPIA indemnification, contract structures, and our Next.js technology stack.
+                                Clear answers on scoping, quotations, POPIA compliance, onboarding timelines, and custom tool engineering.
                             </p>
                         </div>
 
@@ -795,10 +668,10 @@ export default function Pricing() {
                     <section className="mt-28 mb-12 p-8 sm:p-12 md:p-16 rounded-3xl bg-primary text-primary-foreground text-center relative overflow-hidden shadow-2xl">
                         <div className="max-w-2xl mx-auto space-y-6">
                             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
-                                Ready to Dominate Search & AI in Your Industrial Category?
+                                Ready for a Custom Industrial Solution Built for Your Business?
                             </h2>
                             <p className="text-base sm:text-lg text-primary-foreground/90 leading-relaxed">
-                                Schedule a 30-minute technical architecture review. We will audit your current Google SERP rankings, benchmark your generative AI citation probability across ChatGPT and Perplexity, and present an unmasked telemetry demonstration.
+                                Schedule a 30-minute discovery review. We will evaluate your current Google SERP rankings, assess your AI citability across ChatGPT and Perplexity, and design a custom quotation for your industrial operations.
                             </p>
                             <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
                                 <Button
@@ -807,7 +680,7 @@ export default function Pricing() {
                                     variant="secondary"
                                     className="w-full sm:w-auto font-semibold px-8 py-6 text-base shadow-lg">
                                     <Link href="/book-demo">
-                                        Request Architecture Review & Proposal
+                                        Book a Quote Consultation
                                     </Link>
                                 </Button>
                                 <Button

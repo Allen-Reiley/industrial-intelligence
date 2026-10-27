@@ -76,7 +76,7 @@ export default function BookCallPage() {
                     <div className="mt-12 rounded-2xl border bg-muted/30 p-6">
                         <div className="flex items-center gap-x-2 text-sm font-medium text-primary">
                             <CheckCircle2 className="h-4 w-4" />
-                            <span>Current Cohort Status: 12/100 Seats Filled</span>
+                            <span>Direct Consultation with Senior Industrial Engineering Leads</span>
                         </div>
                     </div>
                 </div>

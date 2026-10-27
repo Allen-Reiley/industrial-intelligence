@@ -172,9 +172,8 @@ const jsonLd = {
       },
       "offers": {
         "@type": "Offer",
-        "price": "120000",
         "priceCurrency": "ZAR",
-        "priceValidUntil": "2027-12-31"
+        "description": "Custom industrial solutions and retainers quoted upon technical discovery"
       },
       "description": "Proprietary B2B visitor de-anonymization and conversion technology that turns anonymous industrial website traffic into verified pipeline for South African and SADC enterprises."
     },

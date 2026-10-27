@@ -19,11 +19,11 @@ const links = [
                 href: '/solution',
             },
             {
-                title: 'Customer Proof',
+                title: 'Client Confidentiality',
                 href: '/customers',
             },
             {
-                title: 'Pricing Plans',
+                title: 'Custom Solutions & Pricing',
                 href: '/pricing',
             },
             {

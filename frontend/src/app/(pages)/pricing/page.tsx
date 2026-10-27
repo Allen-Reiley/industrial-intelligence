@@ -3,15 +3,15 @@ import Pricing from '@/components/pricing/pricing';
 
 export const metadata: Metadata = {
   title: {
-    absolute: 'B2B SEO & Lead Intelligence Pricing | AuraWorks',
+    absolute: 'Custom Industrial Web Development, SEO & Intelligence | AuraWorks',
   },
-  description: 'Predictable flat-rate B2B discoverability packages. High-performance Next.js web platforms, technical SEO, and real-time visitor intelligence.',
+  description: 'Consolidated custom solutions for industrial enterprises. High-performance Next.js web platforms, technical SEO, Generative Engine Optimization (GEO), and real-time visitor de-anonymization.',
   alternates: {
     canonical: '/pricing',
   },
   openGraph: {
-    title: 'B2B SEO & Lead Intelligence Pricing | AuraWorks',
-    description: 'Predictable flat-rate B2B discoverability packages. High-performance Next.js web platforms, technical SEO, and real-time visitor intelligence.',
+    title: 'Custom Industrial Web Development, SEO & Intelligence | AuraWorks',
+    description: 'Consolidated custom solutions for industrial enterprises. High-performance Next.js web platforms, technical SEO, Generative Engine Optimization (GEO), and real-time visitor de-anonymization.',
     url: 'https://www.auraworks.co.za/pricing',
     type: 'website',
   },

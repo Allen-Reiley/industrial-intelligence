@@ -27,25 +27,24 @@ export default function ThankYouPage() {
                 </h1>
                 
                 <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-                    Thank you for applying to the AuraWorks Beta. We are currently vetting 
-                    applications to ensure every partner in our <strong>initial 100-client cohort</strong> 
-                    receives maximum ROI from the Identity Bridge.
+                    Thank you for contacting AuraWorks. Our technical solutions team is reviewing your requirements 
+                    to prepare your tailored industrial discoverability and de-anonymization scope.
                 </p>
 
                 <div className="mt-12 grid gap-6 sm:grid-cols-2">
                     <div className="rounded-2xl border bg-muted/30 p-6 text-left border-primary/10">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Current Status</span>
-                        <h3 className="mt-2 text-xl font-semibold">Vetting in Progress</h3>
-                        <p className="mt-1 text-sm text-muted-foreground italic">
-                            Domain verification active.
+                        <h3 className="mt-2 text-xl font-semibold">Review in Progress</h3>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                            A solutions engineer will reach out within 1 business day.
                         </p>
                     </div>
 
                     <div className="rounded-2xl border bg-muted/30 p-6 text-left">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Priority Access</span>
-                        <h3 className="mt-2 text-xl font-semibold">Jump the Queue</h3>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Next Step</span>
+                        <h3 className="mt-2 text-xl font-semibold">Technical Discovery</h3>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            Sharing interest accelerates sector prioritization.
+                            We review your search visibility, CAD assets, and telemetry fit.
                         </p>
                     </div>
                 </div>

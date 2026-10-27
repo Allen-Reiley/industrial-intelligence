@@ -3,50 +3,59 @@ import Link from 'next/link';
 import { HeroHeader } from '@/components/header/header';
 import Footer from '@/components/footer/footer';
 import { Button } from '@/components/ui/button';
-import { Building2, ShieldCheck, ArrowRight, BarChart3, Lock, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Lock, CheckCircle2, Factory, Cpu, Truck } from 'lucide-react';
 import { TextEffect } from '@/components/ui/text-effect';
 
 export const metadata: Metadata = {
   title: {
-    absolute: 'Client Case Studies & Pipeline Results | AuraWorks',
+    absolute: 'Client Confidentiality & Industrial Solutions | AuraWorks',
   },
-  description: 'See how South African engineering, mining, and industrial suppliers unlock 4.8x enterprise pipeline with AuraWorks discoverability. Explore proof.',
+  description: 'How AuraWorks engineers custom search, generative engine optimization, and visitor de-anonymization for South African and SADC industrial leaders under strict commercial NDAs.',
   alternates: {
     canonical: '/customers',
   },
   openGraph: {
-    title: 'Client Case Studies & Pipeline Results | AuraWorks',
-    description: 'See how South African engineering, mining, and industrial suppliers unlock 4.8x enterprise pipeline with AuraWorks discoverability. Explore proof.',
+    title: 'Client Confidentiality & Industrial Solutions | AuraWorks',
+    description: 'How AuraWorks engineers custom search, generative engine optimization, and visitor de-anonymization for South African and SADC industrial leaders under strict commercial NDAs.',
     url: 'https://www.auraworks.co.za/customers',
     type: 'website',
   },
 };
 
 export default function CustomersPage() {
-  const caseStudies = [
+  const industrialSectors = [
     {
-      sector: 'Mineral Processing Equipment',
-      region: 'East Rand, Gauteng',
-      metric: 'R3.8M Pipeline Unmasked',
-      quote: 'Within 60 days of deploying the AuraWorks technical SEO architecture and intelligence engine, we ranked #1 for our primary mill spec keywords and identified 4 major mining houses reviewing CAD drawings before tenders were issued.',
-      outcome: '5.2x ROI in First Quarter',
-      status: 'Anonymized NDA Audit',
+      sector: 'Mining & Mineral Processing',
+      focus: 'Equipment OEMs & Reagent Suppliers',
+      icon: <Factory className="size-5 text-primary" />,
+      capabilities: [
+        'CAD and technical spec-sheet discoverability',
+        'Entity schemas for mining house procurement engines',
+        'Juristic tracking of tender research & engineering visits',
+      ],
+      scope: 'Custom Web Dev + Technical SEO & GEO + De-anonymization',
     },
     {
-      sector: 'Heavy Industrial Pumps & Hydraulics',
-      region: 'Middelburg, Mpumalanga',
-      metric: '38% Shorter Deal Cycles',
-      quote: 'Our sales engineers stopped cold calling. When our weekly Monday dispatch shows a firm was referred by an AI engine answer and spent 4 minutes on technical capacity sheets, we reach out with precision.',
-      outcome: '42 Qualified Lead Alerts / Month',
-      status: 'Verification Pending',
+      sector: 'Heavy Engineering & Fabrication',
+      focus: 'Pumps, Hydraulics & Precision Machining',
+      icon: <Cpu className="size-5 text-primary" />,
+      capabilities: [
+        'AI engine citability across ChatGPT, Perplexity & Gemini',
+        'B2B catalog optimization for metallurgical ratings',
+        'Automated lead dispatch directly to technical sales engineers',
+      ],
+      scope: 'Custom Web Dev + Technical SEO & GEO + De-anonymization',
     },
     {
-      sector: 'Bulk Logistics & Heavy Freight',
-      region: 'Durban Corridor, KZN',
-      metric: '19 Corporate Accounts Re-engaged',
-      quote: 'We saw dormant tier-1 commodity exporters reviewing our bulk handling rates after finding our refreshed GEO specs. Account executives followed up and closed contracts without price concessions.',
-      outcome: 'R1.2M Contract Value',
-      status: 'Cohort Benchmark',
+      sector: 'Bulk Logistics & SADC Corridors',
+      focus: 'Industrial Freight & Commodity Transport',
+      icon: <Truck className="size-5 text-primary" />,
+      capabilities: [
+        'Cross-border corridor search & geo-targeting',
+        'Corporate shipper & procurement team identification',
+        'Custom route calculators & RFP capture workflows',
+      ],
+      scope: 'Custom Web Dev + Technical SEO & GEO + De-anonymization',
     },
   ];
 
@@ -63,15 +72,15 @@ export default function CustomersPage() {
         <div className="mx-auto max-w-5xl px-6">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 rounded-full border bg-muted/60 px-3.5 py-1 text-xs font-medium text-primary mb-6 shadow-sm">
-              <BarChart3 className="size-3.5" />
-              <span>Cohort Benchmark Reports — Coming Soon</span>
+              <Lock className="size-3.5" />
+              <span>Commercial Non-Disclosure & Verification Standard</span>
             </div>
             <TextEffect
               preset="fade-in-blur"
               speedSegment={0.3}
               as="h1"
               className="text-4xl font-bold tracking-tight sm:text-6xl text-balance">
-              {"Proven Results Across South Africa's Heavy Industries"}
+              {"Client Confidentiality & Industrial Engineering"}
             </TextEffect>
             <TextEffect
               per="line"
@@ -80,81 +89,93 @@ export default function CustomersPage() {
               delay={0.5}
               as="p"
               className="mt-6 text-lg text-muted-foreground leading-relaxed">
-              We work with industrial leaders who require strict confidentiality under commercial NDAs. Here is a preview of the verified field data and cohort metrics demonstrating search dominance, AI citability, and unmasked pipeline.
+              In heavy engineering, mining, and industrial supply chains, strategic search advantage and commercial telemetry are strictly confidential. We protect our partners under rigorous commercial NDAs—delivering live, verifiable demonstrations rather than marketing fluff.
             </TextEffect>
           </div>
 
-          {/* Metric Highlights Banner */}
+          {/* Metric / Standards Banner */}
           <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div className="rounded-2xl border bg-card/60 p-6 backdrop-blur-sm text-center">
-              <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Average Pipeline Lift</span>
-              <p className="text-3xl font-bold text-primary mt-2">R2.4M+</p>
-              <p className="text-xs text-muted-foreground mt-1">Per enterprise client in 90 days</p>
-            </div>
-            <div className="rounded-2xl border bg-card/60 p-6 backdrop-blur-sm text-center">
-              <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">AI Citability & Search</span>
-              <p className="text-3xl font-bold text-primary mt-2">3.4x</p>
-              <p className="text-xs text-muted-foreground mt-1">Lift in organic & generative citations</p>
+              <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Commercial Integrity</span>
+              <p className="text-3xl font-bold text-primary mt-2">100% NDA</p>
+              <p className="text-xs text-muted-foreground mt-1">Strict confidentiality across all client data</p>
             </div>
             <div className="rounded-2xl border bg-card/60 p-6 backdrop-blur-sm text-center">
               <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">POPIA Compliance</span>
-              <p className="text-3xl font-bold text-primary mt-2">100%</p>
-              <p className="text-xs text-muted-foreground mt-1">Juristic-only entity resolution</p>
+              <p className="text-3xl font-bold text-primary mt-2">100% Juristic</p>
+              <p className="text-xs text-muted-foreground mt-1">Enterprise ASN & network resolution only</p>
+            </div>
+            <div className="rounded-2xl border bg-card/60 p-6 backdrop-blur-sm text-center">
+              <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Architecture Standard</span>
+              <p className="text-3xl font-bold text-primary mt-2">Custom</p>
+              <p className="text-xs text-muted-foreground mt-1">Next.js edge, SEO/GEO & de-anonymization</p>
             </div>
           </div>
 
-          {/* Case Studies Preview Grid */}
+          {/* Industrial Sectors & Capabilities Grid */}
           <div className="mt-16 space-y-6">
             <div className="flex items-center justify-between border-b pb-4">
               <div>
-                <h2 className="text-2xl font-bold tracking-tight">Active Cohort Studies</h2>
-                <p className="text-sm text-muted-foreground">Case summaries undergoing final legal redacting</p>
+                <h2 className="text-2xl font-bold tracking-tight">Tailored Industrial Sector Stacks</h2>
+                <p className="text-sm text-muted-foreground">Custom-engineered discoverability, lead forensics, and specialized tools</p>
               </div>
               <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
-                <Lock className="size-3.5" /> NDA Redacted
+                <ShieldCheck className="size-3.5 text-primary" /> Verified Standards
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {caseStudies.map((study, idx) => (
+              {industrialSectors.map((sector, idx) => (
                 <div key={idx} className="rounded-2xl border bg-card/40 backdrop-blur-sm p-6 flex flex-col justify-between hover:border-primary/40 transition-colors">
                   <div className="space-y-4">
-                    <div className="space-y-1">
-                      <span className="text-xs font-mono text-primary font-semibold block">{study.region}</span>
-                      <h3 className="font-bold text-lg">{study.sector}</h3>
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
+                        {sector.icon}
+                      </div>
+                      <div>
+                        <span className="text-xs font-mono text-primary font-semibold block">{sector.focus}</span>
+                        <h3 className="font-bold text-lg">{sector.sector}</h3>
+                      </div>
                     </div>
-                    <div className="rounded-xl border bg-muted/40 p-3 text-center">
-                      <span className="text-xs text-muted-foreground block">Key Metric</span>
-                      <span className="font-bold text-sm text-foreground">{study.metric}</span>
+
+                    <div className="space-y-2 pt-2 border-t border-border/50">
+                      <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Engineered Capabilities:</span>
+                      <ul className="space-y-2">
+                        {sector.capabilities.map((cap, i) => (
+                          <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground leading-snug">
+                            <CheckCircle2 className="size-3.5 text-primary shrink-0 mt-0.5" />
+                            <span>{cap}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed italic border-l-2 border-primary/20 pl-3">
-                      &quot;{study.quote}&quot;
-                    </p>
                   </div>
 
-                  <div className="mt-6 pt-4 border-t border-border/50 flex items-center justify-between text-xs">
-                    <span className="font-semibold text-primary">{study.outcome}</span>
-                    <span className="text-[11px] font-mono text-muted-foreground">{study.status}</span>
+                  <div className="mt-6 pt-4 border-t border-border/50 text-[11px] font-mono text-muted-foreground">
+                    {sector.scope}
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* CTA Box */}
-          <div className="mt-16 rounded-3xl border bg-muted/30 p-8 md:p-12 text-center">
-            <h3 className="text-2xl font-bold tracking-tight">Want to dominate search, lead AI recommendations, and unmask your pipeline?</h3>
-            <p className="mt-3 text-sm text-muted-foreground max-w-xl mx-auto">
-              Join the cohort of South African industrial leaders turning anonymous digital presence into verified sales meetings.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
+          {/* Verification & Live Demo Section */}
+          <div className="mt-16 rounded-3xl border bg-card/50 p-8 md:p-12">
+            <div className="max-w-2xl">
+              <span className="text-xs font-mono font-bold uppercase tracking-widest text-primary">Live Technical Verification</span>
+              <h3 className="mt-2 text-2xl font-bold tracking-tight">Experience Live De-Anonymization on Your Own Traffic</h3>
+              <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+                Rather than relying on unverified claims, schedule a 30-minute discovery session. We will run an audit on your search presence, evaluate your AI citability across ChatGPT and Perplexity, and demonstrate how our juristic de-anonymization engine unmasks corporate accounts in real-time.
+              </p>
+            </div>
+            <div className="mt-8 flex flex-wrap gap-4">
               <Button asChild size="lg" className="rounded-xl px-8 font-semibold">
                 <Link href="/book-demo">
-                  Apply for Cohort Demo <ArrowRight className="ml-2 size-4" />
+                  Book Strategic Consultation <ArrowRight className="ml-2 size-4" />
                 </Link>
               </Button>
               <Button variant="outline" asChild size="lg" className="rounded-xl px-8">
-                <Link href="/pricing">View Enterprise Pricing</Link>
+                <Link href="/pricing">Request Custom Quote</Link>
               </Button>
             </div>
           </div>

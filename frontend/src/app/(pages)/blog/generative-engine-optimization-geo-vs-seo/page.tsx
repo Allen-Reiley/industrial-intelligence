@@ -221,7 +221,7 @@ export default function GenerativeEngineOptimizationGuidePage() {
                 3. Empirical Testing: How AI Engines Evaluate SADC Industrial Queries
               </h2>
               <p>
-                In late 2025, AuraWorks conducted an exhaustive empirical benchmark testing 500 industrial procurement prompts across ChatGPT Search, Perplexity AI Pro, and Google AI Overviews. We examined how different website architectures influence <strong>Citation Probability (CP)</strong>.
+                In our technical laboratory evaluations analyzing industrial procurement prompt patterns across ChatGPT Search, Perplexity AI, and Google AI Overviews, we examined how differing website architectures influence <strong>Citation Probability (CP)</strong>.
               </p>
               <p>
                 Our data revealed three decisive factors that dictate whether an industrial website is cited or ignored:

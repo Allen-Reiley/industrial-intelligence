@@ -31,12 +31,12 @@ export default function TermsOfServicePage() {
                         </span>
                         <span className="h-[1px] w-12 bg-primary/20"></span>
                         <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                            v1.1 — {effectiveDate}
+                            v1.2 — {effectiveDate}
                         </span>
                     </div>
                     <h1 className="text-5xl font-bold tracking-tighter italic mb-6">Terms of Service</h1>
                     <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl">
-                        This agreement governs the use of the AuraWorks Intent Engine. By engaging our infrastructure, you agree to these operational protocols.
+                        This agreement governs the provision of custom web development, search and generative engine optimization, and the AuraWorks Identity Bridge. By executing a Service Order or engaging our infrastructure, you agree to these operational protocols.
                     </p>
                 </div>
 
@@ -46,14 +46,14 @@ export default function TermsOfServicePage() {
                     {/* Section 1: The Engine */}
                     <section>
                         <h2 className="text-2xl font-bold flex items-center gap-3 mb-6 uppercase tracking-tight">
-                            <Zap className="text-primary h-6 w-6" /> 01. The Annual Intent Engine
+                            <Zap className="text-primary h-6 w-6" /> 01. Industrial Intelligence & Services
                         </h2>
                         <div className="text-muted-foreground space-y-4 text-sm leading-relaxed border-l border-primary/20 pl-6">
                             <p>
-                                AuraWorks (Pty) Ltd grants the Client a non-exclusive, non-transferable license to access the <strong>AuraWorks Identity Bridge</strong> for a period of one (1) year.
+                                AuraWorks (Pty) Ltd provides high-performance web development, technical Search Engine Optimization (SEO), Generative Engine Optimization (GEO), the <strong>AuraWorks Identity Bridge</strong>, and bespoke industrial tools as specified in the applicable Service Order.
                             </p>
                             <p>
-                                <strong>Scope of Service:</strong> The &quot;Engine&quot; includes real-time identity resolution of website traffic, weekly lead enrichment reporting, and access to the proprietary B2B dashboard. Clients are strictly responsible for the security of their unique API keys and dashboard credentials.
+                                <strong>Scope of Service:</strong> Deliverables may include custom Next.js web application deployment, semantic entity schema engineering, real-time juristic visitor de-anonymization, weekly lead reporting dispatches, and custom API/CRM integrations. Clients are responsible for maintaining the confidentiality of their account credentials and API access tokens.
                             </p>
                         </div>
                     </section>
@@ -61,14 +61,14 @@ export default function TermsOfServicePage() {
                     {/* Section 2: Financials */}
                     <section>
                         <h2 className="text-2xl font-bold flex items-center gap-3 mb-6 uppercase tracking-tight">
-                            <CreditCard className="text-primary h-6 w-6" /> 02. Fees & Commitment
+                            <CreditCard className="text-primary h-6 w-6" /> 02. Fees & Commercial Commitment
                         </h2>
                         <div className="text-muted-foreground space-y-4 text-sm leading-relaxed border-l border-primary/20 pl-6">
                             <p>
-                                <strong>Annual Commitment:</strong> The Founding Member rate (R120,000/yr) is a full annual commitment. Failure to meet payment schedules will result in immediate suspension of the Identity Bridge within 14 days of the overdue date.
+                                <strong>Custom Scope & Quotations:</strong> All service fees, project milestones, and retainer schedules are defined in the Client&apos;s executed Service Order or quotation. Invoices are payable within the agreed terms specified on the invoice. Failure to meet payment schedules may result in temporary suspension of active software services and telemetry pipelines following 14 days written notice.
                             </p>
                             <p>
-                                <strong>Refund Policy:</strong> Due to the proprietary nature of the data and the intensive &quot;Systems Architect&quot; setup required for deployment, all fees are non-refundable once the bridge is integrated into the Client&apos;s digital infrastructure.
+                                <strong>Refund Policy:</strong> Due to the dedicated engineering hours, bespoke technical schema architecture, and software configurations required for deployment, initial setup and sprint fees are non-refundable once technical work has commenced.
                             </p>
                         </div>
                     </section>
@@ -80,10 +80,10 @@ export default function TermsOfServicePage() {
                         </h2>
                         <div className="text-muted-foreground space-y-4 text-sm leading-relaxed border-l border-primary/20 pl-6">
                             <p>
-                                <strong>AuraWorks Property:</strong> All algorithms, FastAPI architecture, &quot;Identity Bridge&quot; logic, and UI designs remain the sole property of AuraWorks (Pty) Ltd.
+                                <strong>AuraWorks Property:</strong> All underlying proprietary algorithms, edge tracking libraries (including aura.js), juristic resolution engines, and backend APIs remain the exclusive intellectual property of AuraWorks (Pty) Ltd.
                             </p>
                             <p>
-                                <strong>Data Ownership:</strong> Clients retain full ownership of all leads exported during an active subscription. Upon termination, access to the engine is revoked, but exported data remains with the Client.
+                                <strong>Client Data Ownership:</strong> The Client retains full and exclusive ownership of all proprietary business content, branding assets, and commercial lead data captured during an active engagement.
                             </p>
                         </div>
                     </section>
@@ -94,11 +94,11 @@ export default function TermsOfServicePage() {
                             <ShieldAlert className="text-primary h-6 w-6" /> 04. Operational Constraints
                         </h2>
                         <div className="text-muted-foreground space-y-4 text-sm leading-relaxed border-l border-primary/20 pl-6">
-                            <p>Clients are strictly prohibited from:</p>
+                            <p>Clients agree to the following operational standards:</p>
                             <ul className="list-disc space-y-2 pl-4">
-                                <li>Stress-testing or reverse-engineering FastAPI endpoints.</li>
-                                <li>Utilizing AuraWorks data to construct a competing identity resolution product.</li>
-                                <li>Engaging in non-POPIA compliant outreach using leads generated by the engine.</li>
+                                <li>No reverse-engineering, decompiling, or automated scraping of AuraWorks proprietary scripts or endpoints.</li>
+                                <li>No utilizing AuraWorks software telemetry to construct a competing identity resolution service.</li>
+                                <li>All sales communications and outreach conducted using unmasked corporate entity data must adhere to POPIA and relevant communication regulations.</li>
                             </ul>
                         </div>
                     </section>
@@ -121,14 +121,14 @@ export default function TermsOfServicePage() {
                     {/* Section 6: Maintenance & Support */}
                     <section>
                         <h2 className="text-2xl font-bold flex items-center gap-3 mb-6 uppercase tracking-tight">
-                            <Construction className="text-primary h-6 w-6" /> 06. Service Levels
+                            <Construction className="text-primary h-6 w-6" /> 06. Service Levels & Support
                         </h2>
                         <div className="text-muted-foreground space-y-4 text-sm leading-relaxed border-l border-primary/20 pl-6">
                             <p>
-                                <strong>Uptime:</strong> AuraWorks maintains a 99.9% uptime target. Scheduled maintenance for &quot;Bridge Updates&quot; will be performed during off-peak hours and does not constitute downtime.
+                                <strong>Uptime:</strong> AuraWorks maintains a 99.9% target uptime for hosted edge scripts and telemetry endpoints. Scheduled maintenance windows are communicated in advance and conducted outside of standard business hours.
                             </p>
                             <p>
-                                <strong>Support:</strong> Founding members receive priority technical support via email with a guaranteed 24-hour response time during standard business hours (SAST).
+                                <strong>Support Desk:</strong> Active clients receive direct technical support via email at <a href="mailto:contact@auraworks.co.za" className="text-primary hover:underline">contact@auraworks.co.za</a> with a targeted 24-hour response time during South African standard business hours (SAST).
                             </p>
                         </div>
                     </section>
@@ -140,7 +140,7 @@ export default function TermsOfServicePage() {
                         </h2>
                         <div className="text-muted-foreground space-y-4 text-sm leading-relaxed border-l border-primary/20 pl-6">
                             <p>
-                                Either party may terminate for cause if a material breach remains uncured for 30 days. Survival clauses regarding Limitation of Liability, Confidentiality, and Proprietary Rights remain in effect post-termination.
+                                Either party may terminate an engagement for cause if a material breach remains uncured for 30 days following written notice. Ongoing retainers may be canceled in accordance with the notice period specified in the signed Service Order. Survival clauses regarding Limitation of Liability, Confidentiality, and Proprietary Rights remain in effect post-termination.
                             </p>
                         </div>
                     </section>

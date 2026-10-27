@@ -406,14 +406,15 @@ export default function IndustrialDiscoverabilityPlaybookPage() {
                 Using <strong>aura.js</strong>, our proprietary visitor intelligence engine, industrial firms unmask the juristic identity of visiting companies deterministically. By mapping autonomous system numbers (ASNs), corporate IP telemetry, and commercial network blocks against South African business registries, aura.js alerts sales teams in real time:
               </p>
               <div className="p-5 rounded-xl bg-muted/40 border border-border font-mono text-xs sm:text-sm space-y-2 not-prose my-4">
-                <div className="text-primary font-bold flex items-center gap-2">
-                  <CheckCircle2 className="size-4" /> [REAL-TIME ALERT] Juristic Entity De-Anonymized
+                <div className="text-primary font-bold flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-2"><CheckCircle2 className="size-4" /> [REAL-TIME ALERT] Juristic Entity De-Anonymized</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-sans font-normal">(Simulated Demonstration Example)</span>
                 </div>
-                <div className="text-muted-foreground">Entity: Impala Platinum Operations (Rustenburg Concentrator)</div>
-                <div className="text-muted-foreground">Network Block: AS37153 &bull; Commercial Mining Telemetry</div>
+                <div className="text-muted-foreground">Entity: Regional Mining & Concentrator Group (Gauteng / NW Corridor)</div>
+                <div className="text-muted-foreground">Network Block: AS37153 &bull; Commercial Industrial Telemetry</div>
                 <div className="text-muted-foreground">Pages Evaluated: /pumps/slurry-series-400, /specs/cad-flange-dimensions.pdf</div>
                 <div className="text-muted-foreground">Dwell Time: 6 minutes 42 seconds &bull; High Intent Score: 94/100</div>
-                <div className="text-muted-foreground">Verified Procurement Route: Head of Engineering / Mechanical Sourcing</div>
+                <div className="text-muted-foreground">Identified Department: Mechanical Engineering / Sourcing Team</div>
               </div>
               <p>
                 Crucially, this telemetry is <strong>100% compliant with Chapter 3 of the Protection of Personal Information Act (POPIA)</strong>. aura.js identifies juristic entities (corporate and legal persons) rather than private natural individuals. No personal emails are scraped, no invasive cookies are dropped, and all data is encrypted at rest using AES-256 protocols.
