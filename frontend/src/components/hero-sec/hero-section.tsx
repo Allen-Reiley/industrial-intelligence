@@ -209,9 +209,9 @@ export default function HeroSection() {
                             <div className="text-center sm:mx-auto lg:mr-auto lg:mt-0">
                                 <AnimatedGroup variants={transitionVariants}>
                                     <Link
-                                        href="/solution"
+                                        href="/features"
                                         className="hover:bg-background bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-zinc-950/5 transition-colors duration-300">
-                                        <span className="text-foreground text-sm">Industrial Web Development, SEO & Lead Intelligence</span>
+                                        <span className="text-foreground text-sm">B2B Discoverability & Lead Capture</span>
                                         <span className="block h-4 w-0.5 border-l bg-white"></span>
 
                                         <div className="bg-background group-hover:bg-muted size-6 overflow-hidden rounded-full duration-500">
@@ -241,7 +241,7 @@ export default function HeroSection() {
                                     delay={0.5}
                                     as="p"
                                     className="mx-auto mt-8 max-w-3xl text-balance text-lg text-muted-foreground">
-                                    Custom Next.js web platforms, top-tier Google rankings, generative AI citability across ChatGPT and Perplexity, and proprietary juristic visitor de-anonymization for industrial leaders.
+                                    Ensure Google, ChatGPT, Perplexity, and Gemini cite and recommend your industrial solutions to buyers—and capture the accounts visiting your site.
                                 </TextEffect>
 
                                 <AnimatedGroup
@@ -262,16 +262,16 @@ export default function HeroSection() {
                                         size="lg"
                                         className="rounded-xl px-8 text-base shadow-xl shadow-primary/20">
                                         <Link href="/book-demo">
-                                            <span className="text-nowrap">Request Custom Quote</span>
+                                            <span className="text-nowrap">Book Demo</span>
                                         </Link>
                                     </Button>
                                     <Button
                                         asChild
                                         size="lg"
-                                        variant="outline"
+                                        variant="ghost"
                                         className="rounded-xl px-8 text-base">
-                                        <Link href="/book-call">
-                                            <span className="text-nowrap">Schedule Strategy Call</span>
+                                        <Link href="/book-audit">
+                                            <span className="text-nowrap">Book Audit</span>
                                         </Link>
                                     </Button>
                                 </AnimatedGroup>
@@ -355,7 +355,7 @@ export default function HeroSection() {
                                                     size="lg"
                                                     className="w-full sm:w-auto rounded-xl px-8 font-semibold shadow-xl shadow-primary/20 cursor-pointer"
                                                   >
-                                                    Request Custom Quote
+                                                    Book Demo
                                                   </Button>
                                                   <Button
                                                     onClick={handleRestart}
