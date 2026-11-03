@@ -12,13 +12,13 @@ export function SolutionsHero() {
             />
             <div className="mx-auto max-w-5xl px-6">
                 <div className="max-w-3xl">
-                    <span className="text-primary text-sm font-semibold tracking-widest uppercase">Strategic B2B Solutions</span>
+                    <span className="text-primary text-sm font-semibold tracking-widest uppercase">Connected Business Systems</span>
                     <TextEffect
                         preset="fade-in-blur"
                         speedSegment={0.3}
                         as="h1"
                         className="mt-6 text-balance text-5xl font-bold tracking-tight md:text-7xl">
-                        Two Strategic Paths to Pipeline Dominance.
+                        Tailored for Real Commercial Workflows.
                     </TextEffect>
                     <TextEffect
                         per="line"
@@ -27,7 +27,7 @@ export function SolutionsHero() {
                         delay={0.5}
                         as="p"
                         className="mt-8 text-lg text-muted-foreground md:text-xl leading-relaxed">
-                        Whether engineering a new digital flagship or maximizing your existing web presence, AuraWorks provides two tailored entry points to establish search dominance, Generative Engine Optimization (GEO) citability, and proprietary visitor capture across South Africa and the SADC region.
+                        Whether engineering a customer-facing storefront to generate immediate cashflow or deploying operational tooling to lower workshop fulfillment costs, AuraWorks bridges search discoverability, Generative Engine Optimization (GEO), and visitor intelligence into an integrated system that scales your business.
                     </TextEffect>
                 </div>
             </div>

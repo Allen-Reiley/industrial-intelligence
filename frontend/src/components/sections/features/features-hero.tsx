@@ -15,7 +15,7 @@ export default function FeaturesHero() {
                         speedSegment={0.3}
                         as="h1"
                         className="text-5xl font-bold tracking-tight md:text-7xl">
-                        Organic Visibility, AI Citability & Lead Capture.
+                        The Connected Engines of Business Growth.
                     </TextEffect>
                     <TextEffect
                         per="line"
@@ -24,7 +24,7 @@ export default function FeaturesHero() {
                         delay={0.5}
                         as="p"
                         className="mt-8 text-lg text-muted-foreground md:text-xl leading-relaxed">
-                        AuraWorks is the organic discoverability and lead-capture partner engineered for South African and SADC heavy industry. We combine dominant technical SEO and Generative Engine Optimization (GEO)—optimizing your web assets so AI search engines (ChatGPT, Perplexity, Gemini, Google AI Overviews) understand, cite, and recommend your firm—with our proprietary AuraWorks Intelligence Engine as a built-in conversion layer.
+                        AuraWorks unites client-facing resources that drive immediate cashflow with operational tooling that slashes internal overhead—all anchored by technical SEO, Generative Engine Optimization (GEO), and visitor de-anonymization to continuously supply verified demand.
                     </TextEffect>
                 </div>
 
@@ -36,9 +36,9 @@ export default function FeaturesHero() {
                     }}
                 >
                     {[
-                        { icon: Globe, title: "Technical & Local SEO", desc: "Architected for heavy industry with structured schema markup, fast Core Web Vitals, and deep keyword dominance across South Africa and SADC." },
-                        { icon: Cpu, title: "Generative Engine Optimization (GEO)", desc: "Structured semantic entity graphs that train LLMs to recognize, cite, and recommend your technical specifications in AI Overviews and chat answers." },
-                        { icon: ShieldCheck, title: "Proprietary Intelligence Engine", desc: "Built-in visitor de-anonymization that converts high-intent corporate traffic and tracks spec-sheet downloads into weekly Monday inbox dispatches." }
+                        { icon: Globe, title: "Discovery & Intent (SEO + GEO)", desc: "Structured schemas, Core Web Vitals, and entity optimization ensuring Google, ChatGPT, and Perplexity cite your capabilities and identify visiting corporate accounts." },
+                        { icon: Cpu, title: "Client-Facing Cashflow Engines", desc: "Bespoke digital storefronts, interactive product configurators, and instant checkout flows engineered to turn incoming demand into predictable revenue." },
+                        { icon: ShieldCheck, title: "Operational Tooling & Fulfillment", desc: "Custom factory/workshop dashboards, live job queues, and automated cut-sheets/BOMs that eliminate manual errors and reduce fulfillment overhead." }
                     ].map((feature, i) => (
                         <div key={i} className="group relative rounded-2xl border p-8 bg-card/50 backdrop-blur-sm transition-colors hover:bg-muted/50">
                             <feature.icon className="size-6 text-primary mb-4" />

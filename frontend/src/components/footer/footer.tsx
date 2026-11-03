@@ -11,12 +11,16 @@ const links = [
         group: 'Product',
         items: [
             {
-                title: 'Features',
+                title: 'Operational Tooling',
                 href: '/features',
             },
             {
-                title: 'Industrial Solutions',
+                title: 'Custom Storefronts & Portals',
                 href: '/solution',
+            },
+            {
+                title: 'SEO, GEO & Discovery',
+                href: '/features',
             },
             {
                 title: 'Client Confidentiality',
@@ -31,7 +35,7 @@ const links = [
                 href: '/book-demo',
             },
             {
-                title: 'Executive SEO & GEO Audit',
+                title: 'Executive Systems Audit',
                 href: '/book-audit',
             },
         ],
@@ -218,7 +222,7 @@ export default function Footer() {
                                 />
                                 <Button type="submit" size="sm">Subscribe</Button>
                             </div>
-                            <span className="text-muted-foreground block text-xs">Weekly industrial buyer intent & POPIA telemetry analysis.</span>
+                            <span className="text-muted-foreground block text-xs">Weekly briefing on operational systems, custom commerce, and search intelligence.</span>
                         </div>
                     </form>
                 </div>

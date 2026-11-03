@@ -7,15 +7,15 @@ import Footer from "@/components/footer/footer";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "B2B SEO, GEO & Lead Intelligence | AuraWorks",
+    absolute: "Operational Tooling, Cashflow Engines & Discovery Systems | AuraWorks",
   },
-  description: "Rank #1 on Google and get cited in AI search. AuraWorks de-anonymizes anonymous B2B website visitors for South African industry. Request a demo.",
+  description: "We engineer operational tools that lower the cost of operations and custom storefronts that drive immediate cashflow—anchored by SEO, GEO, and visitor intelligence.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "B2B SEO, GEO & Lead Intelligence | AuraWorks",
-    description: "Rank #1 on Google and get cited in AI search. AuraWorks de-anonymizes anonymous B2B website visitors for South African industry. Request a demo.",
+    title: "Operational Tooling, Cashflow Engines & Discovery Systems | AuraWorks",
+    description: "We engineer operational tools that lower the cost of operations and custom storefronts that drive immediate cashflow—anchored by SEO, GEO, and visitor intelligence.",
     url: "https://www.auraworks.co.za",
     type: "website",
   },

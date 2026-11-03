@@ -232,7 +232,7 @@ export default function Pricing() {
                             speedSegment={0.3}
                             as="p"
                             className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                            No rigid tiers or generic agency retainers. We consolidate modern web development, search and generative AI dominance, and real-time juristic visitor de-anonymization into a single tailored solution built for your industrial operations.
+                            No rigid tiers or generic agency retainers. We unite custom client-facing storefronts, search and AI discoverability, and tailored operational tooling into connected business systems engineered around your operations.
                         </TextEffect>
                     </div>
 
@@ -246,19 +246,19 @@ export default function Pricing() {
                                 <div>
                                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-primary text-primary-foreground mb-3 shadow-md">
                                         <Sparkles className="size-3.5" />
-                                        <span>Unified Industrial Solution</span>
+                                        <span>Full-Cycle Business Systems</span>
                                     </div>
                                     <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">
-                                        Complete Industrial Digital Infrastructure
+                                        Connected Digital & Operational Infrastructure
                                     </h2>
                                     <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
-                                        Custom-architected around your equipment catalogs, target procurement sectors, and sales team requirements across South Africa and the SADC region.
+                                        Custom-architected around your products, commercial fulfillment workflows, and operational team requirements.
                                     </p>
                                 </div>
                                 <div className="text-left md:text-right shrink-0">
                                     <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground block">Engagement Model</span>
                                     <span className="text-2xl sm:text-3xl font-extrabold text-primary block mt-1">Custom Quote</span>
-                                    <span className="text-xs text-muted-foreground">Tailored SOW & Service Order</span>
+                                    <span className="text-xs text-muted-foreground">Milestone-Based SOW</span>
                                 </div>
                             </div>
 
@@ -270,21 +270,21 @@ export default function Pricing() {
                                             <Code2 className="size-5" />
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-base text-foreground">1. High-Performance Web Engineering</h3>
-                                            <span className="text-xs text-muted-foreground">Next.js 15 Edge Architecture</span>
+                                            <h3 className="font-bold text-base text-foreground">1. Client-Facing Commerce & Storefronts</h3>
+                                            <span className="text-xs text-muted-foreground">Cashflow & Direct Transactions</span>
                                         </div>
                                     </div>
                                     <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                                        Custom-engineered web platform with sub-300ms response times, 100/100 Core Web Vitals, dynamic specification sheets, interactive CAD viewers, and edge security.
+                                        Custom-engineered ecommerce storefronts, interactive product configurators, and instant checkout flows designed to drive immediate client commitment and cashflow.
                                     </p>
                                     <ul className="space-y-1.5 pt-1 text-xs text-foreground/90">
                                         <li className="flex items-center gap-2">
                                             <Check className="size-3.5 text-primary shrink-0" />
-                                            <span>Sub-second page speeds for heavy industrial catalogs</span>
+                                            <span>Bespoke online catalog and rapid checkout integration</span>
                                         </li>
                                         <li className="flex items-center gap-2">
                                             <Check className="size-3.5 text-primary shrink-0" />
-                                            <span>Full platform migration or existing CMS acceleration</span>
+                                            <span>Sub-second page speeds and 100/100 Core Web Vitals</span>
                                         </li>
                                     </ul>
                                 </div>
@@ -345,17 +345,17 @@ export default function Pricing() {
                                             <Wrench className="size-5" />
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-base text-foreground">4. Custom Industrial Tools & Integrations</h3>
-                                            <span className="text-xs text-muted-foreground">Tailored to Your Operations</span>
+                                            <h3 className="font-bold text-base text-foreground">4. Operational Tooling & Workshop Systems</h3>
+                                            <span className="text-xs text-muted-foreground">Lower Cost of Operations</span>
                                         </div>
                                     </div>
                                     <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                                        Bespoke calculators, customer specification portals, RFQ capture workflows, and direct webhook integrations into HubSpot, Salesforce, Teams, or custom ERPs.
+                                        Custom workshop dashboards, live job queues, automated bill-of-materials, and order fulfillment queues built to eliminate costly manual errors and reduce operational overhead.
                                     </p>
                                     <ul className="space-y-1.5 pt-1 text-xs text-foreground/90">
                                         <li className="flex items-center gap-2">
                                             <Check className="size-3.5 text-primary shrink-0" />
-                                            <span>Custom engineering tools, sizing calculators & portals</span>
+                                            <span>Live factory/workshop order queues & cut-sheet automation</span>
                                         </li>
                                         <li className="flex items-center gap-2">
                                             <Check className="size-3.5 text-primary shrink-0" />

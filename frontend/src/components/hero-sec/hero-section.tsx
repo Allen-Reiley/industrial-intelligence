@@ -211,7 +211,7 @@ export default function HeroSection() {
                                     <Link
                                         href="/features"
                                         className="hover:bg-background bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-zinc-950/5 transition-colors duration-300">
-                                        <span className="text-foreground text-sm">B2B Discoverability & Lead Capture</span>
+                                        <span className="text-foreground text-sm">Operational Tooling & Growth Engines</span>
                                         <span className="block h-4 w-0.5 border-l bg-white"></span>
 
                                         <div className="bg-background group-hover:bg-muted size-6 overflow-hidden rounded-full duration-500">
@@ -232,7 +232,7 @@ export default function HeroSection() {
                                     speedSegment={0.3}
                                     as="h1"
                                     className="mx-auto mt-8 max-w-4xl text-balance text-5xl font-bold md:text-7xl lg:mt-16 xl:text-[4rem] tracking-tight">
-                                    Make Your Business Impossible to Miss.
+                                    Operational Clarity. Predictable Cashflow.
                                 </TextEffect>
                                 <TextEffect
                                     per="line"
@@ -241,7 +241,7 @@ export default function HeroSection() {
                                     delay={0.5}
                                     as="p"
                                     className="mx-auto mt-8 max-w-3xl text-balance text-lg text-muted-foreground">
-                                    Ensure Google, ChatGPT, Perplexity, and Gemini cite and recommend your industrial solutions to buyers—and capture the accounts visiting your site.
+                                    We build internal operational tools to cut fulfillment costs and custom storefronts to drive immediate cashflow—anchored by search discoverability, AI citations, and visitor intelligence.
                                 </TextEffect>
 
                                 <AnimatedGroup
@@ -322,8 +322,8 @@ export default function HeroSection() {
                                                 <Play className="w-5 h-5 fill-white text-white translate-x-0.5" />
                                               </div>
                                               <div className="text-left pr-2">
-                                                <p className="text-sm font-semibold text-white leading-tight">Watch Platform Walkthrough</p>
-                                                <p className="text-xs text-zinc-400">See how AuraWorks captures pipeline (2 min)</p>
+                                                <p className="text-sm font-semibold text-white leading-tight">Watch System Walkthrough</p>
+                                                <p className="text-xs text-zinc-400">See how AuraWorks connects operations & cashflow (2 min)</p>
                                               </div>
                                             </div>
                                           </div>
@@ -344,10 +344,10 @@ export default function HeroSection() {
                                                   Platform Walkthrough Complete
                                                 </span>
                                                 <h3 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
-                                                  Ready to de-anonymize your website traffic?
+                                                  Ready to streamline operations and unlock cashflow?
                                                 </h3>
                                                 <p className="text-sm text-muted-foreground">
-                                                  Schedule your 15-minute operational audit and live platform demo.
+                                                  Schedule your 15-minute systems audit and tailored solution walkthrough.
                                                 </p>
                                                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
                                                   <Button

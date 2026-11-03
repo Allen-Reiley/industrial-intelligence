@@ -24,26 +24,25 @@ export const viewport = {
 export const metadata = {
   metadataBase: new URL("https://www.auraworks.co.za"),
   title: {
-    default: "AuraWorks | B2B SEO, Generative Engine Optimization & Lead Intelligence",
+    default: "AuraWorks | Operational Tooling, Custom Commerce & Search Intelligence",
     template: "%s | AuraWorks",
   },
-  description: "Be found. Be cited. Be chosen. AuraWorks is the organic discoverability and lead-capture partner for industrial and B2B companies across South Africa and SADC, combining technical SEO, Generative Engine Optimization (GEO), and proprietary visitor intelligence.",
+  description: "AuraWorks engineers custom operational tooling to slash the cost of operations, client-facing storefronts to capture immediate cashflow, and upstream SEO, GEO, and visitor intelligence.",
   category: 'technology',
-  classification: 'B2B Discoverability & Industrial Sales Intelligence',
+  classification: 'Operational Tooling, B2B Commerce & Search Intelligence',
   keywords: [
+    "Operational tooling South Africa",
+    "Custom ecommerce platforms",
+    "Workshop and manufacturing software",
+    "B2B workflow automation",
     "SEO company South Africa",
     "GEO agency South Africa",
     "Generative Engine Optimization South Africa",
     "B2B SEO for industrial companies",
     "Industrial SEO South Africa",
     "Lead generation website South Africa",
-    "SADC SEO agency",
     "AI search optimization South Africa",
     "B2B lead capture South Africa",
-    "Johannesburg",
-    "Gauteng",
-    "B2B Lead Generation South Africa",
-    "Industrial Sales Intelligence",
     "Visitor Identity Resolution"
   ],
   icons: {
