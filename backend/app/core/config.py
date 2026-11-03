@@ -54,7 +54,9 @@ class Settings(BaseSettings):
         "https://dynamic-flow-production-a5d6.up.railway.app",
         "https://industrial-intelligence-xi.vercel.app",
         "industrial-intelligence-git-main-allen-reileys-projects.vercel.app",
-        "industrial-intelligence-lttxeot8z-allen-reileys-projects.vercel.app"
+        "industrial-intelligence-lttxeot8z-allen-reileys-projects.vercel.app",
+        "industrial-intelligence-9fzf2pbta-allen-reileys-projects.vercel.app",
+        "industrial-intelligence-rm7hxzqx8-allen-reileys-projects.vercel.app"
     ]
 
     # Modern Pydantic V2 Configuration
