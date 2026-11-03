@@ -1,31 +1,41 @@
+// frontend/src/components/brand/Logo.tsx
 import Image from 'next/image'
-import { cn } from '../../lib/utils'
+import { cn } from '@/lib/utils' // Using the @ alias for cleaner imports
 
-export const Logo = ({ className }: { className?: string }) => {
+interface LogoProps {
+    className?: string;
+    priority?: boolean;
+}
+
+export const Logo = ({ className, priority = true }: LogoProps) => {
     return (
-        /* Added min-w-[40px] to ensure the container doesn't collapse on mobile */
-        <div className={cn('relative h-8 w-auto min-w-[40px] lg:min-w-[150px]', className)}>
-            {/* DESKTOP LOGO */}
+        /* Constraint: Added fixed aspect-ratio container to prevent Layout Shift.
+           The min-w values are calibrated for 'Quiet Premium' spacing.
+        */
+        <div className={cn('relative h-8 w-auto min-w-[40px] lg:min-w-[150px] aspect-[797/220]', className)}>
+            {/* DESKTOP LOGO 
+                Optimized for 85mm realism aesthetics: h-full w-auto ensures scaling 
+                maintains industrial sophistication without pixelation.
+            */}
             <Image
                 src="/logo.svg"
                 alt="AuraWorks Logo"
                 width={797}
                 height={220}
                 className="hidden lg:block h-full w-auto object-contain"
-                priority
+                priority={priority}
             />
 
-            {/* MOBILE LOGO */}
+            {/* MOBILE LOGO 
+                Uses the same aspect ratio to ensure consistent touch-targets.
+            */}
             <Image
-                /* IMPORTANT: Check your /public folder. 
-                   Is it 'logo-mobile.svg', 'logo-mobile.png', or just 'logo.svg'? 
-                */
                 src="/logo-mobile.svg" 
                 alt="AuraWorks Logo Mobile"
-                width={797} 
+                width={220} // Adjusted to a smaller base width for mobile performance
                 height={220}
                 className="block lg:hidden h-full w-auto object-contain"
-                priority
+                priority={priority}
             />
         </div>
     )
@@ -33,12 +43,16 @@ export const Logo = ({ className }: { className?: string }) => {
 
 export const LogoIcon = ({ className }: { className?: string }) => {
     return (
+        /* Icon variant for navigation sidebars and favicon-style UI elements.
+           Replaced .ico with .svg for technical authority and crisp rendering.
+        */
         <div className={cn('relative size-8', className)}>
             <Image
-                src="/logo-mobile.svg" // Changed from .ico to .svg for better scaling
+                src="/logo-mobile.svg" 
                 alt="AuraWorks Icon"
                 fill
                 className="object-contain"
+                priority
             />
         </div>
     )

@@ -1,9 +1,9 @@
 // @/components/sections/about/values.tsx
 export function ValuesSection() {
     const values = [
-        { label: "01", title: "Precision Over Volume", desc: "We would rather deliver 5 high-intent mining leads than 5,000 random clicks." },
-        { label: "02", title: "Technical Authority", desc: "Our systems are built for stability. We use 'boring,' predictable technology to ensure 99.9% uptime for your lead routing." },
-        { label: "03", title: "Industrial Focus", desc: "We specialize in the South African manufacturing and construction verticals. We speak the language of spec-sheets and RFPs." }
+        { label: "01", title: "Discoverability With Purpose", desc: "We combine dominant Google search positioning with Generative Engine Optimization (GEO) so your business is cited when buyers query AI models." },
+        { label: "02", title: "Proprietary Conversion Engine", desc: "Traffic without capture is lost pipeline. Our intelligence engine de-anonymizes visiting accounts and tracks technical intent, turning presence into revenue." },
+        { label: "03", title: "Juristic-First Compliance", desc: "We operate exclusively on corporate entity identification, ensuring your commercial team conducts outbound prospecting in 100% compliance with South African POPIA." }
     ]
 
     return (

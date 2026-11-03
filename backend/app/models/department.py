@@ -1,24 +1,27 @@
+# backend/app/models/department.py
 from typing import Optional, TYPE_CHECKING
-from sqlmodel import SQLModel, Field, Relationship
+from datetime import datetime, timezone
+from uuid import UUID
+from uuid6 import uuid7
+from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
 
-# We use TYPE_CHECKING to prevent circular imports at runtime
-# while still allowing type checkers (like Mypy/Pyright) to see the Company class.
 if TYPE_CHECKING:
-    from .company import Company
+    from app.models.company import Company
 
 class Department(SQLModel, table=True):
-    """Public corporate contact points per department (POPIA Exempt)"""
-    id: Optional[int] = Field(default=None, primary_key=True)
+    __tablename__ = "department"
     
-    # Foreign key to the company table
-    company_id: int = Field(foreign_key="company.id")
-    
-    name: str = Field(index=True) # e.g., "Procurement", "Engineering"
-    email: Optional[str] = None   # e.g., "tenders@company.co.za"
-    phone: Optional[str] = None   # Department direct line
-    head_of_dept_linkedin: Optional[str] = None # URL to public profile
-    
-    # Relationship definition
-    # Using the string "Company" is critical here to avoid the 
-    # 'failed to locate a name' error during mapper initialization.
-    company: "Company" = Relationship(back_populates="departments")
+    id: UUID = Field(default_factory=uuid7, primary_key=True)
+    company_id: UUID = Field(foreign_key="company.id", index=True)
+    contact_name: str
+    role_title: str = Field(index=True)
+    email: str
+    phone: Optional[str] = Field(default=None)
+    linkedin_url: Optional[str] = Field(default=None)
+    priority_score: int = Field(default=1, ge=1, le=5, index=True)
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
+
+    company: Optional["Company"] = Relationship(back_populates="departments")

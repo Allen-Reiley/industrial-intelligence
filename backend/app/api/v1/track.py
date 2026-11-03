@@ -1,22 +1,89 @@
-# backend/app/api/v1/endpoints/track.py
-from fastapi import APIRouter, BackgroundTasks, Request, Header, HTTPException
-from typing import Optional, Dict, Any, List
-from app.models.visit import VisitCreate, Visit
-from app.models.company import Company
-from app.models.lead import Lead  # Integrated Lead Model
-from app.models.pageview import PageViewCreate
-from app.services.enrichment import enrich_visitor_data
-from app.services.notifications import post_to_visit_channel
-from app.services.intelligence import get_visitor_journey
-from app.services.airtable import airtable_engine
-from sqlmodel import Session, select
-from app.db import engine
+from fastapi import APIRouter, BackgroundTasks, Request, Header, HTTPException, Depends
+from typing import Optional, Dict, Any
+from sqlmodel import select
+from sqlalchemy import or_, and_
+from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+from cachetools import TTLCache
+import urllib.parse
+import re
+
+# Internal AuraWorks Imports
+from app.models.visit import Visit, VisitCreate, PageViewCreate, EventCreate
+from app.models import Company, Prospect, PageView
+from app.models.enrichment_queue import EnrichmentQueue, QueueType
+from app.services.enrichment import enrich_visitor_data, EnrichmentError
+from app.services.notifications import post_to_slack, handle_juristic_only_alert
+from app.services.intelligence import get_visitor_journey
+from app.db import async_session_maker, get_async_session
+from uuid import UUID
 
 router = APIRouter()
 logger = logging.getLogger("uvicorn")
+
+# --- ANTI-SPAM LOCK ---
+# Prevents duplicate exit notifications if the browser fires multiple exit beacons
+exit_notification_cache = TTLCache(maxsize=2000, ttl=43200) # 12 hour cooldown
+
+# --- ORIGIN CACHE ---
+# Caches approved tenant domains for 10 minutes to protect database during traffic spikes
+client_domains_cache = TTLCache(maxsize=2048, ttl=600)
+
+async def validate_telemetry_origin(client_id: Any, request: Request, session: AsyncSession) -> bool:
+    """
+    Validates that incoming telemetry Origin or Referer is permitted for the tenant.
+    Permits local/staging environments, preview regex matching, and registered whitelisted_domains.
+    """
+    origin = request.headers.get("origin") or request.headers.get("Origin") or request.headers.get("referer") or request.headers.get("Referer")
+    if not origin:
+        return True
+
+    try:
+        parsed = urllib.parse.urlparse(origin)
+        hostname = (parsed.hostname or "").lower()
+    except Exception:
+        hostname = origin.lower()
+
+    if not hostname or hostname in ["localhost", "127.0.0.1", "::1", "test"]:
+        return True
+
+    from app.core.config import settings
+    allowed_regex = getattr(settings, "ALLOWED_ORIGIN_REGEX", None)
+    if allowed_regex:
+        if re.match(allowed_regex, f"https://{hostname}") or re.match(allowed_regex, f"http://{hostname}"):
+            return True
+
+    cid_str = str(client_id)
+    whitelisted = client_domains_cache.get(cid_str)
+    if whitelisted is None:
+        from app.models.client import Client
+        try:
+            cid_uuid = UUID(cid_str) if isinstance(client_id, str) else client_id
+            client = await session.get(Client, cid_uuid)
+            if not client:
+                return False
+            domains = []
+            if client.domain:
+                domains.append(client.domain.lower())
+            for d in (client.whitelisted_domains or []):
+                if ":" in d:
+                    d = d.split(":")[0]
+                domains.append(d.lower())
+            whitelisted = set(domains)
+            client_domains_cache[cid_str] = whitelisted
+        except Exception:
+            return True
+
+    if not whitelisted:
+        return True
+
+    for wd in whitelisted:
+        if hostname == wd or hostname.endswith(f".{wd}"):
+            return True
+
+    return False
 
 class ConsentPayload(BaseModel):
     client_id: str
@@ -24,234 +91,617 @@ class ConsentPayload(BaseModel):
     status: str 
 
 class IdentityPayload(BaseModel):
-    client_id: str
+    client_id: UUID
     aura_id: str
-    signature: Optional[Dict[str, Any]] = None
     email: Optional[str] = None
-    capture_source: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    company_name: Optional[str] = None
+    department: Optional[str] = None
 
-async def process_entry_logic(payload: VisitCreate, client_ip: str, background_tasks: BackgroundTasks):
+    position: Optional[str] = None
+    capture_source: Optional[str] = "authorized_blur"
+    signature: Optional[Dict[str, Any]] = None
+
+async def process_entry_logic(payload: VisitCreate, client_ip: str, user_agent: Optional[str] = None):
     """
-    Refined Ingestion: Quarantines hits for audit while auto-verifying whitelisted entities.
-    Propagates verified visits into the Lead ledger for multi-tenant intelligence.
+    SILENT INGESTION ENGINE:
+    Records raw traffic trails and resolves firmographics without triggering DeepSeek or Slack pings.
     """
-    with Session(engine) as session:
-        # 1. Resolve Firmographics
-        enriched_info = await enrich_visitor_data(client_ip)
-        domain = enriched_info.get("domain")
-        company_name = enriched_info.get("company_name", "Unknown")
-        confidence = enriched_info.get("confidence_score", 0.0)
+    if not async_session_maker:
+        return
 
-        # 2. Check for Existing Company (Scoped to Client/Agency)
-        company = None
-        if domain and domain not in ["unknown.com", "n/a"]:
-            company_statement = select(Company).where(
-                Company.domain == domain,
-                Company.client_id == payload.client_id
+    async with async_session_maker() as session:
+        try:
+            from sqlalchemy import text
+            await session.execute(
+                text("SELECT set_config('app.current_client_id', :client_id, true)").bindparams(client_id=str(payload.client_id))
             )
-            company = session.exec(company_statement).first()
+            # 1. Forensic Enrichment (with defensive wrapper for Task 2.3)
+            is_failed = False
+            try:
+                enriched_info = await enrich_visitor_data(client_ip)
+            except EnrichmentError as e:
+                logger.warning(f"⚠️ IPinfo enrichment failed for IP {client_ip}, queuing: {e}")
+                is_failed = True
+                enriched_info = {"company_name": "Anonymous Entity", "domain": "unknown.com", "city": "Unknown", "region": "ZA"}
 
-        # 3. Handle Company Record
-        if not company and domain and domain not in ["unknown.com", "n/a"]:
-            company = Company(
-                client_id=payload.client_id,
-                name=company_name,
-                domain=domain,
-                industry=enriched_info.get("industry"),
-                city=enriched_info.get("city"),
-                region=enriched_info.get("region"),
-                is_b2b=enriched_info.get("is_b2b", True),
-                is_verified=False
-            )
-            session.add(company)
-            session.commit()
-            session.refresh(company)
-        elif company:
-            company.total_visits += 1
-            session.add(company)
-
-        # 4. Visit Status Logic
-        initial_status = "verified" if (company and company.is_verified) else "verifying"
-        
-        db_visit = Visit(
-            company_id=company.id if company else None,
-            client_id=payload.client_id,
-            aura_id=payload.aura_id,
-            ip_address=client_ip,
-            url=payload.url,
-            referrer=payload.referrer,
-            verification_status=initial_status,
-            last_audit_at=datetime.now(timezone.utc),
-            utm_source=payload.utm_source,
-            utm_medium=payload.utm_medium,
-            utm_campaign=payload.utm_campaign,
-            is_consented=False 
-        )
-        
-        session.add(db_visit)
-
-        # 5. LEAD PROPAGATION LOGIC
-        # If the company is verified, automatically sync or update the Lead table
-        if company and company.is_verified:
-            existing_lead = session.exec(
-                select(Lead).where(
-                    Lead.aura_id == payload.aura_id,
-                    Lead.client_id == payload.client_id
-                )
-            ).first()
-
-            if not existing_lead:
-                new_lead = Lead(
+            domain = enriched_info.get("domain")
+            
+            # 2. Entity Resolution Logic (Atomic Upsert)
+            company = None
+            if domain and domain not in ["unknown.com", "n/a"]:
+                from sqlalchemy.dialects.postgresql import insert
+                
+                stmt = insert(Company).values(
                     client_id=payload.client_id,
-                    company_id=company.id,
+                    company_name=enriched_info.get("company_name", "Unknown"),
+                    domain=domain,
+                    cipc_verified=False,
+                    total_visits=1
+                ).on_conflict_do_update(
+                    index_elements=['client_id', 'domain'],
+                    set_={'total_visits': Company.total_visits + 1}
+                ).returning(Company)
+                
+                res = await session.execute(stmt)
+                company = res.scalars().first()
+            await session.commit()
+            if company: 
+                await session.refresh(company)
+
+            # Fire immediate departmental enrichment if the company domain is verified and it's a B2B visitor
+            if company and company.domain and enriched_info.get("is_b2b", False):
+                from app.services.enrichment import enrich_company_departments
+                import asyncio
+                asyncio.create_task(enrich_company_departments(company.id, company.domain))
+
+            # 3. Persistence of the Forensic Trail
+            effective_ua = user_agent or getattr(payload, "user_agent", None)
+            db_visit = Visit(
+                company_id=company.id if company else None,
+                client_id=payload.client_id,
+                aura_id=payload.aura_id,
+                ip_address=client_ip,
+                user_agent=effective_ua,
+                verification_status="verified" if (company and company.cipc_verified) else "verifying"
+            )
+            session.add(db_visit)
+            await session.commit()
+            await session.refresh(db_visit)
+
+            # Asynchronous Non-Blocking Reverse DNS Lookup (Task 34.1)
+            import asyncio
+            from app.services.intelligence import resolve_reverse_dns
+            asyncio.create_task(resolve_reverse_dns(db_visit.id, client_ip))
+
+            # Check and trigger company intent surge alerts
+            if company:
+                from app.services.notifications import check_and_trigger_company_surge
+                await check_and_trigger_company_surge(company.id, payload.client_id, session)
+
+
+            # Create initial PageView record
+            db_page_view = PageView(
+                client_id=payload.client_id,
+                visit_id=db_visit.id,
+                url_path=payload.url,
+                referrer=payload.referrer or "direct"
+            )
+            session.add(db_page_view)
+            await session.commit()
+
+            # 4. Queue to EnrichmentQueue if IPinfo lookup failed
+            if is_failed:
+                queue_entry = EnrichmentQueue(
+                    client_id=payload.client_id,
+                    visit_id=db_visit.id,
                     aura_id=payload.aura_id,
-                    company_name=company.name,
-                    domain=company.domain,
-                    industry=company.industry,
-                    lead_source="high_intent_visit",
-                    confidence_score=confidence
+                    queue_type=QueueType.IPINFO,
+                    payload={"ip_address": client_ip},
+                    status="pending",
+                    retry_count=0
                 )
-                session.add(new_lead)
-            else:
-                existing_lead.last_active_at = datetime.now(timezone.utc)
-                session.add(existing_lead)
+                session.add(queue_entry)
+                await session.commit()
+            
+        except Exception as e:
+            await session.rollback()
+            logger.error(f"🚨 Silent Ingestion Error: {e}")
 
-        session.commit()
-        session.refresh(db_visit)
+async def process_exit_logic(aura_id: str, client_id: str, duration: int = 0, has_downloaded_asset: bool = False):
+    """
+    THE BATCH PROCESSOR:
+    Fires exclusively upon departure. Evaluates identity data gates to avoid chat pollution.
+    Compiles the entire session trail into a single structured prompt for DeepSeek analysis.
+    """
+    if not async_session_maker:
+        return
 
-        # 6. Dispatch to Channels (Airtable/Discord)
-        if confidence >= 0.5 or (company and company.is_verified):
-            airtable_data = {
-                "client_id": payload.client_id,
-                "company_name": company.name if company else "Anonymous Facility",
-                "domain": domain or "unknown.com",
-                "ip_address": client_ip,
-                "city": enriched_info.get("city", "Unknown"),
-                "region": enriched_info.get("region", "ZA"),
-                "aura_id": payload.aura_id
+    # Anti-Spam: Skip duplicate execution loops for the same session footprint (Task 2.2 composite keys)
+    cache_key = f"{client_id}:{aura_id}"
+    if cache_key in exit_notification_cache:
+        return
+
+    async with async_session_maker() as session:
+        try:
+            from sqlalchemy import text
+            await session.execute(
+                text("SELECT set_config('app.current_client_id', :client_id, true)").bindparams(client_id=str(client_id))
+            )
+            # 1. Dual-lookup configuration mapping both individual context and corporate metadata independently
+            # Individual context
+            prospect_stmt = select(Prospect).where(
+                Prospect.aura_id == aura_id,
+                Prospect.client_id == UUID(client_id) if isinstance(client_id, str) else client_id
+            )
+            lead = (await session.execute(prospect_stmt)).scalars().first()
+
+            # Corporate metadata: find active Company identification matching the cryptographic aura_id
+            visit_stmt = select(Visit).where(
+                Visit.aura_id == aura_id,
+                Visit.client_id == UUID(client_id) if isinstance(client_id, str) else client_id,
+                Visit.company_id != None
+            ).order_by(Visit.created_at.desc())
+            visit_with_company = (await session.execute(visit_stmt)).scalars().first()
+
+            company = None
+            if visit_with_company and visit_with_company.company_id:
+                company = await session.get(Company, visit_with_company.company_id)
+
+            if not lead and not company:
+                return
+
+            if not lead and company:
+                journey = await get_visitor_journey(client_id, aura_id, session)
+                
+                # Check if duration criteria breach the 15-second baseline tracking floor
+                # Sum the durations of all visits for this session
+                visits_stmt = select(Visit).where(
+                    Visit.aura_id == aura_id,
+                    Visit.client_id == UUID(client_id) if isinstance(client_id, str) else client_id
+                )
+                visits = (await session.execute(visits_stmt)).scalars().all()
+                db_total_duration = sum(v.duration for v in visits if v.duration)
+                effective_duration = max(duration, db_total_duration)
+
+                if effective_duration >= 15 or has_downloaded_asset:
+                    exit_notification_cache[cache_key] = True
+                    await handle_juristic_only_alert(company, journey, client_id)
+                return
+
+            # Active context throttle lock
+            exit_notification_cache[cache_key] = True
+            logger.info(f"🚪 High-Intent Exit Flagged for {aura_id}. Compiling full DeepSeek journey matrix...")
+
+            # 2. Compile the full session ledger into a single operational object
+            journey = await get_visitor_journey(client_id, aura_id, session)
+
+            # 3. Resolve Company Reference parameters
+            company_name = lead.company_name_raw or "Anonymous Entity"
+            if lead.company_id:
+                company = await session.get(Company, lead.company_id)
+                if company:
+                    company_name = company.company_name
+
+            # 4. Normalize the unified dataset dictionary payload with Location data included
+            complete_prospect_payload = {
+                "id": lead.id,
+                "aura_id": lead.aura_id,
+                "client_id": client_id,
+                "name": lead.name or "Unknown Lead",
+                "email": lead.email,
+                "company_name_final": company_name,
+                "department": lead.department or "Undetermined",
+                "position": lead.position or "Evaluator",
+                "industry": lead.industry or "Industrial",
+                "website": lead.website or "N/A",
+                "capture_source": "banner_interaction",
+                "city": journey.get("city") or "Unknown",
+                "region": journey.get("region") or "ZA"
             }
-            background_tasks.add_task(airtable_engine.push_visit, airtable_data)
 
-            journey = await get_visitor_journey(payload.aura_id, payload.client_id)
-            visit_report = {
-                "company_name": airtable_data["company_name"],
-                "network_type": payload.effective_connection_type or "Standard",
-                "aura_id": payload.aura_id,
-                "city": airtable_data["city"],
-                "region": airtable_data["region"]
-            }
-            background_tasks.add_task(post_to_visit_channel, visit_report, journey)
+            # =================================================================
+            # 5. RELEASE GATES: Dispatch compiled datasets sequentially
+            # =================================================================
+
+            # Route the clean, fully-formed summary packet to Slack
+            await post_to_slack(prospect_data=complete_prospect_payload, journey=journey)
+            
+            # Phase 3 & Phase 4 Vault Bridge integrations
+            from app.services.vault import sync_to_airtable, sync_to_notion
+            
+            # Push completed session summary metrics out to Airtable
+            await sync_to_airtable(client_id, complete_prospect_payload, journey)
+            
+            # Spin up the comprehensive canvas log layout space inside Notion
+            await sync_to_notion(client_id, complete_prospect_payload, journey)
+
+            logger.info(f"✅ DeepSeek Batch Processing synchronized delivery complete for {aura_id}")
+
+        except Exception as e:
+            logger.error(f"🚨 Exit Logic Batch Error: {e}")
 
 @router.post("/entry")
-async def track_entry(
-    payload: VisitCreate, 
-    request: Request, 
-    background_tasks: BackgroundTasks,
-    x_forwarded_for: Optional[str] = Header(None)
-):
-    client_ip = x_forwarded_for.split(',')[0].strip() if x_forwarded_for else (request.client.host if request.client else "127.0.0.1")
-    background_tasks.add_task(process_entry_logic, payload, client_ip, background_tasks)
+async def track_entry(payload: VisitCreate, request: Request, background_tasks: BackgroundTasks):
+    client_ip = request.headers.get("x-forwarded-for", request.client.host).split(',')[0]
+    user_agent = request.headers.get("user-agent") or request.headers.get("User-Agent")
+    background_tasks.add_task(process_entry_logic, payload, client_ip, user_agent)
     return {"status": "accepted"}
 
 @router.post("/identity")
-async def track_identity(payload: IdentityPayload):
-    with Session(engine) as session:
-        statement = select(Visit).where(
+async def track_identity(
+    payload: IdentityPayload,
+    session: AsyncSession = Depends(get_async_session)
+):
+    """Upgrades anonymous forensic profiles using volunteered banner form data."""
+    res = await session.execute(
+        select(Visit).where(
             Visit.aura_id == payload.aura_id,
             Visit.client_id == payload.client_id
         ).order_by(Visit.created_at.desc())
-        visit = session.exec(statement).first()
-        
-        if visit:
-            if payload.signature:
-                sig = payload.signature
-                visit.canvas_hash = sig.get("canvas")
-                visit.webgl_renderer = sig.get("webgl")
-                visit.clock_drift = sig.get("drift")
-                net = sig.get("network")
-                if isinstance(net, dict):
-                    visit.effective_connection_type = net.get("type")
-                    visit.downlink_speed = net.get("downlink")
-                    visit.rtt = net.get("rtt")
-            
-            if payload.email:
-                visit.capture_source = payload.capture_source or "authorized_blur"
-                # Update Lead table if an email is captured
-                lead = session.exec(
-                    select(Lead).where(
-                        Lead.aura_id == payload.aura_id,
-                        Lead.client_id == payload.client_id
-                    )
-                ).first()
-                if lead:
-                    lead.email = payload.email
-                    session.add(lead)
-            
-            session.add(visit)
-            session.commit()
-            return {"status": "identity_locked"}
+    )
+    visit = res.scalars().first()
+    
+    if not visit:
         return {"status": "visit_not_found"}
 
-@router.post("/event")
-async def track_event(payload: PageViewCreate):
-    with Session(engine) as session:
-        # Note: aura.js sends visitor aura_id in the client_id field for events
-        statement = select(Visit).where(
-            Visit.aura_id == payload.client_id,
-            Visit.client_id == payload.client_id 
-        ).order_by(Visit.created_at.desc())
+    if payload.signature:
+        sig = payload.signature
+        visit.canvas_hash = sig.get("canvas")
+        visit.webgl_renderer = sig.get("webgl")
+        drift_val = sig.get("drift")
+        visit.clock_drift = str(drift_val) if drift_val is not None else None
+        net = sig.get("network")
+        if isinstance(net, dict):
+            visit.effective_connection_type = net.get("type")
+            visit.downlink_speed = net.get("downlink")
+            visit.rtt = net.get("rtt")
+
+    has_lead_data = bool(payload.email or payload.phone or payload.first_name or payload.last_name or payload.name)
+
+    if has_lead_data:
+        visit.capture_source = payload.capture_source or "banner_warm_lead"
+        visit.verification_status = "verified"
+        visit.is_consented = True
+
+        from sqlalchemy import or_
+
+        res_lead = await session.execute(
+            select(Prospect).where(
+                Prospect.client_id == payload.client_id,
+                or_(
+                    Prospect.aura_id == payload.aura_id,
+                    Prospect.email == payload.email if payload.email else False
+                )
+            ).order_by(Prospect.created_at.desc())
+        )
+        lead = res_lead.scalars().first()
+
+        import uuid
+        if not lead:
+            lead = Prospect(
+                client_id=payload.client_id,
+                aura_id=payload.aura_id,
+                email=payload.email or f"lead_{str(payload.aura_id or uuid.uuid4())[:12]}@unverified.aura"
+            )
         
-        visit = session.exec(statement).first()
-        if visit:
-            if payload.event_type == "intent_click":
-                visit.intent_cluster = payload.intent_cluster
-                visit.intent_metadata = {"target": payload.url, "path": payload.url}
-            session.commit()
-            return {"status": "event_logged"}
-        return {"status": "pending_entry"}
+        # Always ensure aura_id is synced to the latest session if matched by email
+        if payload.aura_id:
+            lead.aura_id = payload.aura_id
+        if payload.email:
+            lead.email = payload.email
+        
+        # Resolve full name
+        resolved_name = payload.name
+        if not resolved_name and (payload.first_name or payload.last_name):
+            resolved_name = f"{payload.first_name or ''} {payload.last_name or ''}".strip()
+            
+        if resolved_name:
+            lead.name = resolved_name
+        if payload.phone:
+            from app.core.security import encrypt_field
+            lead.phone_encrypted = encrypt_field(payload.phone)
+        if payload.company_name:
+            lead.company_name_raw = payload.company_name
+        if payload.department:
+            lead.department = payload.department
+        if payload.position:
+            lead.position = payload.position
+        session.add(lead)
+
+    session.add(visit)
+    try:
+        await session.commit()
+    except Exception as e:
+        logger.error(f"Error saving identity: {e}")
+        await session.rollback()
+        # Even on error, if it's a constraint we couldn't bypass, we should let the frontend know so it doesn't loop forever
+        # But we'll try to just return success since we handled the OR condition
+        return {"status": "error", "detail": str(e)}
+
+    if has_lead_data:
+        return {"status": "success", "lead_captured": True}
+    return {"status": "identity_locked"}
+
+@router.post("/event")
+async def track_event(
+    payload: EventCreate,
+    request: Request,
+    session: AsyncSession = Depends(get_async_session)
+):
+    import traceback
+    try:
+        if not await validate_telemetry_origin(payload.client_id, request, session):
+            raise HTTPException(status_code=403, detail="Origin not permitted by tenant policy")
+
+        forwarded = request.headers.get("x-forwarded-for")
+        client_ip = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "127.0.0.1")
+
+        visit = None
+        target_aura_id = payload.aura_id
+
+        if target_aura_id:
+            res = await session.execute(
+                select(Visit).where(
+                    Visit.client_id == payload.client_id,
+                    Visit.aura_id == target_aura_id
+                ).order_by(Visit.created_at.desc())
+            )
+            visit = res.scalars().first()
+
+        if not visit:
+            # Check legacy stringified client_id or active visit within 30 minutes
+            res = await session.execute(
+                select(Visit).where(
+                    Visit.client_id == payload.client_id,
+                    or_(
+                        Visit.aura_id == str(payload.client_id),
+                        and_(
+                            Visit.ip_address == client_ip,
+                            Visit.created_at >= datetime.now(timezone.utc) - timedelta(minutes=30)
+                        )
+                    )
+                ).order_by(Visit.created_at.desc())
+            )
+            visit = res.scalars().first()
+
+        if not visit:
+            import uuid
+            target_aura_id = f"aura_{uuid.uuid4().hex}"
+            user_agent = request.headers.get("user-agent") or request.headers.get("User-Agent")
+            visit = Visit(
+                client_id=payload.client_id,
+                aura_id=target_aura_id,
+                ip_address=client_ip,
+                user_agent=user_agent,
+                created_at=datetime.now(timezone.utc)
+            )
+            session.add(visit)
+            await session.flush()
+
+        if getattr(payload, "event_type", None) == "intent_click":
+            visit.intent_cluster = getattr(payload, "intent_cluster", "General")
+        
+        from app.models.event import Event
+        new_event = Event(
+            client_id=payload.client_id,
+            visit_id=visit.id,
+            event_type=payload.event_type or payload.event_name,
+            properties=payload.properties,
+            timestamp=payload.timestamp or datetime.now(timezone.utc)
+        )
+        session.add(new_event)
+        session.add(visit)
+        await session.commit()
+
+        # Asynchronous Non-Blocking Reverse DNS Lookup (Task 34.1)
+        if not visit.hostname and client_ip not in ("127.0.0.1", "localhost", "::1", "test"):
+            import asyncio
+            from app.services.intelligence import resolve_reverse_dns
+            asyncio.create_task(resolve_reverse_dns(visit.id, client_ip))
+
+        return {"status": "event_logged"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Event Route Exception: {str(e)}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/consent")
-async def track_consent(payload: ConsentPayload):
-    try:
-        with Session(engine) as session:
-            statement = select(Visit).where(
-                Visit.aura_id == payload.aura_id,
-                Visit.client_id == payload.client_id
-            )
-            visits = session.exec(statement).all()
-            for v in visits:
-                v.is_consented = True
-                session.add(v)
-            session.commit()
-            return {"status": "consent_recorded"}
-    except Exception as e:
-        logger.error(f"❌ Consent Sync Error: {e}")
-        return {"status": "error"}
+async def track_consent(
+    payload: ConsentPayload,
+    session: AsyncSession = Depends(get_async_session)
+):
+    res = await session.execute(
+        select(Visit).where(
+            Visit.aura_id == payload.aura_id,
+            Visit.client_id == payload.client_id
+        )
+    )
+    visits = res.scalars().all()
+    for v in visits:
+        v.is_consented = True
+        session.add(v)
+    await session.commit()
+    return {"status": "consent_recorded"}
 
 @router.post("/exit")
-async def track_exit(payload: PageViewCreate):
+async def track_exit(
+    payload: PageViewCreate,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    session: AsyncSession = Depends(get_async_session)
+):
+    """Records session metrics upon departure and coordinates the batch analytical thread."""
     try:
-        try:
-            processed_duration = int(float(payload.duration))
-        except (ValueError, TypeError):
-            processed_duration = 0
+        processed_duration = int(float(payload.duration))
+    except (ValueError, TypeError):
+        processed_duration = 0
 
-        with Session(engine) as session:
-            statement = select(Visit).where(
-                Visit.aura_id == payload.client_id,
-                Visit.url == payload.url
+    forwarded = request.headers.get("x-forwarded-for")
+    client_ip = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "127.0.0.1")
+
+    visit = None
+    target_aura_id = payload.aura_id
+
+    if target_aura_id:
+        res = await session.execute(
+            select(Visit).where(
+                Visit.client_id == payload.client_id,
+                Visit.aura_id == target_aura_id
             ).order_by(Visit.created_at.desc())
+        )
+        visit = res.scalars().first()
+
+    if not visit:
+        res = await session.execute(
+            select(Visit).where(
+                Visit.client_id == payload.client_id,
+                or_(
+                    Visit.aura_id == str(payload.client_id),
+                    and_(
+                        Visit.ip_address == client_ip,
+                        Visit.created_at >= datetime.now(timezone.utc) - timedelta(minutes=30)
+                    )
+                )
+            ).order_by(Visit.created_at.desc())
+        )
+        visit = res.scalars().first()
+
+    now_utc = datetime.now(timezone.utc)
+    new_visit_created = False
+    if not visit:
+        import uuid
+        target_aura_id = f"aura_{uuid.uuid4().hex}"
+        user_agent = request.headers.get("user-agent") or request.headers.get("User-Agent")
+        visit = Visit(
+            client_id=payload.client_id,
+            aura_id=target_aura_id,
+            ip_address=client_ip,
+            user_agent=user_agent,
+            duration=processed_duration,
+            duration_seconds=processed_duration,
+            exited_at=now_utc,
+            created_at=now_utc
+        )
+        session.add(visit)
+        await session.flush()
+        new_visit_created = True
+    else:
+        target_aura_id = visit.aura_id
+        visit.exited_at = now_utc
+        if processed_duration > (visit.duration or 0):
+            visit.duration = processed_duration
+            visit.duration_seconds = processed_duration
+        session.add(visit)
+        
+    from app.models.pageview import PageView
+    new_page_view = PageView(
+        client_id=payload.client_id,
+        visit_id=visit.id,
+        url_path=payload.url or "unknown",
+        referrer=None,
+        duration=processed_duration
+    )
+    session.add(new_page_view)
+    await session.commit()
+
+    if new_visit_created and client_ip not in ("127.0.0.1", "localhost", "::1", "test"):
+        import asyncio
+        from app.services.intelligence import resolve_reverse_dns
+        asyncio.create_task(resolve_reverse_dns(visit.id, client_ip))
+
+    # Launch Batch Intelligence processing sequentially when the session closes down
+    if target_aura_id and payload.client_id:
+        background_tasks.add_task(
+            process_exit_logic,
+            target_aura_id,
+            str(payload.client_id),
+            processed_duration,
+            getattr(payload, "has_downloaded_asset", False)
+        )
+
+    return {"status": "recorded"}
+
+
+class IntentPayload(BaseModel):
+    client_id: UUID
+    aura_id: str
+    vsl_completion_percentage: int
+    vsl_abandoned: Optional[bool] = None
+
+
+@router.post("/intent")
+async def track_intent(
+    payload: IntentPayload,
+    background_tasks: BackgroundTasks,
+    session: AsyncSession = Depends(get_async_session)
+):
+    """
+    Tracks real-time prospect intent telemetry (e.g. VSL completion percentage).
+    Updates Visit and Prospect records accordingly.
+    Triggers Slack alerting on 100% completion.
+    """
+    from app.models.visit import Visit
+    from app.models.prospect import Prospect
+    from datetime import datetime, timezone
+    
+    # 1. Update Visit
+    visit_stmt = select(Visit).where(
+        Visit.aura_id == payload.aura_id,
+        Visit.client_id == payload.client_id
+    ).order_by(Visit.created_at.desc())
+    visit_res = await session.execute(visit_stmt)
+    visit = visit_res.scalars().first()
+    
+    now = datetime.now(timezone.utc)
+    if visit:
+        current_pct = visit.vsl_completion_percentage or 0
+        if payload.vsl_completion_percentage > current_pct:
+            visit.vsl_completion_percentage = payload.vsl_completion_percentage
+            if payload.vsl_completion_percentage == 100:
+                visit.vsl_completed_at = now
+        if payload.vsl_abandoned is not None:
+            visit.vsl_abandoned = payload.vsl_abandoned
+        session.add(visit)
             
-            visit = session.exec(statement).first()
-            
-            if visit:
-                if processed_duration > (visit.duration or 0):
-                    visit.duration = processed_duration
-                    session.add(visit)
-                    session.commit()
-                    return {"status": "recorded", "duration": processed_duration}
-                return {"status": "no_change"}
-            return {"status": "pending_entry"}
-    except Exception as e:
-        logger.error(f"❌ Exit Tracking Error: {e}")
-        return {"status": "error"}
+    # 2. Update Prospect (if a prospect exists for this aura_id and client_id)
+    prospect_stmt = select(Prospect).where(
+        Prospect.aura_id == payload.aura_id,
+        Prospect.client_id == payload.client_id
+    ).order_by(Prospect.created_at.desc())
+    prospect_res = await session.execute(prospect_stmt)
+    prospect = prospect_res.scalars().first()
+    
+    if prospect:
+        current_pct = prospect.vsl_completion_percentage or 0
+        if payload.vsl_completion_percentage > current_pct:
+            prospect.vsl_completion_percentage = payload.vsl_completion_percentage
+            if payload.vsl_completion_percentage == 100:
+                prospect.vsl_completed_at = now
+        if payload.vsl_abandoned is not None:
+            prospect.vsl_abandoned = payload.vsl_abandoned
+        session.add(prospect)
+
+    await session.commit()
+    
+    # 3. Trigger Slack alerts if 100% complete
+    if payload.vsl_completion_percentage == 100:
+        company_name = None
+        if prospect and prospect.company_name_raw:
+            company_name = prospect.company_name_raw
+        elif visit and visit.company_id:
+            from app.models.company import Company
+            company = await session.get(Company, visit.company_id)
+            if company:
+                company_name = company.company_name
+                
+        if company_name:
+            from app.services.notifications import post_vsl_completion_to_slack
+            background_tasks.add_task(post_vsl_completion_to_slack, company_name, payload.client_id, payload.aura_id)
+
+    return {"status": "success", "percentage": payload.vsl_completion_percentage}

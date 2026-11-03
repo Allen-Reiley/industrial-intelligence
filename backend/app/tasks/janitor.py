@@ -1,58 +1,99 @@
+# backend/app/tasks/janitor.py
 import logging
 from datetime import datetime, timedelta, timezone
-from sqlmodel import Session, select
-from app.db import engine
-from app.models.visit import Visit
-from app.models.waitlist import WaitlistLead
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db import async_engine
+from app.models import Visit, Prospect
 
 logger = logging.getLogger("uvicorn")
 
+async def execute_janitor_scrub_cascade(session: AsyncSession):
+    """
+    Executes a precise column anonymization cascade matching POPIA parameters.
+    Identifies unverified interaction traces where tracking stamps exceed 48 hours
+    and nulls personal identifiers, replacing raw fingerprint arrays with a non-reversible hash.
+    """
+    threshold = (datetime.now(timezone.utc) - timedelta(hours=48)).replace(tzinfo=None)
+    
+    statement = select(Visit).where(
+        Visit.verification_status == "verifying",
+        Visit.created_at < threshold
+    )
+    result = await session.execute(statement)
+    candidates = result.scalars().all()
+    
+    if not candidates:
+        logger.info("✅ Janitor: Forensic vault is already optimized.")
+        return
+
+    purged_count = 0
+    promoted_count = 0
+
+    for visit in candidates:
+        # Safety Check: The 'Waitlist Shield'
+        prospect_stmt = select(Prospect).where(Prospect.aura_id == visit.aura_id)
+        prospect_res = await session.execute(prospect_stmt)
+        has_lead = prospect_res.scalars().first()
+        
+        if has_lead:
+            visit.verification_status = "verified"
+            if has_lead.company_id:
+                visit.company_id = has_lead.company_id
+            session.add(visit)
+            promoted_count += 1
+            continue
+
+        # POPIA Column Anonymization
+        visit.email = None
+        visit.visitor_name = None
+        
+        # Calculate SHA256(canvas + webgl + drift + rotating_daily_secret)
+        canvas = visit.canvas_hash or ""
+        webgl = visit.webgl_renderer or ""
+        drift = visit.clock_drift or ""
+        
+        from app.core.config import settings
+        import hashlib
+        date_str = visit.created_at.strftime("%Y-%m-%d")
+        secret = settings.SECRET_KEY or "default_secret"
+        rotating_daily_secret = hashlib.sha256(f"{secret}:{date_str}".encode()).hexdigest()
+        
+        combined_fingerprint = f"{canvas}{webgl}{drift}{rotating_daily_secret}"
+        visit.fingerprint_hash = hashlib.sha256(combined_fingerprint.encode()).hexdigest()
+        
+        # Clear raw fingerprint columns to prevent tracking individual traits
+        visit.canvas_hash = None
+        visit.webgl_renderer = None
+        visit.clock_drift = None
+        
+        visit.verification_status = "anonymized_corporate"
+        visit.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
+        
+        session.add(visit)
+        purged_count += 1
+
+    await session.commit()
+    logger.info(
+        f"🗑️ Janitor: Anonymized {purged_count} noise signatures. "
+        f"🛡️ Promoted {promoted_count} high-intent visits. Vault optimized."
+    )
+
 async def cleanup_unverified_visits():
     """
-    The Industrial Janitor: Purges residential/bot noise while 
-    protecting high-intent leads and the 'Ghost Bridge'.
+    FastAPI background task entry point for the periodic Janitor Sweep.
     """
     logger.info("🧹 AuraWorks OS: Activating 48-hour Janitor Sweep...")
     
-    # 1. Define the 'Noise' Threshold (48 hours)
-    # We extended this from 24h to 48h to allow for 'Late Promotion'
-    threshold = datetime.now(timezone.utc) - timedelta(hours=48)
-    
-    with Session(engine) as session:
+    if not async_engine:
+        logger.error("❌ Janitor Sweep aborted: Async Database Engine not initialized.")
+        return
+        
+    async with AsyncSession(async_engine) as session:
         try:
-            # 2. Identify 'Verifying' records older than the threshold
-            statement = select(Visit).where(
-                Visit.verification_status == "verifying",
-                Visit.created_at < threshold
-            )
-            candidates = session.exec(statement).all()
-            
-            if not candidates:
-                logger.info("✅ Janitor: Forensic vault is already optimized.")
-                return
-
-            purged_count = 0
-            for visit in candidates:
-                # 3. SAFETY CHECK: The 'Waitlist Shield'
-                # If an aura_id has a matching WaitlistLead, we NEVER delete it,
-                # even if the individual visit status is still 'verifying'.
-                has_lead = session.exec(
-                    select(WaitlistLead).where(WaitlistLead.aura_id == visit.aura_id)
-                ).first()
-                
-                if has_lead:
-                    # Upgrade the visit instead of deleting
-                    visit.verification_status = "verified"
-                    session.add(visit)
-                    continue
-
-                # 4. Final Purge for actual noise (Residential/Bot traffic)
-                session.delete(visit)
-                purged_count += 1
-
-            session.commit()
-            logger.info(f"🗑️ Janitor: Purged {purged_count} noise signatures. Vault optimized.")
-
+            from sqlalchemy import text
+            await session.execute(text("SELECT set_config('app.bypass_rls', 'on', true)"))
+            await execute_janitor_scrub_cascade(session)
         except Exception as e:
-            session.rollback()
+            await session.rollback()
             logger.error(f"🚨 Janitor Failure: {e}")

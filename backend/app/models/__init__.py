@@ -1,6 +1,20 @@
+# backend/app/models/__init__.py
+from .client import Client, ClientCategory, SubscriptionStatus, ClientCreate, ClientPublic
 from .company import Company
 from .department import Department
-from .visit import Visit
-from .waitlist import WaitlistLead
+from .visit import Visit, VerificationStatus
+from .pageview import PageView
+from .event import Event
+from .prospect import Prospect
+from .enrichment_queue import EnrichmentQueue, FailedEnrichment, QueueType
+from .notification_throttle import NotificationThrottle
+from .crm_dead_letter import CrmDeadLetter
+from .inbound_message import InboundMessage, MessageStatus
+from .transaction import Transaction, TransactionStatus
+from .admin_user import AdminUser
+from .user import User, Session, Account, Verification, UserRole
+from .checkout_session import CheckoutSession, CheckoutSessionStatus
+from .calendar import CalendarEvent
+from .task import Task
 
-# Do NOT include router logic here  
+# Do NOT include router logic here

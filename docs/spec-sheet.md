@@ -1,0 +1,426 @@
+# 🏗️ Technical Specification: Industrial Intelligence Engine (v2.0)
+
+> [!WARNING]
+> **Proprietary Software Notice:** This repository is private. Unauthorized copying, distribution, or use of any file within this repository is strictly prohibited. All rights reserved.
+
+**Project Goal:** To build a privacy-first, B2B intent tracking and sales intelligence system that deanonymizes SADC corporate website traffic and routes High-Intent leads to industrial clients.
+
+**Core Stack:** Next.js 14+ App Router, FastAPI (Python 3.12), SQLModel, PostgreSQL (Neon Serverless + RLS), Redis, Cloudflare R2, PayGenius API, Resend.
+
+---
+
+## 1. System Architecture Overview
+
+The system follows a high-performance **Decoupled Monolith** architecture:
+
+```mermaid
+graph TD
+    A[Forensic Tracker: aura.js] -->|Telemetry Ingestion| B[FastAPI Core API Engine]
+    B -->|Neon Serverless Storage| C[PostgreSQL Database with RLS]
+    B -->|Caching & Throttling| D[Redis Cache]
+    E[Next.js App Portal] -->|Client & Admin Views| B
+    F[PayGenius API] -->|Checkout Webhooks| B
+```
+
+### 1.1 The Three Pillars
+1. **The Edge (Forensic Tracker):** A lightweight (`<1KB`) script hosted via Cloudflare R2 with optimized caching (`max-age=86400`). Features an offline cache (`AuraOfflineQueue`) built on IndexedDB to handle network dropouts in SADC mining/manufacturing districts.
+2. **The Core (FastAPI Engine):** An async Python server handling high-volume ingestion, enrichment, RLS authentication context, billing hook validation, and reporting tasks.
+3. **The Interface (Web Portal):** An App Router Next.js dashboard containing client analytics, onboarding funnels, and internal administrative controls.
+
+---
+
+## 2. Legal Topography (Two-Tier POPIA Identity Model)
+
+To guarantee compliance with the South African Protection of Personal Information Act (POPIA), data subjects are processed across two strict logical boundaries:
+
+| Feature / Metric | Tier 1: The Juristic Layer | Tier 2: The Personal Layer |
+| --- | --- | --- |
+| **Data Subject Class** | Juristic Persons (Companies, Mines, Corporations) | Natural Persons (Individual human visitors) |
+| **Core Elements** | Company Name, Domain, Industry, City/Region, ASNs | First/Last Name, Personal Email, Direct Phone, Clear Fingerprints |
+| **POPIA Status** | Legitimate Business Interest (No upfront consent required) | Explicit Opt-In Gated (Consent mandatory) |
+| **Retention Window** | Permanent, immutable ledger tracking | 48-Hour conditional window (Scrubbed if unverified) |
+| **Janitor Execution** | Protected from scrubbing cascades | Automatically anonymized/zeroed out if unverified |
+| **Enrichment Triggers** | Immediate asynchronous IPinfo + Apollo extraction | Gated until prospect form submission or manual banner opt-in |
+
+---
+
+## 3. Persistent Database Schema (SQLModel Models)
+
+The following database models specify the schema layout implemented via SQLModel abstractions:
+
+### 3.1 Client & Subscription Management
+```python
+from enum import Enum
+from typing import Optional, List, Any
+from datetime import datetime, timezone
+from uuid import UUID, uuid4
+from sqlmodel import SQLModel, Field, Column, DateTime
+from sqlalchemy import ARRAY, String, JSON
+
+class ClientCategory(str, Enum):
+    INDUSTRIAL = "industrial"
+    COMMERCIAL = "commercial"
+
+class SubscriptionStatus(str, Enum):
+    TRIAL = "trial"
+    ACTIVE = "active"
+    SUSPENDED = "suspended"
+
+class ClientBase(SQLModel):
+    company_name: str = Field(index=True)
+    domain: Optional[str] = Field(default=None, index=True, nullable=True)
+    whitelisted_domains: List[str] = Field(
+        default=[],
+        sa_column=Column(ARRAY(String).with_variant(JSON, "sqlite"), nullable=False)
+    )
+    category: ClientCategory = Field(default=ClientCategory.COMMERCIAL)
+    client_product_description: str = Field(default="")
+    subscription_status: SubscriptionStatus = Field(default=SubscriptionStatus.SUSPENDED)
+    payment_plan: str = Field(default="monthly")
+    setup_fee_paid: bool = Field(default=False)
+    contract_signed_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    payment_provider_id: Optional[str] = Field(default=None, nullable=True)
+    is_active: bool = Field(default=False)
+    collect_personal_data: bool = Field(default=False)
+    require_consent_banner: bool = Field(default=False)
+
+    def __init__(self, **data: Any):
+        domain = data.get("domain")
+        whitelisted = data.get("whitelisted_domains")
+        if domain and not whitelisted:
+            data["whitelisted_domains"] = [domain]
+        elif whitelisted and not domain:
+            data["domain"] = whitelisted[0]
+        super().__init__(**data)
+
+class Client(ClientBase, table=True):
+    __tablename__ = "client"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
+    auto_classified_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+```
+
+### 3.2 Enterprise Directory Core
+```python
+class Company(SQLModel, table=True):
+    __tablename__ = "company"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    domain: str = Field(index=True)
+    company_name: str = Field(index=True)
+    industry: Optional[str] = Field(default=None, index=True)
+    parent_company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", nullable=True)
+    is_headquarters: bool = Field(default=False)
+    intent_summary: Optional[str] = Field(default=None, nullable=True)
+    last_enrichment_attempt: Optional[datetime] = Field(default=None, nullable=True)
+    cipc_verified: bool = Field(default=False)
+    cipc_registration_number: Optional[str] = Field(default=None, nullable=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class Department(SQLModel, table=True):
+    __tablename__ = "department"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    company_id: UUID = Field(foreign_key="company.id", index=True)
+    contact_name: str
+    role_title: str = Field(index=True)
+    email: str
+    phone: Optional[str] = Field(default=None)
+    linkedin_url: Optional[str] = Field(default=None)
+    priority_score: int = Field(default=1, ge=1, le=5, index=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+```
+
+### 3.3 Multi-Tenant Interaction Telemetry (RLS Gated)
+```python
+class VerificationStatus(str, Enum):
+    VERIFYING = "verifying"
+    VERIFIED = "verified"
+    ANONYMIZED_CORPORATE = "anonymized_corporate"
+
+class Visit(SQLModel, table=True):
+    __tablename__ = "visit"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    client_id: UUID = Field(index=True)
+    company_id: Optional[UUID] = Field(default=None, foreign_key="company.id", index=True, nullable=True)
+    aura_id: str = Field(index=True)
+    ip_address: str = Field(index=True)
+    connection_type: str = Field(default="corporate")
+    is_b2b: bool = Field(default=True, index=True)
+    high_intent: bool = Field(default=False, index=True)
+    verification_status: VerificationStatus = Field(default=VerificationStatus.VERIFYING, index=True)
+    is_consented: bool = Field(default=False, index=True)
+    fingerprint_hash: Optional[str] = Field(default=None, index=True, nullable=True)
+    duration: int = Field(default=0)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PageView(SQLModel, table=True):
+    __tablename__ = "page_view"
+    
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    client_id: UUID = Field(index=True)
+    visit_id: UUID = Field(foreign_key="visit.id", index=True)
+    url_path: str = Field(index=True)
+    referrer: Optional[str] = Field(default=None)
+    duration: int = Field(default=0)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+```
+
+---
+
+## 4. Edge Telemetry Loop & Interactive Layout Phases
+
+### 4.1 Script Delivery & Caching
+* Compiles down to `<1KB` using the Terser package pipeline.
+* Served from optimized CDN buckets with `Cache-Control` headers set to `public, max-age=86400`.
+* Local caching via `AuraOfflineQueue` on **IndexedDB** keeps telemetry intact when cellular networks in industrial zones drop out, syncing back on connection recovery.
+
+### 4.2 The 4 Interactive Capture Phases
+* **Phase 01:** 2.5-second initial delay triggers a subtle bottom-right slide-in prompting enterprise email input.
+* **Phase 02:** Crossing a **50% scrolling ceiling** on technical specification sheets transforms the banner into a multi-column role/phone acquisition slide.
+* **Phase 03:** Upward mouse acceleration triggers **exit-intent pop-ups** offering specialized parameter calculations.
+* **Phase 04:** Fetching high-value schematics, blueprints, or CAD models prompts a strict download gate, forcing corporate email validation before releasing assets.
+
+---
+
+## 5. API Contract & Core Logic
+
+### 5.1 Public Ingestion Protocols
+* `POST /v1/track/entry`
+  * **Input:** `{client_id, url_path, referrer, screen_res}`
+  * **Process:** Verifies active subscriber status, maps network topologies, queries IPinfo asynchronously for new IPs, and creates `Visit` session entries.
+* `POST /v1/track/exit`
+  * **Input:** `{aura_id, duration, client_id, has_downloaded_asset}`
+  * **Process:** Updates `PageView` dwell timings. Integrates the unconsented juristic loop (`track.py`) to bypass personal consent gates on purely company data:
+  ```python
+  lead = await get_lead_by_aura_id(payload.aura_id, session)
+  company = await get_company_by_aura_id(payload.aura_id, session)
+  
+  if not lead and company:
+      journey = await get_visitor_journey(payload.aura_id, session)
+      if payload.total_duration >= 15 or payload.has_downloaded_asset:
+          await handle_juristic_only_alert(company, journey, payload.client_id)
+      return {"status": "processed_juristic"}
+  ```
+
+### 5.2 Janitor Selective Anonymization Cascade (`janitor.py`)
+To comply with POPIA's natural person constraints, unconsented Tier 2 metrics are purged while Tier 1 B2B aggregates are permanently kept:
+```python
+async def execute_janitor_scrub_cascade(session: AsyncSession):
+    time_threshold = datetime.now(timezone.utc) - timedelta(hours=48)
+    stmt = (
+        update(Visit)
+        .where(Visit.is_consented == False)
+        .where(Visit.verification_status == VerificationStatus.VERIFYING)
+        .where(Visit.created_at < time_threshold)
+        .values(
+            email=None,
+            visitor_name=None,
+            fingerprint_hash=None,
+            verification_status=VerificationStatus.ANONYMIZED_CORPORATE,
+            updated_at=datetime.now(timezone.utc)
+        )
+    )
+    await session.execute(stmt)
+    await session.commit()
+```
+
+---
+
+## 6. Financial Onboarding & Tenant Isolation
+
+### 6.1 Onboarding Pipeline
+1. Client checkout is processed via **PayGenius API** integration.
+2. Webhooks received at `/api/v1/webhook/paygenius` launch background tasks.
+3. Compiles a customized formal Service Agreement PDF using `reportlab`, cryptographically signs it, and sends it via **Resend** alongside onboarding setup scripts.
+
+### 6.2 Database Tenant Isolation (RLS)
+PostgreSQL enforces strict Row-Level Security rules to isolate interaction data between tenants:
+```sql
+ALTER TABLE visit ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation_policy ON visit
+FOR ALL
+USING (client_id = current_setting('app.current_client_id', True)::uuid);
+```
+
+---
+
+## 7. Hosting & Deployment Topology
+
+* **FastAPI Core Service:** Run in Docker (`python:3.12-slim`) deployed to a **Railway Starter Plane** instance to circumvent scale-to-zero telemetry cold starts.
+* **Database Cluster:** Deployed on **Neon Serverless PostgreSQL** infrastructure.
+* **Notifications:** Slack real-time alerts fire on High-Intent milestones, gated by an hourly throttle (`NotificationThrottle` model) permitting a maximum of 1 notification per hour per company entity.
+
+---
+
+## 8. Video Sales Letter (VSL) Funnel Specification (Phase 10)
+
+A dedicated, distraction-free `/vsl` landing page featuring an optimized ImageKit-hosted HTML5 video player.
+
+- **Delayed Reveal**: Hides all conversion elements ("Book Demo" CTA and micro-copy) until playback ends. Uses Framer Motion for entrance animations.
+- **Subtle Navigation**: Replaces global header/footer with a minimal "Go Back" button.
+- **Playback Telemetry**: Sends telemetry pings to `POST /api/v1/track/intent` at 25%, 50%, 75%, and 100% completion milestones.
+- **Warm Abandonment**: Triggers a 10-second timer after playback ends. If the CTA is not clicked within 10 seconds, pings the backend with `vsl_abandoned=True`.
+- **Intelligence Routing**: Sends real-time Slack alerts to `#prospects` if a known company completes the VSL.
+
+---
+
+## 9. Advanced Banner Data Flow & Entity Stitching Specification (Phase 11)
+
+Enhance telemetry multi-tenancy and data isolation, execute immediate firmographic enrichment, and resolve entities deterministically with DeepSeek fallbacks.
+
+- **Multi-Tenancy Isolation**: Explicitly support `client_id` on telemetry records (Visit, Company, Prospect) with scoped queries for tenant sandboxing.
+- **Immediate Enrichment Dispatch**: Submit immediate IPinfo/Apollo enrichment tasks as background tasks on banner submission rather than batch queues.
+- **Deterministic Entity Stitching with DeepSeek Fallback**: 
+  - 1st Tier: Substring match check between user company name and enriched company name.
+  - 2nd Tier: Fast DeepSeek JSON prompting to evaluate entity sameness and verify if the enriched company is actually an ISP.
+  - 3rd Tier: ISP Discarding. If the enriched entity is classified as an ISP, promote the user-provided name to the head entity instead.
+- **Real-Time Surge Alerting**: Monitor cluster density. If 3 or more unique forensic IDs from the same company visit within a predefined window, fire an immediate "Account Surge" alert to the client.
+
+---
+
+## 10. Provisioning Dashboard & Admin Console (Phase 13)
+
+Phase 13 establishes the internal console for managing multi-tenant client deployments, administrative authentication via JSON Web Tokens (JWT), high-speed configuration handshakes using a fallback-resilient two-tier cache, and visual installation/telemetry verification.
+
+### 10.1 Multi-Tenant Client Ledger (Client Model)
+* Extends the `Client` table with list-based `whitelisted_domains` arrays (PostgreSQL `ARRAY` datatype with a fallback to `JSON` for SQLite tests).
+* Adds a constructor override on instantiation to preserve backward compatibility, translating the legacy singular `domain` string to `whitelisted_domains` arrays, and vice versa.
+* Includes flags `require_consent_banner` and `collect_personal_data` to govern edge tracker configurations.
+
+### 10.2 Admin Authentication (FastAPI-Users & Google OAuth)
+* **Auth Backend & Transport**: Authentication is powered by `FastAPI-Users` using `CookieTransport` (storing the JWT session in the HttpOnly `aurahq_auth` cookie).
+* **Google OAuth Handshake**: Integrates `httpx-oauth` to expose `/api/v1/auth/google/authorize` and `/api/v1/auth/google/callback`, mapping Google profiles to backend database records.
+* **Token Protection**: FastAPI endpoints are protected via `get_current_admin` dependencies checking active user sessions, with a backward-compatible fallback decoding legacy Bearer JWT signatures.
+* **Routing Middleware**: Next.js custom middleware guards all `/aurahq/*` routes, checking the presence of a secure `aurahq_auth` cookie and redirecting unauthenticated visitors to `/login` (supporting automatic redirects from legacy `/admin/*` and `/dashboard/*` paths).
+
+
+### 10.3 Two-Tier High-Speed Config Cache
+* **Tier 1 (Redis)**: Tries to read/write JSON-serialized client configurations from a Redis instance for sub-millisecond edge resolution.
+* **Tier 2 (In-Memory Fallback)**: Automatically falls back to a Python LRU cache (`cachetools.TTLCache`) with a 5-minute TTL if Redis is offline or unreachable. Connection failures degrade silently without raising HTTP 500 errors.
+* **Config Resolution Route**: `GET /v1/clients/config` resolves matching client whitelisted domains against request origins to authorize tracking handshakes.
+
+### 10.4 Snippet Generation & Verification Console
+* **Administration Panel**: High-fidelity dark mode dashboard with active tenant switcher, client registration modal, and live leads feed.
+* **Copy Deployment Snippet**: Modal dynamically interpolates the registered client UUID into a production HTML script tag, with a copy-to-clipboard mechanism.
+* **Telemetry Verification Indicator**: Active status component polls `GET /api/v1/clients/{client_id}/verify` to trace visits linked to the tenant UUID. Once a visit is detected, the status transitions to "Installed & Active" and triggers a leads table refresh.
+
+---
+
+## 11. Phase 14: Payment Gateway Integration Specifications
+* **Database Ledger**: Integrates `Transaction` model tracking payment intents, currencies, status enums, and references. Extends `Client` model with payment tokens.
+* **Ikhokha Gateway Integration**: Integrates Ikhokha custom checkout setup endpoint `POST /api/v1/billing/setup` and signature/HMAC webhook verification at `POST /api/v1/webhooks/ikhokha`.
+* **Billing Administration**: Next.js admin view displaying current ledger status, monthly billing amount overrides, and billing trigger tests.
+
+---
+
+## 12. Phase 15: Automated Checkout, Proration & Trial Specifications
+* **Trial Period Management**: Clients initialize with a standard 14-day trial period (`trial_ends_at`). Includes background warning emails dispatched 48 hours prior to trial expiration.
+* **Proration Mathematics Engine**: Implements early, mid, and late-month calculation strategies mapping pro-rata charges on subscription changes or setup phases.
+* **Grace Period & Collection Cron**: Automated cron executor triggering monthly billing transactions and managing grace-period suspension boundaries.
+
+---
+
+## 13. Phase 16: Frontend Integration & UI Overhaul Specifications
+* **Edge Tracker CDN Integration**: Public page layout embeds a unified `<script src="https://cdn.auraworks.co.za/aura.js" ...>` tracking tag.
+* **Global VSL CTA Migration**: Converts all booking and pricing CTAs into Watch Video links pointing directly to the `/vsl` path.
+* **Quiet Premium Theme Partitioning**: Public views render exclusively in light mode, stripping all dark-mode selectors to establish a premium clean design.
+* **Edge Telemetry Robustness**: Implements event payload relaxation supporting dynamic client-side variables, cookie apex domain scopes, and offline request retries.
+
+---
+
+## 14. Phase 17: Database State Recovery Specifications
+* **Alembic History Reset**: Clears corrupted/tangled migration folders and establishes a single consolidated baseline migration (`ed255488d937_phase_17_baseline.py`) mapping all SQLAlchemy/SQLModel models.
+* **RLS In-Migration Configuration**: Integrates PostgreSQL Row-Level Security policy initialization strings natively in the baseline migration upgrade block.
+* **Resilient Container Boot**: Wraps Alembic migration runs in a startup wrapper to prevent boot crashes if database configurations are out-of-sync.
+* **Superuser Seeder**: Implements `seed_admin.py` utilizing `UserManager` to securely hash and register the default superuser credentials.
+
+---
+
+## 15. Phase 18: Full-Stack Authentication & Security Overhaul Specifications
+* **Cookie Transport Deprecation**: Deprecates insecure legacy JWT token checks, enforcing cookie-only session management via FastAPI-Users HttpOnly cookies.
+* **Dual-Login Case Insensitivity**: Queries users using case-insensitive SQL matching, resolving authentications by either email or custom usernames.
+* **Tenant Authorization Gates**: Scopes multi-tenant data routes to verify that the authenticated administrator possesses permissions mapping to the requested `client_id`.
+
+---
+
+## 16. Phase 19: Alembic Hard Reset & Database Initialization Specifications
+* **Master Baseline Consolidation**: Replaces historical migrations with a single autogenerated master migration script capturing the complete SQLModel schema.
+* **RLS Policy Deployment**: Deploys Row-Level Security policies restricting interactions on multitenant tables (visit, page_view, prospect, company) matching the request-scoped `current_client_id` context.
+* **Programmatic Initialization & Seeding**: Applies database schemas to a blank state and invokes the admin seeder to initialize the default `ReitumetseF` account securely.
+
+---
+
+## 17. Phase 20: Cloud Gateway & Container Binding Stabilization Specifications
+* **Container Host Binding**: Binds Uvicorn to `0.0.0.0` inside a shell execution context to support proper port dynamic mapping via Railway proxies.
+* **Database Driver Auto-Correction**: Sanitizes DB URLs on startup to translate `postgresql://` into `postgresql+asyncpg://`, protecting the async engine context.
+
+---
+
+## 18. Phase 21: Frontend Handoff & Client Initialization Specifications
+* **Frontend Form Handoff**: Form submission explicitly calls `e.preventDefault()` and strictly resolves routing redirection upon successful status codes.
+* **Cookie Domain Alignment**: Backend drops authentication cookies with a leading dot domain (`.auraworks.co.za`) in production to support multi-subdomain routing.
+* **Telemetry Seeding**: Adds database initialization scripts to securely seed baseline telemetry configurations to prevent tracker 404 response errors.
+
+---
+
+## 19. Phase 22: Frontend Authentication Handoff Resolution Specifications
+* **Fetch Response Handling Patch**: Prevents body parsing crashes on `204 No Content` responses by removing `await res.json()` calls upon successful logins, verifying the successful code and programmatically routing to `/aurahq/dashboard`.
+* **Testing Coverage**: Writes unit tests simulating successful `204 No Content` responses to verify router push functions execute successfully.
+
+---
+
+## 20. Phase 23: OAuth Client Exposure & Security Alignment Specifications
+* **Public Client Variable Exposure**: Prefix Google Client ID environment variable in the client bundle with `NEXT_PUBLIC_` (i.e. `NEXT_PUBLIC_GOOGLE_CLIENT_ID`) to ensure Next.js exposes it to client components.
+* **Build Validation**: Validates the static build process (`npm run build`) to ensure client configurations resolve without errors.
+
+---
+
+## 21. Phase 24: Final Authentication & Proxy Resolution Specifications
+* **Frontend Credentials Directives**: Standard fetch configuration for administrative credentials login includes `credentials: 'include'` to allow standard cookie storage.
+* **OAuth Query Parameters Alignment**: Removes frontend-attached `redirect_uri` in authorization handshake endpoints to align with backend-controlled `RedirectCookieTransport` routing.
+* **Uvicorn Proxy Header Configuration**: Backend application server starts with `--proxy-headers` and `--forwarded-allow-ips "*"` options enabled to support forward-header resolution behind container proxies.
+* **Callback Directory Deprecation**: Deletes the obsolete client-side callback route `/login/callback`.
+
+---
+
+## 22. Phase 25: Session Persistence & Cross-Origin Auth Specifications
+* **Origin/CORS Alignment**: Configures backend CORS middleware to explicitly allow `https://auraworks.co.za` and `https://www.auraworks.co.za` with `allow_credentials=True`.
+* **Cookie Transport Hardening**: Sets cookie transport parameters `cookie_samesite="none"` and `cookie_secure=True` in production environments (using `settings.ENVIRONMENT` check) to ensure browsers do not block cookies across different subdomains.
+* **Identity Bridge Integration**: Ensures all API fetch requests initiated by the frontend Identity Bridge specify `credentials: 'include'` to allow authentication cookie transfer.
+
+---
+
+## 23. Phase 26: Superuser Context & Frontend Data-Fetching Patch Specifications
+* **Trailing Slash API Calls**: Ensure all client-side API requests targeting the FastAPI backend endpoints explicitly terminate with a trailing slash to prevent unnecessary 307 temporary redirects.
+* **Superuser Multi-Tenant Context**: Dynamically append the `client_id` query parameter on leads fetch requests when the user has superuser/admin authentication status to allow retrieval of the specific client context.
+
+---
+
+## 24. Phase 27: Admin Console Authorization Sync Specifications
+* **Credentials Include**: Add `credentials: 'include'` to all `fetch` request options inside the Admin dashboard.
+* **Obsolete Token Clean Up**: Remove the `getHeaders()` function and the `Authorization` bearer token header injection.
+* **Explicit Content-Type**: Ensure state-altering fetch calls (PATCH, POST) explicitly set `Content-Type: application/json` headers when a JSON body is sent.
+
+---
+
+## 25. Phase 28: UI Restoration & Surgical Auth Patch Specifications
+* **UI Reversion Integrity**: Guarantees the full restoration of the pre-Phase 27 Admin dashboard UI by retrieving the exact code from version control history.
+* **Surgical Fetch Options Injection**: Re-applies `credentials: 'include'` and `'Content-Type': 'application/json'` fetch properties surgically in a way that is structurally isolated from visual UI and rendering hooks.
+* **Visual Polish Standards**: Enhances the visual layout of the Admin dashboard under the Quiet Premium styling strategy, improving mobile padding on tables, refining modal spacing, and standardizing modal z-indices.
+
+
+

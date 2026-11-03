@@ -1,0 +1,34 @@
+# AuraWorks (Pty) Ltd
+
+> Modern organic discoverability and lead-capture partner for industrial and B2B enterprises across South Africa and the wider SADC region.
+
+## Overview
+AuraWorks pairs technical Search Engine Optimization (SEO) and Generative Engine Optimization (GEO) with our proprietary conversion technology, the AuraWorks Intelligence Engine. We ensure industrial equipment manufacturers, mining suppliers, heavy engineering firms, and logistics operators are found on Google, cited across AI search engines (ChatGPT, Perplexity, Gemini, Google AI Overviews), and empowered to convert anonymous corporate visitors into qualified sales pipeline.
+
+## Strategic Offerings & Architecture
+- **High-Performance Website Engineering**: Modern web engineering with built-in technical SEO, Generative Engine Optimization (GEO), structured schema markup, and the AuraWorks Intelligence Engine embedded to make every digital touchpoint an active pipeline asset.
+- **Existing Website Upgrades & Optimization**: Retrofit existing industrial websites with enterprise SEO authority, Generative Engine Optimization (GEO), and standalone integration of the AuraWorks Intelligence Engine to capture high-intent accounts.
+- **Generative Engine Optimization (GEO)**: Optimizing websites so AI search engines (ChatGPT, Perplexity, Gemini, Google AI Overviews) understand, cite, and recommend the business to procurement teams and executive decision-makers.
+- **AuraWorks Intelligence Engine**: Proprietary visitor de-anonymization and lead capture layer that legally unmasks corporate entities researching technical specifications, CAD drawings, and capacity tables, delivering actionable weekly digests to sales leadership.
+
+## Ideal Client Profile (ICP)
+- **Target Geographies**: Johannesburg, East Rand, Gauteng, Durban, Cape Town, Mpumalanga, Limpopo, and across South Africa and the Southern African Development Community (SADC).
+- **Target Sectors**: Mining & Resource Extraction, Heavy Manufacturing, Industrial Automation & Tooling, EPC & Heavy Engineering, Bulk Freight & 3PL Logistics, Commercial & Industrial Supply.
+- **Target Decision-Makers**: Managing Directors, Chief Executive Officers, Commercial Sales Directors, Business Development Executives.
+
+## Core Navigation & Resources
+- Website: https://auraworks.co.za
+- Solutions: https://auraworks.co.za/solution
+- Features: https://auraworks.co.za/features
+- Pricing & Enterprise Plans: https://auraworks.co.za/pricing
+- Customer Benchmarks: https://auraworks.co.za/customers
+- Mission & Engineering DNA: https://auraworks.co.za/about
+- Research & Insights Blog: https://auraworks.co.za/blog
+- Book Onboarding Demo: https://auraworks.co.za/book-demo
+- Contact Office: https://auraworks.co.za/contact
+
+## Corporate Information
+- Company: AuraWorks (Pty) Ltd
+- Founder: Reitumetse Sethabela
+- Location: Johannesburg, Gauteng, South Africa
+- Compliance: 100% POPIA Juristic-Compliant B2B Corporate Data Architecture

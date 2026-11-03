@@ -7,10 +7,10 @@ export function FeaturesCTA() {
         <section className="py-24 md:py-48">
             <div className="mx-auto max-w-5xl px-6 text-center">
                 <h2 className="text-balance text-4xl font-semibold lg:text-5xl tracking-tight">
-                    Deploy the identity bridge today.
+                    Build your industrial discoverability engine.
                 </h2>
                 <p className="mx-auto mt-6 max-w-2xl text-muted-foreground text-lg">
-                    Stop letting anonymous industrial traffic leave without a trace. Turn your website into a high-intent lead generation engine.
+                    Turn your digital presence from a passive brochure into an active pipeline asset. Dominate search rankings, secure AI citations across ChatGPT and Perplexity, and capture every high-intent corporate visitor with the AuraWorks Intelligence Engine.
                 </p>
 
                 <div className="mt-12 flex flex-wrap justify-center gap-4">
@@ -18,8 +18,8 @@ export function FeaturesCTA() {
                         asChild
                         size="lg"
                         className="rounded-xl px-10 shadow-xl shadow-primary/10">
-                        <Link href="/get-started">
-                            <span>Get Started</span>
+                        <Link href="/book-demo">
+                            <span>Book Demo</span>
                         </Link>
                     </Button>
 

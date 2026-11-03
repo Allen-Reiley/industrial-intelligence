@@ -19,8 +19,9 @@ export default function AuraTracker({
 }: AuraTrackerProps) {
   useEffect(() => {
     // 1. Global Config for forensic logic fallback
-    (window as any).AURA_CONFIG = { apiUrl };
-    (window as any).AURA_AGENCY_ID = clientId;
+    const win = window as unknown as Record<string, unknown>;
+    win.AURA_CONFIG = { apiUrl };
+    win.AURA_AGENCY_ID = clientId;
 
     // 2. Create and Inject Script
     const script = document.createElement("script");

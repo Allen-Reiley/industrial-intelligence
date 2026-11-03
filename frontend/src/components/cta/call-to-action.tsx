@@ -6,15 +6,15 @@ export default function CallToAction() {
         <section className="py-16 md:py-32">
             <div className="mx-auto max-w-5xl px-6">
                 <div className="text-center">
-                    <h2 className="text-balance text-4xl font-semibold lg:text-5xl">Turn your website into a sales machine.</h2>
-                    <p className="mt-4">Get a weekly list of high-intent B2B leads for a flat monthly/annual retainer. No complex software to learn — just results delivered to your inbox.</p>
+                    <h2 className="text-balance text-4xl font-semibold lg:text-5xl">Own your category across search, AI, and pipeline.</h2>
+                    <p className="mt-4">Stop letting high-value procurement interest leave without a trace. AuraWorks unites top Google rankings, AI engine citability, and the proprietary AuraWorks Intelligence Engine to convert anonymous industrial visitors into verified pipeline.</p>
 
                     <div className="mt-12 flex flex-wrap justify-center gap-4">
                         <Button
                             asChild
                             size="lg">
-                            <Link href="/get-started">
-                                <span>Get Started</span>
+                            <Link href="/book-demo">
+                                <span>Book Demo</span>
                             </Link>
                         </Button>
 
@@ -22,8 +22,8 @@ export default function CallToAction() {
                             asChild
                             size="lg"
                             variant="outline">
-                            <Link href="/book-a-call">
-                                <span>Book a Call</span>
+                            <Link href="/book-audit">
+                                <span>Book Audit</span>
                             </Link>
                         </Button>
                     </div>

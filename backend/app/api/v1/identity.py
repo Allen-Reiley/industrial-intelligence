@@ -1,42 +1,52 @@
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
-from sqlmodel import Session, select
-from app.db import engine
-from app.models.visit import Visit
+# backend/app/api/v1/identity.py
 import logging
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from cachetools import TTLCache
+
+from app.db import get_async_session
+from app.models.visit import Visit
 
 router = APIRouter()
 logger = logging.getLogger("uvicorn")
 
+# --- INDUSTRIAL CACHE LAYER ---
+# Prevents O(N) database scans for returning high-frequency visitors
+# Key: Forensic Fingerprint | Value: aura_id
+identity_cache = TTLCache(maxsize=1000, ttl=3600)
+
 def calculate_identity_match(new_sig: dict, existing_visit: Visit) -> float:
     """
-    Calculates a probability score (0.0 to 1.0) based on hardware and network entropy.
-    Updated for Industrial Clusters: Weights adjusted to prioritize network consistency.
+    Weighted probability algorithm for forensic identity resolution.
+    Calibrated for B2B clusters (Gauteng Industrial Hubs).
     """
     score = 0.0
     
-    # 1. Canvas Match (30% Weight) - Hardware rendering fingerprint
+    # 1. Hardware Rendering (30%)
     if new_sig.get('canvas') == existing_visit.canvas_hash:
         score += 0.30
         
-    # 2. Clock Drift Match (20% Weight) - Precision timing delta
-    drift_diff = abs(new_sig.get('drift', 0) - (existing_visit.clock_drift or 0))
+    # 2. Precision Clock Drift (20%)
+    try:
+        existing_drift = int(existing_visit.clock_drift) if existing_visit.clock_drift is not None else 0
+    except (ValueError, TypeError):
+        existing_drift = 0
+    drift_diff = abs(new_sig.get('drift', 0) - existing_drift)
     if drift_diff <= 1:
         score += 0.20
         
-    # 3. WebGL/Renderer Match (10% Weight) - GPU identification
+    # 3. GPU Signature (10%)
     if new_sig.get('webgl') == existing_visit.webgl_renderer:
         score += 0.10
         
-    # 4. Network Intelligence Match (40% Weight) - The Corporate Signal
-    # We compare the effective type, RTT, and downlink speed
+    # 4. Network Signal (40%) - Identifying Corporate Gateways
     net = new_sig.get('network', {})
     if isinstance(net, dict):
-        # Match Connection Type (4g/fiber)
         if net.get('type') == existing_visit.effective_connection_type:
             score += 0.15
             
-        # Match Network Performance (RTT and Downlink)
-        # Allows for small variance in traffic load
         rtt_match = abs(net.get('rtt', 0) - (existing_visit.rtt or 0)) <= 20
         downlink_match = abs(net.get('downlink', 0) - (existing_visit.downlink_speed or 0)) < 0.5
         
@@ -45,72 +55,94 @@ def calculate_identity_match(new_sig: dict, existing_visit: Visit) -> float:
             
     return score
 
-def merge_sessions_sync(new_id: str, original_id: str):
+async def merge_sessions_async(new_id: str, original_id: str):
     """
-    Sync wrapper to unify fragmented session data across the forensic ledger.
+    Background Task: Unifies fragmented forensic IDs across the ledger.
+    Using a dedicated session to prevent main request blocking.
     """
-    with Session(engine) as session:
+    from app.db import async_session_maker
+    async with async_session_maker() as session:
         try:
             statement = select(Visit).where(Visit.aura_id == new_id)
-            visits_to_update = session.exec(statement).all()
+            result = await session.execute(statement)
+            visits_to_update = result.scalars().all()
             
             for visit in visits_to_update:
                 visit.aura_id = original_id
                 session.add(visit)
             
-            session.commit()
-            logger.info(f"🔗 Forensic Stitch Success: {new_id} unified into {original_id}")
+            await session.commit()
+            logger.info(f"🔗 Forensic Stitch Success: {new_id} -> {original_id}")
         except Exception as e:
             logger.error(f"❌ Session Merge Failure: {e}")
 
 @router.post("/resolve")
-async def resolve_identity(payload: dict, background_tasks: BackgroundTasks):
+async def resolve_identity(
+    payload: dict, 
+    background_tasks: BackgroundTasks,
+    session: AsyncSession = Depends(get_async_session)
+):
     aura_id = payload.get("aura_id")
     signature = payload.get("signature", {})
     
     if not aura_id:
         raise HTTPException(status_code=400, detail="Missing aura_id")
 
-    with Session(engine) as session:
-        # Step 1: Check for direct ID match (Existing browser session)
-        statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at.desc())
-        existing_visit = session.exec(statement).first()
-        
-        if existing_visit:
-            logger.info(f"🎯 Direct Match: {aura_id}. Updating Forensic/Network Lock.")
-            # Update markers to the latest state
-            existing_visit.canvas_hash = signature.get('canvas')
-            existing_visit.clock_drift = signature.get('drift')
-            existing_visit.webgl_renderer = signature.get('webgl')
-            
-            net = signature.get('network', {})
-            if isinstance(net, dict):
-                existing_visit.effective_connection_type = net.get('type')
-                existing_visit.downlink_speed = net.get('downlink')
-                existing_visit.rtt = net.get('rtt')
-                
-            session.add(existing_visit)
-            session.commit()
-            return {"status": "recognized", "method": "direct_id"}
+    # --- STEP 0: THE FAST PATH (Cache) ---
+    sig_key = f"{signature.get('canvas')}:{signature.get('webgl')}:{signature.get('drift')}"
+    cached_id = identity_cache.get(sig_key)
+    
+    if cached_id and cached_id != aura_id:
+        logger.info(f"⚡ Cache Hit: Mapping {aura_id} to {cached_id}")
+        background_tasks.add_task(merge_sessions_async, aura_id, cached_id)
+        return {"status": "stitched", "stitched_id": cached_id, "confidence": 1.0}
 
-        # Step 2: Weighted Forensic Search
-        # Scan recent footprints (within the last 72 hours for accuracy)
-        all_recent = session.exec(select(Visit).order_by(Visit.created_at.desc()).limit(200)).all()
-        unique_profiles = {v.aura_id: v for v in all_recent}.values()
+    # --- STEP 1: DIRECT ID LOCK ---
+    statement = select(Visit).where(Visit.aura_id == aura_id).order_by(Visit.created_at.desc())
+    result = await session.execute(statement)
+    existing_visit = result.scalars().first()
+    
+    if existing_visit:
+        # Refresh forensic markers for the current visit
+        existing_visit.canvas_hash = signature.get('canvas')
+        drift_val = signature.get('drift')
+        existing_visit.clock_drift = str(drift_val) if drift_val is not None else None
+        existing_visit.webgl_renderer = signature.get('webgl')
         
-        for profile in unique_profiles:
-            match_probability = calculate_identity_match(signature, profile)
+        net = signature.get('network', {})
+        if isinstance(net, dict):
+            existing_visit.effective_connection_type = net.get('type')
+            existing_visit.downlink_speed = net.get('downlink')
+            existing_visit.rtt = net.get('rtt')
             
-            # High Confidence Threshold for stitching (80% given the new network weight)
-            if match_probability >= 0.80:
-                logger.info(f"🧵 Forensic Stitch Identified! Conf: {match_probability*100}%")
-                
-                background_tasks.add_task(merge_sessions_sync, aura_id, profile.aura_id)
-                
-                return {
-                    "status": "stitched", 
-                    "stitched_id": profile.aura_id, 
-                    "confidence": match_probability
-                }
+        session.add(existing_visit)
+        await session.commit()
+        
+        # Populate cache for future pings
+        identity_cache[sig_key] = aura_id
+        return {"status": "recognized", "method": "direct_id"}
+
+    # --- STEP 2: FORENSIC SCAN (High Entropy) ---
+    search_stmt = select(Visit).order_by(Visit.created_at.desc()).limit(200)
+    search_res = await session.execute(search_stmt)
+    all_recent = search_res.scalars().all()
+    
+    # Isolate unique forensic profiles from the last 200 signals
+    unique_profiles = {v.aura_id: v for v in all_recent}.values()
+    
+    for profile in unique_profiles:
+        match_probability = calculate_identity_match(signature, profile)
+        
+        if match_probability >= 0.80:
+            logger.info(f"🧵 Forensic Stitch Found! Conf: {match_probability*100}%")
+            
+            identity_cache[sig_key] = profile.aura_id
+            background_tasks.add_task(merge_sessions_async, aura_id, profile.aura_id)
+            
+            return {
+                "status": "stitched", 
+                "stitched_id": profile.aura_id, 
+                "confidence": match_probability
+            }
 
     return {"status": "new_identity", "message": "Forensic profile initialized."}

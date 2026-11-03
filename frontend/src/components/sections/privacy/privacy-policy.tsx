@@ -68,7 +68,7 @@ export default function PrivacyPolicyPage() {
                                 AuraWorks (Pty) Ltd acts as the <strong>Responsible Party</strong> for data collected via our primary digital touchpoints and as a <strong>Data Processor</strong> when resolving intent data for our institutional clients.
                             </p>
                             <p>
-                                Our scope encompasses the <strong>AuraWorks Intent Engine</strong> and the <strong>Consent-Led Identity Bridge</strong>. Our guiding principle is "Privacy by Design"—minimizing collection to only what is necessary for high-value B2B industrial commerce.
+                                Our scope encompasses the <strong>AuraWorks Intent Engine</strong> and the <strong>Consent-Led Identity Bridge</strong>. Our guiding principle is &quot;Privacy by Design&quot;—minimizing collection to only what is necessary for high-value B2B industrial commerce.
                             </p>
                         </div>
                     </section>
@@ -81,7 +81,7 @@ export default function PrivacyPolicyPage() {
                         <div className="text-muted-foreground space-y-4 text-sm leading-relaxed border-l border-primary/20 pl-6">
                             <p>Our system distinguishes between Personal Information and Corporate Intelligence:</p>
                             <ul className="list-disc space-y-2 pl-4">
-                                <li><strong>Standard Data:</strong> Identities provided explicitly via the "Digital Receptionist" or contact infrastructure.</li>
+                                <li><strong>Standard Data:</strong> Identities provided explicitly via the &quot;Digital Receptionist&quot; or contact infrastructure.</li>
                                 <li><strong>Technical Data:</strong> Network identifiers including IP addresses and referral sources.</li>
                                 <li><strong>Corporate Resolution:</strong> We resolve technical identifiers into <strong>Corporate Identities</strong> (identifying the firm visiting the site, rather than a private individual) unless specific consent is granted.</li>
                             </ul>
@@ -107,7 +107,7 @@ export default function PrivacyPolicyPage() {
                     {/* Section 4 */}
                     <section>
                         <h2 className="text-2xl font-bold flex items-center gap-3 mb-6">
-                            <FileText className="text-primary h-6 w-6" /> 04. The "Big Eight" Rights
+                            <FileText className="text-primary h-6 w-6" /> 04. The &quot;Big Eight&quot; Rights
                         </h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                             {[

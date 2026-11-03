@@ -1,26 +1,93 @@
 /**
- * AuraWorks Industrial Intelligence Engine - Full Forensic Bundle
- * Version: 3.3.0 (Multi-Tenant & Identity Standardized)
+ * AuraWorks Industrial Intelligence Engine - Decoupled Edge Tracker
+ * Version: 4.0.0 (Decoupled Edge Architecture)
  * (c) 2026 AuraWorks (Pty) Ltd. All Rights Reserved.
  */
 (async function() {
-    const script = document.currentScript;
-    // The "Agency ID" (from data-id) defines which account owns the data.
-    const agencyId = window.AURA_AGENCY_ID || script?.getAttribute('data-id');
+    const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const logWarn = (...args) => { if (isLocalDev) console.warn(...args); };
+    const logError = (...args) => { if (isLocalDev) console.error(...args); };
+
+    const script = document.currentScript || document.querySelector('script[data-client-id]') || document.querySelector('script[src*="aura.js"]');
+    const agencyId = window.AURA_AGENCY_ID || script?.getAttribute('data-client-id') || script?.getAttribute('data-id');
     window.AURA_START_TIME = performance.now();
     
-    if (!agencyId) return console.error("❌ AuraWorks: Missing Client Identity.");
+    if (!agencyId) {
+        logError("❌ AuraWorks: Missing Client Identity.");
+        return;
+    }
 
+    // Retrieve the base tracking endpoint.
     const getBaseUrl = () => {
         if (window.AURA_CONFIG?.apiUrl) return window.AURA_CONFIG.apiUrl;
-        if (script?.src.includes('http')) {
-            try { return new URL(script.src).origin; } catch (e) {}
+        return "https://api.auraworks.co.za";
+    };
+
+    const getApiPath = (subPath) => {
+        const base = getBaseUrl().replace(/\/$/, '');
+        if (base.includes("api.auraworks.co.za")) {
+            return `${base}/v1/${subPath}`;
         }
-        return "https://dynamic-flow-production-a5d6.up.railway.app";
+        return `${base}/api/v1/${subPath}`;
     };
     
-    const API_URL = `${getBaseUrl().replace(/\/$/, '')}/api/v1/track`;
+    const API_URL = getApiPath("track");
+    const CONFIG_URL = getApiPath("clients/config");
 
+    let currentConfig = null;
+    let currentAuraId = null;
+
+    const injectBannerScript = (callback, cfg, id) => {
+        if (cfg) currentConfig = cfg;
+        if (id) currentAuraId = id;
+
+        const notifyReady = () => {
+            window.dispatchEvent(new CustomEvent('aura:ready', {
+                detail: { 
+                    auraId: currentAuraId || (AuraTracker && AuraTracker.auraId) || window.AURA_UID, 
+                    clientId: agencyId, 
+                    config: currentConfig || window.AURA_REMOTE_CONFIG 
+                }
+            }));
+        };
+
+        if (window.__AURA_BANNER_MOUNTED__ || (typeof document !== 'undefined' && document.getElementById('aura-banner-root'))) {
+            notifyReady();
+            if (callback) callback();
+            return;
+        }
+        if (typeof document !== 'undefined' && (document.getElementById('aura-banner-script') || document.querySelector('script[src*="banner.js"]'))) {
+            if (callback) {
+                window.addEventListener('aura:banner_mounted', () => {
+                    notifyReady();
+                    callback();
+                }, { once: true });
+            }
+            return;
+        }
+        if (typeof document === 'undefined') return;
+        const s = document.createElement('script');
+        s.id = 'aura-banner-script';
+        s.src = window.AURA_CONFIG?.bannerUrl || "https://banner.auraworks.co.za/banner.js";
+        s.defer = true;
+        s.onload = () => {
+            notifyReady();
+            if (callback) {
+                if (window.__AURA_BANNER_MOUNTED__ || document.getElementById('aura-banner-root')) {
+                    callback();
+                } else {
+                    window.addEventListener('aura:banner_mounted', () => callback(), { once: true });
+                }
+            }
+        };
+        document.head.appendChild(s);
+    };
+
+    /**
+     * Identity Persistence Layer:
+     * Dual-redundancy storage mechanism syncing tracking IDs across Document Cookies 
+     * and LocalStorage.
+     */
     const AuraPersistence = {
         key: 'aura_uid',
         utmKey: 'aura_utm',
@@ -63,6 +130,10 @@
         }
     };
 
+    /**
+     * Forensic Fingerprinter:
+     * Assembles hardware, layout, and clock anomalies to uniquely identify browsers.
+     */
     const AuraFingerprint = {
         async getFullSignature() {
             return {
@@ -71,7 +142,8 @@
                 network: this.getNetworkInfo(),
                 drift: await this.measureDrift(),
                 screen: `${screen.width}x${screen.height}`,
-                is_incognito: await this.isIncognito()
+                is_incognito: await this.isIncognito(),
+                tz: Intl.DateTimeFormat().resolvedOptions().timeZone
             };
         },
         getNetworkInfo() {
@@ -80,7 +152,7 @@
                 type: conn?.effectiveType || "unknown",
                 rtt: conn?.rtt,
                 downlink: conn?.downlink,
-                is_residential_prob: (conn?.saveData || (conn?.downlink && conn.downlink < 10))
+                is_residential_prob: !!(conn?.saveData || (conn?.downlink && conn.downlink < 10))
             };
         },
         getCanvas() {
@@ -88,7 +160,7 @@
                 const cvs = document.createElement('canvas');
                 const ctx = cvs.getContext('2d');
                 ctx.textBaseline = "top"; ctx.font = "14px 'Arial'";
-                ctx.fillText("AuraWorks_v3.2", 2, 2);
+                ctx.fillText("AuraWorks_v4.0", 2, 2);
                 return cvs.toDataURL().substring(0, 100);
             } catch (e) { return "blocked"; }
         },
@@ -115,27 +187,27 @@
         }
     };
 
+    /**
+     * AuraTracker Engine:
+     * Manages event collection, input field sensors, entry/exit checkpoints, 
+     * and single-page application navigation hooks.
+     */
     const AuraTracker = {
         isArmed: false, 
 
-        init(auraId) {
+        initialized: false,
+        init(auraId, config) {
+            if (this.initialized) return;
+            this.initialized = true;
             this.auraId = auraId;
+            this.config = config;
             this.trackEntry();
             this.setupSensors();
             this.patchSPA();
-
-            window.addEventListener('aura_consent_granted', () => {
-                this.isArmed = true;
-                this.dispatch('event', { event_type: 'consent_granted' });
-            });
         },
         async dispatch(endpoint, payload, useBeacon = false) {
             const utms = AuraPersistence.getStoredUTMs();
-            
-            // Standardized Industrial Payload:
-            // - client_id: ALWAYS the Agency/Owner ID (for multi-tenant isolation)
-            // - aura_id: ALWAYS the Visitor's forensic UID (for session stitching)
-            const data = {
+            let data = {
                 client_id: agencyId, 
                 aura_id: this.auraId,
                 timestamp: new Date().toISOString(),
@@ -143,104 +215,604 @@
                 ...payload
             };
 
+            if (endpoint === 'event') {
+                const eventName = payload.event_name || payload.event_type || 'unknown';
+                const properties = {};
+                const standardKeys = ['client_id', 'aura_id', 'url', 'duration', 'event_type', 'intent_cluster', 'event_name', 'timestamp'];
+                Object.keys(data).forEach(key => {
+                    if (!standardKeys.includes(key)) {
+                        properties[key] = data[key];
+                    }
+                });
+                data = {
+                    client_id: data.client_id,
+                    event_name: eventName,
+                    aura_id: data.aura_id,
+                    url: data.url || window.location.href,
+                    duration: data.duration || 0,
+                    event_type: data.event_type || eventName,
+                    intent_cluster: data.intent_cluster || null,
+                    properties: properties,
+                    timestamp: data.timestamp
+                };
+            }
+
             const url = `${API_URL}/${endpoint}`;
 
-            if (useBeacon && navigator.sendBeacon) {
-                const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-                return navigator.sendBeacon(url, blob);
+            if (useBeacon && typeof navigator !== 'undefined' && navigator.sendBeacon) {
+                try {
+                    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+                    const success = navigator.sendBeacon(url, blob);
+                    if (success) return true;
+                } catch (e) {
+                    // SendBeacon failed or quota exceeded; fall through to fetch keepalive
+                }
             }
+
+            if (!navigator.onLine) {
+                await AuraOfflineQueue.enqueue(endpoint, data);
+                return false;
+            }
+
             try {
-                await fetch(url, {
+                const response = await fetch(url, {
                     method: 'POST', 
                     mode: 'cors', 
                     headers: {'Content-Type': 'application/json'}, 
                     body: JSON.stringify(data), 
                     keepalive: true
                 });
-            } catch (e) { }
+                if (!response.ok) {
+                    await AuraOfflineQueue.enqueue(endpoint, data);
+                    return false;
+                }
+                return true;
+            } catch (e) {
+                await AuraOfflineQueue.enqueue(endpoint, data);
+                return false;
+            }
         },
-        setupSensors() {
-            document.addEventListener('blur', (e) => {
-                // We always capture the identity blur if it's an email, 
-                // but only if it meets industrial intent.
-                const target = e.target;
-                if (target.type === 'email' || target.name?.includes('email')) {
-                    if (target.value.includes('@')) {
-                        this.dispatch('identity', { 
-                            email: target.value, 
-                            capture_source: 'authorized_blur' 
-                        });
+        async sendRaw(endpoint, data) {
+            const url = `${API_URL}/${endpoint}`;
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data),
+                    keepalive: true
+                });
+                return response.ok;
+            } catch (e) {
+                return false;
+            }
+        },
+        blurDebounceTimer: null,
+        handleFieldBlur(e) {
+            const target = e.target;
+            if (!target || !target.tagName || target.tagName.toLowerCase() !== 'input') return;
+            const val = (target.value || '').trim();
+            if (!val) return;
+
+            const type = (target.type || '').toLowerCase();
+            const name = (target.name || '').toLowerCase();
+            const id = (target.id || '').toLowerCase();
+
+            if (this.blurDebounceTimer) clearTimeout(this.blurDebounceTimer);
+            this.blurDebounceTimer = setTimeout(() => {
+                if (type === 'email' || name.includes('email') || id.includes('email')) {
+                    if (val.includes('@')) {
+                        this.dispatch('identity', { email: val, capture_source: 'field_blur' });
+                    }
+                } else if (type === 'tel' || name.includes('phone') || name.includes('tel') || id.includes('phone') || id.includes('tel')) {
+                    if (val.replace(/\D/g, '').length >= 7) {
+                        this.dispatch('identity', { phone: val, capture_source: 'field_blur' });
+                    }
+                } else if ((name.includes('company') || id.includes('company')) && val.length > 2) {
+                    this.dispatch('identity', { company_name: val, capture_source: 'field_blur' });
+                }
+            }, 300);
+        },
+        handleFormSubmit(form) {
+            try {
+                if (!form || !form.elements) return;
+                const data = {};
+                for (let i = 0; i < form.elements.length; i++) {
+                    const el = form.elements[i];
+                    if (!el || !el.value) continue;
+                    const val = el.value.trim();
+                    if (!val) continue;
+
+                    const type = (el.type || '').toLowerCase();
+                    const name = (el.name || '').toLowerCase();
+                    const id = (el.id || '').toLowerCase();
+
+                    if (type === 'email' || name.includes('email') || id.includes('email') || (val.includes('@') && val.includes('.'))) {
+                        data.email = val;
+                    } else if (type === 'tel' || name.includes('phone') || name.includes('tel') || id.includes('phone') || id.includes('tel')) {
+                        data.phone = val;
+                    } else if (name.includes('company') || id.includes('company') || name.includes('organization')) {
+                        data.company_name = val;
+                    } else if (name.includes('first') || id.includes('first')) {
+                        data.first_name = val;
+                    } else if (name.includes('last') || id.includes('last')) {
+                        data.last_name = val;
+                    } else if ((name === 'name' || id === 'name') && !data.first_name) {
+                        data.first_name = val;
                     }
                 }
+
+                if (data.email || data.phone || data.company_name) {
+                    this.dispatch('identity', {
+                        ...data,
+                        capture_source: 'form_submit'
+                    });
+                }
+
+                this.dispatch('event', {
+                    event_type: 'form_submit',
+                    form_id: form.id || form.getAttribute('name') || 'unnamed_form',
+                    form_action: form.action || (typeof window !== 'undefined' && window.location ? window.location.pathname : '')
+                });
+            } catch (_) {}
+        },
+        setupObserver() {
+            if (typeof document === 'undefined' || !document.body || typeof MutationObserver === 'undefined') return;
+
+            const boundForms = new WeakSet();
+            const self = this;
+
+            const bindForm = (form) => {
+                if (!form || boundForms.has(form)) return;
+                boundForms.add(form);
+                form.addEventListener('submit', () => self.handleFormSubmit(form), true);
+                form.addEventListener('change', (e) => self.handleFieldBlur(e), true);
+            };
+
+            document.querySelectorAll('form').forEach(bindForm);
+
+            const checkNode = (node) => {
+                if (!node || node.nodeType !== 1) return;
+                if (node.tagName === 'FORM') {
+                    bindForm(node);
+                } else if (node.querySelectorAll) {
+                    node.querySelectorAll('form').forEach(bindForm);
+
+                    // Scan for embedded iframe containers (HubSpot, Marketo, Typeform)
+                    const iframes = node.tagName === 'IFRAME' ? [node] : node.querySelectorAll('iframe');
+                    iframes.forEach(iframe => {
+                        const src = (iframe.src || '').toLowerCase();
+                        if (src.includes('hsforms') || src.includes('hubspot') || src.includes('marketo') || src.includes('typeform')) {
+                            self.dispatch('event', {
+                                event_type: 'embedded_form_detected',
+                                provider: src.includes('typeform') ? 'typeform' : (src.includes('marketo') ? 'marketo' : 'hubspot')
+                            });
+                        }
+                    });
+                }
+            };
+
+            const observer = new MutationObserver((mutations) => {
+                for (const m of mutations) {
+                    for (const node of m.addedNodes) {
+                        checkNode(node);
+                    }
+                }
+            });
+
+            observer.observe(document.body, { childList: true, subtree: true });
+
+            window.addEventListener('message', (e) => {
+                try {
+                    if (e.data && e.data.type === 'hsFormCallback' && e.data.eventName === 'onFormSubmitted') {
+                        const vals = e.data.data?.submissionValues || {};
+                        const email = vals.email || undefined;
+                        const phone = vals.phone || vals.mobilephone || undefined;
+                        if (email || phone) {
+                            self.dispatch('identity', { email, phone, capture_source: 'hubspot_embed' });
+                        }
+                        self.dispatch('event', { event_type: 'form_submit', provider: 'hubspot' });
+                    }
+                } catch (_) {}
+            });
+        },
+        setupSensors() {
+            // Input blur listener with debouncing for email, phone, and company
+            document.addEventListener('blur', (e) => this.handleFieldBlur(e), true);
+
+            // Form submission interceptor
+            document.addEventListener('submit', (e) => {
+                if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'form') {
+                    this.handleFormSubmit(e.target);
+                }
             }, true);
+
+            // Dynamic MutationObserver for SPA forms, dialogs, embeds
+            this.setupObserver();
 
             document.addEventListener('click', (e) => {
                 const btn = e.target.closest('a, button');
                 if (!btn) return;
-                const text = btn.innerText?.toLowerCase();
-                const intentKeywords = ['pricing', 'audit', 'feature', 'solution', 'waitlist', 'get started'];
+                const text = btn.innerText?.toLowerCase() || '';
+                const intentKeywords = ['pricing', 'audit', 'feature', 'solution', 'prospect', 'get started'];
                 if (intentKeywords.some(kw => text.includes(kw))) {
                     this.dispatch('event', { 
                         event_type: 'intent_click', 
                         intent_cluster: text.substring(0, 20), 
-                        url: window.location.pathname 
+                        url: (window.location && window.location.href) || ''
                     });
                 }
             });
+
+            // Asset Download Gate (Phase 04):
+            document.addEventListener('click', (e) => {
+                const anchor = e.target.closest('a');
+                if (anchor && anchor.href) {
+                    const href = anchor.href;
+                    if (href.toLowerCase().match(/\.(pdf|zip|dwg|dxf|cad|step|igs)$/)) {
+                        const hasConsent = document.cookie.includes('aura_consent=true') || localStorage.getItem('aura_consent_given') === 'true';
+                        if (!hasConsent) {
+                            e.preventDefault();
+                            
+                            let modalMounted = false;
+                            const fallbackTimer = setTimeout(() => {
+                                if (!modalMounted && !document.getElementById('aura-banner-root')) {
+                                    window.location.href = href; // Fail-safe release
+                                }
+                            }, 2500);
+
+                            const triggerBanner = () => {
+                                modalMounted = true;
+                                clearTimeout(fallbackTimer);
+                                window.dispatchEvent(new CustomEvent('aura:trigger_banner', { 
+                                    detail: { phase: 4, assetUrl: href } 
+                                }));
+                            };
+
+                            if (document.getElementById('aura-banner-root') || window.__AURA_BANNER_MOUNTED__) {
+                                triggerBanner();
+                            } else {
+                                window.addEventListener('aura:banner_mounted', () => {
+                                    triggerBanner();
+                                }, { once: true });
+                                injectBannerScript(() => {
+                                    triggerBanner();
+                                });
+                            }
+                        }
+                    }
+                }
+            }, true);
 
             document.addEventListener('visibilitychange', () => {
                 if (document.visibilityState === 'hidden') this.trackExit();
             });
 
             window.addEventListener('pagehide', () => this.trackExit());
+            window.addEventListener('beforeunload', () => this.trackExit());
         },
         trackEntry() {
-            const sig = AuraFingerprint.getNetworkInfo();
+            const conn = AuraFingerprint.getNetworkInfo();
             this.dispatch('entry', { 
-                url: window.location.href, 
-                referrer: document.referrer || "direct",
-                screen_resolution: `${window.innerWidth}x${window.innerHeight}`,
-                effective_connection_type: sig.type,
-                downlink_speed: sig.downlink,
-                rtt: sig.rtt
+                url: (window.location && window.location.href) || '', 
+                referrer: (typeof document !== 'undefined' && document.referrer) || "direct",
+                screen_resolution: typeof window !== 'undefined' ? `${window.innerWidth}x${window.innerHeight}` : '',
+                effective_connection_type: conn.type,
+                downlink_speed: conn.downlink,
+                rtt: conn.rtt
             });
         },
+        lastExitDuration: -1,
         trackExit() {
             const duration = Math.round((performance.now() - window.AURA_START_TIME) / 1000);
-            if (duration < 1) return;
+            if (duration < 1 || duration === this.lastExitDuration) return;
+            this.lastExitDuration = duration;
             
             this.dispatch('exit', {
                 event_type: 'exit',
                 duration: duration,
-                url: window.location.href
+                url: (window.location && window.location.href) || ''
             }, true); 
         },
         patchSPA() {
             const self = this;
+            let currentPath = (typeof window !== 'undefined' && window.location && window.location.href) || '';
+
+            const handleSpanNav = () => {
+                setTimeout(() => {
+                    const newPath = (window.location && window.location.href) || '';
+                    if (newPath !== currentPath) {
+                        const referrer = currentPath;
+                        currentPath = newPath;
+                        window.AURA_START_TIME = performance.now();
+                        self.trackEntry();
+                        self.dispatch('event', {
+                            event_type: 'pageview',
+                            url: newPath,
+                            referrer: referrer,
+                            title: typeof document !== 'undefined' ? document.title : ''
+                        });
+                    }
+                }, 50);
+            };
+
             ['pushState', 'replaceState'].forEach(m => {
                 const orig = history[m];
-                history[m] = function() {
-                    const r = orig.apply(this, arguments);
-                    setTimeout(() => self.trackEntry(), 0);
-                    return r;
-                };
+                if (typeof orig === 'function') {
+                    history[m] = function() {
+                        const r = orig.apply(this, arguments);
+                        handleSpanNav();
+                        return r;
+                    };
+                }
             });
+
+            window.addEventListener('popstate', handleSpanNav);
         }
     };
+
+    let enqueuePromise = Promise.resolve();
+
+    /**
+     * AuraOfflineQueue:
+     * IndexedDB-based queue that stores telemetry events offline when connection is lost.
+     */
+    const AuraOfflineQueue = {
+        db: null,
+        dbName: 'AuraOfflineDB',
+        storeName: 'AuraEventsStore',
+        
+        async init() {
+            return new Promise((resolve) => {
+                try {
+                    const request = indexedDB.open(this.dbName, 1);
+                    request.onupgradeneeded = (e) => {
+                        const db = e.target.result;
+                        if (!db.objectStoreNames.contains(this.storeName)) {
+                            db.createObjectStore(this.storeName, { keyPath: 'id', autoIncrement: true });
+                        }
+                    };
+                    request.onsuccess = (e) => {
+                        this.db = e.target.result;
+                        resolve(true);
+                        this.flush();
+                    };
+                    request.onerror = () => {
+                        resolve(false);
+                    };
+                } catch (e) {
+                    resolve(false);
+                }
+            });
+        },
+        
+        async enqueue(endpoint, payload) {
+            return new Promise((resolve) => {
+                enqueuePromise = enqueuePromise.then(async () => {
+                    if (!this.db) {
+                        resolve(false);
+                        return;
+                    }
+                    try {
+                        const events = await this.getQueuedEvents();
+                        if (events.length >= 100) {
+                            // Drop the oldest event (first one in queue) to prevent memory leak/bloat
+                            await this.removeEvent(events[0].id);
+                        }
+                        const transaction = this.db.transaction([this.storeName], 'readwrite');
+                        const store = transaction.objectStore(this.storeName);
+                        store.add({ endpoint, payload, timestamp: new Date().toISOString(), attempts: 0 });
+                        transaction.oncomplete = () => {
+                            resolve(true);
+                            this.flush();
+                        };
+                        transaction.onerror = () => resolve(false);
+                    } catch (e) {
+                        resolve(false);
+                    }
+                });
+            });
+        },
+        
+        async getQueuedEvents() {
+            return new Promise((resolve) => {
+                if (!this.db) {
+                    resolve([]);
+                    return;
+                }
+                try {
+                    const transaction = this.db.transaction([this.storeName], 'readonly');
+                    const store = transaction.objectStore(this.storeName);
+                    const request = store.getAll();
+                    request.onsuccess = () => resolve(request.result || []);
+                    request.onerror = () => resolve([]);
+                } catch (e) {
+                    resolve([]);
+                }
+            });
+        },
+        
+        async removeEvent(id) {
+            return new Promise((resolve) => {
+                if (!this.db) {
+                    resolve(false);
+                    return;
+                }
+                try {
+                    const transaction = this.db.transaction([this.storeName], 'readwrite');
+                    const store = transaction.objectStore(this.storeName);
+                    store.delete(id);
+                    transaction.oncomplete = () => resolve(true);
+                    transaction.onerror = () => resolve(false);
+                } catch (e) {
+                    resolve(false);
+                }
+            });
+        },
+
+        async updateEvent(event) {
+            return new Promise((resolve) => {
+                if (!this.db) {
+                    resolve(false);
+                    return;
+                }
+                try {
+                    const transaction = this.db.transaction([this.storeName], 'readwrite');
+                    const store = transaction.objectStore(this.storeName);
+                    store.put(event);
+                    transaction.oncomplete = () => resolve(true);
+                    transaction.onerror = () => resolve(false);
+                } catch (e) {
+                    resolve(false);
+                }
+            });
+        },
+
+        isFlushing: false,
+        
+        async flush(attempt = 0) {
+            if (this.isFlushing || !navigator.onLine) return;
+            this.isFlushing = true;
+            
+            try {
+                const events = await this.getQueuedEvents();
+                if (events.length === 0) {
+                    this.isFlushing = false;
+                    return;
+                }
+                
+                for (const event of events) {
+                    if (!navigator.onLine) break;
+                    try {
+                        const success = await AuraTracker.sendRaw(event.endpoint, event.payload);
+                        if (success) {
+                            await this.removeEvent(event.id);
+                        } else {
+                            throw new Error("Flush send raw failed");
+                        }
+                    } catch (e) {
+                        this.isFlushing = false;
+                        
+                        // Increment retry attempts and cap them to prevent infinite loops / memory leak
+                        const attempts = (event.attempts || 0) + 1;
+                        if (attempts >= 5) {
+                            await this.removeEvent(event.id);
+                            logWarn(`AuraWorks: Event exceeded max retries (5). Discarded.`, event);
+                        } else {
+                            event.attempts = attempts;
+                            await this.updateEvent(event);
+                        }
+
+                        const delay = Math.min(1000 * Math.pow(2, attempt), 60000);
+                        setTimeout(() => this.flush(attempt + 1), delay);
+                        return;
+                    }
+                }
+            } catch (e) {
+                // Keep queue intact
+            }
+            this.isFlushing = false;
+        }
+    };
+
+    window.addEventListener('online', () => {
+        AuraOfflineQueue.flush();
+    });
 
     const startAura = async () => {
         if (window.AURA_INITIALIZED) return;
         window.AURA_INITIALIZED = true;
-        const auraId = await AuraPersistence.init();
-        AuraTracker.init(auraId);
         
-        // Forensic identity delay to allow network to stabilize
-        setTimeout(async () => {
-            const sig = await AuraFingerprint.getFullSignature();
-            await AuraTracker.dispatch('identity', { signature: sig });
-        }, 2000);
+        await AuraOfflineQueue.init();
+        
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        
+        let config = null;
+        try {
+            const response = await fetch(`${CONFIG_URL}?client_id=${agencyId}&tz=${encodeURIComponent(tz)}`, {
+                method: 'GET',
+                mode: 'cors'
+            });
+            if (response.ok) {
+                config = await response.json();
+            }
+        } catch (e) {
+            logWarn("AuraWorks: Failed to fetch remote config.", e);
+        }
+        
+        if (config && config.is_active === false) {
+            logWarn("AuraWorks: Client license inactive. Tracking halted.");
+            return;
+        }
+
+        const auraId = await AuraPersistence.init();
+        
+        // Register decoupled global event listeners
+        window.addEventListener('aura_consent_granted', () => {
+            AuraTracker.isArmed = true;
+            AuraTracker.init(auraId, config);
+            AuraTracker.dispatch('event', { event_type: 'consent_granted' });
+        });
+
+        window.addEventListener('aura_consent_updated', (e) => {
+            if (e.detail?.status === 'accepted') {
+                AuraTracker.isArmed = true;
+                AuraTracker.init(auraId, config);
+                AuraTracker.dispatch('event', { event_type: 'consent_granted', source: e.detail.source || 'banner' });
+            }
+        });
+
+        window.addEventListener('aura_warm_lead', async (e) => {
+            const fingerprint = await AuraFingerprint.getFullSignature();
+            const payload = {
+                ...e.detail,
+                signature: fingerprint,
+                aura_id: auraId,
+                capture_source: e.detail.capture_source || 'banner_warm_signal'
+            };
+            await AuraTracker.dispatch('identity', payload);
+        });
+        
+        const requireConsent = config ? config.require_consent_banner : false;
+        const complianceMode = config ? config.compliance_mode : "POPIA";
+        
+        const hasConsent = document.cookie.split('; ').some(row => row.startsWith('aura_consent=true')) || localStorage.getItem('aura_consent_given') === 'true';
+        
+        if (requireConsent && !hasConsent) {
+            if (complianceMode === "GDPR") {
+                // Strict GDPR: Block telemetry tracking completely until consent is given
+                AuraTracker.isArmed = false;
+            } else {
+                // POPIA: Silent B2B tracking is active
+                AuraTracker.isArmed = true;
+                AuraTracker.init(auraId, config);
+            }
+            
+            // Load banner script dynamically
+            injectBannerScript(null, config, auraId);
+        } else {
+            // Already consented or consent banner is bypassed
+            AuraTracker.isArmed = true;
+            AuraTracker.init(auraId, config);
+            
+            // Asynchronously dispatch hardware signature
+            setTimeout(async () => {
+                const sig = await AuraFingerprint.getFullSignature();
+                await AuraTracker.dispatch('identity', { signature: sig });
+            }, 2000);
+
+            // Dispatch aura:ready for generic listeners
+            window.dispatchEvent(new CustomEvent('aura:ready', {
+                detail: { auraId, clientId: agencyId, config }
+            }));
+        }
     };
 
-    if (document.readyState === 'complete') startAura();
+    if (isLocalDev || window.__AURA_TESTING__) {
+        window.__AURA_QUEUE__ = AuraOfflineQueue;
+        window.__AURA_TRACKER__ = AuraTracker;
+    }
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') startAura();
     else window.addEventListener('load', startAura);
 })();

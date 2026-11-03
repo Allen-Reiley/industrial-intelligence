@@ -12,15 +12,23 @@ export function SolutionsHero() {
             />
             <div className="mx-auto max-w-5xl px-6">
                 <div className="max-w-3xl">
-                    <span className="text-primary text-sm font-semibold tracking-widest uppercase">Vertical Deployment</span>
-                    <h1 className="mt-6 text-balance text-5xl font-bold tracking-tight md:text-7xl">
-                        <TextEffect preset="fade-in-blur" speedSegment={0.3}>
-                            Tailored for Heavy Industry.
-                        </TextEffect>
-                    </h1>
-                    <p className="mt-8 text-lg text-muted-foreground md:text-xl leading-relaxed">
-                        Generic sales tools fail in the industrial sector. AuraWorks is built for firms where the sales cycle is measured in months and the contracts in millions.
-                    </p>
+                    <span className="text-primary text-sm font-semibold tracking-widest uppercase">Strategic B2B Solutions</span>
+                    <TextEffect
+                        preset="fade-in-blur"
+                        speedSegment={0.3}
+                        as="h1"
+                        className="mt-6 text-balance text-5xl font-bold tracking-tight md:text-7xl">
+                        Two Strategic Paths to Pipeline Dominance.
+                    </TextEffect>
+                    <TextEffect
+                        per="line"
+                        preset="fade-in-blur"
+                        speedSegment={0.3}
+                        delay={0.5}
+                        as="p"
+                        className="mt-8 text-lg text-muted-foreground md:text-xl leading-relaxed">
+                        Whether engineering a new digital flagship or maximizing your existing web presence, AuraWorks provides two tailored entry points to establish search dominance, Generative Engine Optimization (GEO) citability, and proprietary visitor capture across South Africa and the SADC region.
+                    </TextEffect>
                 </div>
             </div>
         </section>

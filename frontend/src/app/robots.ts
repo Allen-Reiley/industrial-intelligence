@@ -1,20 +1,42 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
+  const disallowedPaths = [
+    '/aurahq/',     // Internal lead dashboard and admin console
+    '/api/',        // Ingestion & auth API endpoints
+    '/checkout',    // Transactional checkout gate
+    '/thank-you',   // Post-conversion onboarding screen
+    '/403',         // Error pages
+    '/500', 
+    '/admin/',
+    '/dashboard/',
+    '/private/',
+  ];
+
   return {
-    rules: {
-      userAgent: '*',
-      allow: '/',
-      // Prevent bots from crawling your lead-gen dashboard or internal API
-      disallow: [
-        '/private/',
-        '/dashboard/', 
-        '/api/',
-        '/403',        // No need to index error pages
-        '/500', 
-        '/admin/',
-      ], 
-    },
-    sitemap: 'https://auraworks.co.za/sitemap.xml',
+    rules: [
+      {
+        userAgent: '*',
+        allow: '/',
+        disallow: disallowedPaths,
+      },
+      {
+        userAgent: [
+          'GPTBot',
+          'ChatGPT-User',
+          'OAI-SearchBot',
+          'PerplexityBot',
+          'Google-Extended',
+          'ClaudeBot',
+          'anthropic-ai',
+          'Amazonbot',
+        ],
+        allow: '/',
+        disallow: disallowedPaths,
+      },
+    ],
+    sitemap: 'https://www.auraworks.co.za/sitemap.xml',
+    host: 'https://www.auraworks.co.za',
   };
 }
+

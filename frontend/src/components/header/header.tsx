@@ -64,7 +64,7 @@ export const HeroHeader = () => {
                             </ul>
                         </div>
 
-                        <div className="bg-background in-data-[state=active]:block lg:in-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl border p-6 shadow-2xl shadow-zinc-300/20 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none dark:shadow-none dark:lg:bg-transparent">
+                        <div className="bg-background in-data-[state=active]:block lg:in-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl border p-6 shadow-2xl shadow-zinc-300/20 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none">
                             <div className="lg:hidden">
                                 <ul className="space-y-6 text-base">
                                     {menuItems.map((item, index) => (
@@ -87,27 +87,27 @@ export const HeroHeader = () => {
                                     variant="outline"
                                     size="sm"
                                     className={cn(isScrolled && 'lg:hidden')}>
-                                    <Link href="/book-call">
-                                        <span>Book a call</span>
+                                    <Link href="/book-audit">
+                                        <span>Book Audit</span>
                                     </Link>
                                 </Button>
                                 <Button
                                     asChild
                                     size="sm"
                                     className={cn(isScrolled && 'lg:hidden')}>
-                                    <Link href="/get-started">
-                                        <span>Get Started</span>
+                                    <Link href="/book-demo">
+                                        <span>Book Demo</span>
                                     </Link>
                                 </Button>
-
+ 
                                 {/* This button ONLY appears on Desktop when scrolled */}
                                 {isScrolled && (
                                     <Button
                                         asChild
                                         size="sm"
                                         className="hidden lg:inline-flex">
-                                        <Link href="/get-started">
-                                            <span>Get Started</span>
+                                        <Link href="/book-demo">
+                                            <span>Book Demo</span>
                                         </Link>
                                     </Button>
                                 )}

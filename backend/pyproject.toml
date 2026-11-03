@@ -5,10 +5,17 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "alembic>=1.18.4",
     "apscheduler>=3.11.2",
+    "asyncpg>=0.31.0",
+    "beautifulsoup4>=4.14.3",
+    "cachetools>=7.0.5",
     "dotenv>=0.9.9",
+    "fastapi-users[sqlalchemy]>=15.0.5",
     "fastapi[all,standard]>=0.128.7",
+    "greenlet>=3.3.1",
     "httpx>=0.28.1",
+    "httpx-oauth>=0.17.0",
     "notion-client>=3.0.0",
     "passlib[bcrypt]>=1.7.4",
     "psycopg2-binary>=2.9.11",
@@ -16,7 +23,16 @@ dependencies = [
     "pydantic-settings>=2.12.0",
     "python-jose[cryptography]>=3.5.0",
     "python-multipart>=0.0.22",
+    "redis>=8.0.0",
+    "reportlab>=4.5.1",
     "resend>=2.26.0",
     "sqlmodel>=0.0.32",
+    "uuid6>=2025.0.1",
     "uvicorn[standard]>=0.40.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "pytest-asyncio>=1.4.0",
 ]
