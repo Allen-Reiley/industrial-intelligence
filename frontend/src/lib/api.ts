@@ -54,11 +54,13 @@ export async function submitToProspects(formData: Record<string, unknown>) {
      */
     const endpoint = getEndpoint('api/v1/prospects/join');
 
-    const clientId = process.env.NEXT_PUBLIC_WAITLIST_API_KEY || 
-                     (typeof window !== 'undefined' ? (window as unknown as Record<string, unknown>).AURA_AGENCY_ID : null);
+    const clientId = 
+        process.env.NEXT_PUBLIC_WAITLIST_API_KEY || 
+        (typeof window !== 'undefined' ? (window as any).AURA_ID || (window as any).AURA_AGENCY_ID : null) || 
+        'c4a6c9b1-8355-4de2-985d-a04f4dcd63a0';
 
     try {
-        const response = await authFetch(endpoint, {
+        const response = await fetch(endpoint, {
             method: 'POST',
             credentials: 'include',
             headers: {

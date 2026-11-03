@@ -37,14 +37,20 @@ const LeadEnrichmentSlide = ({ auraId, onComplete, onDismiss }: LeadEnrichmentPr
     // 1. Signal aura.js immediately to promote the lead forensic status
     signalAuraWarmLead({ email });
 
+    const clientId = 
+      (typeof window !== 'undefined' && ((window as any).AURA_ID || (window as any).AURA_AGENCY_ID)) || 
+      process.env.NEXT_PUBLIC_WAITLIST_API_KEY || 
+      'c4a6c9b1-8355-4de2-985d-a04f4dcd63a0';
+
     // 2. Standard API Partial Capture
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/prospects/join`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/prospects/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
           aura_id: auraId,
+          client_id: clientId,
           partial_capture: true 
         })
       });
@@ -64,14 +70,20 @@ const LeadEnrichmentSlide = ({ auraId, onComplete, onDismiss }: LeadEnrichmentPr
         role: position.role
     });
 
+    const clientId = 
+      (typeof window !== 'undefined' && ((window as any).AURA_ID || (window as any).AURA_AGENCY_ID)) || 
+      process.env.NEXT_PUBLIC_WAITLIST_API_KEY || 
+      'c4a6c9b1-8355-4de2-985d-a04f4dcd63a0';
+
     // 2. Standard API Full Capture
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/prospects/join`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/prospects/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
           aura_id: auraId,
+          client_id: clientId,
           company_name_raw: position.company,
           industry: position.department,
           avg_price: position.role, 

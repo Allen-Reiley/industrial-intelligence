@@ -196,13 +196,14 @@ async def join_prospects(
     
     email = payload.get("email")
     aura_id = payload.get("aura_id")
-    client_id = payload.get("client_id") # Anchor for multi-tenancy
+    # Anchor for multi-tenancy with default integration client fallback
+    client_id = payload.get("client_id") or "c4a6c9b1-8355-4de2-985d-a04f4dcd63a0"
     raw_company_name = payload.get("company") or payload.get("company_name")
     website = payload.get("website")
     recipient_name = payload.get("name")
 
-    if not email or not client_id:
-        raise HTTPException(status_code=400, detail="Incomplete lead parameters (Email/Client ID missing).")
+    if not email:
+        raise HTTPException(status_code=400, detail="Incomplete lead parameters (Email is required).")
 
     try:
         # 1. Resolve Jurisdictive Entity (Company Anchor)

@@ -36,7 +36,7 @@ describe('HeroSection Video Component Tests', () => {
   test('renders hero section with headline, Book Demo and Book Audit CTAs, and video element', () => {
     const { container } = render(<HeroSection />);
 
-    expect(screen.getByText(/Make Your Business Impossible to Miss/i)).toBeInTheDocument();
+    expect(screen.getByText(/Operational Clarity\. Predictable Cashflow\./i)).toBeInTheDocument();
     
     // Header + Hero CTAs contain Book Audit and Book Demo links
     const bookAuditLinks = screen.getAllByRole('link', { name: /book audit/i });
@@ -47,7 +47,7 @@ describe('HeroSection Video Component Tests', () => {
     expect(bookDemoLinks.length).toBeGreaterThanOrEqual(1);
     expect(bookDemoLinks[0]).toHaveAttribute('href', '/book-demo');
 
-    expect(screen.getByText('Watch Platform Walkthrough')).toBeInTheDocument();
+    expect(screen.getByText('Watch System Walkthrough')).toBeInTheDocument();
 
     const video = container.querySelector('video');
     expect(video).toBeInTheDocument();
@@ -109,7 +109,7 @@ describe('HeroSection Video Component Tests', () => {
     });
 
     // Assert End Card CTA displays Book Demo and Replay
-    expect(screen.getByText('Ready to de-anonymize your website traffic?')).toBeInTheDocument();
+    expect(screen.getByText('Ready to streamline operations and unlock cashflow?')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /book demo/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /replay/i })).toBeInTheDocument();
   });

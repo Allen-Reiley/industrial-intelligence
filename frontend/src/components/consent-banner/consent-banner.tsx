@@ -106,7 +106,7 @@ const AuraConsentBanner = () => {
     localStorage.setItem('aura_consent_given', 'true');
     setIsConsented(true);
 
-    const clientId = (window as any).AURA_ID || (window as any).AURA_AGENCY_ID || 'c4a6c9b1-8355-4de2-985d-a04f4dcd63a0';
+    const clientId = (window as any).AURA_ID || (window as any).AURA_AGENCY_ID || process.env.NEXT_PUBLIC_WAITLIST_API_KEY || 'c4a6c9b1-8355-4de2-985d-a04f4dcd63a0';
     
     // Dispatch telemetry event to promote lead
     try {
@@ -184,7 +184,7 @@ const AuraConsentBanner = () => {
       }
     }));
 
-    const clientId = (window as any).AURA_ID || (window as any).AURA_AGENCY_ID || 'c4a6c9b1-8355-4de2-985d-a04f4dcd63a0';
+    const clientId = (window as any).AURA_ID || (window as any).AURA_AGENCY_ID || process.env.NEXT_PUBLIC_WAITLIST_API_KEY || 'c4a6c9b1-8355-4de2-985d-a04f4dcd63a0';
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/v1/prospects/join`, {
         method: 'POST',
@@ -219,7 +219,7 @@ const AuraConsentBanner = () => {
     localStorage.setItem('aura_consent_given', 'true');
     setIsConsented(true);
 
-    const clientId = (window as any).AURA_ID || (window as any).AURA_AGENCY_ID || 'c4a6c9b1-8355-4de2-985d-a04f4dcd63a0';
+    const clientId = (window as any).AURA_ID || (window as any).AURA_AGENCY_ID || process.env.NEXT_PUBLIC_WAITLIST_API_KEY || 'c4a6c9b1-8355-4de2-985d-a04f4dcd63a0';
 
     // Dispatch custom event to notify aura.js script
     window.dispatchEvent(new CustomEvent('aura_warm_lead', {
