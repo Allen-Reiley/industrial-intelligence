@@ -3,15 +3,15 @@ import IndustrialLanding from '@/components/landing/industrial-landing';
 
 export const metadata: Metadata = {
   title: {
-    absolute: 'Industrial Web Development, B2B SEO & Sales Intelligence | AuraWorks',
+    absolute: 'Schedule a 15-Minute Systems Diagnostic Call | AuraWorks',
   },
-  description: 'Custom industrial digital solutions. High-performance Next.js platforms, technical SEO, Generative Engine Optimization (GEO), and real-time juristic visitor de-anonymization.',
+  description: 'Book a 1-on-1 strategy call with our systems architects. We evaluate your operational bottlenecks, custom storefront opportunities, and organic search discoverability.',
   alternates: {
     canonical: '/landing',
   },
   openGraph: {
-    title: 'Industrial Web Development, B2B SEO & Sales Intelligence | AuraWorks',
-    description: 'Custom industrial digital solutions. High-performance Next.js platforms, technical SEO, Generative Engine Optimization (GEO), and real-time juristic visitor de-anonymization.',
+    title: 'Schedule a 15-Minute Systems Diagnostic Call | AuraWorks',
+    description: 'Book a 1-on-1 strategy call with our systems architects. We evaluate your operational bottlenecks, custom storefront opportunities, and organic search discoverability.',
     url: 'https://www.auraworks.co.za/landing',
     type: 'website',
   },
