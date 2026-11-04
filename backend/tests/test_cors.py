@@ -18,7 +18,7 @@ async def test_cors_preflight_production_origins():
     Verify OPTIONS preflight request to production origins returns 200 OK and proper CORS headers.
     """
     client = await get_test_client()
-    for origin in ["https://auraworks.co.za", "https://www.auraworks.co.za"]:
+    for origin in ["https://auraworks.co.za", "https://www.auraworks.co.za", "https://dash.auraworks.co.za"]:
         response = await client.options(
             f"{settings.API_V1_STR}/auth/google/authorize",
             headers={
@@ -36,7 +36,7 @@ async def test_cors_get_production_origins():
     Verify GET request to production origins returns proper CORS headers.
     """
     client = await get_test_client()
-    for origin in ["https://auraworks.co.za", "https://www.auraworks.co.za"]:
+    for origin in ["https://auraworks.co.za", "https://www.auraworks.co.za", "https://dash.auraworks.co.za"]:
         response = await client.get(
             f"{settings.API_V1_STR}/auth/google/authorize",
             headers={

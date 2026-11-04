@@ -19,6 +19,7 @@ export const auth = betterAuth({
     "http://localhost:3000",
     "https://auraworks.co.za",
     "https://www.auraworks.co.za",
+    "https://dash.auraworks.co.za",
     "https://api.auraworks.co.za",
     "https://industrial-intelligence-xi.vercel.app",
     "https://industrial-intelligence-git-main-allen-reileys-projects.vercel.app",

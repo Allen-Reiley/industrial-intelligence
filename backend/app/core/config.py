@@ -81,6 +81,7 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3002",
         "https://auraworks.co.za",
         "https://www.auraworks.co.za",
+        "https://dash.auraworks.co.za",
         "https://cdn.auraworks.co.za",
         "https://dynamic-flow-production-a5d6.up.railway.app",
         "https://industrial-intelligence-git-main-allen-reileys-projects.vercel.app",
