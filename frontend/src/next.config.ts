@@ -49,6 +49,26 @@ const nextConfig: NextConfig = {
         destination: 'https://www.auraworks.co.za/:path*',
         permanent: true,
       },
+      {
+        source: '/aurahq/:path*',
+        destination: 'https://dash.auraworks.co.za/aurahq/:path*',
+        permanent: false,
+      },
+      {
+        source: '/aurahq',
+        destination: 'https://dash.auraworks.co.za/aurahq',
+        permanent: false,
+      },
+      {
+        source: '/login',
+        destination: 'https://dash.auraworks.co.za/login',
+        permanent: false,
+      },
+      {
+        source: '/signup',
+        destination: 'https://dash.auraworks.co.za/signup',
+        permanent: false,
+      },
     ];
   },
 };

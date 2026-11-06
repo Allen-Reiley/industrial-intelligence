@@ -1,0 +1,2102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auraworks CAD Blueprint Engine | Precision Manufacturing Quoting & Workshop Pipelines</title>
+  <meta name="description" content="Technical CAD quoting engines and automated fabrication pipelines for specialized physical fabricators and architectural manufacturers. Tolerance-controlled 50% web deposits.">
+  <meta name="robots" content="index, follow">
+
+  <!-- Preconnect Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       DESIGN SYSTEM TOKENS — PRECISION CAD & BLUEPRINT ENGINE
+       Code: AW-DSGN-02-CAD
+       ========================================================================== */
+    :root {
+      --bg-blueprint: #060c18;
+      --bg-surface: #0a1325;
+      --bg-panel: #0e1b33;
+      --bg-panel-hover: #132442;
+
+      --border-cad: #1d335a;
+      --border-bright: #2d4f8a;
+      --border-cyan: rgba(56, 189, 248, 0.4);
+
+      --cad-cyan: #38bdf8;
+      --cad-cyan-glow: rgba(56, 189, 248, 0.18);
+      --cad-blue: #2563eb;
+      --cad-grid-line: rgba(56, 189, 248, 0.05);
+
+      --emerald-status: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.2);
+      --amber-warn: #f59e0b;
+      --red-alert: #f43f5e;
+      --red-bg: rgba(244, 63, 94, 0.08);
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-body: 'Inter', sans-serif;
+
+      --radius-sm: 2px;
+      --radius-md: 4px;
+      --radius-lg: 6px;
+
+      --shadow-cad: 0 8px 32px rgba(2, 6, 14, 0.65);
+      --shadow-cyan: 0 0 20px var(--cad-cyan-glow);
+
+      --transition-snap: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* CSS Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg-blueprint);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Blueprint Millimeter Grid Background */
+    body {
+      background-color: var(--bg-blueprint);
+      background-image: 
+        linear-gradient(var(--cad-grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--cad-grid-line) 1px, transparent 1px),
+        linear-gradient(rgba(56, 189, 248, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.02) 1px, transparent 1px);
+      background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Drafting Crosshairs */
+    .crosshair-tl { position: fixed; top: 12px; left: 12px; font-family: var(--font-mono); font-size: 10px; color: var(--cad-cyan); opacity: 0.5; pointer-events: none; z-index: 1000; }
+    .crosshair-tr { position: fixed; top: 12px; right: 12px; font-family: var(--font-mono); font-size: 10px; color: var(--cad-cyan); opacity: 0.5; pointer-events: none; z-index: 1000; }
+    .crosshair-bl { position: fixed; bottom: 12px; left: 12px; font-family: var(--font-mono); font-size: 10px; color: var(--cad-cyan); opacity: 0.5; pointer-events: none; z-index: 1000; }
+    .crosshair-br { position: fixed; bottom: 12px; right: 12px; font-family: var(--font-mono); font-size: 10px; color: var(--cad-cyan); opacity: 0.5; pointer-events: none; z-index: 1000; }
+
+    /* Custom Technical Scrollbar */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-blueprint);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-cad);
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--cad-cyan);
+    }
+
+    /* Container */
+    .container {
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Typography */
+    h1, h2, h3, h4 {
+      font-family: var(--font-display);
+      color: var(--text-main);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    h1 {
+      font-size: clamp(32px, 4.8vw, 58px);
+      line-height: 1.1;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      font-size: clamp(24px, 3.4vw, 38px);
+      line-height: 1.18;
+      text-transform: uppercase;
+    }
+
+    h3 {
+      font-size: 19px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    p {
+      color: var(--text-muted);
+      font-size: 14.5px;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+    }
+
+    /* Badges & Tags */
+    .spec-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid var(--border-cyan);
+      color: var(--cad-cyan);
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .status-beacon {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cad-cyan);
+      box-shadow: 0 0 8px var(--cad-cyan);
+      animation: pulseCyan 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseCyan {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.85); }
+    }
+
+    /* Engineering Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: var(--radius-sm);
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: var(--transition-snap);
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: none;
+    }
+
+    .btn-cyan {
+      background: var(--cad-cyan);
+      color: var(--bg-blueprint);
+      font-weight: 700;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.3);
+    }
+    .btn-cyan:hover {
+      background: #7dd3fc;
+      box-shadow: 0 0 24px rgba(56, 189, 248, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .btn-cad-outline {
+      background: rgba(14, 27, 51, 0.6);
+      border: 1px solid var(--border-bright);
+      color: var(--cad-cyan);
+    }
+    .btn-cad-outline:hover {
+      border-color: var(--cad-cyan);
+      background: rgba(56, 189, 248, 0.08);
+      transform: translateY(-1px);
+    }
+
+    /* Technical Panel */
+    .cad-panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-cad);
+      border-radius: var(--radius-md);
+      padding: 26px;
+      box-shadow: var(--shadow-cad);
+      position: relative;
+      transition: var(--transition-snap);
+    }
+    .cad-panel:hover {
+      border-color: var(--border-bright);
+    }
+
+    /* ==========================================================================
+       SECTION 0: TELEMETRY TOP BAR
+       ========================================================================== */
+    .telemetry-strip {
+      background: #040812;
+      border-bottom: 1px solid var(--border-cad);
+      padding: 8px 0;
+      font-size: 11.5px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .telemetry-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .telemetry-coords {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .telemetry-coords strong {
+      color: var(--cad-cyan);
+    }
+
+    .telemetry-action {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--cad-cyan);
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .telemetry-action:hover {
+      text-decoration: underline;
+    }
+
+    /* ==========================================================================
+       SECTION 1: CAD NAVIGATION
+       ========================================================================== */
+    .cad-nav {
+      background: rgba(6, 12, 24, 0.9);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-cad);
+      position: sticky;
+      top: 36px;
+      z-index: 90;
+      padding: 14px 0;
+    }
+
+    .cad-nav-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .brand-cad-emblem {
+      width: 32px;
+      height: 32px;
+      background: #0e1b33;
+      border: 1px solid var(--border-cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--cad-cyan);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 13px;
+      border-radius: var(--radius-sm);
+    }
+
+    .brand-cad-text {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+
+    .brand-cad-sub {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      color: var(--cad-cyan);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .cad-nav-links {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      list-style: none;
+    }
+
+    .cad-nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: var(--transition-snap);
+    }
+    .cad-nav-links a:hover {
+      color: var(--cad-cyan);
+    }
+
+    /* ==========================================================================
+       SECTION 2: HERO CHAPTER
+       ========================================================================== */
+    .hero-cad {
+      padding: 70px 0 50px;
+      position: relative;
+    }
+
+    .hero-cad-content {
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .hero-eyebrow {
+      margin-bottom: 20px;
+    }
+
+    .hero-title {
+      margin-bottom: 20px;
+    }
+
+    .hero-lead {
+      font-size: 16.5px;
+      line-height: 1.65;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+
+    /* 4-Card Telemetry Bar */
+    .telemetry-bar-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .telemetry-item {
+      background: rgba(10, 19, 37, 0.85);
+      border: 1px solid var(--border-cad);
+      border-radius: var(--radius-sm);
+      padding: 18px 16px;
+      text-align: left;
+      border-left: 3px solid var(--cad-cyan);
+      transition: var(--transition-snap);
+    }
+    .telemetry-item:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-2px);
+    }
+
+    .telemetry-label {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+
+    .telemetry-val {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
+      line-height: 1.15;
+    }
+
+    .telemetry-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    /* ==========================================================================
+       SECTION 3: MODULE 01 // QUALIFIED ICP ASSEMBLIES
+       ========================================================================== */
+    .section-spacing {
+      padding: 80px 0;
+      border-top: 1px solid var(--border-cad);
+    }
+
+    .section-title-wrap {
+      text-align: center;
+      max-width: 760px;
+      margin: 0 auto 46px;
+    }
+
+    .assemblies-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .assembly-card {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .assembly-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--cad-cyan);
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed var(--border-cad);
+    }
+
+    .assembly-title {
+      font-size: 19px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .assembly-desc {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      flex-grow: 1;
+    }
+
+    .assembly-diagnostic {
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      font-size: 12px;
+      line-height: 1.45;
+      margin-bottom: 10px;
+    }
+
+    .diag-fail {
+      background: var(--red-bg);
+      border: 1px solid rgba(244, 63, 94, 0.25);
+      color: #fda4af;
+    }
+
+    .diag-pass {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: #a7f3d0;
+      margin-bottom: 0;
+    }
+
+    .diag-label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+    .diag-fail .diag-label { color: var(--red-alert); }
+    .diag-pass .diag-label { color: var(--emerald-status); }
+
+    /* ==========================================================================
+       SECTION 4: MODULE 02 // LIVE SVG CAD VIEWPORT & ESTIMATOR
+       ========================================================================== */
+    .cad-viewport-grid {
+      display: grid;
+      grid-template-columns: 1.25fr 0.95fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* Left Pane: SVG Viewport */
+    .svg-viewport-panel {
+      background: #040914;
+      border: 1px solid var(--border-cyan);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      position: relative;
+      box-shadow: var(--shadow-cad);
+    }
+
+    .viewport-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--cad-cyan);
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-cad);
+      margin-bottom: 16px;
+    }
+
+    .viewport-canvas-container {
+      width: 100%;
+      height: 340px;
+      background: rgba(6, 12, 24, 0.7);
+      border: 1px dashed var(--border-cad);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .svg-cad-drawing {
+      width: 100%;
+      height: 100%;
+    }
+
+    .viewport-footer-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-cad);
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .v-metric-label {
+      color: var(--text-dim);
+      font-size: 9.5px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .v-metric-val {
+      color: var(--cad-cyan);
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    /* Right Pane: Controls & Cost BOM */
+    .cad-controls-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .cad-slider-block {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .slider-cad-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-family: var(--font-mono);
+    }
+
+    .slider-cad-label {
+      font-size: 12px;
+      color: var(--text-main);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .slider-cad-val {
+      font-size: 14px;
+      color: var(--cad-cyan);
+      font-weight: 700;
+    }
+
+    .range-cad {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-cad);
+      border-radius: 2px;
+      outline: none;
+    }
+    .range-cad::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: var(--cad-cyan);
+      border-radius: 2px;
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--cad-cyan);
+      border: 1px solid var(--bg-blueprint);
+      transition: transform 0.15s;
+    }
+    .range-cad::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    /* Substrate Matrix */
+    .substrate-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .substrate-btn {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-cad);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      cursor: pointer;
+      text-align: left;
+      transition: var(--transition-snap);
+      font-family: var(--font-mono);
+    }
+    .substrate-btn:hover {
+      border-color: var(--border-bright);
+    }
+    .substrate-btn.active {
+      border-color: var(--cad-cyan);
+      background: rgba(56, 189, 248, 0.1);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.15);
+    }
+
+    .sub-code { font-size: 9px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 2px; }
+    .sub-title { font-size: 11px; font-weight: 700; color: var(--text-main); margin-bottom: 2px; }
+    .sub-mult { font-size: 10px; color: var(--cad-cyan); }
+
+    /* BOM Cost Box */
+    .bom-cost-box {
+      background: #040914;
+      border: 1px solid var(--border-cyan);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+    }
+
+    .bom-price-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px dashed var(--border-cad);
+    }
+
+    .bom-price-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .bom-price-val {
+      font-family: var(--font-mono);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .bom-deposit-banner {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid var(--emerald-status);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      margin-bottom: 16px;
+    }
+
+    .deposit-gate-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--emerald-status);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+
+    .deposit-gate-val {
+      font-family: var(--font-mono);
+      font-size: 20px;
+      font-weight: 700;
+      color: #34d399;
+      margin-bottom: 4px;
+    }
+
+    .deposit-gate-note {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    /* ==========================================================================
+       SECTION 5: THE ENGINEERING SHIFT (WORKFLOW COMPARISON)
+       ========================================================================== */
+    .shift-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+
+    .shift-col {
+      border-radius: var(--radius-md);
+      padding: 26px;
+    }
+
+    .shift-legacy {
+      background: rgba(244, 63, 94, 0.03);
+      border: 1px solid rgba(244, 63, 94, 0.2);
+    }
+
+    .shift-auraworks {
+      background: rgba(56, 189, 248, 0.03);
+      border: 1px solid var(--border-cyan);
+    }
+
+    .shift-title-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-cad);
+    }
+
+    .shift-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .shift-item {
+      display: flex;
+      gap: 12px;
+      font-size: 13.5px;
+      line-height: 1.45;
+    }
+
+    .shift-code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 2px;
+      height: fit-content;
+      margin-top: 1px;
+    }
+    .shift-legacy .shift-code { background: rgba(244, 63, 94, 0.15); color: var(--red-alert); }
+    .shift-auraworks .shift-code { background: rgba(56, 189, 248, 0.15); color: var(--cad-cyan); }
+
+    /* ==========================================================================
+       SECTION 6: MODULE 03 // COMMERCIAL BOM TABLE
+       ========================================================================== */
+    .bom-table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border-cad);
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      margin-bottom: 30px;
+    }
+
+    .bom-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .bom-table th {
+      background: #040914;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--cad-cyan);
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-cad);
+    }
+
+    .bom-table td {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border-cad);
+      color: var(--text-muted);
+      vertical-align: top;
+    }
+
+    .bom-table tr:hover td {
+      background: rgba(56, 189, 248, 0.03);
+    }
+
+    .bom-table strong {
+      color: var(--text-main);
+    }
+
+    /* Payback Breakeven Slider */
+    .breakeven-box {
+      background: #040914;
+      border: 1px solid var(--border-cad);
+      border-radius: var(--radius-sm);
+      padding: 26px;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .breakeven-stat {
+      background: rgba(14, 27, 51, 0.7);
+      border: 1px solid var(--border-cyan);
+      padding: 20px;
+      border-radius: var(--radius-sm);
+      text-align: center;
+    }
+
+    .breakeven-number {
+      font-family: var(--font-mono);
+      font-size: 38px;
+      font-weight: 700;
+      color: var(--cad-cyan);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    /* ==========================================================================
+       SECTION 7: MODULE 04 // QA TOLERANCE MATRIX
+       ========================================================================== */
+    .qa-matrix-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+
+    .qa-col {
+      border-radius: var(--radius-md);
+      padding: 28px;
+    }
+
+    .qa-pass {
+      background: rgba(16, 185, 129, 0.04);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .qa-fail {
+      background: var(--red-bg);
+      border: 1px solid rgba(244, 63, 94, 0.25);
+    }
+
+    .qa-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .qa-item {
+      display: flex;
+      gap: 10px;
+      font-size: 13.5px;
+      line-height: 1.45;
+    }
+
+    .qa-pass .qa-mark { color: var(--emerald-status); font-weight: 700; font-family: var(--font-mono); }
+    .qa-fail .qa-mark { color: var(--red-alert); font-weight: 700; font-family: var(--font-mono); }
+
+    /* ==========================================================================
+       SECTION 8: CAD TERMINAL INTAKE MODAL
+       ========================================================================== */
+    .terminal-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(2, 6, 14, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .terminal-modal-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .terminal-window {
+      background: #060c18;
+      border: 1px solid var(--border-cyan);
+      border-radius: var(--radius-md);
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 0 40px rgba(56, 189, 248, 0.2);
+      position: relative;
+    }
+
+    .terminal-titlebar {
+      background: #040812;
+      border-bottom: 1px solid var(--border-cad);
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--cad-cyan);
+    }
+
+    .terminal-close-btn {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+    .terminal-close-btn:hover {
+      color: var(--red-alert);
+    }
+
+    .terminal-body {
+      padding: 28px;
+    }
+
+    .form-group-cad {
+      margin-bottom: 16px;
+    }
+
+    .form-cad-label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--text-main);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 5px;
+    }
+
+    .form-cad-input, .form-cad-select {
+      width: 100%;
+      padding: 11px 12px;
+      background: #0a1325;
+      border: 1px solid var(--border-cad);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-cad-input:focus, .form-cad-select:focus {
+      border-color: var(--cad-cyan);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+    }
+
+    .terminal-confirm-screen {
+      display: none;
+      text-align: center;
+      padding: 30px 10px;
+    }
+
+    /* ==========================================================================
+       SECTION 9: TECHNICAL FOOTER & DRAWING TITLE BLOCK
+       ========================================================================== */
+    .cad-footer {
+      border-top: 1px solid var(--border-cad);
+      background: #040812;
+      padding: 50px 0 30px;
+      font-size: 12.5px;
+    }
+
+    .footer-title-block-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 30px;
+      align-items: end;
+      margin-bottom: 30px;
+    }
+
+    .cad-title-block {
+      border: 1px solid var(--border-cad);
+      background: #060c18;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .tb-header {
+      background: #0a1325;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border-cad);
+      color: var(--cad-cyan);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .tb-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-bottom: 1px solid var(--border-cad);
+    }
+    .tb-row:last-child {
+      border-bottom: none;
+    }
+
+    .tb-cell {
+      padding: 6px 10px;
+      border-right: 1px solid var(--border-cad);
+    }
+    .tb-cell:last-child {
+      border-right: none;
+    }
+
+    .tb-cell-label {
+      font-size: 8.5px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+    .tb-cell-val {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .footer-legal-bar {
+      border-top: 1px solid var(--border-cad);
+      padding-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .telemetry-bar-grid { grid-template-columns: repeat(2, 1fr); }
+      .assemblies-grid { grid-template-columns: 1fr; }
+      .cad-viewport-grid { grid-template-columns: 1fr; }
+      .shift-grid { grid-template-columns: 1fr; }
+      .qa-matrix-grid { grid-template-columns: 1fr; }
+      .breakeven-box { grid-template-columns: 1fr; }
+      .footer-title-block-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .cad-nav-links { display: none; }
+      .telemetry-bar-grid { grid-template-columns: 1fr; }
+      .substrate-grid { grid-template-columns: 1fr; }
+      .telemetry-inner { justify-content: center; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Corner Drafting Crosshairs -->
+  <div class="crosshair-tl">[+ 00.00]</div>
+  <div class="crosshair-tr">[+ 99.00]</div>
+  <div class="crosshair-bl">[+ 00.99]</div>
+  <div class="crosshair-br">[+ 99.99]</div>
+
+  <!-- ==========================================================================
+       0. SYSTEM TELEMETRY STRIP
+       ========================================================================== -->
+  <header class="telemetry-strip">
+    <div class="container telemetry-inner">
+      <div class="telemetry-coords">
+        <span class="status-beacon"></span>
+        <span>SYS_ID: <strong>AW-CAD-PIPELINE-2026</strong> // TARGET: HIGH-TICKET PHYSICAL FABRICATORS // ALLOCATION: <strong>2 OF 3 RETAINED SLOTS COMMITTED</strong> [ 1 SLOT AVAILABLE ]</span>
+      </div>
+      <a href="#intake" class="telemetry-action" onclick="openTerminalModal()">
+        <span>[ EXECUTE_DISCOVERY_INTAKE ]</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       1. CAD NAVIGATION
+       ========================================================================== -->
+  <nav class="cad-nav">
+    <div class="container cad-nav-inner">
+      <a href="#" class="nav-brand">
+        <div class="brand-cad-emblem">CAD</div>
+        <div class="brand-cad-text">
+          <span>AURAWORKS // CAD_ENGINE</span>
+          <span class="brand-cad-sub">SPEC_REV_2.4 // PRODUCTION PIPELINES</span>
+        </div>
+      </a>
+
+      <ul class="cad-nav-links">
+        <li><a href="#assemblies">01_Sectors</a></li>
+        <li><a href="#viewport">02_CAD_Simulator</a></li>
+        <li><a href="#shift">03_Pipeline_Shift</a></li>
+        <li><a href="#bom">04_BOM_Commercials</a></li>
+        <li><a href="#qa-matrix">05_QA_Tolerance</a></li>
+      </ul>
+
+      <button class="btn btn-cyan" onclick="openTerminalModal()">
+        [ INITIALIZE_BRIEFING ]
+      </button>
+    </div>
+  </nav>
+
+  <!-- ==========================================================================
+       2. HERO CHAPTER
+       ========================================================================== -->
+  <section class="hero-cad">
+    <div class="container">
+      <div class="hero-cad-content">
+        <div class="hero-eyebrow">
+          <span class="spec-tag">SPECIFICATION BRIEF // STRATEGIC REPOSITIONING & ICP TARGET SHIFT</span>
+        </div>
+
+        <h1 class="hero-title">
+          Custom dimension quoting engines & pipelines for bespoke physical fabricators.
+        </h1>
+
+        <p class="hero-lead">
+          We replace unpaid CAD drafting hours, unvetted WhatsApp inquiries, and manual cutting-list calculations with live parametric SVG wireframes, mathematical material BOMs, and automated 50% commitment deposits before metal is cut or timber planed.
+        </p>
+
+        <div class="hero-actions">
+          <a href="#viewport" class="btn btn-cyan">[ INITIALIZE_PARAMETRIC_VIEWPORT &darr; ]</a>
+          <a href="#bom" class="btn btn-cad-outline">[ INSPECT_CONTRACT_BOM ]</a>
+        </div>
+      </div>
+
+      <!-- 4-Item Schematic Telemetry Bar -->
+      <div class="telemetry-bar-grid">
+        <div class="telemetry-item">
+          <div class="telemetry-label">AOV_THRESHOLD</div>
+          <div class="telemetry-val">R15k – R150k+</div>
+          <div class="telemetry-desc">Minimum project value required for positive client ROI.</div>
+        </div>
+
+        <div class="telemetry-item">
+          <div class="telemetry-label">CASH_FLOW_GATE</div>
+          <div class="telemetry-val">50% WEB DEPOSIT</div>
+          <div class="telemetry-desc">Mandatory deposit locked on web before CNC laser cut.</div>
+        </div>
+
+        <div class="telemetry-item">
+          <div class="telemetry-label">CAPACITY_LIMIT</div>
+          <div class="telemetry-val">1–3 ACCOUNTS / MO</div>
+          <div class="telemetry-desc">Dedicated senior engineering bandwidth cap.</div>
+        </div>
+
+        <div class="telemetry-item">
+          <div class="telemetry-label">PAYBACK_METRIC</div>
+          <div class="telemetry-val">1 CLOSED ORDER</div>
+          <div class="telemetry-desc">Single monthly fabrication deal breaks even entire retainer.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       3. MODULE 01 // QUALIFIED ICP ASSEMBLIES
+       ========================================================================== -->
+  <section id="assemblies" class="section-spacing">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="spec-tag">MODULE_01 // QUALIFIED ICP ASSEMBLIES</span>
+        <h2>Engineering Disciplines & Sub-Sectors</h2>
+        <p>Generic web agencies do not understand material tolerances, press brake bending allowances, or CNC router gantry feeds. We build dedicated digital systems for physical makers.</p>
+      </div>
+
+      <div class="assemblies-grid">
+        <!-- Assembly 1 -->
+        <div class="cad-panel assembly-card">
+          <div class="assembly-meta">
+            <span>ASSEMBLY_REF: JNY-01</span>
+            <span style="color:var(--emerald-status);">STATUS: VERIFIED</span>
+          </div>
+          <h3 class="assembly-title">Bespoke Joinery & Solid Timber</h3>
+          <p class="assembly-desc">
+            French oak dining suites, monolithic solid walnut boardroom tables, architectural cabinetry, and luxury timber credenzas.
+          </p>
+
+          <div class="assembly-diagnostic diag-fail">
+            <span class="diag-label">FAILURE_MODE // CURRENT BOTTLENECK</span>
+            Draughtsmen spend 4+ unpaid hours calculating board-foot yields and typing manual PDF quotes for uncommitted leads who ghost.
+          </div>
+
+          <div class="assembly-diagnostic diag-pass">
+            <span class="diag-label">AURA_SOLUTION // PARAMETRIC INTAKE</span>
+            Parametric millimeter sliders with instant timber rate calculations and 50% web deposit capture that locks kiln-dried stock.
+          </div>
+        </div>
+
+        <!-- Assembly 2 -->
+        <div class="cad-panel assembly-card">
+          <div class="assembly-meta">
+            <span>ASSEMBLY_REF: ARC-02</span>
+            <span style="color:var(--emerald-status);">STATUS: VERIFIED</span>
+          </div>
+          <h3 class="assembly-title">Architectural Steel & Glass Finishes</h3>
+          <p class="assembly-desc">
+            Crittall-style steel partitions, acoustic glass panels, brass door hardware, and decorative architectural metalwork screens.
+          </p>
+
+          <div class="assembly-diagnostic diag-fail">
+            <span class="diag-label">FAILURE_MODE // CURRENT BOTTLENECK</span>
+            Commercial architects wait 48+ hours for custom dimension takeoffs over email, resulting in lost specification in tender schedules.
+          </div>
+
+          <div class="assembly-diagnostic diag-pass">
+            <span class="diag-label">AURA_SOLUTION // PARAMETRIC INTAKE</span>
+            Self-serve specifier engine generating instant pricing, acoustic decibel ratings, and downloadable CAD/BIM drawing packs.
+          </div>
+        </div>
+
+        <!-- Assembly 3 -->
+        <div class="cad-panel assembly-card">
+          <div class="assembly-meta">
+            <span>ASSEMBLY_REF: FAB-03</span>
+            <span style="color:var(--emerald-status);">STATUS: VERIFIED</span>
+          </div>
+          <h3 class="assembly-title">Specialized Fabrication & Outfitting</h3>
+          <p class="assembly-desc">
+            Off-road overland expedition campers, commercial braai islands, custom chassis trailers, and luxury structural pergolas.
+          </p>
+
+          <div class="assembly-diagnostic diag-fail">
+            <span class="diag-label">FAILURE_MODE // CURRENT BOTTLENECK</span>
+            Verbal change requests during 6-week welding runs cause working capital exposure and shop floor scheduling bottlenecks.
+          </div>
+
+          <div class="assembly-diagnostic diag-pass">
+            <span class="diag-label">AURA_SOLUTION // PARAMETRIC INTAKE</span>
+            Modular add-on selection with phased milestone deposit gating, live welding bay scheduling, and automated nested cut-lists.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       4. MODULE 02 // LIVE SVG CAD VIEWPORT & PARAMETRIC ESTIMATOR
+       ========================================================================== -->
+  <section id="viewport" class="section-spacing" style="background: rgba(4, 9, 20, 0.5);">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="spec-tag">MODULE_02 // LIVE SVG CAD VIEWPORT</span>
+        <h2>Parametric Geometry & Bill of Materials</h2>
+        <p>Observe how client adjustments dynamically re-calculate SVG isometric geometry, surface footprint, structural weight, and 50% commitment deposits in real time.</p>
+      </div>
+
+      <div class="cad-viewport-grid">
+        <!-- Left: SVG Drawing Viewport -->
+        <div class="svg-viewport-panel">
+          <div class="viewport-header">
+            <span>VIEWPORT: ISOMETRIC_DRAFTING_PROJECTION [ORTHO_3D]</span>
+            <span id="viewport-scale-tag" style="color:var(--text-dim);">SCALE: 1:25</span>
+          </div>
+
+          <div class="viewport-canvas-container">
+            <!-- Dynamic Scalable Vector Graphic Wireframe -->
+            <svg id="cad-svg" class="svg-cad-drawing" viewBox="0 0 500 320">
+              <!-- Grid Backdrop in SVG -->
+              <defs>
+                <pattern id="svg-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                  <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(56, 189, 248, 0.05)" stroke-width="1"/>
+                </pattern>
+                <marker id="arrow-start" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+                </marker>
+                <marker id="arrow-end" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+                </marker>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#svg-grid)"/>
+
+              <!-- Table Top Polygon (Isometric Projection) -->
+              <polygon id="svg-top-slab" points="250,90 390,140 250,190 110,140" fill="rgba(56, 189, 248, 0.12)" stroke="#38bdf8" stroke-width="2"/>
+              <!-- Slab Thickness Edge -->
+              <polygon id="svg-slab-edge" points="110,140 250,190 250,205 110,155" fill="rgba(37, 99, 235, 0.25)" stroke="#38bdf8" stroke-width="1.5"/>
+              <polygon id="svg-slab-edge-r" points="250,190 390,140 390,155 250,205" fill="rgba(14, 27, 51, 0.6)" stroke="#38bdf8" stroke-width="1.5"/>
+
+              <!-- Structural Legs -->
+              <line id="svg-leg-l" x1="140" y1="150" x2="140" y2="265" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+              <line id="svg-leg-r" x1="360" y1="150" x2="360" y2="265" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+              <line id="svg-leg-c" x1="250" y1="205" x2="250" y2="280" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+              <line id="svg-stretcher" x1="140" y1="240" x2="360" y2="240" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="4,4"/>
+
+              <!-- Dynamic Dimension Leader Lines -->
+              <!-- Length Dimension Line -->
+              <line id="svg-dim-len" x1="85" y1="130" x2="225" y2="80" stroke="#38bdf8" stroke-width="1.2" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)"/>
+              <text id="svg-text-len" x="140" y="95" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">L: 2800 mm</text>
+
+              <!-- Width Dimension Line -->
+              <line id="svg-dim-wid" x1="265" y1="75" x2="405" y2="125" stroke="#38bdf8" stroke-width="1.2" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)"/>
+              <text id="svg-text-wid" x="350" y="95" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">W: 1100 mm</text>
+            </svg>
+          </div>
+
+          <div class="viewport-footer-metrics">
+            <div>
+              <div class="v-metric-label">SURFACE_AREA</div>
+              <div class="v-metric-val" id="cad-area">3.08 m²</div>
+            </div>
+            <div>
+              <div class="v-metric-label">ESTIMATED_MASS</div>
+              <div class="v-metric-val" id="cad-mass">142 kg</div>
+            </div>
+            <div>
+              <div class="v-metric-label">LEAD_WINDOW</div>
+              <div class="v-metric-val">4–6 WEEKS</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Parametric Controls & BOM Summary -->
+        <div class="cad-controls-panel">
+          <div class="cad-panel">
+            <!-- Length Slider -->
+            <div class="cad-slider-block" style="margin-bottom: 20px;">
+              <div class="slider-cad-header">
+                <span class="slider-cad-label">PARAM_LENGTH (X-AXIS)</span>
+                <span class="slider-cad-val" id="readout-cad-len">2,800 mm</span>
+              </div>
+              <input type="range" id="cad-len" class="range-cad" min="1800" max="4200" step="100" value="2800">
+              <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-dim); font-family:var(--font-mono); margin-top:2px;">
+                <span>1,800 mm</span>
+                <span>4,200 mm</span>
+              </div>
+            </div>
+
+            <!-- Width Slider -->
+            <div class="cad-slider-block" style="margin-bottom: 20px;">
+              <div class="slider-cad-header">
+                <span class="slider-cad-label">PARAM_WIDTH (Y-AXIS)</span>
+                <span class="slider-cad-val" id="readout-cad-wid">1,100 mm</span>
+              </div>
+              <input type="range" id="cad-wid" class="range-cad" min="800" max="1500" step="50" value="1100">
+              <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-dim); font-family:var(--font-mono); margin-top:2px;">
+                <span>800 mm</span>
+                <span>1,500 mm</span>
+              </div>
+            </div>
+
+            <!-- Material Substrate Selection -->
+            <div class="cad-slider-block">
+              <label class="slider-cad-label">SUBSTRATE_ALLOY_GRADE</label>
+              <div class="substrate-grid">
+                <div class="substrate-btn active" data-sub="oak" data-mult="1.0" data-density="46">
+                  <div class="sub-code">MAT_01</div>
+                  <div class="sub-title">French Oak Hybrid</div>
+                  <div class="sub-mult">Base Rate (1.0&times;)</div>
+                </div>
+
+                <div class="substrate-btn" data-sub="steel" data-mult="1.25" data-density="58">
+                  <div class="sub-code">MAT_02</div>
+                  <div class="sub-title">304 Stainless</div>
+                  <div class="sub-mult">Heavy Duty (1.25&times;)</div>
+                </div>
+
+                <div class="substrate-btn" data-sub="alum" data-mult="1.40" data-density="38">
+                  <div class="sub-code">MAT_03</div>
+                  <div class="sub-title">5083 Aluminum</div>
+                  <div class="sub-mult">Expedition (1.40&times;)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Calculated Bill of Costs Panel -->
+          <div class="bom-cost-box">
+            <div class="bom-price-row">
+              <span class="bom-price-label">CALCULATED_SPEC_COST</span>
+              <span class="bom-price-val" id="cad-total">R 41,580</span>
+            </div>
+
+            <!-- 50% Mandatory Deposit Callout -->
+            <div class="bom-deposit-banner">
+              <div class="deposit-gate-title">
+                <span class="status-beacon"></span>
+                <span>MANDATORY 50% PRODUCTION DEPOSIT</span>
+              </div>
+              <div class="deposit-gate-val" id="cad-deposit">R 20,790</div>
+              <div class="deposit-gate-note">
+                Binds engineering tolerance lock, allocates raw substrate inventory, and reserves CNC laser cut slot upon payment clearance.
+              </div>
+            </div>
+
+            <button class="btn btn-cyan" style="width: 100%;" onclick="transferCadSpecToModal()">
+              [ LOCK_SPECIFICATION_AND_APPLY ]
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       5. THE ENGINEERING SHIFT (WORKFLOW COMPARISON)
+       ========================================================================== -->
+  <section id="shift" class="section-spacing">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="spec-tag">OPERATIONAL DIAGNOSTIC</span>
+        <h2>The Takeoff Trap vs. Parametric Pipeline</h2>
+        <p>How automating front-of-house quoting protects the engineering team from unpaid technical overhead and eliminates cash flow delays.</p>
+      </div>
+
+      <div class="shift-grid">
+        <!-- Legacy Traps -->
+        <div class="shift-col shift-legacy">
+          <div class="shift-title-bar">
+            <span class="spec-tag" style="background:rgba(244,63,94,0.15); border-color:var(--red-alert); color:var(--red-alert);">LEGACY_WORKFLOW</span>
+            <h3 style="color:#fda4af;">Fragmented Manual Takeoff</h3>
+          </div>
+
+          <ul class="shift-list">
+            <li class="shift-item">
+              <span class="shift-code">FAIL_01</span>
+              <div>
+                <strong>Incomplete WhatsApp RFQs:</strong> Clients ask for rough quotes without providing structural weld tolerances, wall heights, or steel gauges.
+              </div>
+            </li>
+            <li class="shift-item">
+              <span class="shift-code">FAIL_02</span>
+              <div>
+                <strong>Unpaid Draughting Labor:</strong> Senior engineers spend 3–6 hours modeling custom CAD takeoffs for tire-kickers who stall at price confirmation.
+              </div>
+            </li>
+            <li class="shift-item">
+              <span class="shift-code">FAIL_03</span>
+              <div>
+                <strong>Shop Floor Revision Chaos:</strong> Verbal modifications over phone calls fail to reach cutting bays, resulting in scrapped steel and manual re-welds.
+              </div>
+            </li>
+            <li class="shift-item">
+              <span class="shift-code">FAIL_04</span>
+              <div>
+                <strong>Working Capital Exposure:</strong> Raw plate and extrusions are ordered before deposit funds clear, putting company cash flow in jeopardy.
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Auraworks Solution -->
+        <div class="shift-col shift-auraworks">
+          <div class="shift-title-bar">
+            <span class="spec-tag">PARAMETRIC_MACHINE</span>
+            <h3 style="color:#7dd3fc;">Auraworks Engineering Pipeline</h3>
+          </div>
+
+          <ul class="shift-list">
+            <li class="shift-item">
+              <span class="shift-code">PASS_01</span>
+              <div>
+                <strong>Mathematical Web Configurator:</strong> Prospective clients configure millimeter dimensions and alloy specifications directly on-screen.
+              </div>
+            </li>
+            <li class="shift-item">
+              <span class="shift-code">PASS_02</span>
+              <div>
+                <strong>Zero Manual Calculation Overhead:</strong> Mathematical formulas price board footage, plate yield, and hardware add-ons instantly with zero friction.
+              </div>
+            </li>
+            <li class="shift-item">
+              <span class="shift-code">PASS_03</span>
+              <div>
+                <strong>Instant 50% Web Deposit Capture:</strong> Production slot and laser cutting bay time are only confirmed once the client's deposit clears online.
+              </div>
+            </li>
+            <li class="shift-item">
+              <span class="shift-code">PASS_04</span>
+              <div>
+                <strong>Automated Job Card & Cut-List:</strong> Webhook triggers automated generation of linear cutting lists and machine bay routing directly to the workshop floor.
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       6. MODULE 03 // COMMERCIAL CONTRACT BOM TABLE
+       ========================================================================== -->
+  <section id="bom" class="section-spacing" style="background: rgba(4, 9, 20, 0.5);">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="spec-tag">MODULE_03 // CONTRACT SPECIFICATION</span>
+        <h2>Commercial Package Structure (BOM Format)</h2>
+        <p>Structured as an engineering Bill of Materials with clear deliverables, fixed capital investment, and guaranteed operational payback.</p>
+      </div>
+
+      <div class="bom-table-wrap">
+        <table class="bom-table">
+          <thead>
+            <tr>
+              <th>COMMERCIAL_PHASE</th>
+              <th>INVESTMENT_STRUCTURE</th>
+              <th>SCOPE_DELIVERABLES</th>
+              <th>CLIENT_VALUE_PROPOSITION</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <span class="spec-tag">PHASE_01_BUILD</span><br>
+                <strong style="margin-top:6px; display:inline-block;">Storefront & Pipeline</strong>
+              </td>
+              <td>
+                <span style="font-family:var(--font-mono); font-size:16px; font-weight:700; color:var(--text-main);">R 45,000 – R 75,000</span><br>
+                <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-dim);">Once-off milestone payment</span>
+              </td>
+              <td>
+                <ul style="list-style:none; display:flex; flex-direction:column; gap:6px;">
+                  <li>&#8226; Bespoke responsive CAD/storefront web application.</li>
+                  <li>&#8226; Interactive parametric dimension quoting engine.</li>
+                  <li>&#8226; Automated 50% deposit checkout gateway integration.</li>
+                  <li>&#8226; Shop-floor cut-list & job card webhook generation.</li>
+                  <li>&#8226; High-speed Core Web Vitals optimization (sub-300ms).</li>
+                </ul>
+              </td>
+              <td>
+                Eliminates unpaid CAD takeoff hours, captures 50% deposits instantly on web, and establishes immediate engineering authority with high-ticket clients.
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <span class="spec-tag" style="background:rgba(37,99,235,0.15); border-color:var(--cad-blue); color:#60a5fa;">PHASE_02_RETAINER</span><br>
+                <strong style="margin-top:6px; display:inline-block;">Growth & Infrastructure</strong>
+              </td>
+              <td>
+                <span style="font-family:var(--font-mono); font-size:16px; font-weight:700; color:var(--text-main);">R 10,000 – R 18,000</span><br>
+                <span style="font-family:var(--font-mono); font-size:11px; color:var(--cad-cyan);">/ month (1–3 accounts max)</span>
+              </td>
+              <td>
+                <ul style="list-style:none; display:flex; flex-direction:column; gap:6px;">
+                  <li>&#8226; <strong>Generative Engine Optimization (GEO):</strong> AI citations in ChatGPT, Perplexity, and Google AI Overviews.</li>
+                  <li>&#8226; <strong>Technical B2B SEO:</strong> High-intent commercial rankings across Gauteng, Western Cape, and KZN.</li>
+                  <li>&#8226; Server uptime, quoting engine speed tuning, database security.</li>
+                  <li>&#8226; Bi-weekly pipeline reviews with senior technical partner.</li>
+                </ul>
+              </td>
+              <td>
+                Ensures constant high-intent inbound inquiries. Exactly 1 closed deal per month completely offsets the monthly retainer cost.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Unit Economics Breakeven Box -->
+      <div class="breakeven-box">
+        <div>
+          <span class="spec-tag" style="margin-bottom:10px;">UNIT_ECONOMICS_VERDICT</span>
+          <h3 style="font-size:20px; margin-bottom:8px;">Single-Order Retainer Payback</h3>
+          <p style="font-size:13.5px; line-height:1.5; color:var(--text-main);">
+            At typical specialized fabrication contract values (R35,000 to R150,000+) and standard manufacturing gross margins (40%–50%), <strong>exactly 1 single closed build per month</strong> generates R15,000 to R30,000+ gross profit—fully covering the Phase 2 retainer fee.
+          </p>
+        </div>
+
+        <div class="breakeven-stat">
+          <div class="breakeven-number">1 ORDER</div>
+          <div style="font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; color:var(--text-dim); letter-spacing:0.08em;">
+            Per Month Breaks Even Entire Retainer
+          </div>
+          <div style="font-family:var(--font-mono); font-size:11px; color:var(--cad-cyan); margin-top:6px;">
+            Subsequent Orders = Pure Net Profit
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       7. MODULE 04 // QA TOLERANCE QUALIFICATION MATRIX
+       ========================================================================== -->
+  <section id="qa-matrix" class="section-spacing">
+    <div class="container">
+      <div class="section-title-wrap">
+        <span class="spec-tag">MODULE_04 // TOLERANCE MATRIX</span>
+        <h2>QA Pass / Fail Screening Criteria</h2>
+        <p>Because Auraworks operates with strict senior partner bandwidth constraints, we only accept manufacturing partners who meet specific operational tolerances.</p>
+      </div>
+
+      <div class="qa-matrix-grid">
+        <!-- QA Pass -->
+        <div class="qa-col qa-pass">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+            <span class="spec-tag" style="background:rgba(16,185,129,0.15); border-color:var(--emerald-status); color:var(--emerald-status);">[PASS] QUALIFIED PARTNERS</span>
+          </div>
+          <h3 style="color:#6ee7b7; margin-bottom:6px;">Criteria for Technical Engagement:</h3>
+          <p style="font-size:13px;">We welcome discovery applications meeting these parameters:</p>
+
+          <ul class="qa-list">
+            <li class="qa-item">
+              <span class="qa-mark">[PASS]</span>
+              <span><strong>Average Order Value strictly R15,000 to R250,000+:</strong> High-ticket fabrication where custom quoting yields clear mathematical ROI.</span>
+            </li>
+            <li class="qa-item">
+              <span class="qa-mark">[PASS]</span>
+              <span><strong>Physical manufacturing plant & tooling:</strong> You own, manage, or operate physical machinery bays (CNC, laser, welding, joinery) in South Africa.</span>
+            </li>
+            <li class="qa-item">
+              <span class="qa-mark">[PASS]</span>
+              <span><strong>Manual intake bottlenecks:</strong> Sales reps or estimators losing 15+ hours weekly preparing manual PDF proposals over WhatsApp.</span>
+            </li>
+            <li class="qa-item">
+              <span class="qa-mark">[PASS]</span>
+              <span><strong>Leadership engagement:</strong> Works Manager, Chief Engineer, or Managing Director directly engaged in system rollout.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- QA Fail -->
+        <div class="qa-col qa-fail">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+            <span class="spec-tag" style="background:rgba(244,63,94,0.15); border-color:var(--red-alert); color:var(--red-alert);">[REJECT] IMMEDIATE DISQUALIFIERS</span>
+          </div>
+          <h3 style="color:#fda4af; margin-bottom:6px;">Tolerances Leading to Rejection:</h3>
+          <p style="font-size:13px;">Please do not apply if your business matches these profiles:</p>
+
+          <ul class="qa-list">
+            <li class="qa-item">
+              <span class="qa-mark">[FAIL]</span>
+              <span><strong>Dropshippers & Importers:</strong> Businesses that do not cut, weld, machine, or assemble physical products in-house.</span>
+            </li>
+            <li class="qa-item">
+              <span class="qa-mark">[FAIL]</span>
+              <span><strong>Mass Low-Margin Retail (AOV &lt; R5,000):</strong> Consumer commodity items where off-the-shelf templates are sufficient.</span>
+            </li>
+            <li class="qa-item">
+              <span class="qa-mark">[FAIL]</span>
+              <span><strong>Solo Garage Hobbyists:</strong> Part-time fabricators lacking commercial machinery, full-time staff, or volume scaling capacity.</span>
+            </li>
+            <li class="qa-item">
+              <span class="qa-mark">[FAIL]</span>
+              <span><strong>Equity-Only or Unpaid Contingency Models:</strong> We deliver enterprise-grade engineering, not venture-backed speculative work.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       8. CAD TERMINAL INTAKE MODAL
+       ========================================================================== -->
+  <div id="terminal-modal" class="terminal-modal-overlay">
+    <div class="terminal-window">
+      <div class="terminal-titlebar">
+        <span>TERM://AW-CAD/INTAKE_V2.4</span>
+        <button class="terminal-close-btn" onclick="closeTerminalModal()">[ ESC / CLOSE ]</button>
+      </div>
+
+      <div class="terminal-body">
+        <!-- Form View -->
+        <div id="terminal-form-view">
+          <div style="margin-bottom: 20px;">
+            <span class="spec-tag" style="margin-bottom:6px;">ENGINEERING_DISCOVERY_INTAKE</span>
+            <h3 style="font-size: 20px; text-transform:uppercase;">Initialize Technical Consultation</h3>
+            <p style="font-size: 13px; margin-top: 4px;">Auraworks restricts capacity to 1–3 retained partners monthly. Submit parameters below.</p>
+          </div>
+
+          <form id="cad-form" onsubmit="handleCadSubmit(event)">
+            <div class="form-group-cad">
+              <label class="form-cad-label" for="cad-name">EXEC_NAME_AND_TITLE</label>
+              <input type="text" id="cad-name" class="form-cad-input" placeholder="e.g. Johan Steyn (Managing Director)" required>
+            </div>
+
+            <div class="form-group-cad">
+              <label class="form-cad-label" for="cad-brand">WORKSHOP_BRAND_AND_CITY</label>
+              <input type="text" id="cad-brand" class="form-cad-input" placeholder="e.g. Apex Overland Fabrication, Pretoria" required>
+            </div>
+
+            <div class="form-group-cad">
+              <label class="form-cad-label" for="cad-email">CORPORATE_EMAIL_ADDR</label>
+              <input type="email" id="cad-email" class="form-cad-input" placeholder="johan@apexoverland.co.za" required>
+            </div>
+
+            <div class="form-group-cad">
+              <label class="form-cad-label" for="cad-aov">AOV_PROJECT_BRACKET</label>
+              <select id="cad-aov" class="form-cad-select" required>
+                <option value="" disabled selected>Select typical project build value</option>
+                <option value="disqualified">&lt; R15,000 [ Disqualified from Retainer ]</option>
+                <option value="tier1">R15,000 – R35,000 [ Tier 1 Commercial ]</option>
+                <option value="tier2">R35,000 – R75,000 [ Tier 2 Bespoke ]</option>
+                <option value="tier3">R75,000 – R250,000+ [ Tier 3 Enterprise / Architectural ]</option>
+              </select>
+              <div id="cad-aov-alert" style="display:none; color:var(--red-alert); font-family:var(--font-mono); font-size:11px; margin-top:4px;">
+                TOLERANCE_ALERT: AOV under R15k fails unit economics model. Auraworks requires high-ticket physical scope.
+              </div>
+            </div>
+
+            <div class="form-group-cad">
+              <label class="form-cad-label" for="cad-spec-notes">PRE_LOADED_CAD_PARAMETERS</label>
+              <input type="text" id="cad-spec-notes" class="form-cad-input" readonly style="background: #040812; color: var(--cad-cyan); font-size:11.5px;">
+            </div>
+
+            <button type="submit" class="btn btn-cyan" style="width: 100%; margin-top: 10px;">
+              [ DISPATCH_TECHNICAL_SPECIFICATION ]
+            </button>
+          </form>
+        </div>
+
+        <!-- Confirm View -->
+        <div id="terminal-confirm-view" class="terminal-confirm-screen">
+          <div style="font-family:var(--font-mono); font-size:36px; color:var(--cad-cyan); margin-bottom:10px;">[ CERTIFIED ]</div>
+          <h3 style="font-size:22px; text-transform:uppercase; margin-bottom:6px;">Specification Dispatched</h3>
+          <p style="font-family:var(--font-mono); color:var(--text-main); font-size:13.5px; margin-bottom:14px;">
+            DISPATCH CONFIRMATION LOGGED FOR: <span id="confirm-cad-name" style="color:var(--cad-cyan);"></span>
+          </p>
+          <p style="color:var(--text-muted); font-size:13px; line-height:1.55; margin-bottom:20px;">
+            Auraworks engineering evaluates fabrication bay allocation within 24 business hours. If approved, an architecture discovery session will be scheduled via direct executive link.
+          </p>
+          <button class="btn btn-cad-outline" onclick="closeTerminalModal()">[ CLOSE_TERMINAL ]</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       9. TECHNICAL FOOTER & DRAWING TITLE BLOCK
+       ========================================================================== -->
+  <footer class="cad-footer">
+    <div class="container">
+      <div class="footer-title-block-grid">
+        <div>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+            <div class="brand-cad-emblem" style="width:26px; height:26px; font-size:11px;">CAD</div>
+            <strong style="font-family:var(--font-mono); font-size:13px; color:var(--text-main);">AURAWORKS CAD BLUEPRINT ENGINE</strong>
+          </div>
+          <p style="max-width: 440px; font-size: 13px;">
+            Digital engineering infrastructure for South African specialized fabricators. Parametric dimension quoting, automated 50% deposit capture, and workshop dispatch pipelines.
+          </p>
+        </div>
+
+        <!-- Official CAD Drawing Title Block -->
+        <div class="cad-title-block">
+          <div class="tb-header">DRAWING TITLE BLOCK // SPEC_REV_2.4</div>
+          <div class="tb-row">
+            <div class="tb-cell">
+              <div class="tb-cell-label">SYSTEM_ID</div>
+              <div class="tb-cell-val">AW-DSGN-02</div>
+            </div>
+            <div class="tb-cell">
+              <div class="tb-cell-label">SCALE</div>
+              <div class="tb-cell-val">1:25 METRIC</div>
+            </div>
+            <div class="tb-cell">
+              <div class="tb-cell-label">DRAWN_BY</div>
+              <div class="tb-cell-val">AURA_ENG</div>
+            </div>
+          </div>
+          <div class="tb-row">
+            <div class="tb-cell">
+              <div class="tb-cell-label">DATE</div>
+              <div class="tb-cell-val">2026.11</div>
+            </div>
+            <div class="tb-cell">
+              <div class="tb-cell-label">STATUS</div>
+              <div class="tb-cell-val" style="color:var(--emerald-status);">APPROVED</div>
+            </div>
+            <div class="tb-cell">
+              <div class="tb-cell-label">TOLERANCE</div>
+              <div class="tb-cell-val">&plusmn; 0.5 mm</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-legal-bar">
+        <div>&copy; 2026 Auraworks. Built for South African Specialized Fabricators & Industrial Plants.</div>
+        <div>POPIA Compliant • Mutual NDA Guaranteed • Johannesburg / Cape Town / Durban</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       JAVASCRIPT: CAD SVG ENGINE, CALCULATIONS & TERMINAL MODAL
+       ========================================================================== -->
+  <script>
+    // --- CAD STATE ---
+    const cadState = {
+      length: 2800,
+      width: 1100,
+      substrate: 'oak',
+      subMult: 1.0,
+      subName: 'French Oak Hybrid',
+      densityFactor: 46, // kg per m²
+      baseRateM2: 13500 // ZAR per m²
+    };
+
+    // --- DOM REFS ---
+    const cadLenInput = document.getElementById('cad-len');
+    const cadWidInput = document.getElementById('cad-wid');
+    const readoutCadLen = document.getElementById('readout-cad-len');
+    const readoutCadWid = document.getElementById('readout-cad-wid');
+
+    const cadArea = document.getElementById('cad-area');
+    const cadMass = document.getElementById('cad-mass');
+    const cadTotal = document.getElementById('cad-total');
+    const cadDeposit = document.getElementById('cad-deposit');
+
+    const subButtons = document.querySelectorAll('.substrate-btn');
+
+    // SVG Elements
+    const svgTopSlab = document.getElementById('svg-top-slab');
+    const svgSlabEdge = document.getElementById('svg-slab-edge');
+    const svgSlabEdgeR = document.getElementById('svg-slab-edge-r');
+    const svgLegL = document.getElementById('svg-leg-l');
+    const svgLegR = document.getElementById('svg-leg-r');
+    const svgLegC = document.getElementById('svg-leg-c');
+    const svgStretcher = document.getElementById('svg-stretcher');
+
+    const svgDimLen = document.getElementById('svg-dim-len');
+    const svgDimWid = document.getElementById('svg-dim-wid');
+    const svgTextLen = document.getElementById('svg-text-len');
+    const svgTextWid = document.getElementById('svg-text-wid');
+
+    // Terminal Modal
+    const terminalModal = document.getElementById('terminal-modal');
+    const terminalFormView = document.getElementById('terminal-form-view');
+    const terminalConfirmView = document.getElementById('terminal-confirm-view');
+    const cadSpecNotes = document.getElementById('cad-spec-notes');
+    const cadAovSelect = document.getElementById('cad-aov');
+    const cadAovAlert = document.getElementById('cad-aov-alert');
+
+    // Currency Formatter
+    function formatCAD(val) {
+      return 'R ' + Math.round(val).toLocaleString('en-ZA');
+    }
+
+    // --- RENDER CAD SVG GEOMETRY DYNAMICALLY ---
+    function updateCadGeometry() {
+      // Normalize length (1800 to 4200) -> factor (-30 to +30)
+      const lenFactor = ((cadState.length - 1800) / (4200 - 1800)) * 60 - 30;
+      // Normalize width (800 to 1500) -> factor (-20 to +20)
+      const widFactor = ((cadState.width - 800) / (1500 - 800)) * 40 - 20;
+
+      // Isometric Vertex Coordinates
+      // Center Top: (250, 90)
+      // Right: (390 + lenFactor, 140 + widFactor)
+      // Bottom: (250, 190 + widFactor*1.5)
+      // Left: (110 - lenFactor, 140 - widFactor)
+      const topY = 90 - (widFactor * 0.4);
+      const rightX = 390 + lenFactor;
+      const rightY = 140 + (widFactor * 0.6);
+      const bottomY = 190 + (widFactor * 1.2);
+      const leftX = 110 - lenFactor;
+      const leftY = 140 - (widFactor * 0.4);
+
+      const slabThick = 15;
+
+      // Update Polygon Points
+      svgTopSlab.setAttribute('points', `250,${topY} ${rightX},${rightY} 250,${bottomY} ${leftX},${leftY}`);
+      svgSlabEdge.setAttribute('points', `${leftX},${leftY} 250,${bottomY} 250,${bottomY + slabThick} ${leftX},${leftY + slabThick}`);
+      svgSlabEdgeR.setAttribute('points', `250,${bottomY} ${rightX},${rightY} ${rightX},${rightY + slabThick} 250,${bottomY + slabThick}`);
+
+      // Update Legs
+      const legLX = leftX + 25;
+      const legLY = leftY + 12;
+      svgLegL.setAttribute('x1', legLX);
+      svgLegL.setAttribute('y1', legLY);
+      svgLegL.setAttribute('x2', legLX);
+      svgLegL.setAttribute('y2', legLY + 115);
+
+      const legRX = rightX - 25;
+      const legRY = rightY + 12;
+      svgLegR.setAttribute('x1', legRX);
+      svgLegR.setAttribute('y1', legRY);
+      svgLegR.setAttribute('x2', legRX);
+      svgLegR.setAttribute('y2', legRY + 115);
+
+      svgLegC.setAttribute('y1', bottomY + slabThick);
+      svgLegC.setAttribute('y2', bottomY + slabThick + 75);
+
+      svgStretcher.setAttribute('x1', legLX);
+      svgStretcher.setAttribute('y1', legLY + 90);
+      svgStretcher.setAttribute('x2', legRX);
+      svgStretcher.setAttribute('y2', legRY + 90);
+
+      // Update Dimension Lines
+      svgDimLen.setAttribute('x1', leftX - 25);
+      svgDimLen.setAttribute('y1', leftY - 10);
+      svgDimLen.setAttribute('x2', 250 - 25);
+      svgDimLen.setAttribute('y2', topY - 10);
+      svgTextLen.setAttribute('x', ((leftX - 25) + (250 - 25)) / 2 - 25);
+      svgTextLen.setAttribute('y', ((leftY - 10) + (topY - 10)) / 2 - 6);
+      svgTextLen.textContent = `L: ${cadState.length} mm`;
+
+      svgDimWid.setAttribute('x1', 250 + 20);
+      svgDimWid.setAttribute('y1', topY - 15);
+      svgDimWid.setAttribute('x2', rightX + 20);
+      svgDimWid.setAttribute('y2', rightY - 15);
+      svgTextWid.setAttribute('x', ((250 + 20) + (rightX + 20)) / 2 + 5);
+      svgTextWid.setAttribute('y', ((topY - 15) + (rightY - 15)) / 2 - 4);
+      svgTextWid.textContent = `W: ${cadState.width} mm`;
+    }
+
+    // --- RECALCULATE BOM METRICS ---
+    function updateCadCalculations() {
+      // Footprint
+      const areaM2 = (cadState.length / 1000) * (cadState.width / 1000);
+      const estMassKg = Math.round(areaM2 * cadState.densityFactor);
+
+      // Price: Area * BaseRate * SubstrateMult
+      const totalCost = areaM2 * cadState.baseRateM2 * cadState.subMult;
+      const deposit50 = totalCost * 0.50;
+
+      // Update Outputs
+      readoutCadLen.textContent = cadState.length.toLocaleString('en-ZA') + ' mm';
+      readoutCadWid.textContent = cadState.width.toLocaleString('en-ZA') + ' mm';
+
+      cadArea.textContent = areaM2.toFixed(2) + ' m²';
+      cadMass.textContent = estMassKg + ' kg';
+
+      cadTotal.textContent = formatCAD(totalCost);
+      cadDeposit.textContent = formatCAD(deposit50);
+
+      // Pre-load notes
+      cadSpecNotes.value = `CAD_SPEC: ${cadState.length}x${cadState.width}mm | ${cadState.subName} | ${areaM2.toFixed(2)}m² (~${estMassKg}kg) | Cost: ${formatCAD(totalCost)} [50% Deposit: ${formatCAD(deposit50)}]`;
+
+      // Update dynamic SVG graphics
+      updateCadGeometry();
+    }
+
+    // --- EVENT LISTENERS ---
+    cadLenInput.addEventListener('input', (e) => {
+      cadState.length = parseInt(e.target.value, 10);
+      updateCadCalculations();
+    });
+
+    cadWidInput.addEventListener('input', (e) => {
+      cadState.width = parseInt(e.target.value, 10);
+      updateCadCalculations();
+    });
+
+    // Substrate Buttons
+    subButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        subButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        cadState.substrate = btn.getAttribute('data-sub');
+        cadState.subMult = parseFloat(btn.getAttribute('data-mult'));
+        cadState.densityFactor = parseInt(btn.getAttribute('data-density'), 10);
+        cadState.subName = btn.querySelector('.sub-title').textContent;
+
+        updateCadCalculations();
+      });
+    });
+
+    // AOV Selection Alert
+    cadAovSelect.addEventListener('change', (e) => {
+      if (e.target.value === 'disqualified') {
+        cadAovAlert.style.display = 'block';
+      } else {
+        cadAovAlert.style.display = 'none';
+      }
+    });
+
+    // --- TERMINAL MODAL CONTROLS ---
+    function openTerminalModal(prefix = '') {
+      terminalFormView.style.display = 'block';
+      terminalConfirmView.style.display = 'none';
+      terminalModal.classList.add('active');
+
+      if (prefix) {
+        cadSpecNotes.value = `[${prefix}] ` + cadSpecNotes.value;
+      }
+    }
+
+    function closeTerminalModal() {
+      terminalModal.classList.remove('active');
+    }
+
+    function transferCadSpecToModal() {
+      openTerminalModal('SIMULATOR_LOCK');
+    }
+
+    // Overlay click close
+    terminalModal.addEventListener('click', (e) => {
+      if (e.target === terminalModal) {
+        closeTerminalModal();
+      }
+    });
+
+    // Esc key close
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && terminalModal.classList.contains('active')) {
+        closeTerminalModal();
+      }
+    });
+
+    // Form Submit
+    function handleCadSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('cad-name').value;
+      const aov = cadAovSelect.value;
+
+      if (aov === 'disqualified') {
+        alert('TOLERANCE_WARNING: Projects under R15k are outside Auraworks bespoke engineering scope.');
+      }
+
+      document.getElementById('confirm-cad-name').textContent = name.toUpperCase();
+      terminalFormView.style.display = 'none';
+      terminalConfirmView.style.display = 'block';
+    }
+
+    // Initialize
+    updateCadCalculations();
+  </script>
+</body>
+</html>

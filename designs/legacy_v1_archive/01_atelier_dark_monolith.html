@@ -1,0 +1,2052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auraworks Atelier | Bespoke Dimension Quoting Engines & Manufacturing Pipelines</title>
+  <meta name="description" content="Strategic technical partnerships for high-ticket physical product manufacturers. Parametric dimension quoting, automated 50% web deposit capture, and workshop pipeline tracking.">
+  <meta name="robots" content="index, follow">
+
+  <!-- Preconnect Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       DESIGN SYSTEM TOKENS — THE INDUSTRIAL ATELIER (DARK MONOLITH)
+       Code: AW-DSGN-01-ATELIER
+       ========================================================================== */
+    :root {
+      --bg-obsidian: #06090e;
+      --bg-surface: #0c1017;
+      --bg-card: #111722;
+      --bg-card-hover: #161e2c;
+      --bg-card-glass: rgba(17, 23, 34, 0.75);
+
+      --border-subtle: #1e2638;
+      --border-bright: #2d3852;
+      --border-bronze: rgba(194, 132, 69, 0.35);
+
+      --bronze-craft: #c28445;
+      --bronze-deep: #9d6531;
+      --amber-light: #f59e0b;
+      --amber-glow: rgba(245, 158, 11, 0.15);
+
+      --emerald-status: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.2);
+      --crimson-alert: #f87171;
+      --crimson-bg: rgba(248, 113, 113, 0.08);
+
+      --text-pearl: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 999px;
+
+      --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.45);
+      --shadow-amber: 0 0 24px var(--amber-glow);
+      --shadow-emerald: 0 0 20px var(--emerald-glow);
+
+      --transition-smooth: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* CSS Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg-obsidian);
+      color: var(--text-pearl);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background-color: var(--bg-obsidian);
+      background-image: 
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(194, 132, 69, 0.15), transparent 70%),
+        radial-gradient(circle at 85% 30%, rgba(245, 158, 11, 0.04), transparent 40%),
+        radial-gradient(circle at 15% 70%, rgba(194, 132, 69, 0.05), transparent 45%);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-obsidian);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-bright);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--bronze-craft);
+    }
+
+    /* Layout Container */
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Typography */
+    h1, h2, h3, h4 {
+      font-family: var(--font-display);
+      color: var(--text-pearl);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    h1 {
+      font-size: clamp(34px, 5.2vw, 62px);
+      line-height: 1.08;
+      font-weight: 800;
+    }
+
+    h2 {
+      font-size: clamp(26px, 3.8vw, 42px);
+      line-height: 1.15;
+      font-weight: 700;
+    }
+
+    h3 {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    p {
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+    }
+
+    /* Badges & Pills */
+    .badge-amber {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: var(--amber-light);
+      padding: 4px 12px;
+      border-radius: var(--radius-pill);
+      font-size: 11px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .badge-emerald {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: var(--emerald-status);
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      font-size: 11px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .led-pulse {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--emerald-status);
+      box-shadow: 0 0 8px var(--emerald-status);
+      animation: pulseLed 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseLed {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.85); }
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px 24px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: var(--transition-smooth);
+      font-family: var(--font-body);
+      border: none;
+    }
+
+    .btn-bronze {
+      background: linear-gradient(135deg, var(--bronze-craft), var(--bronze-deep));
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 4px 16px rgba(194, 132, 69, 0.3);
+    }
+    .btn-bronze:hover {
+      background: linear-gradient(135deg, #d39352, #ad7139);
+      box-shadow: 0 6px 22px rgba(194, 132, 69, 0.45);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-bright);
+      color: var(--text-pearl);
+    }
+    .btn-outline:hover {
+      border-color: var(--bronze-craft);
+      background: rgba(194, 132, 69, 0.08);
+      transform: translateY(-1px);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card-glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 28px;
+      box-shadow: var(--shadow-card);
+      transition: var(--transition-smooth);
+    }
+    .card:hover {
+      border-color: var(--border-bright);
+      background: var(--bg-card-hover);
+    }
+
+    /* ==========================================================================
+       SECTION 0: SCARCITY TOP TELEMETRY STRIP
+       ========================================================================== */
+    .top-telemetry {
+      background: #040609;
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 9px 0;
+      font-size: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .top-telemetry-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .telemetry-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+
+    .telemetry-status strong {
+      color: var(--text-pearl);
+    }
+
+    .telemetry-cta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--amber-light);
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .telemetry-cta:hover {
+      text-decoration: underline;
+    }
+
+    /* ==========================================================================
+       SECTION 1: GLOBAL NAVIGATION
+       ========================================================================== */
+    .navbar {
+      background: rgba(6, 9, 14, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 39px;
+      z-index: 90;
+      padding: 16px 0;
+    }
+
+    .nav-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .brand-emblem {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #182234, #0c121d);
+      border: 1px solid var(--border-bronze);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--bronze-craft);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 17px;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: var(--text-pearl);
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+
+    .brand-sub {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      color: var(--bronze-craft);
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 500;
+      transition: var(--transition-smooth);
+    }
+    .nav-links a:hover {
+      color: var(--text-pearl);
+    }
+
+    /* ==========================================================================
+       SECTION 2: HERO CHAPTER
+       ========================================================================== */
+    .hero-section {
+      padding: 80px 0 60px;
+      position: relative;
+    }
+
+    .hero-content {
+      max-width: 860px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .hero-eyebrow {
+      margin-bottom: 24px;
+    }
+
+    .hero-title {
+      margin-bottom: 22px;
+    }
+
+    .hero-lead {
+      font-size: 17px;
+      line-height: 1.65;
+      color: var(--text-muted);
+      margin-bottom: 34px;
+      max-width: 760px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 54px;
+    }
+
+    .scorecard-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .scorecard {
+      background: rgba(12, 16, 23, 0.7);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px 18px;
+      text-align: left;
+      transition: var(--transition-smooth);
+    }
+    .scorecard:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-2px);
+    }
+
+    .scorecard-val {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text-pearl);
+      margin-bottom: 6px;
+      line-height: 1.1;
+    }
+
+    .scorecard-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--amber-light);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+
+    .scorecard-desc {
+      font-size: 12.5px;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    /* ==========================================================================
+       SECTION 3: THREE QUALIFIED ICP SUB-SECTORS
+       ========================================================================== */
+    .section-padding {
+      padding: 90px 0;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto 50px;
+    }
+
+    .section-header .badge-amber {
+      margin-bottom: 16px;
+    }
+
+    .section-header p {
+      margin-top: 14px;
+      font-size: 16px;
+    }
+
+    .sectors-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .sector-card {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .sector-icon-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .sector-num {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--bronze-craft);
+      font-weight: 700;
+    }
+
+    .sector-title {
+      font-size: 21px;
+      margin-bottom: 12px;
+    }
+
+    .sector-offerings {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-bottom: 22px;
+      flex-grow: 1;
+    }
+
+    .sector-box {
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      font-size: 12.5px;
+      margin-bottom: 12px;
+      line-height: 1.45;
+    }
+
+    .sector-box-pain {
+      background: var(--crimson-bg);
+      border: 1px solid rgba(248, 113, 113, 0.25);
+      color: #fca5a5;
+    }
+
+    .sector-box-solution {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: #a7f3d0;
+      margin-bottom: 0;
+    }
+
+    .box-label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+    .sector-box-pain .box-label { color: var(--crimson-alert); }
+    .sector-box-solution .box-label { color: var(--emerald-status); }
+
+    /* ==========================================================================
+       SECTION 4: THE LIVE INTERACTIVE QUOTING SIMULATOR
+       ========================================================================== */
+    .simulator-wrap {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .sim-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .slider-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .slider-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-pearl);
+    }
+
+    .slider-readout {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--amber-light);
+    }
+
+    .range-input {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: var(--border-bright);
+      border-radius: 3px;
+      outline: none;
+      transition: background 0.2s;
+    }
+    .range-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--amber-light);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--amber-light);
+      border: 2px solid var(--bg-obsidian);
+      transition: transform 0.15s;
+    }
+    .range-input::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    .swatch-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    .swatch-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      text-align: left;
+    }
+    .swatch-card:hover {
+      border-color: var(--border-bright);
+    }
+    .swatch-card.active {
+      border-color: var(--amber-light);
+      background: rgba(245, 158, 11, 0.08);
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);
+    }
+
+    .swatch-color {
+      width: 100%;
+      height: 8px;
+      border-radius: 2px;
+      margin-bottom: 10px;
+    }
+
+    .swatch-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-pearl);
+      margin-bottom: 2px;
+    }
+
+    .swatch-rate {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .base-select-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .base-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      cursor: pointer;
+      font-size: 12px;
+      text-align: center;
+      transition: var(--transition-smooth);
+      color: var(--text-muted);
+    }
+    .base-card:hover {
+      border-color: var(--border-bright);
+    }
+    .base-card.active {
+      border-color: var(--bronze-craft);
+      color: var(--text-pearl);
+      background: rgba(194, 132, 69, 0.1);
+    }
+
+    /* Simulator Receipt Pane */
+    .sim-receipt {
+      background: #090e17;
+      border: 1px solid var(--border-bronze);
+      border-radius: var(--radius-md);
+      padding: 30px;
+      position: sticky;
+      top: 110px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .receipt-header {
+      padding-bottom: 16px;
+      border-bottom: 1px dashed var(--border-subtle);
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .receipt-title {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      color: var(--bronze-craft);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .receipt-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .receipt-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+
+    .receipt-line strong {
+      font-family: var(--font-mono);
+      color: var(--text-pearl);
+    }
+
+    .receipt-total-block {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 18px;
+      margin-bottom: 20px;
+    }
+
+    .receipt-total-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+
+    .receipt-total-val {
+      font-family: var(--font-display);
+      font-size: 34px;
+      font-weight: 800;
+      color: var(--text-pearl);
+      line-height: 1.1;
+    }
+
+    .deposit-box {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid var(--emerald-status);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin-bottom: 22px;
+    }
+
+    .deposit-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--emerald-status);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .deposit-val {
+      font-family: var(--font-mono);
+      font-size: 24px;
+      font-weight: 700;
+      color: #34d399;
+      margin-bottom: 6px;
+    }
+
+    .deposit-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* ==========================================================================
+       SECTION 5: THE OPERATIONAL PIPELINE SHIFT
+       ========================================================================== */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+    }
+
+    .comp-col {
+      border-radius: var(--radius-md);
+      padding: 32px;
+    }
+
+    .comp-col-bad {
+      background: rgba(248, 113, 113, 0.03);
+      border: 1px solid rgba(248, 113, 113, 0.2);
+    }
+
+    .comp-col-good {
+      background: rgba(16, 185, 129, 0.03);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .comp-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .comp-step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      list-style: none;
+    }
+
+    .comp-step {
+      display: flex;
+      gap: 14px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .comp-icon {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      margin-top: 2px;
+    }
+
+    .comp-col-bad .comp-icon {
+      background: rgba(248, 113, 113, 0.15);
+      color: var(--crimson-alert);
+    }
+
+    .comp-col-good .comp-icon {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--emerald-status);
+    }
+
+    /* ==========================================================================
+       SECTION 6: TWO-PHASE COMMERCIAL ARCHITECTURE
+       ========================================================================== */
+    .commercial-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      margin-bottom: 40px;
+    }
+
+    .comm-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .comm-card-featured {
+      border-color: var(--bronze-craft);
+      box-shadow: 0 0 30px rgba(194, 132, 69, 0.15);
+    }
+
+    .comm-phase {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--bronze-craft);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .comm-price {
+      font-family: var(--font-display);
+      font-size: 38px;
+      font-weight: 800;
+      color: var(--text-pearl);
+      margin-bottom: 4px;
+    }
+
+    .comm-timing {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--amber-light);
+      margin-bottom: 18px;
+    }
+
+    .comm-scope-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 28px;
+      font-size: 13.5px;
+    }
+
+    .comm-scope-item {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      color: var(--text-muted);
+    }
+
+    .comm-check {
+      color: var(--emerald-status);
+      font-weight: 700;
+    }
+
+    /* Boardroom Payback Calculator */
+    .payback-banner {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(6, 9, 14, 0.9));
+      border: 1px solid var(--emerald-status);
+      border-radius: var(--radius-md);
+      padding: 30px;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 30px;
+      align-items: center;
+    }
+
+    .payback-stat-val {
+      font-family: var(--font-display);
+      font-size: 42px;
+      font-weight: 800;
+      color: #34d399;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    /* ==========================================================================
+       SECTION 7: QUALIFICATION MATRIX
+       ========================================================================== */
+    .matrix-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+    }
+
+    .matrix-col {
+      border-radius: var(--radius-md);
+      padding: 32px;
+    }
+
+    .matrix-col-qual {
+      background: rgba(16, 185, 129, 0.04);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .matrix-col-disqual {
+      background: rgba(248, 113, 113, 0.04);
+      border: 1px solid rgba(248, 113, 113, 0.25);
+    }
+
+    .matrix-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .matrix-item {
+      display: flex;
+      gap: 12px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .matrix-col-qual .matrix-mark { color: var(--emerald-status); font-weight: 700; }
+    .matrix-col-disqual .matrix-mark { color: var(--crimson-alert); font-weight: 700; }
+
+    /* ==========================================================================
+       SECTION 8: EXECUTIVE INTAKE MODAL
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(4, 6, 9, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-card {
+      background: #0c1017;
+      border: 1px solid var(--border-bronze);
+      border-radius: var(--radius-md);
+      width: 100%;
+      max-width: 580px;
+      padding: 36px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+      position: relative;
+      transform: translateY(16px);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: translateY(0);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 24px;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+    .modal-close:hover {
+      color: var(--text-pearl);
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-pearl);
+      margin-bottom: 6px;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--bg-obsidian);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: var(--text-pearl);
+      font-family: var(--font-body);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--amber-light);
+    }
+
+    .form-hint {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    .modal-confirmation {
+      display: none;
+      text-align: center;
+      padding: 30px 10px;
+    }
+
+    /* ==========================================================================
+       SECTION 9: REPUTATION FOOTER
+       ========================================================================== */
+    .footer {
+      border-top: 1px solid var(--border-subtle);
+      background: #040609;
+      padding: 60px 0 40px;
+      font-size: 13px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+
+    .footer-brand p {
+      font-size: 13.5px;
+      line-height: 1.6;
+      margin-top: 14px;
+      max-width: 360px;
+    }
+
+    .footer-col-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-pearl);
+      margin-bottom: 16px;
+      font-weight: 700;
+    }
+
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-links a:hover {
+      color: var(--amber-light);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-dim);
+      font-size: 12px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    /* ==========================================================================
+       RESPONSIVE BREAKPOINTS
+       ========================================================================== */
+    @media (max-width: 1024px) {
+      .scorecard-grid { grid-template-columns: repeat(2, 1fr); }
+      .sectors-grid { grid-template-columns: 1fr; }
+      .simulator-wrap { grid-template-columns: 1fr; }
+      .sim-receipt { position: static; }
+      .comparison-grid { grid-template-columns: 1fr; }
+      .commercial-grid { grid-template-columns: 1fr; }
+      .matrix-grid { grid-template-columns: 1fr; }
+      .payback-banner { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hero-section { padding: 60px 0 40px; }
+      .scorecard-grid { grid-template-columns: 1fr; }
+      .swatch-grid { grid-template-columns: 1fr; }
+      .base-select-grid { grid-template-columns: 1fr; }
+      .top-telemetry-inner { justify-content: center; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       0. TOP SCARCITY TELEMETRY STRIP
+       ========================================================================== -->
+  <header class="top-telemetry">
+    <div class="container top-telemetry-inner">
+      <div class="telemetry-status">
+        <span class="led-pulse"></span>
+        <span>STRICT CAPACITY: <strong>1–3 RETAINED ACCOUNTS / MONTH</strong> • 1 SLOT REMAINING FOR Q4</span>
+      </div>
+      <a href="#intake" class="telemetry-cta" onclick="openModal()">
+        <span>Apply for Q4 Account Slot</span>
+        <span>&rarr;</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       1. GLOBAL NAVIGATION
+       ========================================================================== -->
+  <nav class="navbar">
+    <div class="container nav-inner">
+      <a href="#" class="brand-wrap">
+        <div class="brand-emblem">A</div>
+        <div class="brand-title">
+          <span>AURAWORKS</span>
+          <span class="brand-sub">INDUSTRIAL ATELIER</span>
+        </div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#sectors">ICP Sectors</a></li>
+        <li><a href="#quoting-simulator">Quoting Simulator</a></li>
+        <li><a href="#pipeline-shift">The Pipeline Shift</a></li>
+        <li><a href="#commercials">Commercials</a></li>
+        <li><a href="#qualification">Qualification</a></li>
+      </ul>
+
+      <button class="btn btn-bronze" onclick="openModal()">Request Executive Briefing</button>
+    </div>
+  </nav>
+
+  <!-- ==========================================================================
+       2. HERO CHAPTER
+       ========================================================================== -->
+  <section class="hero-section">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-eyebrow">
+          <span class="badge-amber">STRATEGIC TECHNICAL PARTNERSHIP FOR PHYSICAL PRODUCT MANUFACTURERS</span>
+        </div>
+
+        <h1 class="hero-title">
+          Stop quoting via WhatsApp. Automate custom dimensions, lock 50% deposits, and track production.
+        </h1>
+
+        <p class="hero-lead">
+          We replace unstructured voice notes, manual spreadsheet estimating, and cash flow exposure with bespoke digital dimension engines, instant 50% milestone web deposits, and workshop-to-bench job dispatch for South African manufacturers with AOVs from R15,000 to R150,000+.
+        </p>
+
+        <div class="hero-actions">
+          <a href="#quoting-simulator" class="btn btn-bronze">Launch Quoting Simulator &darr;</a>
+          <a href="#commercials" class="btn btn-outline">Review 2-Phase Commercials</a>
+        </div>
+      </div>
+
+      <!-- 4 Key Executive Trust Scorecards -->
+      <div class="scorecard-grid">
+        <div class="scorecard">
+          <div class="scorecard-label">Economic Scale</div>
+          <div class="scorecard-val">R15k – R150k+</div>
+          <div class="scorecard-desc">Average Order Value (AOV) threshold required for mathematical client ROI.</div>
+        </div>
+
+        <div class="scorecard">
+          <div class="scorecard-label">Working Capital</div>
+          <div class="scorecard-val">50% Deposit</div>
+          <div class="scorecard-desc">Automated upfront web payment locked before timber is cut or steel prepped.</div>
+        </div>
+
+        <div class="scorecard">
+          <div class="scorecard-label">Bandwidth Cap</div>
+          <div class="scorecard-val">1–3 Accounts</div>
+          <div class="scorecard-desc">Strict monthly capacity limit guaranteeing senior engineering focus.</div>
+        </div>
+
+        <div class="scorecard">
+          <div class="scorecard-label">Payback Velocity</div>
+          <div class="scorecard-val">1 Closed Deal</div>
+          <div class="scorecard-desc">Exactly one bespoke commission per month covers the entire retainer fee.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       3. THE 3 ICP SUB-SECTORS
+       ========================================================================== -->
+  <section id="sectors" class="section-padding">
+    <div class="container">
+      <div class="section-header">
+        <span class="badge-amber">QUALIFIED MANUFACTURING VERTICALS</span>
+        <h2>Built Exclusively for High-Ticket Physical Makers</h2>
+        <p>Generic web templates fail physical manufacturers. We design custom digital infrastructure tuned specifically to your materials, tolerances, and shop floor logistics.</p>
+      </div>
+
+      <div class="sectors-grid">
+        <!-- Sector 1: Furniture -->
+        <div class="card sector-card">
+          <div class="sector-icon-bar">
+            <span class="sector-num">SECTOR // 01</span>
+            <span class="badge-emerald">AOV: R25k–R150k+</span>
+          </div>
+          <h3 class="sector-title">Bespoke Architectural Furniture</h3>
+          <p class="sector-offerings">
+            Solid French oak dining suites, monolithic boardroom tables, executive credenzas, custom architectural joinery, and private salon commissions.
+          </p>
+
+          <div class="sector-box sector-box-pain">
+            <span class="box-label">The Current Bottleneck</span>
+            Founders spend 15+ unpaid hours weekly calculating timber board footage for uncommitted WhatsApp leads who ghost after receiving manual PDF quotes.
+          </div>
+
+          <div class="sector-box sector-box-solution">
+            <span class="box-label">The Auraworks Solution</span>
+            Interactive parametric dimension sliders calculating live timber rates, coupled with an instant 50% web deposit gate that reserves lumber batches.
+          </div>
+        </div>
+
+        <!-- Sector 2: Architectural Finishes -->
+        <div class="card sector-card">
+          <div class="sector-icon-bar">
+            <span class="sector-num">SECTOR // 02</span>
+            <span class="badge-emerald">AOV: R20k–R180k+</span>
+          </div>
+          <h3 class="sector-title">High-End Architectural Finishes</h3>
+          <p class="sector-offerings">
+            Crittall-style steel & glass partition walls, custom brass door hardware, decorative acoustic timber paneling, and architectural metal screens.
+          </p>
+
+          <div class="sector-box sector-box-pain">
+            <span class="box-label">The Current Bottleneck</span>
+            Architects and interior designers wait 48+ hours for custom dimension takeoffs over unread email chains, stalling tender submissions.
+          </div>
+
+          <div class="sector-box sector-box-solution">
+            <span class="box-label">The Auraworks Solution</span>
+            Self-serve specifier engine generating instant pricing, acoustic ratings, and downloadable CAD/BIM drawing packs for commercial schedules.
+          </div>
+        </div>
+
+        <!-- Sector 3: Specialized Fabrication -->
+        <div class="card sector-card">
+          <div class="sector-icon-bar">
+            <span class="sector-num">SECTOR // 03</span>
+            <span class="badge-emerald">AOV: R35k–R250k+</span>
+          </div>
+          <h3 class="sector-title">Specialized Fabrication & Outfitting</h3>
+          <p class="sector-offerings">
+            Modular overland expedition camper builds, commercial stainless steel braai islands, luxury automated pergolas, and custom chassis trailers.
+          </p>
+
+          <div class="sector-box sector-box-pain">
+            <span class="box-label">The Current Bottleneck</span>
+            Verbal change requests and scope creep during 6-week welding runs cause severe working capital stress and shop floor scheduling chaos.
+          </div>
+
+          <div class="sector-box sector-box-solution">
+            <span class="box-label">The Auraworks Solution</span>
+            Modular add-on selection with phased milestone deposit gating, live welding bay scheduling, and automated shop cut-list generation.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       4. THE LIVE INTERACTIVE QUOTING SIMULATOR
+       ========================================================================== -->
+  <section id="quoting-simulator" class="section-padding" style="background: rgba(12, 16, 23, 0.4);">
+    <div class="container">
+      <div class="section-header">
+        <span class="badge-amber">INTERACTIVE STOREFRONT ENGINE</span>
+        <h2>Experience Parametric Quoting in Real Time</h2>
+        <p>Test how your clients configure bespoke dimensions, select premium materials, and see exact mathematical pricing with a mandatory 50% deposit lock.</p>
+      </div>
+
+      <div class="simulator-wrap">
+        <!-- Controls Pane -->
+        <div class="card sim-controls">
+          <!-- Length Slider -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Length Dimension (Millimeters)</span>
+              <span class="slider-readout" id="readout-length">2,800 mm</span>
+            </div>
+            <input type="range" id="input-length" class="range-input" min="1800" max="4200" step="100" value="2800">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-dim); font-family:var(--font-mono);">
+              <span>1,800 mm (Boutique)</span>
+              <span>4,200 mm (Boardroom Suite)</span>
+            </div>
+          </div>
+
+          <!-- Width Slider -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span class="slider-label">Width Dimension (Millimeters)</span>
+              <span class="slider-readout" id="readout-width">1,100 mm</span>
+            </div>
+            <input type="range" id="input-width" class="range-input" min="800" max="1500" step="50" value="1100">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-dim); font-family:var(--font-mono);">
+              <span>800 mm (Standard Desk)</span>
+              <span>1,500 mm (Grand Dining)</span>
+            </div>
+          </div>
+
+          <!-- Material Species Selection -->
+          <div class="slider-group">
+            <label class="slider-label">Timber Species & Grain Selection</label>
+            <div class="swatch-grid">
+              <div class="swatch-card active" data-species="oak" data-mult="1.0">
+                <div class="swatch-color" style="background: #c69255;"></div>
+                <div class="swatch-name">French Oak</div>
+                <div class="swatch-rate">Prime Grade (1.0&times;)</div>
+              </div>
+
+              <div class="swatch-card" data-species="walnut" data-mult="1.35">
+                <div class="swatch-color" style="background: #5c4033;"></div>
+                <div class="swatch-name">American Walnut</div>
+                <div class="swatch-rate">Select Flitch (1.35&times;)</div>
+              </div>
+
+              <div class="swatch-card" data-species="kiaat" data-mult="1.15">
+                <div class="swatch-color" style="background: #a0522d;"></div>
+                <div class="swatch-name">African Kiaat</div>
+                <div class="swatch-rate">Exotic Grain (1.15&times;)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Base Frame Structure -->
+          <div class="slider-group">
+            <label class="slider-label">Architectural Base Structure</label>
+            <div class="base-select-grid">
+              <div class="base-card active" data-base="steel" data-add="0">
+                <strong>Black Spider Steel</strong>
+                <div style="font-size:11px; margin-top:3px;">Standard (Included)</div>
+              </div>
+              <div class="base-card" data-base="brass" data-add="8500">
+                <strong>Patina Brass Trestles</strong>
+                <div style="font-size:11px; margin-top:3px; color:var(--amber-light);">+R8,500 Modifier</div>
+              </div>
+              <div class="base-card" data-base="timber" data-add="6200">
+                <strong>Monolith Timber Legs</strong>
+                <div style="font-size:11px; margin-top:3px; color:var(--amber-light);">+R6,200 Modifier</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Receipt Pane -->
+        <div class="sim-receipt">
+          <div class="receipt-header">
+            <span class="receipt-title">SPECIFICATION RECEIPT</span>
+            <span class="badge-emerald">LIVE MATH READY</span>
+          </div>
+
+          <div class="receipt-lines">
+            <div class="receipt-line">
+              <span>Surface Footprint:</span>
+              <strong id="receipt-area">3.08 m²</strong>
+            </div>
+            <div class="receipt-line">
+              <span>Selected Species:</span>
+              <strong id="receipt-species">French Oak Prime</strong>
+            </div>
+            <div class="receipt-line">
+              <span>Base Frame:</span>
+              <strong id="receipt-base">Black Spider Steel</strong>
+            </div>
+            <div class="receipt-line">
+              <span>Production Lead Time:</span>
+              <strong>4–6 Weeks (Workshop Queue)</strong>
+            </div>
+          </div>
+
+          <div class="receipt-total-block">
+            <div class="receipt-total-label">Total Commission Value</div>
+            <div class="receipt-total-val" id="receipt-total">R 38,500</div>
+          </div>
+
+          <!-- 50% Deposit Callout -->
+          <div class="deposit-box">
+            <div class="deposit-label">
+              <span class="led-pulse"></span>
+              <span>50% Web Production Deposit Required</span>
+            </div>
+            <div class="deposit-val" id="receipt-deposit">R 19,250</div>
+            <div class="deposit-desc">
+              Locks your timber slab allocation, generates internal workshop job card, and reserves 4-week bench slot upon payment clearance.
+            </div>
+          </div>
+
+          <button class="btn btn-bronze" style="width: 100%;" onclick="transferQuoteAndOpenModal()">
+            Lock This Spec & Reserve Slot &rarr;
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       5. THE PIPELINE SHIFT
+       ========================================================================== -->
+  <section id="pipeline-shift" class="section-padding">
+    <div class="container">
+      <div class="section-header">
+        <span class="badge-amber">OPERATIONAL RESTRUCTURING</span>
+        <h2>The WhatsApp Trap vs. Auraworks Pipeline</h2>
+        <p>See exactly how automated web intake saves the founder 15+ administrative hours per week while protecting workshop working capital.</p>
+      </div>
+
+      <div class="comparison-grid">
+        <!-- Bad Workflow -->
+        <div class="comp-col comp-col-bad">
+          <div class="comp-header">
+            <span class="badge-amber" style="background:rgba(248,113,113,0.15); border-color:var(--crimson-alert); color:var(--crimson-alert);">
+              CURRENT WORKSHOP REALITY
+            </span>
+            <h3 style="color:#fca5a5;">The WhatsApp Chaos</h3>
+          </div>
+
+          <ul class="comp-step-list">
+            <li class="comp-step">
+              <div class="comp-icon">&times;</div>
+              <div>
+                <strong>Unstructured Inquiries:</strong> Prospects send vague voice notes (*"Roughly how much for a 3m table?"*) without wood species, finish, or leg specifications.
+              </div>
+            </li>
+            <li class="comp-step">
+              <div class="comp-icon">&times;</div>
+              <div>
+                <strong>Manual Estimating Bottleneck:</strong> The founder spends unpaid evenings typing manual PDF quotes for tire-kickers who ghost after 4 days.
+              </div>
+            </li>
+            <li class="comp-step">
+              <div class="comp-icon">&times;</div>
+              <div>
+                <strong>Verbal Scope Creep:</strong> Client asks for dimension changes during production over scattered WhatsApp chats, causing confusion in the workshop.
+              </div>
+            </li>
+            <li class="comp-step">
+              <div class="comp-icon">&times;</div>
+              <div>
+                <strong>Working Capital Exposure:</strong> Raw timber or steel is purchased before deposits clear, putting the company's monthly cash flow at serious risk.
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Good Workflow -->
+        <div class="comp-col comp-col-good">
+          <div class="comp-header">
+            <span class="badge-emerald">AURAWORKS SYSTEM</span>
+            <h3 style="color:#6ee7b7;">The Automated Machine</h3>
+          </div>
+
+          <ul class="comp-step-list">
+            <li class="comp-step">
+              <div class="comp-icon">&#10003;</div>
+              <div>
+                <strong>Self-Service Dimension Configurator:</strong> Prospective clients configure exact millimeter dimensions, wood species, and base frames directly online.
+              </div>
+            </li>
+            <li class="comp-step">
+              <div class="comp-icon">&#10003;</div>
+              <div>
+                <strong>Automated 50% Deposit Capture:</strong> Client pays the 50% commitment deposit directly on the web via card or instant EFT before scheduling occurs.
+              </div>
+            </li>
+            <li class="comp-step">
+              <div class="comp-icon">&#10003;</div>
+              <div>
+                <strong>Instant Shop-Floor Job Card:</strong> Webhook triggers automated generation of cutting lists and board-foot requirements directly to the workshop gantry.
+              </div>
+            </li>
+            <li class="comp-step">
+              <div class="comp-icon">&#10003;</div>
+              <div>
+                <strong>Automated Client Reassurance:</strong> Automated milestone alerts (*"Your slab has entered the oil finishing bay"*) eliminate anxious client phone calls.
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       6. TWO-PHASE COMMERCIAL ARCHITECTURE & BOARDROOM PAYBACK
+       ========================================================================== -->
+  <section id="commercials" class="section-padding" style="background: rgba(12, 16, 23, 0.4);">
+    <div class="container">
+      <div class="section-header">
+        <span class="badge-amber">TRANSPARENT COMMERCIAL STRUCTURE</span>
+        <h2>Two-Phase Partnership Architecture</h2>
+        <p>No ambiguous scopes or endless hourly billing. We partner with established physical manufacturers through two tightly structured phases.</p>
+      </div>
+
+      <div class="commercial-grid">
+        <!-- Phase 1 -->
+        <div class="card comm-card comm-card-featured">
+          <div>
+            <div class="comm-phase">PHASE 01 // ONCE-OFF BUILD</div>
+            <h3 style="font-size: 24px; margin-bottom: 8px;">Custom Storefront & Quoting Pipeline</h3>
+            <div class="comm-price">R 45,000 – R 75,000</div>
+            <div class="comm-timing">Timeline: 4–6 Weeks Execution</div>
+
+            <ul class="comm-scope-list">
+              <li class="comm-scope-item">
+                <span class="comm-check">&#10003;</span>
+                <span>Bespoke high-converting responsive visual storefront & monograph.</span>
+              </li>
+              <li class="comm-scope-item">
+                <span class="comm-check">&#10003;</span>
+                <span>Interactive parametric dimension quoting engine with material multipliers.</span>
+              </li>
+              <li class="comm-scope-item">
+                <span class="comm-check">&#10003;</span>
+                <span>Automated 50% milestone web deposit gateway integration (PayFast/Stripe/EFT).</span>
+              </li>
+              <li class="comm-scope-item">
+                <span class="comm-check">&#10003;</span>
+                <span>Internal workshop job card webhook generation & cutting list output.</span>
+              </li>
+              <li class="comm-scope-item">
+                <span class="comm-check">&#10003;</span>
+                <span>Domain asset migration, Core Web Vitals optimization (sub-300ms speed).</span>
+              </li>
+            </ul>
+          </div>
+
+          <button class="btn btn-bronze" style="width: 100%;" onclick="openModal('Phase 1 Build')">
+            Apply for Phase 1 Build &rarr;
+          </button>
+        </div>
+
+        <!-- Phase 2 -->
+        <div class="card comm-card">
+          <div>
+            <div class="comm-phase">PHASE 02 // ONGOING RETAINER</div>
+            <h3 style="font-size: 24px; margin-bottom: 8px;">Growth & Infrastructure Retainer</h3>
+            <div class="comm-price">R 10,000 – R 18,000 <span style="font-size:16px; color:var(--text-muted); font-weight:400;">/ month</span></div>
+            <div class="comm-timing">Capacity: Strictly 1–3 Retained Accounts</div>
+
+            <ul class="comm-scope-list">
+              <li class="comm-scope-item">
+                <span class="comm-check">&#10003;</span>
+                <span><strong>Generative Engine Optimization (GEO):</strong> Dominate AI answers in ChatGPT, Perplexity, and Google AI Overviews for high-ticket manufacturing terms.</span>
+              </li>
+              <li class="comm-scope-item">
+                <span class="comm-check">&#10003;</span>
+                <span><strong>Technical B2B SEO:</strong> Rank for regional commercial specifier keywords across Gauteng, Western Cape, and KZN.</span>
+              </li>
+              <li class="comm-scope-item">
+                <span class="comm-check">&#10003;</span>
+                <span>Continuous conversion rate optimization, quoting speed tuning, and uptime guarantee.</span>
+              </li>
+              <li class="comm-scope-item">
+                <span class="comm-check">&#10003;</span>
+                <span>Bi-weekly pipeline and lead audit sessions with senior technical partner.</span>
+              </li>
+            </ul>
+          </div>
+
+          <button class="btn btn-outline" style="width: 100%;" onclick="openModal('Phase 2 Retainer')">
+            Inquire for Retainer Slot &rarr;
+          </button>
+        </div>
+      </div>
+
+      <!-- Boardroom Payback Guarantee -->
+      <div class="payback-banner">
+        <div>
+          <span class="badge-emerald" style="margin-bottom: 12px;">BOARDROOM UNIT ECONOMICS MODEL</span>
+          <h3 style="font-size: 22px; margin-bottom: 10px;">The Single-Order Payback Guarantee</h3>
+          <p style="font-size: 14.5px; line-height: 1.55; color: var(--text-pearl);">
+            Because your physical products carry high Average Order Values (R35,000 to R150,000+) and healthy 40%–50% gross manufacturing margins, <strong>exactly 1 single closed deal per month</strong> completely covers the entire Phase 2 retainer. Every additional closed deal is pure incremental profit.
+          </p>
+        </div>
+
+        <div style="background: rgba(4, 6, 9, 0.6); padding: 24px; border-radius: var(--radius-sm); border: 1px solid rgba(16, 185, 129, 0.3); text-align: center;">
+          <div class="payback-stat-val">1 DEAL</div>
+          <div style="font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.08em;">
+            Per Month Required to Break Even
+          </div>
+          <div style="font-size: 12px; color: var(--text-dim); margin-top: 8px;">
+            Based on R40,000 AOV @ 45% Gross Margin = R18,000 Gross Profit
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       7. QUALIFICATION MATRIX
+       ========================================================================== -->
+  <section id="qualification" class="section-padding">
+    <div class="container">
+      <div class="section-header">
+        <span class="badge-amber">PARTNER SELECTION FILTER</span>
+        <h2>Executive Qualification Matrix</h2>
+        <p>Because we strictly retain only 1–3 manufacturing accounts per month, we operate an uncompromising qualification process to ensure mutual commercial success.</p>
+      </div>
+
+      <div class="matrix-grid">
+        <!-- Qualified Column -->
+        <div class="matrix-col matrix-col-qual">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <span class="badge-emerald">&#10003; TARGET QUALIFIERS</span>
+          </div>
+          <h3 style="color:#6ee7b7; margin-bottom: 8px;">We Welcome Your Application If:</h3>
+          <p style="font-size:13.5px;">You meet the economic scale and operational readiness for technical transformation.</p>
+
+          <ul class="matrix-list">
+            <li class="matrix-item">
+              <span class="matrix-mark">&#10003;</span>
+              <span><strong>Average Order Value strictly R15,000 to R150,000+:</strong> High-ticket physical products where custom quoting adds clear ROI.</span>
+            </li>
+            <li class="matrix-item">
+              <span class="matrix-mark">&#10003;</span>
+              <span><strong>Physical manufacturing workshop footprint:</strong> You own, operate, or lead an established workshop, machinery bays, or showroom in South Africa.</span>
+            </li>
+            <li class="matrix-item">
+              <span class="matrix-mark">&#10003;</span>
+              <span><strong>Manual intake bottlenecks:</strong> Sales reps or founders losing 15+ hours a week preparing manual quotes over WhatsApp and email.</span>
+            </li>
+            <li class="matrix-item">
+              <span class="matrix-mark">&#10003;</span>
+              <span><strong>Founder / MD Engagement:</strong> Decision-maker is directly involved in operational scaling and value-driven execution.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Disqualified Column -->
+        <div class="matrix-col matrix-col-disqual">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <span class="badge-amber" style="background:rgba(248,113,113,0.15); border-color:var(--crimson-alert); color:var(--crimson-alert);">&times; IMMEDIATE DISQUALIFIERS</span>
+          </div>
+          <h3 style="color:#fca5a5; margin-bottom: 8px;">Please Do Not Apply If:</h3>
+          <p style="font-size:13.5px;">Your business model is incompatible with high-ticket bespoke web engineering.</p>
+
+          <ul class="matrix-list">
+            <li class="matrix-item">
+              <span class="matrix-mark">&times;</span>
+              <span><strong>Dropshippers & White-Label Resellers:</strong> Businesses that do not design, fabricate, or finish physical products themselves.</span>
+            </li>
+            <li class="matrix-item">
+              <span class="matrix-mark">&times;</span>
+              <span><strong>Mass Low-Margin Retail (AOV &lt; R5,000):</strong> Off-the-shelf consumer retail products where generic Shopify templates suffice.</span>
+            </li>
+            <li class="matrix-item">
+              <span class="matrix-mark">&times;</span>
+              <span><strong>Solo Hobbyists Operating from Home:</strong> Part-time makers without commercial machinery, workshop staff, or volume capacity.</span>
+            </li>
+            <li class="matrix-item">
+              <span class="matrix-mark">&times;</span>
+              <span><strong>Equity-Only or Unpaid Contingency Models:</strong> We are a high-level engineering partner, not a venture incubator.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       8. EXECUTIVE INTAKE MODAL (INTERACTIVE DIALOG)
+       ========================================================================== -->
+  <div id="intake-modal" class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+
+      <!-- Form View -->
+      <div id="modal-form-view">
+        <div style="margin-bottom: 22px;">
+          <span class="badge-amber" style="margin-bottom: 8px;">EXECUTIVE INTAKE</span>
+          <h3 style="font-size: 22px;">Request Architecture Discovery</h3>
+          <p style="font-size: 13.5px; margin-top: 4px;">Auraworks retains 1–3 accounts monthly. Please confirm your manufacturing metrics below.</p>
+        </div>
+
+        <form id="discovery-form" onsubmit="handleFormSubmit(event)">
+          <div class="form-group">
+            <label class="form-label" for="exec-name">Your Full Name & Executive Role</label>
+            <input type="text" id="exec-name" class="form-input" placeholder="e.g. David van der Merwe (Founder / MD)" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="workshop-name">Workshop / Manufacturing Brand Name</label>
+            <input type="text" id="workshop-name" class="form-input" placeholder="e.g. TimberCraft Atelier Cape Town" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="exec-email">Corporate Email Address</label>
+            <input type="email" id="exec-email" class="form-input" placeholder="david@timbercraft.co.za" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="aov-bracket">Typical Average Order Value (AOV)</label>
+            <select id="aov-bracket" class="form-select" required>
+              <option value="" disabled selected>Select your typical physical commission value</option>
+              <option value="disqualified">Below R15,000 (Consumer / Mass Retail)</option>
+              <option value="tier1">R15,000 – R35,000 (Commercial Standard)</option>
+              <option value="tier2">R35,000 – R75,000 (High-Ticket Bespoke)</option>
+              <option value="tier3">R75,000 – R150,000+ (Master Architectural)</option>
+            </select>
+            <div id="aov-alert" class="form-hint" style="display: none; color: var(--crimson-alert);">
+              Notice: Auraworks custom architecture requires AOV above R15,000 for viable mathematical payback.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="sim-notes">Configured Simulator Parameters (Optional)</label>
+            <input type="text" id="sim-notes" class="form-input" readonly style="background: rgba(255,255,255,0.03); color: var(--amber-light); font-family: var(--font-mono); font-size: 12px;">
+          </div>
+
+          <button type="submit" class="btn btn-bronze" style="width: 100%; margin-top: 8px;">
+            Submit Confidential Briefing Request &rarr;
+          </button>
+        </form>
+      </div>
+
+      <!-- Confirmation View -->
+      <div id="modal-confirm-view" class="modal-confirmation">
+        <div style="font-size: 48px; color: var(--emerald-status); margin-bottom: 12px;">&#10003;</div>
+        <h3 style="font-size: 24px; margin-bottom: 8px;">Application Logged</h3>
+        <p style="color: var(--text-pearl); font-size: 15px; margin-bottom: 16px;">
+          Thank you, <span id="confirm-name" style="color:var(--amber-light); font-weight:700;"></span>.
+        </p>
+        <p style="color: var(--text-muted); font-size: 13.5px; line-height: 1.6; margin-bottom: 24px;">
+          Our senior technical partner will review your workshop footprint and AOV metrics. If aligned with current Q4 capacity, you will receive a calendar link for a 20-minute architecture discovery session within 24 business hours.
+        </p>
+        <button class="btn btn-outline" onclick="closeModal()">Close Window</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       9. REPUTATION FOOTER
+       ========================================================================== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="brand-wrap">
+            <div class="brand-emblem">A</div>
+            <div class="brand-title">
+              <span>AURAWORKS</span>
+              <span class="brand-sub">INDUSTRIAL ATELIER</span>
+            </div>
+          </div>
+          <p>
+            Strategic technical web partnerships for high-ticket physical product manufacturers. Dedicated dimension quoting engines, 50% automated web deposit capture, and workshop dispatch pipelines.
+          </p>
+        </div>
+
+        <div>
+          <div class="footer-col-title">TARGET SECTORS</div>
+          <ul class="footer-links">
+            <li><a href="#sectors">Bespoke Architectural Furniture</a></li>
+            <li><a href="#sectors">High-End Architectural Finishes</a></li>
+            <li><a href="#sectors">Specialized Metal & Camper Outfitting</a></li>
+            <li><a href="#sectors">Master Joinery & Cabinetry Studios</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="footer-col-title">GOVERNANCE & STANDARDS</div>
+          <ul class="footer-links">
+            <li><a href="#qualification">Capacity: 1–3 Retained Accounts</a></li>
+            <li><a href="#commercials">Two-Phase Commercial Framework</a></li>
+            <li><a href="#qualification">POPIA & Data Privacy Compliance</a></li>
+            <li><a href="#qualification">Strict Mutual Non-Disclosure Terms</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 Auraworks Industrial Atelier. All Rights Reserved. Built for South African Physical Product Fabricators.</div>
+        <div>Johannesburg • Cape Town • Durban</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       JAVASCRIPT: MATHEMATICAL ENGINE & MODAL CONTROLS
+       ========================================================================== -->
+  <script>
+    // --- STATE MACHINE ---
+    const state = {
+      length: 2800,
+      width: 1100,
+      species: 'oak',
+      speciesMult: 1.0,
+      speciesName: 'French Oak Prime',
+      base: 'steel',
+      baseModifier: 0,
+      baseName: 'Black Spider Steel',
+      baseTimberRate: 12500 // ZAR per m²
+    };
+
+    // --- DOM REFERENCES ---
+    const inputLength = document.getElementById('input-length');
+    const inputWidth = document.getElementById('input-width');
+    const readoutLength = document.getElementById('readout-length');
+    const readoutWidth = document.getElementById('readout-width');
+
+    const receiptArea = document.getElementById('receipt-area');
+    const receiptSpecies = document.getElementById('receipt-species');
+    const receiptBase = document.getElementById('receipt-base');
+    const receiptTotal = document.getElementById('receipt-total');
+    const receiptDeposit = document.getElementById('receipt-deposit');
+
+    const swatchCards = document.querySelectorAll('.swatch-card');
+    const baseCards = document.querySelectorAll('.base-card');
+
+    const modal = document.getElementById('intake-modal');
+    const modalFormView = document.getElementById('modal-form-view');
+    const modalConfirmView = document.getElementById('modal-confirm-view');
+    const simNotesInput = document.getElementById('sim-notes');
+    const aovBracket = document.getElementById('aov-bracket');
+    const aovAlert = document.getElementById('aov-alert');
+
+    // --- FORMATTER ---
+    function formatZAR(num) {
+      return 'R ' + Math.round(num).toLocaleString('en-ZA');
+    }
+
+    // --- CALCULATION LOGIC ---
+    function updateCalculations() {
+      // 1. Calculate Area in m²
+      const areaM2 = (state.length / 1000) * (state.width / 1000);
+
+      // 2. Compute Total Price: (Area * Base Rate * Species Mult) + Base Modifier
+      const timberCost = areaM2 * state.baseTimberRate * state.speciesMult;
+      const totalCost = timberCost + state.baseModifier;
+
+      // 3. Compute 50% Deposit
+      const depositCost = totalCost * 0.50;
+
+      // 4. Update DOM Elements
+      readoutLength.textContent = state.length.toLocaleString('en-ZA') + ' mm';
+      readoutWidth.textContent = state.width.toLocaleString('en-ZA') + ' mm';
+
+      receiptArea.textContent = areaM2.toFixed(2) + ' m²';
+      receiptSpecies.textContent = state.speciesName;
+      receiptBase.textContent = state.baseName;
+
+      receiptTotal.textContent = formatZAR(totalCost);
+      receiptDeposit.textContent = formatZAR(depositCost);
+
+      // Update simulator notes for the modal form
+      simNotesInput.value = `${state.length}x${state.width}mm | ${state.speciesName} | ${state.baseName} | Total: ${formatZAR(totalCost)} (50% Deposit: ${formatZAR(depositCost)})`;
+    }
+
+    // --- EVENT LISTENERS ---
+    inputLength.addEventListener('input', (e) => {
+      state.length = parseInt(e.target.value, 10);
+      updateCalculations();
+    });
+
+    inputWidth.addEventListener('input', (e) => {
+      state.width = parseInt(e.target.value, 10);
+      updateCalculations();
+    });
+
+    // Swatches
+    swatchCards.forEach(card => {
+      card.addEventListener('click', () => {
+        swatchCards.forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+
+        state.species = card.getAttribute('data-species');
+        state.speciesMult = parseFloat(card.getAttribute('data-mult'));
+        state.speciesName = card.querySelector('.swatch-name').textContent;
+        updateCalculations();
+      });
+    });
+
+    // Bases
+    baseCards.forEach(card => {
+      card.addEventListener('click', () => {
+        baseCards.forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+
+        state.base = card.getAttribute('data-base');
+        state.baseModifier = parseInt(card.getAttribute('data-add'), 10);
+        state.baseName = card.querySelector('strong').textContent;
+        updateCalculations();
+      });
+    });
+
+    // AOV Dropdown Qualification Warning
+    aovBracket.addEventListener('change', (e) => {
+      if (e.target.value === 'disqualified') {
+        aovAlert.style.display = 'block';
+      } else {
+        aovAlert.style.display = 'none';
+      }
+    });
+
+    // --- MODAL CONTROLS ---
+    function openModal(context = '') {
+      modalFormView.style.display = 'block';
+      modalConfirmView.style.display = 'none';
+      modal.classList.add('active');
+
+      if (context) {
+        simNotesInput.value = `Applied from: ${context} | ` + simNotesInput.value;
+      }
+    }
+
+    function closeModal() {
+      modal.classList.remove('active');
+    }
+
+    function transferQuoteAndOpenModal() {
+      openModal('Interactive Quoting Simulator');
+    }
+
+    // Close on overlay click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+
+    // Close on Escape key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('active')) {
+        closeModal();
+      }
+    });
+
+    // Form Submission
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('exec-name').value;
+      const aov = aovBracket.value;
+
+      if (aov === 'disqualified') {
+        alert('Notice: Auraworks custom architecture is built exclusively for manufacturers with AOVs of R15,000+. Your submission has been noted, but our team may refer you to partner tools.');
+      }
+
+      document.getElementById('confirm-name').textContent = name;
+      modalFormView.style.display = 'none';
+      modalConfirmView.style.display = 'block';
+    }
+
+    // Initialize
+    updateCalculations();
+  </script>
+</body>
+</html>

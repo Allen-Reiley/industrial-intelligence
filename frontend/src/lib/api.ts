@@ -1,7 +1,3 @@
-import { authFetch, authFetcher, getSessionToken, setSessionToken } from "./auth-fetch";
-
-export { authFetch, authFetcher, getSessionToken, setSessionToken };
-
 /**
  * The BASE_URL resolves the backend address.
  * In Production: https://api.auraworks.co.za
@@ -15,7 +11,6 @@ export const cleanApiBase = BASE_URL.replace(/\/$/, '');
  * Removes trailing slashes to prevent 307 Temporary Redirects or 404s in FastAPI.
  */
 export const getEndpoint = (path: string) => {
-    // Check if BASE_URL is valid to prevent silent failures
     if (!BASE_URL) {
         console.warn("⚠️ AuraWorks OS: NEXT_PUBLIC_API_URL is undefined.");
     }
@@ -25,26 +20,19 @@ export const getEndpoint = (path: string) => {
 };
 
 /**
- * Global authenticated API fetch client targeting NEXT_PUBLIC_API_URL.
- * Supports both relative paths ('/api/v1/...') and fully qualified URLs.
+ * Global API fetch client targeting NEXT_PUBLIC_API_URL.
  */
 export async function apiFetch(
     pathOrUrl: string | URL | Request,
     init: RequestInit = {}
 ): Promise<Response> {
-    if (typeof pathOrUrl === 'string' && pathOrUrl.startsWith('/')) {
-        return authFetch(getEndpoint(pathOrUrl), init);
-    }
-    return authFetch(pathOrUrl, init);
-}
-
-/**
- * Global SWR fetcher utility that automatically injects the Bearer session token.
- * Supports both relative paths ('/api/v1/...') and fully qualified URLs.
- */
-export async function apiFetcher<T = any>(pathOrUrl: string): Promise<T> {
-    const target = pathOrUrl.startsWith('/') ? getEndpoint(pathOrUrl) : pathOrUrl;
-    return authFetcher<T>(target);
+    const target = typeof pathOrUrl === 'string' && pathOrUrl.startsWith('/')
+        ? getEndpoint(pathOrUrl)
+        : pathOrUrl;
+    return fetch(target, {
+        credentials: 'include',
+        ...init,
+    });
 }
 
 export async function submitToProspects(formData: Record<string, unknown>) {
@@ -85,14 +73,12 @@ export async function submitToProspects(formData: Record<string, unknown>) {
         });
 
         if (!response.ok) {
-            // Attempt to parse the structured error from FastAPI
             const errorData = await response.json().catch(() => ({}));
             
             if (response.status === 404) {
                 throw new Error(`Intelligence Gateway not found at ${endpoint}. Please verify backend deployment.`);
             }
 
-            // Return the detailed error (e.g. 'Work email required')
             throw new Error(errorData.detail || 'The intelligence engine is currently synchronizing. Please try again.');
         }
 
@@ -111,7 +97,7 @@ export async function trackIntent(payload: {
 }) {
     const endpoint = getEndpoint('api/v1/track/intent');
     try {
-        const response = await authFetch(endpoint, {
+        const response = await fetch(endpoint, {
             method: 'POST',
             credentials: 'include',
             headers: {

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraWorks | Calm Operations & Predictable Revenue</title>
+  <meta name="description" content="AuraWorks designs bespoke software, custom ecommerce, and workshop dashboards that replace business chaos with calm, profitable operations.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            nordicStone: '#F4F4F1',
+            nordicCard: '#FFFFFF',
+            forestSlate: '#1E2824',
+            sageGreen: '#3D5A4C',
+            sageLight: '#EBF0ED',
+            warmClay: '#D4A373',
+            bodyDark: '#2B2D2F',
+            subtleBorder: '#E3E3DC',
+          },
+          fontFamily: {
+            serif: ['Newsreader', 'Georgia', 'serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #F4F4F1; color: #2B2D2F; }
+    .nordic-box {
+      background-color: #FFFFFF;
+      border: 1px solid #E3E3DC;
+      border-radius: 1.25rem;
+      box-shadow: 0 4px 20px -2px rgba(30, 40, 36, 0.04);
+      transition: all 0.2s ease;
+    }
+    .nordic-box:hover {
+      border-color: #3D5A4C;
+    }
+  </style>
+</head>
+<body class="font-sans antialiased selection:bg-sageGreen selection:text-white">
+
+  <!-- TOP MINIMAL NAV -->
+  <header class="border-b border-subtleBorder bg-nordicStone/90 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="#" class="font-serif text-2xl font-normal tracking-tight text-forestSlate">AuraWorks</a>
+        <span class="text-xs text-sageGreen uppercase tracking-widest pl-3 border-l border-subtleBorder font-medium hidden sm:inline-block">
+          Calm Business Systems
+        </span>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-bodyDark/80">
+        <a href="#philosophy" class="hover:text-forestSlate transition-colors">Why Calm Matters</a>
+        <a href="#couch-story" class="hover:text-forestSlate transition-colors">The Couch Maker’s Story</a>
+        <a href="#friction-tool" class="hover:text-forestSlate transition-colors">Friction Diagnostic</a>
+        <a href="#products-services" class="hover:text-forestSlate transition-colors">Who We Serve</a>
+      </nav>
+
+      <div>
+        <button onclick="scrollToContact()" class="px-5 py-2.5 rounded-full bg-forestSlate hover:bg-forestSlate/90 text-white text-xs font-semibold tracking-wide transition-all shadow-sm">
+          Book a Free Strategy Call
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="py-20 md:py-32 px-6 border-b border-subtleBorder">
+    <div class="max-w-4xl mx-auto text-center">
+      
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sageLight text-sageGreen text-xs font-semibold uppercase tracking-wider mb-6">
+        <span class="w-2 h-2 rounded-full bg-sageGreen"></span>
+        Built for Product &amp; Service Business Owners
+      </div>
+
+      <h1 class="font-serif text-4xl sm:text-6xl text-forestSlate leading-[1.18] tracking-tight mb-8 font-normal">
+        Calm operations. <br>
+        <span class="italic text-sageGreen">Predictable, effortless revenue.</span>
+      </h1>
+
+      <p class="text-lg sm:text-xl text-bodyDark/80 max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
+        When your business runs on 14 spreadsheets, scattered WhatsApp notes, and manual quoting, you spend all your time putting out fires. 
+        AuraWorks builds simple, custom digital storefronts and live workshop dashboards that help you make more money while restoring sanity to your day.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <button onclick="scrollToContact()" class="w-full sm:w-auto px-8 py-4 rounded-full bg-forestSlate hover:bg-forestSlate/90 text-white font-semibold text-sm tracking-wide transition-all shadow-md">
+          Request a Free 15-Minute System Review
+        </button>
+        <a href="#couch-story" class="w-full sm:w-auto px-8 py-4 rounded-full bg-white hover:bg-slate-50 text-forestSlate font-medium text-sm border border-subtleBorder transition-all">
+          Read How a Furniture Studio Grew 35% &darr;
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 3 PILLARS OF CALM (SIMPLICITY FIRST) -->
+  <section id="philosophy" class="py-20 px-6 border-b border-subtleBorder bg-white">
+    <div class="max-w-6xl mx-auto">
+      
+      <div class="max-w-2xl mx-auto text-center mb-16">
+        <span class="text-xs uppercase tracking-widest font-semibold text-sageGreen block mb-2">Our Operating Belief</span>
+        <h2 class="font-serif text-3xl sm:text-4xl text-forestSlate font-normal">
+          Software Should Make Your Life Easier, Not Complicated.
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <div class="nordic-box p-8">
+          <div class="w-10 h-10 rounded-full bg-sageLight text-sageGreen flex items-center justify-center font-serif text-lg font-bold mb-4">
+            01
+          </div>
+          <h3 class="font-serif text-xl font-semibold text-forestSlate mb-2">Zero Technical Barrier</h3>
+          <p class="text-sm text-bodyDark/80 leading-relaxed">
+            Even the least technical person in your workshop or office can use our tools in 10 minutes. We design clean, friendly screens with zero confusing jargon.
+          </p>
+        </div>
+
+        <div class="nordic-box p-8">
+          <div class="w-10 h-10 rounded-full bg-sageLight text-sageGreen flex items-center justify-center font-serif text-lg font-bold mb-4">
+            02
+          </div>
+          <h3 class="font-serif text-xl font-semibold text-forestSlate mb-2">Instant Quoting &amp; Deposits</h3>
+          <p class="text-sm text-bodyDark/80 leading-relaxed">
+            Customers configure products or request services with instant calculations, securing 50% deposits upfront. You only build what is already paid for.
+          </p>
+        </div>
+
+        <div class="nordic-box p-8">
+          <div class="w-10 h-10 rounded-full bg-sageLight text-sageGreen flex items-center justify-center font-serif text-lg font-bold mb-4">
+            03
+          </div>
+          <h3 class="font-serif text-xl font-semibold text-forestSlate mb-2">Clear Handoffs</h3>
+          <p class="text-sm text-bodyDark/80 leading-relaxed">
+            Your production floor, warehouse, or field team receives clear, unambiguous job cards. No missing notes, no misread dimensions, no lost time.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CASE STUDY: THE COUCH STUDIO -->
+  <section id="couch-story" class="py-24 px-6 border-b border-subtleBorder bg-nordicStone">
+    <div class="max-w-5xl mx-auto">
+      
+      <div class="nordic-box p-8 sm:p-14 bg-white border border-subtleBorder">
+        <span class="text-xs uppercase tracking-widest font-semibold text-sageGreen block mb-2">Recent Client Story</span>
+        <h2 class="font-serif text-3xl sm:text-4xl text-forestSlate font-normal mb-6">
+          How a Custom Couch Studio Reclaimed Their Evenings and Expanded Output by 35%
+        </h2>
+
+        <p class="text-base text-bodyDark/80 leading-relaxed mb-6 font-normal">
+          The founder of a bespoke furniture workshop was working 70-hour weeks. Every customer wanted a different couch length, fabric grade, and cushion firmness. The founder was answering up to 40 WhatsApp messages a day just to send fabric photos and calculate prices with a calculator.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 my-8 pt-6 border-t border-subtleBorder">
+          <div>
+            <h4 class="font-semibold text-sm text-forestSlate uppercase tracking-wider mb-2">The Stress Before AuraWorks:</h4>
+            <ul class="space-y-2 text-xs text-bodyDark/80">
+              <li class="flex items-start gap-2">
+                <span class="text-rose-600 font-bold">&cross;</span>
+                <span>48-hour delay just to quote a customer.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-rose-600 font-bold">&cross;</span>
+                <span>Workshop carpenters cutting wrong timber dimensions due to handwritten notes.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-rose-600 font-bold">&cross;</span>
+                <span>Weekends spent typing manual invoices and reconciling bank deposits.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 class="font-semibold text-sm text-sageGreen uppercase tracking-wider mb-2">The Calm After AuraWorks:</h4>
+            <ul class="space-y-2 text-xs text-bodyDark/80">
+              <li class="flex items-start gap-2">
+                <span class="text-sageGreen font-bold">&check;</span>
+                <span>An online studio where buyers pick couch layouts, fabrics, and pay deposits instantly.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-sageGreen font-bold">&check;</span>
+                <span>A simple workshop tablet dashboard showing cut-sheets and fabric yardage per bay.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-sageGreen font-bold">&check;</span>
+                <span>20+ hours saved every week, with 35% more couches built every month.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <blockquote class="p-6 rounded-xl bg-sageLight/60 border-l-4 border-sageGreen text-sm text-forestSlate italic font-serif leading-relaxed mb-8">
+          &ldquo;For the first time in three years, I can take Sundays off. The website sells for us while we sleep, and the workshop runs without me having to answer 50 phone calls a day.&rdquo;
+        </blockquote>
+
+        <div class="text-center">
+          <button onclick="scrollToContact()" class="px-8 py-3.5 rounded-full bg-forestSlate hover:bg-forestSlate/90 text-white font-semibold text-xs uppercase tracking-wider transition-all">
+            See How We Can Do This For Your Business &rarr;
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- INTERACTIVE FRICTION DIAGNOSTIC TOOL -->
+  <section id="friction-tool" class="py-24 px-6 border-b border-subtleBorder bg-white">
+    <div class="max-w-4xl mx-auto">
+      
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <span class="text-xs uppercase tracking-widest font-semibold text-sageGreen block mb-2">Interactive Diagnostic</span>
+        <h2 class="font-serif text-3xl sm:text-4xl text-forestSlate font-normal mb-3">
+          Where is the friction in your business?
+        </h2>
+        <p class="text-sm text-bodyDark/70">
+          Click your biggest daily operational headache to see the exact custom tool we build to fix it.
+        </p>
+      </div>
+
+      <!-- Friction Selector Tabs -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+        <button onclick="showFriction(1)" id="btn-fric-1" class="fric-btn active p-4 rounded-xl border border-sageGreen bg-sageLight text-forestSlate font-semibold text-xs text-left transition-all">
+          1. Quoting takes too long &amp; clients wait days
+        </button>
+        <button onclick="showFriction(2)" id="btn-fric-2" class="fric-btn p-4 rounded-xl border border-subtleBorder bg-nordicStone text-bodyDark font-medium text-xs text-left hover:border-sageGreen transition-all">
+          2. Workshop / team makes errors on custom orders
+        </button>
+        <button onclick="showFriction(3)" id="btn-fric-3" class="fric-btn p-4 rounded-xl border border-subtleBorder bg-nordicStone text-bodyDark font-medium text-xs text-left hover:border-sageGreen transition-all">
+          3. Clients constantly call asking for order updates
+        </button>
+      </div>
+
+      <!-- Dynamic Solution Display -->
+      <div id="fric-box-1" class="nordic-box p-8 bg-nordicStone border-sageGreen/40">
+        <span class="text-xs font-mono font-bold uppercase text-sageGreen block mb-2">The AuraWorks Fix: Visual Configurator &amp; Instant Quoting Engine</span>
+        <h4 class="font-serif text-2xl font-normal text-forestSlate mb-3">Instant Customer Quoting with Upfront 50% Deposits</h4>
+        <p class="text-sm text-bodyDark/80 leading-relaxed mb-4">
+          We build an intuitive web tool where your clients choose their dimensions, materials, and options. The system calculates the exact price automatically using your formulas and secures a 50% deposit on the spot.
+        </p>
+        <div class="text-xs text-sageGreen font-semibold">
+          Outcome: Quoting time drops from 48 hours to 30 seconds. Zero lost deals while customers wait.
+        </div>
+      </div>
+
+      <div id="fric-box-2" class="nordic-box p-8 bg-nordicStone border-sageGreen/40 hidden">
+        <span class="text-xs font-mono font-bold uppercase text-sageGreen block mb-2">The AuraWorks Fix: Live Workshop Production Queue</span>
+        <h4 class="font-serif text-2xl font-normal text-forestSlate mb-3">Clear, Unambiguous Digital Job Tickets on Tablets</h4>
+        <p class="text-sm text-bodyDark/80 leading-relaxed mb-4">
+          When an order is placed, our system automatically generates cut-lists, part counts, and timber/material requirements. Workshop staff view clear instructions per production bay without guessing or reading handwritten slips.
+        </p>
+        <div class="text-xs text-sageGreen font-semibold">
+          Outcome: Sizing and material mistakes fall to zero. Less wasted inventory and no costly rebuilds.
+        </div>
+      </div>
+
+      <div id="fric-box-3" class="nordic-box p-8 bg-nordicStone border-sageGreen/40 hidden">
+        <span class="text-xs font-mono font-bold uppercase text-sageGreen block mb-2">The AuraWorks Fix: Self-Service Customer Order Portals</span>
+        <h4 class="font-serif text-2xl font-normal text-forestSlate mb-3">Automated Progress Tracking &amp; Delivery Alerts</h4>
+        <p class="text-sm text-bodyDark/80 leading-relaxed mb-4">
+          Clients receive a private link where they can see their order status (Frame Cut &rarr; Foamed &rarr; Upholstered &rarr; Ready for Courier). Automated SMS and email updates fire at every stage milestone.
+        </p>
+        <div class="text-xs text-sageGreen font-semibold">
+          Outcome: Status calls and emails disappear. Your customer service feels like a world-class luxury brand.
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- WHO WE SERVE: PRODUCTS & SERVICES -->
+  <section id="products-services" class="py-20 px-6 border-b border-subtleBorder bg-nordicStone">
+    <div class="max-w-6xl mx-auto">
+      
+      <div class="text-center max-w-2xl mx-auto mb-14">
+        <span class="text-xs uppercase tracking-widest font-semibold text-sageGreen block mb-2">Broad Versatility</span>
+        <h2 class="font-serif text-3xl sm:text-4xl text-forestSlate font-normal">
+          Designed for Product &amp; Service Companies
+        </h2>
+        <p class="text-sm text-bodyDark/70 mt-2">
+          We don't believe in one-size-fits-all software. We build exactly what your specific business needs to thrive.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <div class="nordic-box p-8 bg-white">
+          <span class="text-xs font-semibold uppercase tracking-wider text-sageGreen block mb-2">Category 01</span>
+          <h3 class="font-serif text-2xl font-normal text-forestSlate mb-2">Product-Based Businesses</h3>
+          <p class="text-xs text-bodyDark/70 mb-6">
+            Makers of physical goods, bespoke furniture, cabinetry, architectural steel, and specialized equipment.
+          </p>
+          <ul class="space-y-2 text-xs text-bodyDark/80">
+            <li class="flex items-center gap-2">&bull; <strong>Custom Sofas &amp; Furniture:</strong> Dimension &amp; fabric configurators</li>
+            <li class="flex items-center gap-2">&bull; <strong>Architectural Finishes:</strong> Steel &amp; glass doors, tiles, lighting</li>
+            <li class="flex items-center gap-2">&bull; <strong>Overland &amp; Trailers:</strong> Camper outfitting &amp; custom builds</li>
+          </ul>
+        </div>
+
+        <div class="nordic-box p-8 bg-white">
+          <span class="text-xs font-semibold uppercase tracking-wider text-warmClay block mb-2">Category 02</span>
+          <h3 class="font-serif text-2xl font-normal text-forestSlate mb-2">Service-Based Businesses</h3>
+          <p class="text-xs text-bodyDark/70 mb-6">
+            Specialized contractors, installation trades, engineering consultancies, and commercial fitouts.
+          </p>
+          <ul class="space-y-2 text-xs text-bodyDark/80">
+            <li class="flex items-center gap-2">&bull; <strong>Commercial Fitouts:</strong> Office installations and renovations</li>
+            <li class="flex items-center gap-2">&bull; <strong>Specialized Trades:</strong> Precision solar, acoustic panels, HVAC</li>
+            <li class="flex items-center gap-2">&bull; <strong>Technical Consultancies:</strong> Scoping, client portals, sign-offs</li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CONTACT INTAKE -->
+  <section id="contact-area" class="py-24 px-6 bg-white">
+    <div class="max-w-3xl mx-auto">
+      
+      <div class="text-center mb-12">
+        <span class="text-xs uppercase tracking-widest font-semibold text-sageGreen block mb-2">Start With a Conversation</span>
+        <h2 class="font-serif text-3xl sm:text-4xl text-forestSlate font-normal mb-3">
+          Let’s discuss what custom software can do for you.
+        </h2>
+        <p class="text-sm text-bodyDark/70">
+          No complicated technical jargon. Just an honest discussion about your business workflow, where you lose time, and how we can streamline it.
+        </p>
+      </div>
+
+      <form id="nordic-form" onsubmit="submitNordicForm(event)" class="nordic-box p-8 sm:p-10 space-y-4 bg-nordicStone/60">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-forestSlate uppercase tracking-wider mb-1">Your Name</label>
+            <input type="text" required placeholder="Claire Davies" class="w-full px-4 py-3 rounded-xl bg-white border border-subtleBorder text-bodyDark text-sm focus:border-sageGreen focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-forestSlate uppercase tracking-wider mb-1">Company / Workshop Name</label>
+            <input type="text" required placeholder="Davies Bespoke Living" class="w-full px-4 py-3 rounded-xl bg-white border border-subtleBorder text-bodyDark text-sm focus:border-sageGreen focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-forestSlate uppercase tracking-wider mb-1">What does your company make or do?</label>
+          <input type="text" required placeholder="e.g. Custom couches and tables, or specialized electrical contracting" class="w-full px-4 py-3 rounded-xl bg-white border border-subtleBorder text-bodyDark text-sm focus:border-sageGreen focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-forestSlate uppercase tracking-wider mb-1">Where is the biggest bottleneck right now?</label>
+          <textarea rows="3" placeholder="e.g. Quoting takes too long on WhatsApp, workshop makes mistakes, orders are hard to track..." class="w-full px-4 py-3 rounded-xl bg-white border border-subtleBorder text-bodyDark text-sm focus:border-sageGreen focus:outline-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-forestSlate uppercase tracking-wider mb-1">Email or Phone / WhatsApp</label>
+          <input type="text" required placeholder="claire@davies.co.za / 082 345 6789" class="w-full px-4 py-3 rounded-xl bg-white border border-subtleBorder text-bodyDark text-sm focus:border-sageGreen focus:outline-none">
+        </div>
+
+        <button type="submit" class="w-full py-4 rounded-full bg-forestSlate hover:bg-forestSlate/90 text-white font-semibold text-xs uppercase tracking-wider transition-all mt-4">
+          Request Your Free System Blueprint &rarr;
+        </button>
+      </form>
+
+      <div id="nordic-success" class="hidden text-center py-12 space-y-3 nordic-box p-8 bg-sageLight/50 border-sageGreen/40">
+        <span class="text-3xl text-sageGreen font-bold">&check;</span>
+        <h4 class="font-serif text-2xl font-normal text-forestSlate">Thank You, Claire</h4>
+        <p class="text-sm text-bodyDark/80 max-w-md mx-auto">
+          We have received your business details. One of our systems engineers will review your notes and reach out within 4 hours.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="py-12 px-6 border-t border-subtleBorder bg-nordicStone text-xs text-bodyDark/60">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="font-serif font-bold text-forestSlate text-base">AuraWorks</span>
+        <span>&bull; Bespoke Systems for Sustainable Business Growth</span>
+      </div>
+      <div>
+        <span>Cape Town &bull; Johannesburg &bull; Nationwide</span>
+      </div>
+      <div>
+        <span>&copy; 2026 AuraWorks. All rights reserved.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function scrollToContact() {
+      document.getElementById('contact-area').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function showFriction(idx) {
+      document.querySelectorAll('.fric-btn').forEach(btn => {
+        btn.classList.remove('active', 'border-sageGreen', 'bg-sageLight', 'text-forestSlate', 'font-semibold');
+        btn.classList.add('border-subtleBorder', 'bg-nordicStone', 'text-bodyDark', 'font-medium');
+      });
+      document.getElementById('btn-fric-' + idx).classList.add('active', 'border-sageGreen', 'bg-sageLight', 'text-forestSlate', 'font-semibold');
+      document.getElementById('btn-fric-' + idx).classList.remove('border-subtleBorder', 'bg-nordicStone', 'text-bodyDark', 'font-medium');
+
+      document.getElementById('fric-box-1').classList.add('hidden');
+      document.getElementById('fric-box-2').classList.add('hidden');
+      document.getElementById('fric-box-3').classList.add('hidden');
+      document.getElementById('fric-box-' + idx).classList.remove('hidden');
+    }
+
+    function submitNordicForm(e) {
+      e.preventDefault();
+      document.getElementById('nordic-form').classList.add('hidden');
+      document.getElementById('nordic-success').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>

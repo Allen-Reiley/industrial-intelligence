@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraWorks | The Dual-Engine Business Architecture</title>
+  <meta name="description" content="AuraWorks designs custom software to power both sides of your business: automated online sales and smooth internal operations.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#090D14',
+            surfaceDark: '#111726',
+            blueprint: '#0F172A',
+            emeraldGlow: '#10B981',
+            amberGlow: '#F59E0B',
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .split-container { display: flex; flex-direction: column; }
+    @media (min-width: 1024px) {
+      .split-container { flex-direction: row; }
+    }
+    .left-pane { background: #090D14; color: #F1F5F9; }
+    .right-pane { background: #F8FAFC; color: #0F172A; }
+    .card-dark { background: #111726; border: 1px solid rgba(255,255,255,0.08); }
+    .card-light { background: #FFFFFF; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+  </style>
+</head>
+<body class="font-sans antialiased bg-obsidian">
+
+  <!-- TOP HEADER -->
+  <header class="border-b border-white/10 bg-obsidian/95 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center font-display font-bold text-obsidian text-xl shadow-lg shadow-emerald-500/20">
+          AW
+        </div>
+        <div>
+          <span class="font-display font-bold text-white text-lg tracking-tight">AuraWorks</span>
+          <span class="block text-[11px] font-mono text-emerald-400 tracking-wider">Dual-Engine Business Systems</span>
+        </div>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
+        <a href="#dual-demo" class="hover:text-white transition-colors">Interactive Dual View</a>
+        <a href="#couch-story" class="hover:text-white transition-colors">Client Case Study</a>
+        <a href="#sectors" class="hover:text-white transition-colors">Products & Services</a>
+        <a href="#process" class="hover:text-white transition-colors">3-Step Rollout</a>
+      </nav>
+
+      <div>
+        <button onclick="toggleDrawer()" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-obsidian font-bold text-xs tracking-wide transition-all shadow-md shadow-emerald-500/20">
+          Request a Custom Blueprint
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- INTRO BANNER -->
+  <section class="py-16 md:py-24 text-center px-6 border-b border-white/10 bg-gradient-to-b from-obsidian via-surfaceDark to-obsidian">
+    <div class="max-w-4xl mx-auto">
+      <span class="inline-block px-3 py-1 rounded-full text-xs font-mono font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 mb-4">
+        Outcome-Driven Business Software
+      </span>
+      <h1 class="font-display text-4xl sm:text-6xl font-bold text-white tracking-tight leading-tight mb-6">
+        Every Business Needs Two Engines to Scale: <br class="hidden sm:inline">
+        <span class="text-emerald-400">A Sales Engine</span> and <span class="text-amber-400">An Operations Engine</span>.
+      </h1>
+      <p class="text-lg text-slate-400 max-w-2xl mx-auto mb-8 font-normal leading-relaxed">
+        If you only build a pretty website, your workshop gets crushed by unorganized orders. If you only fix internal admin, you miss high-ticket clients. 
+        AuraWorks engineers both sides so they work together seamlessly.
+      </p>
+
+      <div class="flex flex-wrap items-center justify-center gap-4">
+        <button onclick="toggleDrawer()" class="px-8 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-obsidian font-bold text-sm transition-all shadow-lg shadow-emerald-500/25">
+          Schedule a Free Systems Consultation &rarr;
+        </button>
+        <a href="#dual-demo" class="px-7 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium text-sm border border-white/10 transition-all">
+          Explore the Interactive Split Demo &darr;
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- THE DUAL-ENGINE SPLIT VIEW SECTION -->
+  <section id="dual-demo" class="border-b border-white/10">
+    <div class="text-center py-8 bg-surfaceDark border-b border-white/5">
+      <h2 class="font-display text-2xl font-bold text-white">Live System Synchronization Demo</h2>
+      <p class="text-xs text-slate-400 mt-1">See how an action on the left (Customer Storefront) instantly updates the right (Factory Floor Dashboard)</p>
+    </div>
+
+    <div class="split-container min-h-[700px]">
+      
+      <!-- LEFT PANE: FRONT STAGE (REVENUE & CUSTOMER EXPERIENCE) -->
+      <div class="left-pane lg:w-1/2 p-8 sm:p-12 border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-8 pb-4 border-b border-white/10">
+            <div>
+              <span class="text-xs font-mono uppercase text-emerald-400 font-semibold block">Engine 01 &bull; Front Stage</span>
+              <h3 class="text-2xl font-bold text-white font-display">Customer Storefront & Quoting</h3>
+            </div>
+            <span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-mono font-medium border border-emerald-500/20">
+              Makes You Money
+            </span>
+          </div>
+
+          <p class="text-sm text-slate-400 mb-6">
+            Instead of customers messaging back and forth for 3 days on WhatsApp, they design their custom couch in seconds:
+          </p>
+
+          <!-- Interactive Couch Selector -->
+          <div class="card-dark p-6 rounded-2xl mb-6">
+            <label class="block text-xs font-mono text-slate-400 uppercase tracking-wider mb-2">1. Choose Couch Size & Layout:</label>
+            <div class="grid grid-cols-2 gap-3 mb-5">
+              <button onclick="setSplitModel('3-Seater Classic (2.2m)', '12m', 'Bay 1')" class="split-model-btn p-3 rounded-xl border border-emerald-500 bg-emerald-500/10 text-white text-xs font-bold text-left transition-all">
+                3-Seater Classic (2.2m)
+                <span class="block text-[10px] text-slate-400 font-normal mt-0.5">Compact luxury living</span>
+              </button>
+              <button onclick="setSplitModel('Modular Chaise (3.0m)', '18m', 'Bay 2')" class="split-model-btn p-3 rounded-xl border border-white/10 bg-white/5 text-slate-300 text-xs font-bold text-left hover:border-white/30 transition-all">
+                Modular Chaise (3.0m)
+                <span class="block text-[10px] text-slate-400 font-normal mt-0.5">Extended corner lounging</span>
+              </button>
+            </div>
+
+            <label class="block text-xs font-mono text-slate-400 uppercase tracking-wider mb-2">2. Select Fabric Grade:</label>
+            <div class="grid grid-cols-3 gap-2 mb-5">
+              <button onclick="setSplitFabric('Emerald Velvet', '#047857')" class="split-fab-btn p-2 rounded-lg border border-emerald-500 bg-emerald-500/10 text-emerald-300 text-xs font-medium text-center">
+                Emerald Velvet
+              </button>
+              <button onclick="setSplitFabric('Cognac Leather', '#B45309')" class="split-fab-btn p-2 rounded-lg border border-white/10 bg-white/5 text-slate-300 text-xs font-medium text-center hover:border-white/30">
+                Cognac Leather
+              </button>
+              <button onclick="setSplitFabric('Oatmeal Bouclé', '#CBD5E1')" class="split-fab-btn p-2 rounded-lg border border-white/10 bg-white/5 text-slate-300 text-xs font-medium text-center hover:border-white/30">
+                Oatmeal Bouclé
+              </button>
+            </div>
+
+            <!-- Customer Checkout Preview -->
+            <div class="bg-obsidian p-4 rounded-xl border border-white/5 flex items-center justify-between">
+              <div>
+                <span class="text-[11px] text-slate-400 block font-mono">50% Production Deposit:</span>
+                <span class="text-sm font-bold text-white">Calculated Upfront on Web</span>
+              </div>
+              <button onclick="triggerCustomerCheckout()" id="btn-customer-action" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-obsidian text-xs font-bold rounded-lg transition-all shadow-md shadow-emerald-500/20">
+                Simulate Deposit Paid &rarr;
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-white/10 text-xs text-slate-400">
+          <strong class="text-white">Customer Benefit:</strong> Clear visuals, no waiting on manual quotes, instant confirmation of lead time and specifications.
+        </div>
+      </div>
+
+      <!-- RIGHT PANE: BACK STAGE (EFFICIENCY & FACTORY OPERATIONS) -->
+      <div class="right-pane lg:w-1/2 p-8 sm:p-12 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-200">
+            <div>
+              <span class="text-xs font-mono uppercase text-amber-600 font-semibold block">Engine 02 &bull; Back Stage</span>
+              <h3 class="text-2xl font-bold text-slate-900 font-display">Workshop &amp; Production Control</h3>
+            </div>
+            <span class="px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 text-xs font-mono font-medium border border-amber-500/20">
+              Runs Without Chaos
+            </span>
+          </div>
+
+          <p class="text-sm text-slate-600 mb-6">
+            The moment the customer hits deposit on the left, this factory ticket generates on the right without any phone calls:
+          </p>
+
+          <!-- Factory Ticket View -->
+          <div class="card-light p-6 rounded-2xl mb-6">
+            <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+              <span class="text-xs font-mono font-bold text-slate-700" id="ticket-id-display">PRODUCTION TICKET #AW-9201</span>
+              <span id="factory-status-pill" class="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold bg-amber-100 text-amber-800">
+                AWAITING DEPOSIT
+              </span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 text-xs font-mono mb-4">
+              <div>
+                <span class="text-slate-400 block mb-0.5">ITEM TO BUILD</span>
+                <span id="fact-spec" class="font-bold text-slate-900 text-sm">3-Seater Classic (2.2m)</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block mb-0.5">FABRIC YARDAGE</span>
+                <span id="fact-fabric" class="font-bold text-emerald-700 text-sm">12m Emerald Velvet</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block mb-0.5">ASSIGNED BAY</span>
+                <span id="fact-bay" class="font-bold text-slate-900 text-sm">Bay 1 (Timber & Foam)</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block mb-0.5">CUTTING SCHEDULE</span>
+                <span class="font-bold text-slate-900 text-sm">Auto-Generated</span>
+              </div>
+            </div>
+
+            <div class="space-y-2 pt-2 border-t border-slate-100 text-xs">
+              <div class="flex items-center justify-between p-2 rounded bg-slate-50 border border-slate-200">
+                <span class="text-slate-700">Frame Timber Cut-Sheet Dispatched</span>
+                <span id="step-cut" class="font-mono text-[10px] text-slate-400">PENDING</span>
+              </div>
+              <div class="flex items-center justify-between p-2 rounded bg-slate-50 border border-slate-200">
+                <span class="text-slate-700">Fabric Swatch & Bolt Pulled from Inventory</span>
+                <span id="step-fab" class="font-mono text-[10px] text-slate-400">PENDING</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-200 text-xs text-slate-600">
+          <strong class="text-slate-900">Workshop Benefit:</strong> Your factory floor operates with zero ambiguity. Carpenters and upholsterers build exactly what was paid for.
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CLIENT SPOTLIGHT: THE CUSTOM COUCH BUILDER -->
+  <section id="couch-story" class="py-24 px-6 bg-obsidian border-b border-white/10">
+    <div class="max-w-6xl mx-auto">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <span class="text-xs font-mono uppercase tracking-widest text-emerald-400 font-semibold block">
+            Featured Case Study
+          </span>
+          <h2 class="font-display text-3xl sm:text-5xl font-bold text-white tracking-tight leading-tight">
+            How a Custom Couch Manufacturer Eliminated Quoting Bottlenecks
+          </h2>
+          <p class="text-slate-300 text-base leading-relaxed">
+            Custom furniture is notoriously hard to sell online because buyers need custom lengths, depths, and fabrics. 
+            Before partnering with AuraWorks, the founder spent up to 45 minutes on WhatsApp quoting each couch, and the factory repeatedly misread handwritten order slips.
+          </p>
+
+          <div class="grid grid-cols-2 gap-4 pt-2">
+            <div class="card-dark p-4 rounded-xl">
+              <span class="text-2xl font-bold text-emerald-400 font-display block">Instant</span>
+              <span class="text-xs text-slate-400">Online 50% deposit checkout</span>
+            </div>
+            <div class="card-dark p-4 rounded-xl">
+              <span class="text-2xl font-bold text-white font-display block">20+ Hours</span>
+              <span class="text-xs text-slate-400">Admin saved weekly by the owner</span>
+            </div>
+            <div class="card-dark p-4 rounded-xl">
+              <span class="text-2xl font-bold text-white font-display block">Zero</span>
+              <span class="text-xs text-slate-400">Fabric cutting & size errors</span>
+            </div>
+            <div class="card-dark p-4 rounded-xl">
+              <span class="text-2xl font-bold text-emerald-400 font-display block">+35%</span>
+              <span class="text-xs text-slate-400">Increase in monthly completed orders</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 card-dark p-8 sm:p-10 rounded-3xl border border-white/10">
+          <h3 class="text-xl font-bold text-white font-display mb-4">What AuraWorks Built for Them:</h3>
+          <ul class="space-y-4 text-sm text-slate-300">
+            <li class="flex items-start gap-3">
+              <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">1</span>
+              <div>
+                <strong class="text-white block">Visual Couch Configurator:</strong>
+                Customers choose modular configurations, fabric swatches, and leg colors with instant visual feedback and accurate lead times.
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">2</span>
+              <div>
+                <strong class="text-white block">Automated 50% Deposit Gateway:</strong>
+                Locks in high-intent buyers immediately before any timber is ordered or cutting begins.
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">3</span>
+              <div>
+                <strong class="text-white block">Live Workshop Bay Dashboard:</strong>
+                Workshop tablets display the exact cut-list, foam density, and upholstery instructions for every order in real time.
+              </div>
+            </li>
+          </ul>
+
+          <div class="mt-8 pt-6 border-t border-white/10">
+            <button onclick="toggleDrawer()" class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-obsidian font-bold text-xs tracking-wide transition-all text-center">
+              Build a System Like This for My Business
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- APPLIES TO BOTH PRODUCTS & SERVICES -->
+  <section id="sectors" class="py-24 px-6 bg-surfaceDark border-b border-white/10">
+    <div class="max-w-6xl mx-auto">
+      
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <span class="text-xs font-mono uppercase tracking-widest text-emerald-400 font-semibold block mb-2">Flexible Systems</span>
+        <h2 class="font-display text-3xl sm:text-5xl font-bold text-white tracking-tight">
+          Built for Product &amp; Service Companies
+        </h2>
+        <p class="text-slate-400 text-base mt-4">
+          You don't need to fit into a pre-made template. We build around how your business makes money.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <!-- Product card -->
+        <div class="card-dark p-8 rounded-2xl border border-white/10">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold mb-4 font-mono">
+            PROD
+          </div>
+          <h3 class="text-xl font-bold text-white font-display mb-2">Product-Based Businesses</h3>
+          <p class="text-slate-400 text-sm mb-6">
+            For businesses manufacturing or selling physical goods with variations, custom sizes, or made-to-order specs.
+          </p>
+          <div class="space-y-3 text-xs text-slate-300 font-mono">
+            <div class="p-3 rounded-lg bg-obsidian border border-white/5">
+              &bull; <strong>Custom Furniture:</strong> Sofas, dining tables, modular cabinetry
+            </div>
+            <div class="p-3 rounded-lg bg-obsidian border border-white/5">
+              &bull; <strong>Architectural Elements:</strong> Steel doors, pergolas, custom glass
+            </div>
+            <div class="p-3 rounded-lg bg-obsidian border border-white/5">
+              &bull; <strong>Fabrication:</strong> Campers, trailers, braai units, metalwork
+            </div>
+          </div>
+        </div>
+
+        <!-- Service card -->
+        <div class="card-dark p-8 rounded-2xl border border-white/10">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold mb-4 font-mono">
+            SERV
+          </div>
+          <h3 class="text-xl font-bold text-white font-display mb-2">Service-Based Businesses</h3>
+          <p class="text-slate-400 text-sm mb-6">
+            For specialized contractors, trades, and service firms with multi-step quoting, job scheduling, and site visits.
+          </p>
+          <div class="space-y-3 text-xs text-slate-300 font-mono">
+            <div class="p-3 rounded-lg bg-obsidian border border-white/5">
+              &bull; <strong>Contractors:</strong> Commercial fitouts, renovations, HVAC & solar
+            </div>
+            <div class="p-3 rounded-lg bg-obsidian border border-white/5">
+              &bull; <strong>Specialized Trades:</strong> Flooring, acoustic panels, custom lighting
+            </div>
+            <div class="p-3 rounded-lg bg-obsidian border border-white/5">
+              &bull; <strong>Consultants:</strong> Engineering assessments, architectural planning
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 3-STEP ROLLOUT -->
+  <section id="process" class="py-24 px-6 bg-obsidian border-b border-white/10">
+    <div class="max-w-5xl mx-auto text-center">
+      <span class="text-xs font-mono uppercase tracking-widest text-emerald-400 font-semibold block mb-2">Simple Implementation</span>
+      <h2 class="font-display text-3xl sm:text-4xl font-bold text-white mb-12">
+        How We Work Together (No Tech Expertise Needed)
+      </h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+        <div class="card-dark p-6 rounded-2xl">
+          <span class="text-3xl font-display font-bold text-emerald-400 block mb-3">01</span>
+          <h4 class="text-base font-bold text-white mb-2">We Map Your Headaches</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            In one friendly conversation, you show us your current sales and workshop process. We pinpoint where you lose time and money.
+          </p>
+        </div>
+
+        <div class="card-dark p-6 rounded-2xl">
+          <span class="text-3xl font-display font-bold text-emerald-400 block mb-3">02</span>
+          <h4 class="text-base font-bold text-white mb-2">We Engineer Both Engines</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            We build your custom customer-facing storefront and connect it directly to your team's live operations dashboard.
+          </p>
+        </div>
+
+        <div class="card-dark p-6 rounded-2xl">
+          <span class="text-3xl font-display font-bold text-emerald-400 block mb-3">03</span>
+          <h4 class="text-base font-bold text-white mb-2">We Train Your Staff</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            We hand you a system so simple that even the least technical person in your workshop or office can master it in 15 minutes.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOTTOM CALL TO ACTION -->
+  <section class="py-20 px-6 bg-surfaceDark text-center">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="font-display text-3xl sm:text-4xl font-bold text-white mb-4">
+        Ready to make your business run smoothly and make more money?
+      </h2>
+      <p class="text-slate-400 text-sm mb-8">
+        Tell us about your products or services. We will outline the exact software blueprint to streamline your workflow.
+      </p>
+      <button onclick="toggleDrawer()" class="px-9 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-obsidian font-bold text-sm tracking-wide transition-all shadow-xl shadow-emerald-500/25">
+        Request Your Custom Solution Blueprint &rarr;
+      </button>
+    </div>
+  </section>
+
+  <!-- SLIDE-OVER INQUIRY DRAWER -->
+  <div id="slide-drawer" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden justify-end">
+    <div class="bg-surfaceDark w-full max-w-md h-full p-8 overflow-y-auto border-l border-white/10 flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between pb-6 border-b border-white/10 mb-6">
+          <h3 class="font-display text-xl font-bold text-white">Start Your Project</h3>
+          <button onclick="toggleDrawer()" class="text-slate-400 hover:text-white text-2xl font-bold">&times;</button>
+        </div>
+
+        <p class="text-xs text-slate-400 mb-6">
+          Tell us about what you sell. No technical jargon required.
+        </p>
+
+        <form id="drawer-form" onsubmit="handleDrawerSubmit(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-mono text-slate-300 uppercase mb-1">Your Name</label>
+            <input type="text" required placeholder="Johan van der Merwe" class="w-full px-3.5 py-2.5 rounded-lg bg-obsidian border border-slate-700 text-white text-sm focus:border-emerald-400 focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block text-xs font-mono text-slate-300 uppercase mb-1">Company / Brand Name</label>
+            <input type="text" required placeholder="Cape Bespoke Studios" class="w-full px-3.5 py-2.5 rounded-lg bg-obsidian border border-slate-700 text-white text-sm focus:border-emerald-400 focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block text-xs font-mono text-slate-300 uppercase mb-1">Business Type</label>
+            <select class="w-full px-3.5 py-2.5 rounded-lg bg-obsidian border border-slate-700 text-white text-sm focus:border-emerald-400 focus:outline-none">
+              <option>Product-Based (We manufacture custom goods / furniture)</option>
+              <option>Service-Based (Specialized contracting / trade)</option>
+              <option>Both Products and Services</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-mono text-slate-300 uppercase mb-1">What takes too much manual time right now?</label>
+            <textarea rows="3" placeholder="e.g. Taking 3 days to prepare quotes, managing orders on WhatsApp..." class="w-full px-3.5 py-2.5 rounded-lg bg-obsidian border border-slate-700 text-white text-sm focus:border-emerald-400 focus:outline-none"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-mono text-slate-300 uppercase mb-1">Email or Phone</label>
+            <input type="text" required placeholder="johan@capebespoke.co.za / 082..." class="w-full px-3.5 py-2.5 rounded-lg bg-obsidian border border-slate-700 text-white text-sm focus:border-emerald-400 focus:outline-none">
+          </div>
+
+          <button type="submit" class="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-obsidian font-bold text-sm tracking-wide transition-all mt-4">
+            Request Free Assessment Call &rarr;
+          </button>
+        </form>
+
+        <div id="drawer-success" class="hidden text-center py-10 space-y-3">
+          <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto text-2xl">&check;</div>
+          <h4 class="font-display text-xl font-bold text-white">We've Received Your Details</h4>
+          <p class="text-xs text-slate-400">Our systems engineer will review your workflow and contact you within 4 hours.</p>
+          <button onclick="toggleDrawer()" class="px-4 py-2 bg-slate-800 text-white text-xs rounded-lg mt-4">Close</button>
+        </div>
+      </div>
+
+      <div class="text-[11px] font-mono text-slate-500 pt-6 border-t border-white/10 text-center">
+        AuraWorks Systems Studio &bull; South Africa
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT -->
+  <script>
+    function toggleDrawer() {
+      const drawer = document.getElementById('slide-drawer');
+      if (drawer.classList.contains('hidden')) {
+        drawer.classList.remove('hidden');
+        drawer.classList.add('flex');
+      } else {
+        drawer.classList.add('hidden');
+        drawer.classList.remove('flex');
+      }
+    }
+
+    let currentSplitModel = '3-Seater Classic (2.2m)';
+    let currentSplitFabric = 'Emerald Velvet';
+
+    function setSplitModel(model, yardage, bay) {
+      currentSplitModel = model;
+      document.querySelectorAll('.split-model-btn').forEach(btn => {
+        btn.classList.remove('border-emerald-500', 'bg-emerald-500/10', 'text-white');
+        btn.classList.add('border-white/10', 'bg-white/5', 'text-slate-300');
+      });
+      event.currentTarget.classList.add('border-emerald-500', 'bg-emerald-500/10', 'text-white');
+      event.currentTarget.classList.remove('border-white/10', 'bg-white/5', 'text-slate-300');
+
+      // Update right pane
+      document.getElementById('fact-spec').innerText = model;
+      document.getElementById('fact-fabric').innerText = yardage + " " + currentSplitFabric;
+      document.getElementById('fact-bay').innerText = bay + " (Timber & Foam)";
+    }
+
+    function setSplitFabric(fabric, colorHex) {
+      currentSplitFabric = fabric;
+      document.querySelectorAll('.split-fab-btn').forEach(btn => {
+        btn.classList.remove('border-emerald-500', 'bg-emerald-500/10', 'text-emerald-300');
+        btn.classList.add('border-white/10', 'bg-white/5', 'text-slate-300');
+      });
+      event.currentTarget.classList.add('border-emerald-500', 'bg-emerald-500/10', 'text-emerald-300');
+      event.currentTarget.classList.remove('border-white/10', 'bg-white/5', 'text-slate-300');
+
+      const currentYardage = document.getElementById('fact-fabric').innerText.split(' ')[0] || '12m';
+      document.getElementById('fact-fabric').innerText = currentYardage + " " + fabric;
+    }
+
+    function triggerCustomerCheckout() {
+      const btn = document.getElementById('btn-customer-action');
+      btn.innerText = "Processing Deposit...";
+      btn.classList.add('opacity-70');
+
+      setTimeout(() => {
+        btn.innerText = "Deposit Confirmed ✓";
+        btn.classList.remove('opacity-70');
+        
+        // Update right pane status
+        const pill = document.getElementById('factory-status-pill');
+        pill.innerText = "DEPOSIT SECURED • IN PRODUCTION";
+        pill.className = "px-2.5 py-0.5 rounded text-[11px] font-mono font-bold bg-emerald-100 text-emerald-800 animate-pulse";
+
+        document.getElementById('step-cut').innerText = "DISPATCHED TO BAY ✓";
+        document.getElementById('step-cut').className = "font-mono text-[10px] text-emerald-700 font-bold";
+        document.getElementById('step-fab').innerText = "FABRIC RESERVED ✓";
+        document.getElementById('step-fab').className = "font-mono text-[10px] text-emerald-700 font-bold";
+
+        setTimeout(() => {
+          btn.innerText = "Simulate Deposit Paid →";
+          pill.classList.remove('animate-pulse');
+        }, 3500);
+      }, 600);
+    }
+
+    function handleDrawerSubmit(e) {
+      e.preventDefault();
+      document.getElementById('drawer-form').classList.add('hidden');
+      document.getElementById('drawer-success').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>

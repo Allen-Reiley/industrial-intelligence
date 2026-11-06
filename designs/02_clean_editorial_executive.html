@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraWorks | Bespoke Digital Systems for Growing Businesses</title>
+  <meta name="description" content="AuraWorks designs custom software, ecommerce platforms, and operational dashboards that help businesses make money and run smoothly.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            sand: {
+              50: '#FDFCFB',
+              100: '#FAF8F5',
+              200: '#F3EFEA',
+              300: '#E7DFD5',
+            },
+            charcoal: {
+              900: '#1C1917',
+              800: '#292524',
+              700: '#44403C',
+              600: '#57534E',
+            },
+            terracotta: {
+              600: '#C86D51',
+              700: '#B0563B',
+            },
+            forest: {
+              700: '#233831',
+              800: '#182A24',
+            }
+          },
+          fontFamily: {
+            serif: ['Fraunces', 'Georgia', 'serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #FAF8F5; color: #292524; }
+    .paper-card { background-color: #FFFFFF; border: 1px solid #E7DFD5; box-shadow: 0 4px 20px -2px rgba(28, 25, 23, 0.04); }
+    .paper-card:hover { border-color: #C86D51; }
+    .border-warm { border-color: #E7DFD5; }
+  </style>
+</head>
+<body class="font-sans antialiased selection:bg-terracotta-600 selection:text-white">
+
+  <!-- TOP MINIMAL NAV -->
+  <header class="border-b border-warm bg-sand-100/90 backdrop-blur-md sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <a href="#" class="font-serif text-2xl font-bold tracking-tight text-charcoal-900">AuraWorks.</a>
+        <span class="hidden sm:inline-block text-xs uppercase tracking-widest text-charcoal-600 pl-4 border-l border-warm">
+          Systems &amp; Growth Studio
+        </span>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-charcoal-700">
+        <a href="#philosophy" class="hover:text-charcoal-900 transition-colors">Our Approach</a>
+        <a href="#two-engines" class="hover:text-charcoal-900 transition-colors">The Two Engines</a>
+        <a href="#case-study" class="hover:text-charcoal-900 transition-colors">Client Story</a>
+        <a href="#solutions" class="hover:text-charcoal-900 transition-colors">What We Build</a>
+        <a href="#faq" class="hover:text-charcoal-900 transition-colors">Common Questions</a>
+      </nav>
+
+      <div>
+        <button onclick="scrollToContact()" class="px-5 py-2.5 rounded-full bg-charcoal-900 hover:bg-charcoal-800 text-white text-xs font-semibold tracking-wide transition-all shadow-sm">
+          Start a Conversation
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- EDITORIAL HERO -->
+  <section class="py-20 md:py-32 border-b border-warm">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="max-w-3xl">
+        <span class="text-xs uppercase tracking-widest font-semibold text-terracotta-600 mb-4 block">
+          Custom Business Architecture
+        </span>
+        <h1 class="font-serif text-4xl sm:text-6xl text-charcoal-900 leading-[1.15] tracking-tight mb-8">
+          We build the custom tools your business wishes existed off the shelf.
+        </h1>
+        <p class="text-lg sm:text-xl text-charcoal-600 font-normal leading-relaxed mb-10">
+          Most software forces your company into a generic mold that doesn’t fit your workflow. 
+          AuraWorks designs bespoke digital storefronts, interactive quoting engines, and internal operations dashboards that help you <strong class="text-charcoal-900 font-semibold">close more revenue</strong> and <strong class="text-charcoal-900 font-semibold">run without chaos</strong>.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <button onclick="scrollToContact()" class="px-8 py-4 rounded-full bg-charcoal-900 hover:bg-charcoal-800 text-white text-sm font-semibold tracking-wide transition-all shadow-md">
+            Request a Free Solution Assessment
+          </button>
+          <a href="#case-study" class="px-7 py-4 rounded-full border border-warm bg-white hover:bg-sand-50 text-charcoal-800 text-sm font-medium transition-all">
+            Read the Couch Studio Case Study &darr;
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Executive Facts Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20 pt-12 border-t border-warm">
+        <div>
+          <span class="font-serif text-3xl text-charcoal-900 block mb-2">Zero Tech Jargon</span>
+          <p class="text-sm text-charcoal-600 leading-relaxed">
+            We speak in terms of sales, hours saved, and customer satisfaction. Even the least technical person in your company will love using what we build.
+          </p>
+        </div>
+        <div>
+          <span class="font-serif text-3xl text-charcoal-900 block mb-2">Products &amp; Services</span>
+          <p class="text-sm text-charcoal-600 leading-relaxed">
+            Whether you manufacture physical furniture or provide specialized commercial services, we engineer systems around your actual operating reality.
+          </p>
+        </div>
+        <div>
+          <span class="font-serif text-3xl text-charcoal-900 block mb-2">Outcome Driven</span>
+          <p class="text-sm text-charcoal-600 leading-relaxed">
+            We don’t build websites for visual novelty. Every system is measured by how much time it frees up and how much revenue it generates.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- THE TWO ENGINES OF MODERN BUSINESS GROWTH -->
+  <section id="two-engines" class="py-24 border-b border-warm bg-white">
+    <div class="max-w-6xl mx-auto px-6">
+      
+      <div class="max-w-2xl mb-16">
+        <span class="text-xs uppercase tracking-widest font-semibold text-terracotta-600 mb-2 block">The Architecture</span>
+        <h2 class="font-serif text-3xl sm:text-4xl text-charcoal-900 tracking-tight mb-4">
+          Every flourishing company requires two well-oiled engines.
+        </h2>
+        <p class="text-charcoal-600 text-base leading-relaxed">
+          When one breaks, your business either stops growing or implodes from internal disorganization. We engineer both engines so they talk to each other seamlessly.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+        
+        <!-- Engine 1 -->
+        <div class="paper-card p-10 rounded-3xl relative">
+          <div class="w-12 h-12 rounded-2xl bg-sand-200 flex items-center justify-center font-serif text-xl font-bold text-charcoal-900 mb-6">
+            01
+          </div>
+          <h3 class="font-serif text-2xl font-bold text-charcoal-900 mb-3">The Revenue Engine (Front-Stage)</h3>
+          <p class="text-charcoal-600 text-sm leading-relaxed mb-6">
+            What your customers experience. We turn your website from a passive digital brochure into an active sales machine that captures orders around the clock.
+          </p>
+          <ul class="space-y-3 text-sm text-charcoal-700">
+            <li class="flex items-start gap-3">
+              <span class="text-terracotta-600 font-bold">&check;</span>
+              <span><strong>Visual Product Configurators:</strong> Customers customize sizes, finishes, and specs with instant pricing.</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-terracotta-600 font-bold">&check;</span>
+              <span><strong>Upfront Deposit Capture:</strong> Secure 50% deposits directly on the web before any physical production starts.</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-terracotta-600 font-bold">&check;</span>
+              <span><strong>Frictionless Inquiries:</strong> Eliminate 10-message WhatsApp threads with clear, structured request forms.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Engine 2 -->
+        <div class="paper-card p-10 rounded-3xl relative">
+          <div class="w-12 h-12 rounded-2xl bg-sand-200 flex items-center justify-center font-serif text-xl font-bold text-charcoal-900 mb-6">
+            02
+          </div>
+          <h3 class="font-serif text-2xl font-bold text-charcoal-900 mb-3">The Efficiency Engine (Back-Stage)</h3>
+          <p class="text-charcoal-600 text-sm leading-relaxed mb-6">
+            What your team uses behind the scenes. We replace chaotic spreadsheets and whiteboard scribbles with a clean, centralized operations dashboard.
+          </p>
+          <ul class="space-y-3 text-sm text-charcoal-700">
+            <li class="flex items-start gap-3">
+              <span class="text-terracotta-600 font-bold">&check;</span>
+              <span><strong>Live Production Queues:</strong> Workshop carpenters or field technicians see exactly what to work on next.</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-terracotta-600 font-bold">&check;</span>
+              <span><strong>Automated Cut-Sheets &amp; Bills of Material:</strong> Materials and dimensions calculate automatically from orders.</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-terracotta-600 font-bold">&check;</span>
+              <span><strong>Client Order Tracking:</strong> Customers check their own order status online, eliminating repetitive status calls.</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CASE STUDY: CUSTOM COUCH STUDIO -->
+  <section id="case-study" class="py-24 border-b border-warm bg-sand-100">
+    <div class="max-w-6xl mx-auto px-6">
+      
+      <div class="border-b border-warm pb-6 mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <span class="text-xs uppercase tracking-widest font-semibold text-terracotta-600 block mb-1">In-Depth Case Profile</span>
+          <h2 class="font-serif text-3xl sm:text-4xl text-charcoal-900">Transforming a Custom Couch Studio</h2>
+        </div>
+        <div class="text-xs font-mono uppercase text-charcoal-600">
+          Cape Town &bull; Made-to-Order Furniture
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+        
+        <div class="lg:col-span-7 space-y-8">
+          <p class="text-lg text-charcoal-700 leading-relaxed font-serif italic">
+            &ldquo;We were spending 3 hours a day sending fabric photos on WhatsApp and calculating custom couch lengths on scrap paper. Our workshop was overwhelmed by mistakes.&rdquo;
+          </p>
+
+          <div class="space-y-6 text-charcoal-700 text-sm leading-relaxed">
+            <div>
+              <h4 class="font-bold text-charcoal-900 text-base mb-2">1. The Operational Bottleneck</h4>
+              <p>
+                The furniture studio creates handcrafted couches with bespoke dimensions, imported linens, and modular configurations. Because every piece was custom, customers couldn't purchase directly online. The founder was inundated with over 40 WhatsApp messages daily, leading to missed inquiries, calculation errors on invoices, and delayed production starts.
+              </p>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-charcoal-900 text-base mb-2">2. The Bespoke Solution We Built</h4>
+              <p>
+                AuraWorks designed an intuitive online couch studio. Buyers can select their preferred layout (3-seater, L-shape, corner modular), choose from 24 premium fabrics with real-time photo renders, and pick timber leg stains. The system instantly calculates the exact price and collects a 50% deposit.
+              </p>
+              <p class="mt-2">
+                Simultaneously, the order feeds into an internal factory floor tablet dashboard. The timber frame cut-list and fabric yardage requirements are generated automatically and assigned to Bay 2 for production.
+              </p>
+            </div>
+
+            <div>
+              <h4 class="font-bold text-charcoal-900 text-base mb-2">3. The Tangible Results</h4>
+              <p>
+                Within the first 60 days, quoting time went from 48 hours to instant checkout. The company eliminated quote errors completely and saved 20+ hours of administrative work each week—allowing the team to craft and deliver 35% more couches every month.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metric Sidebar Card -->
+        <div class="lg:col-span-5">
+          <div class="paper-card p-8 rounded-3xl space-y-6">
+            <h4 class="font-serif text-xl font-bold text-charcoal-900 border-b border-warm pb-4">
+              At a Glance: The Outcome
+            </h4>
+
+            <div class="space-y-4">
+              <div class="p-4 rounded-2xl bg-sand-100 border border-warm">
+                <span class="text-xs uppercase tracking-wider text-charcoal-600 block">Quoting Delay</span>
+                <div class="flex items-baseline gap-2 mt-1">
+                  <span class="text-2xl font-bold font-serif text-charcoal-900">48 Hours &rarr; 30 Seconds</span>
+                </div>
+                <span class="text-xs text-charcoal-600">Customers configure and checkout instantly</span>
+              </div>
+
+              <div class="p-4 rounded-2xl bg-sand-100 border border-warm">
+                <span class="text-xs uppercase tracking-wider text-charcoal-600 block">Admin Time Recovered</span>
+                <div class="flex items-baseline gap-2 mt-1">
+                  <span class="text-2xl font-bold font-serif text-terracotta-600">20+ Hours / Week</span>
+                </div>
+                <span class="text-xs text-charcoal-600">No more manual invoice typing and photo messaging</span>
+              </div>
+
+              <div class="p-4 rounded-2xl bg-sand-100 border border-warm">
+                <span class="text-xs uppercase tracking-wider text-charcoal-600 block">Workshop Capacity Growth</span>
+                <div class="flex items-baseline gap-2 mt-1">
+                  <span class="text-2xl font-bold font-serif text-forest-700">+35% Monthly Volume</span>
+                </div>
+                <span class="text-xs text-charcoal-600">Factory bays run without waiting on order clarifications</span>
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <button onclick="scrollToContact()" class="w-full py-3.5 rounded-full bg-charcoal-900 hover:bg-charcoal-800 text-white text-xs font-semibold tracking-wide transition-all text-center">
+                Request a System for Your Business
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- INTERACTIVE COMMON SYMPTOMS ACCORDION -->
+  <section class="py-24 border-b border-warm bg-white">
+    <div class="max-w-4xl mx-auto px-6">
+      
+      <div class="text-center mb-16">
+        <span class="text-xs uppercase tracking-widest font-semibold text-terracotta-600 block mb-2">Self-Assessment</span>
+        <h2 class="font-serif text-3xl sm:text-4xl text-charcoal-900 tracking-tight mb-4">
+          Does Any of This Sound Familiar?
+        </h2>
+        <p class="text-charcoal-600 text-base">
+          Click any common operational bottleneck to see how we solve it with software.
+        </p>
+      </div>
+
+      <div class="space-y-4" id="symptoms-container">
+        
+        <!-- Accordion 1 -->
+        <div class="border border-warm rounded-2xl p-6 cursor-pointer bg-sand-50 transition-colors" onclick="toggleAccordion(1)">
+          <div class="flex items-center justify-between">
+            <h3 class="font-serif text-lg font-bold text-charcoal-900">
+              &ldquo;We lose high-value deals because quotes take 3 to 4 days to calculate.&rdquo;
+            </h3>
+            <span id="acc-icon-1" class="text-xl font-bold text-terracotta-600">&plus;</span>
+          </div>
+          <div id="acc-content-1" class="hidden mt-4 pt-4 border-t border-warm text-sm text-charcoal-700 leading-relaxed">
+            <strong>How AuraWorks Solves This:</strong> We build an interactive quoting engine embedded directly on your site. Customers select dimensions, materials, and options. The math is calculated dynamically using your exact formula, presenting an instant price or collecting an upfront deposit. You capture the customer while their intent is at its peak.
+          </div>
+        </div>
+
+        <!-- Accordion 2 -->
+        <div class="border border-warm rounded-2xl p-6 cursor-pointer bg-sand-50 transition-colors" onclick="toggleAccordion(2)">
+          <div class="flex items-center justify-between">
+            <h3 class="font-serif text-lg font-bold text-charcoal-900">
+              &ldquo;Custom orders slip through WhatsApp voice notes and lost email threads.&rdquo;
+            </h3>
+            <span id="acc-icon-2" class="text-xl font-bold text-terracotta-600">&plus;</span>
+          </div>
+          <div id="acc-content-2" class="hidden mt-4 pt-4 border-t border-warm text-sm text-charcoal-700 leading-relaxed">
+            <strong>How AuraWorks Solves This:</strong> We structure your intake. Every inquiry is gathered into a centralized dashboard with all specifications, reference files, and contact details in one spot. Automated emails confirm the order with the customer, while your team gets a single prioritized queue.
+          </div>
+        </div>
+
+        <!-- Accordion 3 -->
+        <div class="border border-warm rounded-2xl p-6 cursor-pointer bg-sand-50 transition-colors" onclick="toggleAccordion(3)">
+          <div class="flex items-center justify-between">
+            <h3 class="font-serif text-lg font-bold text-charcoal-900">
+              &ldquo;Our production team and office staff are constantly arguing over order details.&rdquo;
+            </h3>
+            <span id="acc-icon-3" class="text-xl font-bold text-terracotta-600">&plus;</span>
+          </div>
+          <div id="acc-content-3" class="hidden mt-4 pt-4 border-t border-warm text-sm text-charcoal-700 leading-relaxed">
+            <strong>How AuraWorks Solves This:</strong> When an order is approved, our system automatically generates production tickets with exact cut-lists, part numbers, and finish codes. The workshop works from unambiguous digital cards on tablets or printable sheets. No guesswork, no costly remakes.
+          </div>
+        </div>
+
+        <!-- Accordion 4 -->
+        <div class="border border-warm rounded-2xl p-6 cursor-pointer bg-sand-50 transition-colors" onclick="toggleAccordion(4)">
+          <div class="flex items-center justify-between">
+            <h3 class="font-serif text-lg font-bold text-charcoal-900">
+              &ldquo;Off-the-shelf software like Shopify doesn&apos;t understand our custom products.&rdquo;
+            </h3>
+            <span id="acc-icon-4" class="text-xl font-bold text-terracotta-600">&plus;</span>
+          </div>
+          <div id="acc-content-4" class="hidden mt-4 pt-4 border-t border-warm text-sm text-charcoal-700 leading-relaxed">
+            <strong>How AuraWorks Solves This:</strong> Generic ecommerce platforms are built for shipping standard T-shirts and mugs from a warehouse. We code custom web applications designed specifically for businesses with custom dimensions, bespoke finishes, lead-time schedules, and milestone deposits.
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- WHO WE PARTNER WITH: PRODUCTS & SERVICES -->
+  <section id="solutions" class="py-24 border-b border-warm bg-sand-100">
+    <div class="max-w-6xl mx-auto px-6">
+      
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <span class="text-xs uppercase tracking-widest font-semibold text-terracotta-600 block mb-2">Our Clientele</span>
+        <h2 class="font-serif text-3xl sm:text-4xl text-charcoal-900 tracking-tight mb-4">
+          Tailored for Both Product &amp; Service Companies
+        </h2>
+        <p class="text-charcoal-600 text-base">
+          If your business relies on manual quotes, custom specifications, or multi-step execution, we have a blueprint for you.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <div class="paper-card p-8 rounded-3xl">
+          <span class="text-xs font-semibold uppercase tracking-wider text-terracotta-600 block mb-2">Sector 01</span>
+          <h3 class="font-serif text-2xl font-bold text-charcoal-900 mb-3">Product-Based Businesses</h3>
+          <p class="text-sm text-charcoal-600 mb-6 leading-relaxed">
+            For manufacturers, custom ateliers, and workshops producing physical goods with options, sizes, and variations.
+          </p>
+          <ul class="space-y-2.5 text-xs text-charcoal-700">
+            <li class="flex items-center gap-2">&bull; <strong>Custom Furniture &amp; Cabinetry:</strong> Couches, dining tables, modular storage</li>
+            <li class="flex items-center gap-2">&bull; <strong>Architectural Finishes:</strong> Steel &amp; glass doors, custom tiles, lighting</li>
+            <li class="flex items-center gap-2">&bull; <strong>Specialized Equipment &amp; Fabrication:</strong> Campers, pergolas, trailers</li>
+          </ul>
+        </div>
+
+        <div class="paper-card p-8 rounded-3xl">
+          <span class="text-xs font-semibold uppercase tracking-wider text-forest-700 block mb-2">Sector 02</span>
+          <h3 class="font-serif text-2xl font-bold text-charcoal-900 mb-3">Service-Based Businesses</h3>
+          <p class="text-sm text-charcoal-600 mb-6 leading-relaxed">
+            For contractors, engineering specialists, and consulting firms whose jobs require scoping, contracts, and scheduling.
+          </p>
+          <ul class="space-y-2.5 text-xs text-charcoal-700">
+            <li class="flex items-center gap-2">&bull; <strong>Commercial Contractors &amp; Fitouts:</strong> Office installations, renovations</li>
+            <li class="flex items-center gap-2">&bull; <strong>Specialized Trade Services:</strong> Solar installers, precision HVAC, security</li>
+            <li class="flex items-center gap-2">&bull; <strong>Professional Consulting:</strong> Environmental audits, engineering sign-offs</li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CONTACT & SOLUTION ASSESSMENT INTAKE -->
+  <section id="contact-section" class="py-24 bg-white">
+    <div class="max-w-4xl mx-auto px-6">
+      
+      <div class="paper-card p-8 sm:p-14 rounded-3xl border-2 border-charcoal-900 relative">
+        <div class="max-w-xl mx-auto text-center mb-10">
+          <span class="text-xs uppercase tracking-widest font-semibold text-terracotta-600 block mb-2">Start the Conversation</span>
+          <h2 class="font-serif text-3xl sm:text-4xl text-charcoal-900 tracking-tight mb-3">
+            Tell us about your business workflow.
+          </h2>
+          <p class="text-sm text-charcoal-600">
+            No technical knowledge required. Tell us what you sell and where your team wastes time, and we'll show you what we can build to solve it.
+          </p>
+        </div>
+
+        <form id="editorial-form" onsubmit="submitEditorialForm(event)" class="space-y-5 max-w-xl mx-auto">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-charcoal-800 uppercase tracking-wider mb-1.5">Your Name</label>
+              <input type="text" required placeholder="Sarah Jenkins" class="w-full px-4 py-3 rounded-xl bg-sand-50 border border-warm text-charcoal-900 text-sm focus:border-charcoal-900 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-charcoal-800 uppercase tracking-wider mb-1.5">Business Name</label>
+              <input type="text" required placeholder="Jenkins Fine Joinery" class="w-full px-4 py-3 rounded-xl bg-sand-50 border border-warm text-charcoal-900 text-sm focus:border-charcoal-900 focus:outline-none">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-charcoal-800 uppercase tracking-wider mb-1.5">What type of business are you running?</label>
+            <select class="w-full px-4 py-3 rounded-xl bg-sand-50 border border-warm text-charcoal-900 text-sm focus:border-charcoal-900 focus:outline-none">
+              <option>Product Business (Custom physical goods / manufacturing)</option>
+              <option>Service Business (Contracting, trades, or professional consulting)</option>
+              <option>Hybrid (We sell both physical products and installation services)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-charcoal-800 uppercase tracking-wider mb-1.5">Where is your company losing the most time or money?</label>
+            <textarea rows="3" placeholder="e.g. Taking days to prepare custom quotes, managing jobs over WhatsApp, customers calling for updates..." class="w-full px-4 py-3 rounded-xl bg-sand-50 border border-warm text-charcoal-900 text-sm focus:border-charcoal-900 focus:outline-none"></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-charcoal-800 uppercase tracking-wider mb-1.5">Email Address</label>
+              <input type="email" required placeholder="sarah@jenkins.co.za" class="w-full px-4 py-3 rounded-xl bg-sand-50 border border-warm text-charcoal-900 text-sm focus:border-charcoal-900 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-charcoal-800 uppercase tracking-wider mb-1.5">Phone or WhatsApp</label>
+              <input type="tel" required placeholder="083 456 7890" class="w-full px-4 py-3 rounded-xl bg-sand-50 border border-warm text-charcoal-900 text-sm focus:border-charcoal-900 focus:outline-none">
+            </div>
+          </div>
+
+          <div class="pt-3">
+            <button type="submit" class="w-full py-4 rounded-full bg-charcoal-900 hover:bg-charcoal-800 text-white font-semibold text-sm tracking-wide transition-all shadow-md">
+              Request Your Custom Solution Assessment &rarr;
+            </button>
+          </div>
+        </form>
+
+        <div id="editorial-success" class="hidden text-center py-10 space-y-3">
+          <div class="w-12 h-12 rounded-full bg-forest-700/10 text-forest-700 flex items-center justify-center mx-auto text-2xl font-bold">&check;</div>
+          <h4 class="font-serif text-2xl font-bold text-charcoal-900">Inquiry Received</h4>
+          <p class="text-sm text-charcoal-600 max-w-md mx-auto">
+            Thank you. An AuraWorks partner will review your business workflow and prepare initial system recommendations before our call.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="py-12 border-t border-warm bg-sand-100 text-charcoal-600 text-xs">
+    <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-3">
+        <span class="font-serif font-bold text-base text-charcoal-900">AuraWorks.</span>
+        <span>&bull; Bespoke Digital Systems for South African Enterprise</span>
+      </div>
+      <div>
+        <span>Cape Town &bull; Johannesburg &bull; Serving Nationwide</span>
+      </div>
+      <div>
+        <span>&copy; 2026 AuraWorks Pty Ltd. All rights reserved.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function scrollToContact() {
+      document.getElementById('contact-section').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function toggleAccordion(idx) {
+      const content = document.getElementById('acc-content-' + idx);
+      const icon = document.getElementById('acc-icon-' + idx);
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.innerHTML = '&minus;';
+      } else {
+        content.classList.add('hidden');
+        icon.innerHTML = '&plus;';
+      }
+    }
+
+    function submitEditorialForm(e) {
+      e.preventDefault();
+      document.getElementById('editorial-form').classList.add('hidden');
+      document.getElementById('editorial-success').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>

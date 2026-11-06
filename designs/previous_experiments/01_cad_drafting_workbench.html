@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auraworks CAD Workbench | Precision Parametric Manufacturing Engine & Quoting Terminal</title>
+  <meta name="description" content="Full-screen interactive CAD drafting environment and parametric dimension quoting terminal for high-ticket physical product fabricators and architectural joiners.">
+  <meta name="robots" content="index, follow">
+
+  <!-- Preconnect Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       DESIGN SYSTEM TOKENS — FULL-SCREEN INTERACTIVE CAD WORKBENCH
+       Code: AW-ARCH-CAD-WORKBENCH
+       Archetype: Precision CAD Viewport, Coordinate HUD, Docked Engineering BOM
+       ========================================================================== */
+    :root {
+      --bg-blueprint: #060c18;
+      --bg-blueprint-dark: #03070f;
+      --bg-panel: #0b1325;
+      --bg-panel-elevated: #101c36;
+      --bg-dock-header: #0d172c;
+      
+      --border-cad: #1b2944;
+      --border-cad-bright: #2d436b;
+      --border-cyan: rgba(56, 189, 248, 0.4);
+
+      --cad-cyan: #38bdf8;
+      --cad-cyan-glow: rgba(56, 189, 248, 0.25);
+      --cad-cyan-dim: #0284c7;
+
+      --laser-amber: #f59e0b;
+      --laser-amber-glow: rgba(245, 158, 11, 0.25);
+
+      --signal-green: #10b981;
+      --signal-green-glow: rgba(16, 185, 129, 0.25);
+
+      --signal-red: #f43f5e;
+
+      --text-chalk: #f8fafc;
+      --text-slate: #94a3b8;
+      --text-dim: #475569;
+
+      --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', "SF Mono", Consolas, monospace;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+      --transition-snap: 120ms cubic-bezier(0, 0, 0.2, 1);
+    }
+
+    /* Base Reset & Application Viewport Constraints */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: var(--bg-blueprint);
+      color: var(--text-slate);
+      font-family: var(--font-body);
+      font-size: 13px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    ::selection {
+      background-color: var(--cad-cyan);
+      color: #060c18;
+    }
+
+    /* Full-Screen Application Shell Grid */
+    .cad-app-shell {
+      display: grid;
+      grid-template-rows: 44px 1fr 48px;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ==========================================================================
+       1. TOP CAD COMMAND BAR
+       ========================================================================== */
+    .cad-top-bar {
+      background-color: var(--bg-dock-header);
+      border-bottom: 1px solid var(--border-cad);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 100;
+    }
+
+    .top-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .brand-stamp {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .brand-glyph {
+      width: 24px;
+      height: 24px;
+      background-color: rgba(56, 189, 248, 0.12);
+      border: 1px solid var(--cad-cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--cad-cyan);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--text-chalk);
+      letter-spacing: 0.04em;
+    }
+
+    .project-docket-id {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--cad-cyan);
+      background-color: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      padding: 3px 8px;
+    }
+
+    /* Projection View Buttons */
+    .projection-controls {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background-color: var(--bg-blueprint-dark);
+      border: 1px solid var(--border-cad);
+      padding: 2px;
+    }
+
+    .proj-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-slate);
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 4px 10px;
+      cursor: pointer;
+      transition: all var(--transition-snap);
+    }
+
+    .proj-btn:hover {
+      color: var(--text-chalk);
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .proj-btn.active {
+      background-color: var(--cad-cyan);
+      color: #060c18;
+      font-weight: 700;
+    }
+
+    /* Right Command Items */
+    .top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .cursor-coordinate-hud {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--cad-cyan);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .coord-item {
+      display: flex;
+      gap: 4px;
+    }
+    .coord-item span {
+      color: var(--text-dim);
+    }
+
+    .capacity-badge {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--signal-green);
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      padding: 3px 10px;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--signal-green);
+      margin-right: 6px;
+      box-shadow: 0 0 8px var(--signal-green);
+      animation: cad-beacon 1.8s infinite;
+    }
+
+    @keyframes cad-beacon {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.85); }
+    }
+
+    .btn-top-audit {
+      background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+      border: 1px solid #7dd3fc;
+      color: #060c18;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      padding: 6px 14px;
+      cursor: pointer;
+      transition: all var(--transition-snap);
+    }
+
+    .btn-top-audit:hover {
+      box-shadow: 0 0 16px var(--cad-cyan-glow);
+      filter: brightness(1.1);
+    }
+
+    /* ==========================================================================
+       2. WORKSPACE CENTERPIECE (LEFT TOOLBAR + CANVAS + RIGHT BOM)
+       ========================================================================== */
+    .cad-workspace {
+      display: grid;
+      grid-template-columns: 290px 1fr 350px;
+      height: calc(100vh - 92px);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* --- Left Tool & Layer Inspector --- */
+    .cad-left-dock {
+      background-color: var(--bg-panel);
+      border-right: 1px solid var(--border-cad);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      z-index: 50;
+    }
+
+    .dock-title-strip {
+      background-color: var(--bg-dock-header);
+      border-bottom: 1px solid var(--border-cad);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .dock-title {
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-chalk);
+      letter-spacing: 0.05em;
+    }
+
+    .dock-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--cad-cyan);
+    }
+
+    .dock-content {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Parameter Sliders in CAD Style */
+    .cad-control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .cad-control-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .cad-control-label .name {
+      color: var(--text-slate);
+    }
+
+    .cad-control-label .val {
+      color: var(--cad-cyan);
+      font-weight: 700;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      background: var(--border-cad);
+      outline: none;
+      border-radius: 0;
+      margin: 4px 0;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      background: var(--cad-cyan);
+      border: 1px solid #ffffff;
+      cursor: ew-resize;
+      box-shadow: 0 0 8px var(--cad-cyan-glow);
+      transition: transform var(--transition-snap);
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .slider-bounds {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: var(--text-dim);
+    }
+
+    /* Substrate Swatches in CAD */
+    .substrate-buttons {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+
+    .sub-btn {
+      background-color: var(--bg-panel-elevated);
+      border: 1px solid var(--border-cad);
+      padding: 8px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      color: var(--text-slate);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-align: left;
+      transition: all var(--transition-snap);
+    }
+
+    .sub-btn:hover {
+      border-color: var(--border-cad-bright);
+      color: var(--text-chalk);
+    }
+
+    .sub-btn.active {
+      border-color: var(--cad-cyan);
+      background-color: rgba(56, 189, 248, 0.1);
+      color: var(--cad-cyan);
+    }
+
+    .sub-btn .mult {
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    .sub-btn.active .mult {
+      color: var(--cad-cyan);
+      font-weight: 700;
+    }
+
+    /* Presets for Sub-Sectors */
+    .preset-chips {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .preset-btn {
+      background-color: var(--bg-panel-elevated);
+      border: 1px solid var(--border-cad);
+      color: var(--text-slate);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 6px 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: all var(--transition-snap);
+    }
+
+    .preset-btn:hover {
+      border-color: var(--laser-amber);
+      color: var(--laser-amber);
+    }
+
+    /* --- Center Interactive CAD Canvas --- */
+    .cad-canvas-container {
+      position: relative;
+      background-color: var(--bg-blueprint);
+      background-image: 
+        linear-gradient(to right, rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+        linear-gradient(to right, rgba(56, 189, 248, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(56, 189, 248, 0.02) 1px, transparent 1px);
+      background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: crosshair;
+    }
+
+    /* Crosshair overlay */
+    .crosshair-h, .crosshair-v {
+      position: absolute;
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0.25;
+    }
+    .crosshair-h {
+      width: 100%;
+      height: 1px;
+      border-top: 1px dashed var(--cad-cyan);
+      left: 0;
+    }
+    .crosshair-v {
+      height: 100%;
+      width: 1px;
+      border-left: 1px dashed var(--cad-cyan);
+      top: 0;
+    }
+
+    /* SVG Canvas Graphic */
+    .cad-svg-viewport {
+      width: 90%;
+      height: 85%;
+      overflow: visible;
+    }
+
+    /* Interactive Handles */
+    .drag-vertex {
+      cursor: grab;
+      fill: var(--cad-cyan);
+      stroke: #ffffff;
+      stroke-width: 2px;
+      transition: r 0.15s ease, fill 0.15s ease;
+    }
+
+    .drag-vertex:hover {
+      r: 8px;
+      fill: var(--laser-amber);
+    }
+
+    .drag-vertex:active {
+      cursor: grabbing;
+    }
+
+    /* Viewport Watermark & Overlay Notice */
+    .viewport-overlay-info {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .viewport-overlay-info span.hi {
+      color: var(--cad-cyan);
+    }
+
+    .viewport-drag-instruction {
+      position: absolute;
+      bottom: 24px;
+      background-color: rgba(11, 19, 37, 0.88);
+      border: 1px solid var(--border-cad-bright);
+      padding: 6px 14px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--laser-amber);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      pointer-events: none;
+      backdrop-filter: blur(4px);
+    }
+
+    /* --- Right Docked Engineering BOM & 50% Deposit --- */
+    .cad-right-dock {
+      background-color: var(--bg-panel);
+      border-left: 1px solid var(--border-cad);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow-y: auto;
+      z-index: 50;
+    }
+
+    .bom-header {
+      background-color: var(--bg-dock-header);
+      border-bottom: 1px solid var(--border-cad);
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .bom-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* BOM Telemetry Table */
+    .bom-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .bom-table th {
+      text-align: left;
+      padding: 6px 8px;
+      background-color: var(--bg-blueprint-dark);
+      color: var(--text-dim);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-cad);
+    }
+
+    .bom-table td {
+      padding: 7px 8px;
+      border-bottom: 1px solid rgba(27, 41, 68, 0.5);
+      color: var(--text-slate);
+    }
+
+    .bom-table td.val {
+      text-align: right;
+      color: var(--text-chalk);
+      font-weight: 600;
+    }
+
+    /* Shop Floor Machine Routing Preview */
+    .shop-routing-box {
+      background-color: var(--bg-blueprint-dark);
+      border: 1px solid var(--border-cad);
+      padding: 12px;
+    }
+
+    .routing-title {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .routing-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .routing-step-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+    }
+
+    .routing-step-item .dot {
+      width: 5px;
+      height: 5px;
+      background-color: var(--cad-cyan);
+    }
+
+    .routing-step-item.active .dot {
+      background-color: var(--signal-green);
+      box-shadow: 0 0 6px var(--signal-green);
+    }
+
+    /* Commercial Total & 50% Deposit Box */
+    .bom-financial-card {
+      background-color: var(--bg-blueprint-dark);
+      border: 1px solid var(--border-cad);
+      border-top: 2px solid var(--cad-cyan);
+      padding: 16px;
+    }
+
+    .financial-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+
+    .calc-total-quote {
+      font-family: var(--font-mono);
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-chalk);
+      line-height: 1;
+      margin-bottom: 14px;
+    }
+
+    /* 50% Deposit Gate */
+    .deposit-gate-callout {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid var(--signal-green);
+      padding: 12px 14px;
+      margin-bottom: 14px;
+    }
+
+    .deposit-gate-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--signal-green);
+      margin-bottom: 4px;
+    }
+
+    .deposit-amount {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .deposit-gate-desc {
+      font-size: 11px;
+      color: #a7f3d0;
+      line-height: 1.4;
+    }
+
+    .btn-bom-action {
+      background-color: var(--cad-cyan);
+      color: #060c18;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 12.5px;
+      letter-spacing: 0.05em;
+      padding: 12px;
+      border: none;
+      width: 100%;
+      cursor: pointer;
+      transition: all var(--transition-snap);
+      text-align: center;
+    }
+
+    .btn-bom-action:hover {
+      background-color: #ffffff;
+      box-shadow: 0 0 18px var(--cad-cyan-glow);
+    }
+
+    /* ==========================================================================
+       3. BOTTOM ENGINEERING TITLE BLOCK
+       ========================================================================== */
+    .cad-bottom-title-block {
+      background-color: var(--bg-dock-header);
+      border-top: 1px solid var(--border-cad);
+      display: grid;
+      grid-template-columns: 290px 1fr auto;
+      align-items: center;
+      padding: 0 16px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      z-index: 100;
+    }
+
+    .tb-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 8px;
+    }
+
+    .tb-label {
+      color: var(--text-dim);
+    }
+
+    .tb-value {
+      color: var(--text-chalk);
+      font-weight: 600;
+    }
+
+    .tb-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-tb-docket {
+      background-color: transparent;
+      border: 1px solid var(--border-cad-bright);
+      color: var(--cad-cyan);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: all var(--transition-snap);
+    }
+
+    .btn-tb-docket:hover {
+      background-color: rgba(56, 189, 248, 0.1);
+      border-color: var(--cad-cyan);
+    }
+
+    /* ==========================================================================
+       4. SLIDE-OVER COMMERCIAL ARCHITECTURE DOCKET (DRAWER)
+       ========================================================================== */
+    .docket-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(6, 12, 24, 0.75);
+      backdrop-filter: blur(6px);
+      z-index: 500;
+      display: none;
+      justify-content: flex-end;
+    }
+
+    .docket-backdrop.active {
+      display: flex;
+    }
+
+    .docket-drawer {
+      background-color: var(--bg-panel);
+      border-left: 2px solid var(--cad-cyan);
+      width: 100%;
+      max-width: 680px;
+      height: 100vh;
+      overflow-y: auto;
+      box-shadow: -10px 0 40px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .docket-header {
+      background-color: var(--bg-dock-header);
+      border-bottom: 1px solid var(--border-cad);
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .docket-title-wrap h3 {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-chalk);
+      letter-spacing: 0.04em;
+    }
+
+    .docket-title-wrap span {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--cad-cyan);
+    }
+
+    .docket-close-btn {
+      background: transparent;
+      border: 1px solid var(--border-cad);
+      color: var(--text-slate);
+      width: 32px;
+      height: 32px;
+      font-family: var(--font-mono);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition-snap);
+    }
+
+    .docket-close-btn:hover {
+      background-color: var(--signal-red);
+      color: #ffffff;
+      border-color: var(--signal-red);
+    }
+
+    .docket-body {
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* Commercial Framework Boxes in Docket */
+    .docket-section-title {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-chalk);
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border-cad);
+      padding-bottom: 6px;
+      margin-bottom: 14px;
+    }
+
+    .comm-package-card {
+      background-color: var(--bg-blueprint-dark);
+      border: 1px solid var(--border-cad);
+      padding: 18px;
+      margin-bottom: 12px;
+    }
+
+    .comm-package-card.phase-2 {
+      border-left: 3px solid var(--laser-amber);
+    }
+
+    .comm-package-card.phase-1 {
+      border-left: 3px solid var(--cad-cyan);
+    }
+
+    .pkg-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .pkg-name {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-chalk);
+    }
+
+    .pkg-price {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--cad-cyan);
+    }
+
+    .comm-package-card.phase-2 .pkg-price {
+      color: var(--laser-amber);
+    }
+
+    .pkg-desc {
+      font-size: 12.5px;
+      color: var(--text-slate);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .pkg-list {
+      list-style: none;
+      font-size: 11.5px;
+      font-family: var(--font-mono);
+      color: var(--text-dim);
+    }
+
+    .pkg-list li {
+      margin-bottom: 4px;
+      display: flex;
+      gap: 6px;
+    }
+
+    .pkg-list li::before {
+      content: '>';
+      color: var(--cad-cyan);
+    }
+
+    /* Intake Form inside Docket */
+    .docket-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .docket-form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .docket-form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    .docket-label {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--text-slate);
+      text-transform: uppercase;
+    }
+
+    .docket-input, .docket-select {
+      background-color: var(--bg-blueprint-dark);
+      border: 1px solid var(--border-cad);
+      padding: 10px 12px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-chalk);
+      outline: none;
+    }
+
+    .docket-input:focus, .docket-select:focus {
+      border-color: var(--cad-cyan);
+    }
+
+    .btn-submit-docket {
+      background-color: var(--cad-cyan);
+      color: #060c18;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 13px;
+      padding: 14px;
+      border: none;
+      width: 100%;
+      cursor: pointer;
+      transition: all var(--transition-snap);
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .btn-submit-docket:hover {
+      background-color: #ffffff;
+      box-shadow: 0 0 20px var(--cad-cyan-glow);
+    }
+
+    .docket-confirm-view {
+      display: none;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .confirm-symbol {
+      width: 50px;
+      height: 50px;
+      background-color: rgba(16, 185, 129, 0.1);
+      border: 1px solid var(--signal-green);
+      color: var(--signal-green);
+      font-size: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    /* ==========================================================================
+       RESPONSIVE COLLAPSE (FOR MOBILE & TABLETS)
+       ========================================================================== */
+    @media (max-width: 1024px) {
+      .cad-workspace {
+        grid-template-columns: 260px 1fr 300px;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .cad-app-shell {
+        grid-template-rows: 44px 1fr auto;
+      }
+      .cad-workspace {
+        grid-template-columns: 1fr;
+        height: auto;
+        overflow-y: auto;
+      }
+      .cad-left-dock, .cad-right-dock {
+        height: auto;
+        border-right: none;
+        border-left: none;
+        border-bottom: 1px solid var(--border-cad);
+      }
+      .cad-canvas-container {
+        height: 480px;
+        border-bottom: 1px solid var(--border-cad);
+      }
+      .cad-bottom-title-block {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 12px;
+        height: auto;
+      }
+      .cursor-coordinate-hud {
+        display: none;
+      }
+      .docket-form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       APPLICATION SHELL CONTAINER (100VH)
+       ========================================================================== -->
+  <div class="cad-app-shell">
+
+    <!-- ==========================================================================
+         1. TOP CAD COMMAND BAR
+         ========================================================================== -->
+    <header class="cad-top-bar">
+      <div class="top-bar-left">
+        <a href="#" class="brand-stamp">
+          <div class="brand-glyph">AW</div>
+          <span class="brand-title">AURAWORKS CAD WORKBENCH</span>
+        </a>
+
+        <div class="project-docket-id">
+          DWG-2026-AW-01 [PARAMETRIC_ENGINE]
+        </div>
+
+        <div class="projection-controls">
+          <button class="proj-btn active" id="btn-proj-iso" onclick="setProjection('iso')">ISOMETRIC 3D</button>
+          <button class="proj-btn" id="btn-proj-plan" onclick="setProjection('plan')">TOP PLAN / NESTING</button>
+          <button class="proj-btn" id="btn-proj-elev" onclick="setProjection('elev')">FRONT ELEVATION</button>
+        </div>
+      </div>
+
+      <div class="top-bar-right">
+        <!-- Live Coordinate HUD -->
+        <div class="cursor-coordinate-hud">
+          <div class="coord-item"><span>X:</span> <strong id="hud-x">1,840</strong> MM</div>
+          <div class="coord-item"><span>Y:</span> <strong id="hud-y">0,960</strong> MM</div>
+          <div class="coord-item"><span>Z:</span> <strong id="hud-z">0,760</strong> MM</div>
+        </div>
+
+        <div class="capacity-badge">
+          <span class="pulse-dot"></span>
+          <span>CAPACITY: 1–3 ACCOUNTS / MO [1 ALLOCATION OPEN]</span>
+        </div>
+
+        <button class="btn-top-audit" onclick="openDocket()">
+          [ COMMERCIAL_DOCKET ]
+        </button>
+      </div>
+    </header>
+
+    <!-- ==========================================================================
+         2. WORKSPACE CENTERPIECE (LEFT TOOLBAR + CANVAS + RIGHT BOM)
+         ========================================================================== -->
+    <main class="cad-workspace">
+
+      <!-- --- Left Tool & Layer Inspector --- -->
+      <aside class="cad-left-dock">
+        <div class="dock-title-strip">
+          <span class="dock-title">PARAMETRIC INSPECTOR</span>
+          <span class="dock-tag">TOL: &plusmn;0.25MM</span>
+        </div>
+
+        <div class="dock-content">
+          <!-- Dimensional Controls -->
+          <div class="cad-control-group">
+            <div class="cad-control-label">
+              <span class="name">OVERALL LENGTH (L)</span>
+              <span class="val" id="readout-l">3,200 MM</span>
+            </div>
+            <input type="range" id="param-length" min="1800" max="4200" step="100" value="3200">
+            <div class="slider-bounds">
+              <span>MIN: 1,800 MM</span>
+              <span>INCREMENT: 100 MM</span>
+              <span>MAX: 4,200 MM</span>
+            </div>
+          </div>
+
+          <div class="cad-control-group">
+            <div class="cad-control-label">
+              <span class="name">OVERALL WIDTH (W)</span>
+              <span class="val" id="readout-w">1,100 MM</span>
+            </div>
+            <input type="range" id="param-width" min="800" max="1600" step="50" value="1100">
+            <div class="slider-bounds">
+              <span>MIN: 800 MM</span>
+              <span>INCREMENT: 50 MM</span>
+              <span>MAX: 1,600 MM</span>
+            </div>
+          </div>
+
+          <div class="cad-control-group">
+            <div class="cad-control-label">
+              <span class="name">SLAB HEIGHT / CLEAR (H)</span>
+              <span class="val" id="readout-h">760 MM</span>
+            </div>
+            <input type="range" id="param-height" min="650" max="1100" step="10" value="760">
+            <div class="slider-bounds">
+              <span>MIN: 650 MM</span>
+              <span>DINING / BAR / DESK</span>
+              <span>MAX: 1,100 MM</span>
+            </div>
+          </div>
+
+          <!-- Substrate Material Selection -->
+          <div class="cad-control-group">
+            <div class="cad-control-label">
+              <span class="name">RAW MATERIAL SUBSTRATE</span>
+              <span class="val" style="color:var(--laser-amber);">SPEC GRADE</span>
+            </div>
+            <div class="substrate-buttons">
+              <button class="sub-btn active" data-mat="French Oak Prime Slab" data-mult="1.0" onclick="chooseMaterial(this)">
+                <span>French Oak Prime</span>
+                <span class="mult">1.00&times; BASE</span>
+              </button>
+              <button class="sub-btn" data-mat="American Walnut Flitch" data-mult="1.35" onclick="chooseMaterial(this)">
+                <span>American Walnut</span>
+                <span class="mult">+35% LUXURY</span>
+              </button>
+              <button class="sub-btn" data-mat="304 Marine Stainless" data-mult="1.25" onclick="chooseMaterial(this)">
+                <span>304 Stainless Steel</span>
+                <span class="mult">+25% METAL</span>
+              </button>
+              <button class="sub-btn" data-mat="African Kiaat Hardwood" data-mult="1.18" onclick="chooseMaterial(this)">
+                <span>African Kiaat Exotic</span>
+                <span class="mult">+18% HARDWOOD</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Sector Configuration Presets -->
+          <div class="cad-control-group">
+            <div class="cad-control-label">
+              <span class="name">MANUFACTURING SUB-SECTOR PRESETS</span>
+            </div>
+            <div class="preset-chips">
+              <button class="preset-btn" onclick="applyPreset(3600, 1200, 760, 'American Walnut Flitch', 1.35)">
+                Boardroom Suite
+              </button>
+              <button class="preset-btn" onclick="applyPreset(2600, 950, 760, 'French Oak Prime Slab', 1.0)">
+                Dining Monolith
+              </button>
+              <button class="preset-btn" onclick="applyPreset(2200, 900, 900, '304 Marine Stainless', 1.25)">
+                Braai Island
+              </button>
+              <button class="preset-btn" onclick="applyPreset(1900, 850, 1050, 'African Kiaat Hardwood', 1.18)">
+                Acoustic Credenza
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </aside>
+
+      <!-- --- Center Interactive CAD Canvas Viewport --- -->
+      <section class="cad-canvas-container" id="canvas-container" onmousemove="updateCrosshairs(event)">
+        <!-- Coordinate Crosshairs -->
+        <div class="crosshair-h" id="cross-h"></div>
+        <div class="crosshair-v" id="cross-v"></div>
+
+        <!-- Viewport Metadata Watermark -->
+        <div class="viewport-overlay-info">
+          <div>SCALE: <span class="hi">1:20 METRIC</span></div>
+          <div>MODE: <span class="hi" id="view-mode-label">ISOMETRIC 3D WIREFRAME</span></div>
+          <div>COORDINATE SPACE: <span class="hi">WORLD EPSG::PARAMETRIC</span></div>
+        </div>
+
+        <!-- Interactive SVG Viewport -->
+        <svg class="cad-svg-viewport" id="cad-svg" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <!-- Cyan Arrow Marker -->
+            <marker id="arrow-cyan" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#38bdf8" />
+            </marker>
+            <!-- Amber Arrow Marker -->
+            <marker id="arrow-amber" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#f59e0b" />
+            </marker>
+          </defs>
+
+          <!-- SVG Drafting Group -->
+          <g id="viewport-geometry">
+            <!-- Dynamic Geometry will be injected/manipulated by JS -->
+          </g>
+        </svg>
+
+        <!-- Dynamic User Drag Instruction -->
+        <div class="viewport-drag-instruction">
+          <span>&curarr; INTERACTIVE VERTEX ACTIVE: DRAG CORNER HANDLES OR USE SLIDERS TO RESHAPE</span>
+        </div>
+      </section>
+
+      <!-- --- Right Docked Engineering BOM & 50% Deposit --- -->
+      <aside class="cad-right-dock">
+        <div>
+          <div class="bom-header">
+            <span class="dock-title">BILL OF MATERIALS (BOM)</span>
+            <span class="dock-tag" style="color:var(--signal-green);">STATUS: CLEARED</span>
+          </div>
+
+          <div class="bom-body">
+            <!-- Itemized Technical Table -->
+            <table class="bom-table">
+              <thead>
+                <tr>
+                  <th>SPECIFICATION ITEM</th>
+                  <th style="text-align:right;">COMPUTED YIELD</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Surface Footprint</td>
+                  <td class="val" id="bom-footprint">3.52 m²</td>
+                </tr>
+                <tr>
+                  <td>Timber Volume (Net)</td>
+                  <td class="val" id="bom-volume">0.14 m³</td>
+                </tr>
+                <tr>
+                  <td>Calculated Dry Mass</td>
+                  <td class="val" id="bom-mass">128 kg</td>
+                </tr>
+                <tr>
+                  <td>CNC Spindle Run Time</td>
+                  <td class="val" id="bom-cnc-time">2.4 Hours</td>
+                </tr>
+                <tr>
+                  <td>Shop Assembly Bay</td>
+                  <td class="val" style="color:var(--cad-cyan);" id="bom-bay">BAY 02 [ACTIVE]</td>
+                </tr>
+                <tr>
+                  <td>Fabrication Window</td>
+                  <td class="val">24 Business Days</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Shop Floor Machine Routing Box -->
+            <div class="shop-routing-box">
+              <div class="routing-title">
+                <span>SHOP FLOOR ROUTING QUEUE</span>
+                <span style="color:var(--signal-green);">[AUTO-DISPATCH READY]</span>
+              </div>
+              <div class="routing-steps">
+                <div class="routing-step-item active">
+                  <span class="dot"></span>
+                  <span>OP 01 // Slab Kiln Acclimation &amp; Flitch Match</span>
+                </div>
+                <div class="routing-step-item active">
+                  <span class="dot"></span>
+                  <span>OP 02 // CNC 5-Axis Precision Surface &amp; Joinery</span>
+                </div>
+                <div class="routing-step-item">
+                  <span class="dot"></span>
+                  <span>OP 03 // Substructure TIG Weldment &amp; Powdercoat</span>
+                </div>
+                <div class="routing-step-item">
+                  <span class="dot"></span>
+                  <span>OP 04 // Hand-Rubbed Danish Oil &amp; QC Tolerance Signoff</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Commercial Quotation & 50% Deposit Gate -->
+            <div class="bom-financial-card">
+              <div class="financial-label">ESTIMATED COMMERCIAL FABRICATION QUOTE</div>
+              <div class="calc-total-quote" id="bom-total-quote">R 47,520</div>
+
+              <!-- 50% Deposit Commitment Gate -->
+              <div class="deposit-gate-callout">
+                <div class="deposit-gate-header">
+                  <span>50% WEB COMMITMENT GATE</span>
+                  <span class="deposit-amount" id="bom-deposit-quote">R 23,760</span>
+                </div>
+                <p class="deposit-gate-desc">
+                  Required upfront deposit to bind raw lumber allocation, auto-dispatch cutting lists to CNC queues, and reserve assembly bays.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding: 16px; border-top: 1px solid var(--border-cad);">
+          <button class="btn-bom-action" onclick="openDocket()">
+            [ LOCK_SPECIFICATION &amp; BOOK_AUDIT ] &rarr;
+          </button>
+        </div>
+      </aside>
+
+    </main>
+
+    <!-- ==========================================================================
+         3. BOTTOM ENGINEERING TITLE BLOCK
+         ========================================================================== -->
+    <footer class="cad-bottom-title-block">
+      <div class="tb-cell">
+        <span class="tb-label">DWG NO:</span>
+        <span class="tb-value">AW-CAD-01-REV-2026.11</span>
+      </div>
+
+      <div class="tb-cell">
+        <span class="tb-label">SPECIFICATION ARCHETYPE:</span>
+        <span class="tb-value">FULL-SCREEN PARAMETRIC WORKBENCH // SOUTH AFRICAN BESPOKE FABRICATION</span>
+      </div>
+
+      <div class="tb-actions">
+        <span style="color:var(--text-dim); font-size:10px;">POPIA COMPLIANT &bull; MUTUAL NDA GUARANTEED</span>
+        <button class="btn-tb-docket" onclick="openDocket()">
+          [ VIEW_COMMERCIAL_TERMS ]
+        </button>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ==========================================================================
+       4. SLIDE-OVER COMMERCIAL ARCHITECTURE DOCKET (DRAWER)
+       ========================================================================== -->
+  <div class="docket-backdrop" id="docket-modal" onclick="handleDocketBackdrop(event)">
+    <div class="docket-drawer">
+      <div class="docket-header">
+        <div class="docket-title-wrap">
+          <h3>COMMERCIAL SPECIFICATION &amp; AUDIT DOCKET</h3>
+          <span>AURAWORKS TECHNICAL ATELIER // STRATEGIC REPOSITIONING BRIEF</span>
+        </div>
+        <button class="docket-close-btn" onclick="closeDocket()">&times;</button>
+      </div>
+
+      <div class="docket-body">
+        <!-- Live Configured Snapshot from CAD -->
+        <div style="background-color:var(--bg-blueprint-dark); border:1px solid var(--border-cad); padding:14px; font-family:var(--font-mono); font-size:11.5px;">
+          <div style="color:var(--cad-cyan); font-weight:700; margin-bottom:4px;">ACTIVE DRAFT SPECIFICATION SNAPSHOT:</div>
+          <div id="docket-spec-summary" style="color:var(--text-chalk);">
+            3,200 mm &times; 1,100 mm &times; 760 mm &bull; French Oak Prime Slab &bull; Spider Box Steel Frame
+          </div>
+          <div style="margin-top:8px; display:flex; justify-content:space-between; align-items:baseline;">
+            <span style="color:var(--text-dim);">COMPUTED ORDER VALUE:</span>
+            <strong id="docket-price-summary" style="color:var(--laser-amber); font-size:16px;">R 47,520</strong>
+          </div>
+        </div>
+
+        <!-- The Commercial Framework -->
+        <div>
+          <div class="docket-section-title">TWO-PHASE COMMERCIAL ARCHITECTURE</div>
+
+          <!-- Phase 1 -->
+          <div class="comm-package-card phase-1">
+            <div class="pkg-title-row">
+              <span class="pkg-name">PHASE 01: CUSTOM STOREFRONT &amp; QUOTING PIPELINE</span>
+              <span class="pkg-price">R45,000 – R75,000</span>
+            </div>
+            <p class="pkg-desc">
+              Bespoke digital architecture and interactive parametric dimension quoting engine designed for high-ticket physical product manufacturers.
+            </p>
+            <ul class="pkg-list">
+              <li>Custom high-converting storefront built for master fabricators</li>
+              <li>Interactive parametric dimension engine with real-time BOM yield calculation</li>
+              <li>Automated 50% web deposit gateway integration (PayFast, Ozow, EFT)</li>
+              <li>Automated workshop cut-list and drawing package generation</li>
+              <li>Legacy portfolio &amp; material finish migration</li>
+            </ul>
+          </div>
+
+          <!-- Phase 2 -->
+          <div class="comm-package-card phase-2">
+            <div class="pkg-title-row">
+              <span class="pkg-name">PHASE 02: GROWTH &amp; INFRASTRUCTURE RETAINER</span>
+              <span class="pkg-price">R10,000 – R18,000 / MO</span>
+            </div>
+            <p class="pkg-desc">
+              Continuous technical SEO, Generative Engine Optimization (GEO), and cloud performance maintenance to position your workshop as the top cited authority in AI answer engines.
+            </p>
+            <ul class="pkg-list">
+              <li>Generative Engine Optimization (GEO) across ChatGPT, Perplexity, Google AI</li>
+              <li>Sub-300ms Performance SLA &amp; dedicated edge hosting</li>
+              <li>Lead flow and quotation conversion auditing</li>
+              <li>Single-order payback guarantee: 1 closed commission/month completely covers retainer</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Partnership Qualification & Screening Form -->
+        <div>
+          <div class="docket-section-title">PARTNERSHIP DISCOVERY INTAKE</div>
+          <form id="docket-form" onsubmit="handleDocketSubmit(event)">
+            <div class="docket-form-grid">
+              <div class="docket-form-group">
+                <label class="docket-label" for="inp-name">Principal Name</label>
+                <input type="text" class="docket-input" id="inp-name" placeholder="e.g. Liam Naidoo" required>
+              </div>
+
+              <div class="docket-form-group">
+                <label class="docket-label" for="inp-role">Executive Role</label>
+                <input type="text" class="docket-input" id="inp-role" placeholder="e.g. Managing Director / Works Head" required>
+              </div>
+
+              <div class="docket-form-group">
+                <label class="docket-label" for="inp-company">Manufacturing Plant / Atelier Name</label>
+                <input type="text" class="docket-input" id="inp-company" placeholder="e.g. Monolith Joinery Works" required>
+              </div>
+
+              <div class="docket-form-group">
+                <label class="docket-label" for="inp-city">Plant Location / City</label>
+                <input type="text" class="docket-input" id="inp-city" placeholder="e.g. Paarden Eiland, Cape Town" required>
+              </div>
+
+              <div class="docket-form-group">
+                <label class="docket-label" for="inp-email">Corporate Email</label>
+                <input type="email" class="docket-input" id="inp-email" placeholder="liam@monolithjoinery.co.za" required>
+              </div>
+
+              <div class="docket-form-group">
+                <label class="docket-label" for="inp-phone">Direct Mobile / WhatsApp</label>
+                <input type="tel" class="docket-input" id="inp-phone" placeholder="+27 (0)82 555 9182" required>
+              </div>
+
+              <div class="docket-form-group full">
+                <label class="docket-label" for="inp-aov">Average Order Value (AOV)</label>
+                <select class="docket-select" id="inp-aov" required>
+                  <option value="" disabled selected>Select Current AOV Range...</option>
+                  <option value="disqualified">&lt; R15,000 [Below economic threshold]</option>
+                  <option value="r15-r35">R15,000 – R35,000</option>
+                  <option value="r35-r75">R35,000 – R75,000</option>
+                  <option value="r75-r250">R75,000 – R250,000+</option>
+                </select>
+              </div>
+
+              <div class="docket-form-group full">
+                <label class="docket-label" for="inp-objective">Primary Technical Objective</label>
+                <select class="docket-select" id="inp-objective" required>
+                  <option value="" disabled selected>Select Objective...</option>
+                  <option value="deposit">Automate 50% Upfront Web Deposits</option>
+                  <option value="quoting">Eliminate Manual Quoting &amp; Drawing Delays</option>
+                  <option value="geo">Dominate High-Ticket AI Search (GEO)</option>
+                  <option value="pipeline">Deploy Shop Floor Machine Bay Telemetry</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-submit-docket">
+              [ SUBMIT_ENGINEERING_DISCOVERY_DOCKET ] &rarr;
+            </button>
+          </form>
+
+          <!-- Confirmation Screen -->
+          <div class="docket-confirm-view" id="docket-confirm-screen">
+            <div class="confirm-symbol">&#10003;</div>
+            <h3 style="font-family:var(--font-display); font-size:20px; color:var(--text-chalk); margin-bottom:8px;">
+              DISCOVERY DOCKET REGISTERED
+            </h3>
+            <p style="font-size:13px; color:var(--text-slate); margin-bottom:20px; line-height:1.5;">
+              Thank you, <strong id="confirm-client-name" style="color:var(--cad-cyan);"></strong>. Your manufacturing facility parameters and configured CAD draft have been recorded in our active registry.
+            </p>
+            <div style="background-color:var(--bg-blueprint-dark); border:1px solid var(--border-cad); padding:16px; font-family:var(--font-mono); font-size:12px; text-align:left; color:var(--text-slate);">
+              <strong>NEXT ACTION:</strong> Auraworks senior engineering partners will audit your quotation pipeline and contact you within 24 business hours to arrange the architecture briefing.
+            </div>
+            <button class="btn-submit-docket" onclick="closeDocket()" style="margin-top:20px;">
+              [ RETURN_TO_CAD_WORKSPACE ]
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       VANILLA JAVASCRIPT: CAD GEOMETRY ENGINE & BOM TELEMETRY
+       ========================================================================== -->
+  <script>
+    // State Machine
+    const cadState = {
+      length: 3200, // mm
+      width: 1100,  // mm
+      height: 760,  // mm
+      material: 'French Oak Prime Slab',
+      materialMultiplier: 1.0,
+      projection: 'iso', // 'iso', 'plan', 'elev'
+      isDraggingVertex: false,
+      dragHandle: null
+    };
+
+    // DOM Elements
+    const paramLength = document.getElementById('param-length');
+    const paramWidth = document.getElementById('param-width');
+    const paramHeight = document.getElementById('param-height');
+    
+    const readoutL = document.getElementById('readout-l');
+    const readoutW = document.getElementById('readout-w');
+    const readoutH = document.getElementById('readout-h');
+
+    const hudX = document.getElementById('hud-x');
+    const hudY = document.getElementById('hud-y');
+    const hudZ = document.getElementById('hud-z');
+    const viewModeLabel = document.getElementById('view-mode-label');
+
+    const bomFootprint = document.getElementById('bom-footprint');
+    const bomVolume = document.getElementById('bom-volume');
+    const bomMass = document.getElementById('bom-mass');
+    const bomCncTime = document.getElementById('bom-cnc-time');
+    const bomTotalQuote = document.getElementById('bom-total-quote');
+    const bomDepositQuote = document.getElementById('bom-deposit-quote');
+
+    const viewportGeometry = document.getElementById('viewport-geometry');
+    const docketModal = document.getElementById('docket-modal');
+    const docketForm = document.getElementById('docket-form');
+    const docketConfirmScreen = document.getElementById('docket-confirm-screen');
+    const docketSpecSummary = document.getElementById('docket-spec-summary');
+    const docketPriceSummary = document.getElementById('docket-price-summary');
+
+    // Base Calculation Constant
+    const BASE_RATE_PER_SQM = 13500; // ZAR per m² base rate
+
+    // Initialize & Update Math
+    function updateCadCalculations() {
+      const area = (cadState.length / 1000) * (cadState.width / 1000);
+      const volume = area * 0.045; // 45mm solid slab average
+      const massKg = Math.round(area * 36.4); // Timber + steel frame
+      const cncHours = (area * 0.68).toFixed(1);
+
+      const rawMaterialCost = area * BASE_RATE_PER_SQM * cadState.materialMultiplier;
+      const totalQuote = Math.round(rawMaterialCost / 100) * 100;
+      const depositQuote = Math.round(totalQuote * 0.5);
+
+      // Update Left Control Labels
+      readoutL.textContent = Number(cadState.length).toLocaleString() + ' MM';
+      readoutW.textContent = Number(cadState.width).toLocaleString() + ' MM';
+      readoutH.textContent = Number(cadState.height).toLocaleString() + ' MM';
+
+      // Update Top HUD
+      hudX.textContent = (cadState.length / 1000).toFixed(2);
+      hudY.textContent = (cadState.width / 1000).toFixed(2);
+      hudZ.textContent = (cadState.height / 1000).toFixed(2);
+
+      // Update Right BOM
+      bomFootprint.textContent = area.toFixed(2) + ' m²';
+      bomVolume.textContent = volume.toFixed(2) + ' m³';
+      bomMass.textContent = massKg + ' kg';
+      bomCncTime.textContent = cncHours + ' Hours';
+      bomTotalQuote.textContent = 'R ' + totalQuote.toLocaleString('en-ZA');
+      bomDepositQuote.textContent = 'R ' + depositQuote.toLocaleString('en-ZA');
+
+      // Update Docket Snapshot
+      docketSpecSummary.textContent = `${Number(cadState.length).toLocaleString()} mm \u00d7 ${Number(cadState.width).toLocaleString()} mm \u00d7 ${Number(cadState.height).toLocaleString()} mm \u2022 ${cadState.material} \u2022 Spider Box Steel Frame`;
+      docketPriceSummary.textContent = 'R ' + totalQuote.toLocaleString('en-ZA');
+
+      // Re-render SVG Geometry
+      renderSvgGeometry();
+    }
+
+    // SVG Rendering Engine based on Projection
+    function renderSvgGeometry() {
+      // Center coordinates
+      const cx = 500;
+      const cy = 360;
+
+      // Scaling factors
+      const scaleX = (cadState.length / 4200) * 360;
+      const scaleY = (cadState.width / 1600) * 160;
+      const scaleZ = (cadState.height / 1100) * 120;
+
+      let svgHtml = '';
+
+      if (cadState.projection === 'iso') {
+        // Isometric 3D Wireframe
+        // Top Face (Slab)
+        const p1 = { x: cx, y: cy - scaleZ - scaleY };
+        const p2 = { x: cx + scaleX, y: cy - scaleZ };
+        const p3 = { x: cx, y: cy - scaleZ + scaleY };
+        const p4 = { x: cx - scaleX, y: cy - scaleZ };
+
+        // Bottom Slab Edge (Thickness)
+        const slabThick = 24;
+        const b1 = { x: p1.x, y: p1.y + slabThick };
+        const b2 = { x: p2.x, y: p2.y + slabThick };
+        const b3 = { x: p3.x, y: p3.y + slabThick };
+        const b4 = { x: p4.x, y: p4.y + slabThick };
+
+        // Ground Contact (Legs)
+        const g2 = { x: p2.x, y: p2.y + scaleZ };
+        const g3 = { x: p3.x, y: p3.y + scaleZ };
+        const g4 = { x: p4.x, y: p4.y + scaleZ };
+
+        svgHtml = `
+          <!-- Ground shadow grid -->
+          <ellipse cx="${cx}" cy="${cy + scaleZ}" rx="${scaleX * 1.1}" ry="${scaleY * 1.1}" fill="rgba(2, 132, 199, 0.05)" stroke="rgba(56, 189, 248, 0.15)" stroke-dasharray="4,4"/>
+
+          <!-- Structural Subframe Legs -->
+          <line x1="${b4.x + 30}" y1="${b4.y}" x2="${g4.x + 30}" y2="${g4.y}" stroke="#38bdf8" stroke-width="2.5" />
+          <line x1="${b3.x}" y1="${b3.y}" x2="${g3.x}" y2="${g3.y}" stroke="#38bdf8" stroke-width="3" />
+          <line x1="${b2.x - 30}" y1="${b2.y}" x2="${g2.x - 30}" y2="${g2.y}" stroke="#38bdf8" stroke-width="2.5" />
+          <line x1="${g4.x + 30}" y1="${g4.y}" x2="${g3.x}" y2="${g3.y}" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.5" stroke-dasharray="2,2"/>
+          <line x1="${g3.x}" y1="${g3.y}" x2="${g2.x - 30}" y2="${g2.y}" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.5" stroke-dasharray="2,2"/>
+
+          <!-- Slab Facets -->
+          <!-- Left Thickness Facet -->
+          <polygon points="${p4.x},${p4.y} ${p3.x},${p3.y} ${b3.x},${b3.y} ${b4.x},${b4.y}" fill="rgba(14, 165, 233, 0.12)" stroke="#38bdf8" stroke-width="1.5" />
+          <!-- Right Thickness Facet -->
+          <polygon points="${p3.x},${p3.y} ${p2.x},${p2.y} ${b2.x},${b2.y} ${b3.x},${b3.y}" fill="rgba(2, 132, 199, 0.22)" stroke="#38bdf8" stroke-width="1.5" />
+          <!-- Top Surface -->
+          <polygon points="${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}" fill="rgba(56, 189, 248, 0.15)" stroke="#38bdf8" stroke-width="2" />
+
+          <!-- Internal Surface Wood Grain Line Accents -->
+          <line x1="${p1.x + (p2.x - p1.x)*0.3}" y1="${p1.y + (p2.y - p1.y)*0.3}" x2="${p4.x + (p3.x - p4.x)*0.3}" y2="${p4.y + (p3.y - p4.y)*0.3}" stroke="rgba(56, 189, 248, 0.35)" stroke-width="1" stroke-dasharray="6,4"/>
+          <line x1="${p1.x + (p2.x - p1.x)*0.7}" y1="${p1.y + (p2.y - p1.y)*0.7}" x2="${p4.x + (p3.x - p4.x)*0.7}" y2="${p4.y + (p3.y - p4.y)*0.7}" stroke="rgba(56, 189, 248, 0.35)" stroke-width="1" stroke-dasharray="6,4"/>
+
+          <!-- Dimension Leaders -->
+          <!-- Length Leader (Right side) -->
+          <line x1="${p2.x + 30}" y1="${p2.y}" x2="${p3.x + 30}" y2="${p3.y}" stroke="#f59e0b" stroke-width="1.5" marker-start="url(#arrow-amber)" marker-end="url(#arrow-amber)" />
+          <text x="${(p2.x + p3.x)/2 + 45}" y="${(p2.y + p3.y)/2}" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700">L: ${cadState.length} MM</text>
+
+          <!-- Width Leader (Left side) -->
+          <line x1="${p4.x - 30}" y1="${p4.y}" x2="${p3.x - 30}" y2="${p3.y}" stroke="#38bdf8" stroke-width="1.5" marker-start="url(#arrow-cyan)" marker-end="url(#arrow-cyan)" />
+          <text x="${(p4.x + p3.x)/2 - 110}" y="${(p4.y + p3.y)/2}" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700">W: ${cadState.width} MM</text>
+
+          <!-- Height Leader -->
+          <line x1="${p4.x - 50}" y1="${b4.y}" x2="${p4.x - 50}" y2="${g4.y}" stroke="#10b981" stroke-width="1.5" marker-start="url(#arrow-cyan)" marker-end="url(#arrow-cyan)" />
+          <text x="${p4.x - 125}" y="${(b4.y + g4.y)/2}" fill="#10b981" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700">H: ${cadState.height} MM</text>
+
+          <!-- Interactive Drag Handles on Key Vertices -->
+          <circle cx="${p2.x}" cy="${p2.y}" r="6" class="drag-vertex" data-handle="length" onmousedown="startDragHandle(event, 'length')" />
+          <circle cx="${p4.x}" cy="${p4.y}" r="6" class="drag-vertex" data-handle="width" onmousedown="startDragHandle(event, 'width')" />
+          <circle cx="${p3.x}" cy="${p3.y}" r="6" class="drag-vertex" data-handle="both" onmousedown="startDragHandle(event, 'both')" />
+        `;
+      } else if (cadState.projection === 'plan') {
+        // Top Plan View (Nesting / Cutting Path View)
+        const rectW = (cadState.length / 4200) * 600;
+        const rectH = (cadState.width / 1600) * 320;
+        const rx = cx - rectW/2;
+        const ry = cy - rectH/2;
+
+        svgHtml = `
+          <!-- Flat Plate Nesting Sheet -->
+          <rect x="${rx}" y="${ry}" width="${rectW}" height="${rectH}" fill="rgba(56, 189, 248, 0.12)" stroke="#38bdf8" stroke-width="2"/>
+          
+          <!-- CNC Cut Path Offset Line -->
+          <rect x="${rx + 16}" y="${ry + 16}" width="${rectW - 32}" height="${rectH - 32}" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="6,4"/>
+
+          <!-- Diagonal Center Alignment Axes -->
+          <line x1="${rx}" y1="${cy}" x2="${rx + rectW}" y2="${cy}" stroke="rgba(56, 189, 248, 0.3)" stroke-width="1" stroke-dasharray="4,4"/>
+          <line x1="${cx}" y1="${ry}" x2="${cx}" y2="${ry + rectH}" stroke="rgba(56, 189, 248, 0.3)" stroke-width="1" stroke-dasharray="4,4"/>
+
+          <!-- Dimension Annotations -->
+          <line x1="${rx}" y1="${ry - 25}" x2="${rx + rectW}" y2="${ry - 25}" stroke="#f59e0b" stroke-width="1.5" marker-start="url(#arrow-amber)" marker-end="url(#arrow-amber)"/>
+          <text x="${cx}" y="${ry - 32}" text-anchor="middle" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700">LENGTH CUT: ${cadState.length} MM</text>
+
+          <line x1="${rx - 25}" y1="${ry}" x2="${rx - 25}" y2="${ry + rectH}" stroke="#38bdf8" stroke-width="1.5" marker-start="url(#arrow-cyan)" marker-end="url(#arrow-cyan)"/>
+          <text x="${rx - 32}" y="${cy}" text-anchor="end" dominant-baseline="middle" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700">WIDTH: ${cadState.width} MM</text>
+
+          <!-- Interactive Handles on Plan Corner -->
+          <circle cx="${rx + rectW}" cy="${ry + rectH}" r="6" class="drag-vertex" data-handle="both" onmousedown="startDragHandle(event, 'both')" />
+        `;
+      } else if (cadState.projection === 'elev') {
+        // Front Elevation View
+        const rectW = (cadState.length / 4200) * 620;
+        const totalH = (cadState.height / 1100) * 260;
+        const slabT = 24;
+        const rx = cx - rectW/2;
+        const groundY = cy + totalH/2;
+        const slabTopY = groundY - totalH;
+
+        svgHtml = `
+          <!-- Ground Datum -->
+          <line x1="${rx - 60}" y1="${groundY}" x2="${rx + rectW + 60}" y2="${groundY}" stroke="rgba(56, 189, 248, 0.5)" stroke-width="2"/>
+          <text x="${rx - 60}" y="${groundY + 18}" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="10">DATUM 0.00 LEVEL</text>
+
+          <!-- Legs -->
+          <rect x="${rx + 40}" y="${slabTopY + slabT}" width="28" height="${totalH - slabT}" fill="rgba(56, 189, 248, 0.2)" stroke="#38bdf8" stroke-width="2"/>
+          <rect x="${rx + rectW - 68}" y="${slabTopY + slabT}" width="28" height="${totalH - slabT}" fill="rgba(56, 189, 248, 0.2)" stroke="#38bdf8" stroke-width="2"/>
+
+          <!-- Slab Profile -->
+          <rect x="${rx}" y="${slabTopY}" width="${rectW}" height="${slabT}" fill="rgba(56, 189, 248, 0.25)" stroke="#38bdf8" stroke-width="2"/>
+
+          <!-- Height Dimension Leader -->
+          <line x1="${rx + rectW + 35}" y1="${slabTopY}" x2="${rx + rectW + 35}" y2="${groundY}" stroke="#10b981" stroke-width="1.5" marker-start="url(#arrow-cyan)" marker-end="url(#arrow-cyan)"/>
+          <text x="${rx + rectW + 45}" y="${slabTopY + totalH/2}" fill="#10b981" dominant-baseline="middle" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700">HEIGHT: ${cadState.height} MM</text>
+
+          <!-- Interactive Handle -->
+          <circle cx="${rx + rectW}" cy="${slabTopY}" r="6" class="drag-vertex" data-handle="length" onmousedown="startDragHandle(event, 'length')" />
+        `;
+      }
+
+      viewportGeometry.innerHTML = svgHtml;
+    }
+
+    // Projection Mode Switcher
+    function setProjection(mode) {
+      cadState.projection = mode;
+      document.querySelectorAll('.proj-btn').forEach(btn => btn.classList.remove('active'));
+      if (mode === 'iso') {
+        document.getElementById('btn-proj-iso').classList.add('active');
+        viewModeLabel.textContent = 'ISOMETRIC 3D WIREFRAME';
+      } else if (mode === 'plan') {
+        document.getElementById('btn-proj-plan').classList.add('active');
+        viewModeLabel.textContent = 'TOP PLAN / NESTING SHEET';
+      } else if (mode === 'elev') {
+        document.getElementById('btn-proj-elev').classList.add('active');
+        viewModeLabel.textContent = 'FRONT ELEVATION & DATUM';
+      }
+      renderSvgGeometry();
+    }
+
+    // Material Selection
+    function chooseMaterial(btn) {
+      document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      cadState.material = btn.dataset.mat;
+      cadState.materialMultiplier = parseFloat(btn.dataset.mult);
+      updateCadCalculations();
+    }
+
+    // Preset Applicator
+    function applyPreset(l, w, h, matName, mult) {
+      cadState.length = l;
+      cadState.width = w;
+      cadState.height = h;
+      cadState.material = matName;
+      cadState.materialMultiplier = mult;
+
+      paramLength.value = l;
+      paramWidth.value = w;
+      paramHeight.value = h;
+
+      document.querySelectorAll('.sub-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.mat === matName);
+      });
+
+      updateCadCalculations();
+    }
+
+    // Sliders Event Handlers
+    paramLength.addEventListener('input', (e) => {
+      cadState.length = parseInt(e.target.value, 10);
+      updateCadCalculations();
+    });
+
+    paramWidth.addEventListener('input', (e) => {
+      cadState.width = parseInt(e.target.value, 10);
+      updateCadCalculations();
+    });
+
+    paramHeight.addEventListener('input', (e) => {
+      cadState.height = parseInt(e.target.value, 10);
+      updateCadCalculations();
+    });
+
+    // Mouse Tracking for Crosshair HUD
+    const crossH = document.getElementById('cross-h');
+    const crossV = document.getElementById('cross-v');
+    const canvasContainer = document.getElementById('canvas-container');
+
+    function updateCrosshairs(e) {
+      const rect = canvasContainer.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      crossH.style.top = y + 'px';
+      crossV.style.left = x + 'px';
+
+      if (cadState.isDraggingVertex) {
+        handleDragInteraction(e);
+      }
+    }
+
+    // Drag Handle Mechanics
+    function startDragHandle(e, handleType) {
+      e.stopPropagation();
+      cadState.isDraggingVertex = true;
+      cadState.dragHandle = handleType;
+      document.body.style.cursor = 'grabbing';
+    }
+
+    window.addEventListener('mouseup', () => {
+      if (cadState.isDraggingVertex) {
+        cadState.isDraggingVertex = false;
+        cadState.dragHandle = null;
+        document.body.style.cursor = 'default';
+      }
+    });
+
+    function handleDragInteraction(e) {
+      const rect = canvasContainer.getBoundingClientRect();
+      const normX = (e.clientX - rect.left) / rect.width;
+      const normY = (e.clientY - rect.top) / rect.height;
+
+      if (cadState.dragHandle === 'length' || cadState.dragHandle === 'both') {
+        const rawL = Math.round((1800 + normX * 2400) / 100) * 100;
+        cadState.length = Math.max(1800, Math.min(4200, rawL));
+        paramLength.value = cadState.length;
+      }
+
+      if (cadState.dragHandle === 'width' || cadState.dragHandle === 'both') {
+        const rawW = Math.round((800 + normY * 800) / 50) * 50;
+        cadState.width = Math.max(800, Math.min(1600, rawW));
+        paramWidth.value = cadState.width;
+      }
+
+      updateCadCalculations();
+    }
+
+    // Slide-Over Docket Handlers
+    function openDocket() {
+      docketModal.classList.add('active');
+    }
+
+    function closeDocket() {
+      docketModal.classList.remove('active');
+    }
+
+    function handleDocketBackdrop(e) {
+      if (e.target === docketModal) {
+        closeDocket();
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && docketModal.classList.contains('active')) {
+        closeDocket();
+      }
+    });
+
+    function handleDocketSubmit(e) {
+      e.preventDefault();
+      const aovVal = document.getElementById('inp-aov').value;
+      if (aovVal === 'disqualified') {
+        alert('Notice: Auraworks custom architecture is built specifically for physical product fabricators with Average Order Values exceeding R15,000.');
+      }
+
+      const clientName = document.getElementById('inp-name').value;
+      document.getElementById('confirm-client-name').textContent = clientName;
+
+      docketForm.style.display = 'none';
+      docketConfirmScreen.style.display = 'block';
+    }
+
+    // Initial Engine Bootstrap
+    updateCadCalculations();
+  </script>
+</body>
+</html>

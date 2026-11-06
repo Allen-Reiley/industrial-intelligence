@@ -1,0 +1,1725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auraworks Advisory | Executive Commercial Blueprint & Technical Manufacturing Infrastructure</title>
+  <meta name="description" content="Institutional advisory and bespoke technical web infrastructure for high-ticket physical product manufacturers. Fiduciary rigor, 50% automated web deposit capture, and single-order retainer payback.">
+  <meta name="robots" content="index, follow">
+
+  <!-- Preconnect Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       DESIGN SYSTEM TOKENS — EXECUTIVE BOARDROOM & INSTITUTIONAL AUDIT
+       Code: AW-DSGN-03-BOARDROOM
+       Compliance: AuraWorks Executive Audit Design Standards
+       ========================================================================== */
+    :root {
+      --canvas-dark: #06101f;
+      --canvas-sec: #0c1c36;
+      --accent-emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.22);
+      --deep-teal: #0d9488;
+
+      --body-charcoal: #1e293b;
+      --slate-body: #334155;
+      --muted-grey: #64748b;
+      --border-neutral: #e2e8f0;
+      --border-dark: #1e293b;
+      --light-card: #f8fafc;
+      --card-white: #ffffff;
+
+      --good-text: #16a34a;
+      --good-bg: #f0fdf4;
+      --good-border: #bbf7d0;
+
+      --bad-text: #dc2626;
+      --bad-bg: #fef2f2;
+      --bad-border: #fecaca;
+
+      --font-display: 'Montserrat', sans-serif;
+      --font-body: 'Inter', sans-serif;
+
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+
+      --shadow-subtle: 0 4px 16px rgba(6, 16, 31, 0.06);
+      --shadow-board: 0 12px 36px rgba(6, 16, 31, 0.12);
+      --shadow-dark: 0 12px 40px rgba(0, 0, 0, 0.45);
+
+      --transition-base: all 0.2s ease-in-out;
+    }
+
+    /* CSS Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--canvas-dark);
+      color: var(--slate-body);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background: var(--canvas-dark);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--canvas-dark);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-emerald);
+    }
+
+    /* Container */
+    .container {
+      width: 100%;
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Typography Hierarchy */
+    h1, h2, h3, h4 {
+      font-family: var(--font-display);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    h1 {
+      font-size: clamp(34px, 4.6vw, 54px);
+      line-height: 1.15;
+      color: #ffffff;
+      font-weight: 900;
+    }
+
+    h2 {
+      font-size: clamp(24px, 3.2vw, 36px);
+      line-height: 1.2;
+      color: var(--body-charcoal);
+    }
+
+    h2.dark-mode {
+      color: #ffffff;
+    }
+
+    h3 {
+      font-size: 18.5px;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+
+    p {
+      color: var(--slate-body);
+      font-size: 14.5px;
+    }
+
+    p.lead-dark {
+      color: #94a3b8;
+      font-size: 17px;
+      line-height: 1.65;
+    }
+
+    /* Badges & Tags */
+    .badge-advisory {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: var(--accent-emerald);
+      padding: 5px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .badge-teal {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(13, 148, 136, 0.12);
+      border: 1px solid rgba(13, 148, 136, 0.35);
+      color: #2dd4bf;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .pulse-beacon {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+      box-shadow: 0 0 8px var(--accent-emerald);
+      animation: pulseEmerald 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseEmerald {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.85); }
+    }
+
+    /* Executive Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: var(--radius-sm);
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: var(--transition-base);
+      font-family: var(--font-display);
+      letter-spacing: 0.02em;
+      border: none;
+    }
+
+    .btn-emerald {
+      background: var(--accent-emerald);
+      color: #06101f;
+      font-weight: 800;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+    }
+    .btn-emerald:hover {
+      background: #34d399;
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+      transform: translateY(-1px);
+    }
+
+    .btn-navy-outline {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+    }
+    .btn-navy-outline:hover {
+      border-color: var(--accent-emerald);
+      background: rgba(16, 185, 129, 0.08);
+      transform: translateY(-1px);
+    }
+
+    /* Clean Card */
+    .board-card {
+      background: var(--card-white);
+      border: 1px solid var(--border-neutral);
+      border-radius: var(--radius-md);
+      padding: 28px;
+      box-shadow: var(--shadow-subtle);
+      transition: var(--transition-base);
+    }
+    .board-card:hover {
+      box-shadow: var(--shadow-board);
+      transform: translateY(-2px);
+    }
+
+    /* ==========================================================================
+       SECTION 0: EXECUTIVE BRIEFING BAR (TOP STRIP)
+       ========================================================================== */
+    .briefing-bar {
+      background: #030810;
+      border-bottom: 1px solid #142338;
+      padding: 8px 0;
+      font-size: 11.5px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .briefing-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .briefing-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #94a3b8;
+      letter-spacing: 0.02em;
+    }
+
+    .briefing-meta strong {
+      color: #ffffff;
+    }
+
+    .briefing-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent-emerald);
+      text-decoration: none;
+      font-family: var(--font-display);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+    .briefing-link:hover {
+      text-decoration: underline;
+    }
+
+    /* ==========================================================================
+       SECTION 1: INSTITUTIONAL NAVBAR
+       ========================================================================== */
+    .board-nav {
+      background: rgba(6, 16, 31, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid #142338;
+      position: sticky;
+      top: 35px;
+      z-index: 90;
+      padding: 14px 0;
+    }
+
+    .board-nav-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand-corporate {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .brand-monogram {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, var(--deep-teal), var(--canvas-dark));
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-emerald);
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 16px;
+      border-radius: var(--radius-sm);
+    }
+
+    .brand-corp-text {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+
+    .brand-corp-badge {
+      font-family: var(--font-body);
+      font-size: 10px;
+      color: var(--accent-emerald);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin-top: 2px;
+    }
+
+    .nav-chapters {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .nav-chapters a {
+      color: #94a3b8;
+      text-decoration: none;
+      font-family: var(--font-display);
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      transition: var(--transition-base);
+    }
+    .nav-chapters a:hover {
+      color: #ffffff;
+    }
+
+    /* ==========================================================================
+       SECTION 2: EXECUTIVE HERO CHAPTER
+       ========================================================================== */
+    .hero-board {
+      background: linear-gradient(180deg, var(--canvas-dark) 0%, var(--canvas-sec) 100%);
+      padding: 75px 0 65px;
+      border-bottom: 1px solid #142338;
+      position: relative;
+    }
+
+    .hero-board-content {
+      max-width: 860px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .hero-eyebrow-corp {
+      margin-bottom: 20px;
+    }
+
+    .hero-board-title {
+      margin-bottom: 22px;
+    }
+
+    .hero-board-actions {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 50px;
+    }
+
+    /* 4-Card Institutional Scorecard */
+    .scorecard-corp-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .scorecard-corp {
+      background: rgba(6, 16, 31, 0.7);
+      border: 1px solid #1e293b;
+      border-radius: var(--radius-sm);
+      padding: 20px 18px;
+      text-align: left;
+      border-top: 3px solid var(--accent-emerald);
+      transition: var(--transition-base);
+    }
+    .scorecard-corp:hover {
+      border-color: rgba(16, 185, 129, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .corp-kpi-val {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: 4px;
+      line-height: 1.15;
+    }
+
+    .corp-kpi-label {
+      font-family: var(--font-display);
+      font-size: 10.5px;
+      color: var(--accent-emerald);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+
+    .corp-kpi-desc {
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+
+    /* ==========================================================================
+       SECTION 3: CHAPTER 01 // TARGET CLIENT PROFILE (ICP)
+       ========================================================================== */
+    .section-light {
+      background: #f8fafc;
+      padding: 85px 0;
+      border-bottom: 1px solid var(--border-neutral);
+    }
+
+    .section-title-center {
+      text-align: center;
+      max-width: 760px;
+      margin: 0 auto 50px;
+    }
+
+    .section-title-center p {
+      font-size: 15.5px;
+      color: var(--slate-body);
+      margin-top: 12px;
+    }
+
+    .icp-corp-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .icp-corp-card {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .icp-code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-neutral);
+    }
+
+    .icp-code {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--deep-teal);
+      letter-spacing: 0.05em;
+    }
+
+    .icp-corp-title {
+      font-size: 19px;
+      color: var(--body-charcoal);
+      margin-bottom: 10px;
+    }
+
+    .icp-corp-desc {
+      font-size: 13.5px;
+      color: var(--slate-body);
+      margin-bottom: 20px;
+      flex-grow: 1;
+    }
+
+    .audit-box {
+      border-radius: var(--radius-sm);
+      padding: 13px 14px;
+      font-size: 12px;
+      line-height: 1.45;
+      margin-bottom: 10px;
+    }
+
+    .audit-box-bad {
+      background: var(--bad-bg);
+      border: 1px solid var(--bad-border);
+      color: var(--bad-text);
+    }
+
+    .audit-box-good {
+      background: var(--good-bg);
+      border: 1px solid var(--good-border);
+      color: var(--good-text);
+      margin-bottom: 0;
+    }
+
+    .audit-box-label {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 9.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 3px;
+    }
+    .audit-box-bad .audit-box-label { color: #b91c1c; }
+    .audit-box-good .audit-box-label { color: #15803d; }
+
+    /* ==========================================================================
+       SECTION 4: CHAPTER 02 // COMMERCIAL CONTRACT TABLE
+       ========================================================================== */
+    .section-contract {
+      background: #ffffff;
+      padding: 85px 0;
+      border-bottom: 1px solid var(--border-neutral);
+    }
+
+    .table-container-corp {
+      border: 1px solid var(--border-neutral);
+      border-radius: var(--radius-sm);
+      overflow-x: auto;
+      margin-bottom: 35px;
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .corp-contract-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .corp-contract-table th {
+      background: #f1f5f9;
+      color: var(--body-charcoal);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 14px 18px;
+      border-bottom: 2px solid var(--border-neutral);
+    }
+
+    .corp-contract-table td {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border-neutral);
+      color: var(--slate-body);
+      vertical-align: top;
+    }
+
+    .corp-contract-table tr:hover td {
+      background: #f8fafc;
+    }
+
+    .corp-contract-table strong {
+      color: var(--body-charcoal);
+    }
+
+    /* ==========================================================================
+       SECTION 5: BOARDROOM FINANCIAL ROI MODEL
+       ========================================================================== */
+    .roi-model-section {
+      background: var(--canvas-dark);
+      padding: 85px 0;
+      border-bottom: 1px solid #142338;
+      color: #ffffff;
+    }
+
+    .roi-grid-wrap {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 30px;
+      align-items: start;
+    }
+
+    .roi-panel-dark {
+      background: rgba(12, 28, 54, 0.7);
+      border: 1px solid #1e293b;
+      border-radius: var(--radius-md);
+      padding: 30px;
+      box-shadow: var(--shadow-dark);
+    }
+
+    .slider-corp-group {
+      margin-bottom: 22px;
+    }
+
+    .slider-corp-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+
+    .slider-corp-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      font-family: var(--font-display);
+    }
+
+    .slider-corp-num {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--accent-emerald);
+    }
+
+    .range-emerald {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: #1e293b;
+      border-radius: 3px;
+      outline: none;
+    }
+    .range-emerald::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--accent-emerald);
+      border: 2px solid var(--canvas-dark);
+      transition: transform 0.15s;
+    }
+    .range-emerald::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    /* Financial Output Receipt */
+    .financial-receipt {
+      background: #091325;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      border-radius: var(--radius-md);
+      padding: 30px;
+      box-shadow: var(--shadow-dark);
+    }
+
+    .fin-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13.5px;
+      margin-bottom: 12px;
+      color: #94a3b8;
+    }
+
+    .fin-row strong {
+      color: #ffffff;
+      font-family: var(--font-display);
+      font-size: 14.5px;
+    }
+
+    .fin-breakdown-card {
+      background: rgba(6, 16, 31, 0.7);
+      border: 1px solid #1e293b;
+      border-radius: var(--radius-sm);
+      padding: 18px;
+      margin: 18px 0;
+    }
+
+    .fin-verdict-title {
+      font-family: var(--font-display);
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--accent-emerald);
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+
+    .fin-verdict-val {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 900;
+      color: #34d399;
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+
+    .fin-verdict-sub {
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+
+    /* ==========================================================================
+       SECTION 6: DUAL-CHANNEL SEARCH & GEO TELEMETRY
+       ========================================================================== */
+    .section-geo {
+      background: #f8fafc;
+      padding: 85px 0;
+      border-bottom: 1px solid var(--border-neutral);
+    }
+
+    .geo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+    }
+
+    .geo-card {
+      background: var(--card-white);
+      border: 1px solid var(--border-neutral);
+      border-radius: var(--radius-md);
+      padding: 30px;
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .geo-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .geo-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 14px;
+      font-size: 13.5px;
+    }
+
+    .geo-list li {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      color: var(--slate-body);
+    }
+
+    .geo-bullet {
+      color: var(--deep-teal);
+      font-weight: 800;
+    }
+
+    /* ==========================================================================
+       SECTION 7: CHAPTER 03 // QUALIFICATION MATRIX
+       ========================================================================== */
+    .section-matrix {
+      background: #ffffff;
+      padding: 85px 0;
+      border-bottom: 1px solid var(--border-neutral);
+    }
+
+    .matrix-scorecard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+    }
+
+    .matrix-scorecard {
+      border-radius: var(--radius-md);
+      padding: 32px;
+    }
+
+    .matrix-sc-pass {
+      background: var(--good-bg);
+      border: 1px solid var(--good-border);
+    }
+
+    .matrix-sc-fail {
+      background: var(--bad-bg);
+      border: 1px solid var(--bad-border);
+    }
+
+    .sc-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .sc-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .sc-item {
+      display: flex;
+      gap: 10px;
+      font-size: 13.5px;
+      line-height: 1.45;
+    }
+
+    .matrix-sc-pass .sc-item strong { color: #166534; }
+    .matrix-sc-fail .sc-item strong { color: #991b1b; }
+
+    /* ==========================================================================
+       SECTION 8: EXECUTIVE BRIEFING SCHEDULER MODAL
+       ========================================================================== */
+    .modal-corp-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(3, 8, 16, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-corp-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-corp-dialog {
+      background: #ffffff;
+      border-radius: var(--radius-md);
+      width: 100%;
+      max-width: 580px;
+      box-shadow: 0 24px 60px rgba(6, 16, 31, 0.45);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .modal-corp-header {
+      background: var(--canvas-dark);
+      padding: 20px 26px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #ffffff;
+    }
+
+    .modal-corp-body {
+      padding: 28px 26px;
+    }
+
+    .form-group-corp {
+      margin-bottom: 16px;
+    }
+
+    .form-corp-label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--body-charcoal);
+      font-family: var(--font-display);
+      margin-bottom: 5px;
+    }
+
+    .form-corp-input, .form-corp-select {
+      width: 100%;
+      padding: 11px 13px;
+      background: #ffffff;
+      border: 1px solid var(--border-neutral);
+      border-radius: var(--radius-sm);
+      color: var(--body-charcoal);
+      font-family: var(--font-body);
+      font-size: 13.5px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-corp-input:focus, .form-corp-select:focus {
+      border-color: var(--accent-emerald);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+    }
+
+    .modal-corp-confirm {
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    /* ==========================================================================
+       SECTION 9: INSTITUTIONAL GOVERNANCE FOOTER
+       ========================================================================== */
+    .corp-footer {
+      background: #030810;
+      border-top: 1px solid #142338;
+      padding: 60px 0 36px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    .corp-footer-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+
+    .corp-footer-col h4 {
+      color: #ffffff;
+      font-size: 12px;
+      font-family: var(--font-display);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+    }
+
+    .corp-footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .corp-footer-links a {
+      color: #94a3b8;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .corp-footer-links a:hover {
+      color: var(--accent-emerald);
+    }
+
+    .corp-footer-legal {
+      border-top: 1px solid #142338;
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      color: #64748b;
+      font-size: 12px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .scorecard-corp-grid { grid-template-columns: repeat(2, 1fr); }
+      .icp-corp-grid { grid-template-columns: 1fr; }
+      .roi-grid-wrap { grid-template-columns: 1fr; }
+      .geo-grid { grid-template-columns: 1fr; }
+      .matrix-scorecard-grid { grid-template-columns: 1fr; }
+      .corp-footer-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .nav-chapters { display: none; }
+      .scorecard-corp-grid { grid-template-columns: 1fr; }
+      .briefing-inner { justify-content: center; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       0. EXECUTIVE BRIEFING BAR (TOP STRIP)
+       ========================================================================== -->
+  <header class="briefing-bar">
+    <div class="container briefing-inner">
+      <div class="briefing-meta">
+        <span class="pulse-beacon"></span>
+        <span>COMMERCIAL POSITIONING BRIEF: High-Ticket Bespoke Manufacturers | STRICT CAPACITY: <strong>1–3 RETAINED ACCOUNTS / MONTH</strong> [ Q4 Allocation: 1 Remaining ]</span>
+      </div>
+      <a href="#briefing" class="briefing-link" onclick="openCorpModal()">
+        <span>Schedule Discovery Briefing &rarr;</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       1. INSTITUTIONAL NAVBAR
+       ========================================================================== -->
+  <nav class="board-nav">
+    <div class="container board-nav-inner">
+      <a href="#" class="brand-corporate">
+        <div class="brand-monogram">A</div>
+        <div class="brand-corp-text">
+          <span>AURAWORKS ADVISORY</span>
+          <span class="brand-corp-badge">EXECUTIVE AUDIT STANDARD // REV 2026.11</span>
+        </div>
+      </a>
+
+      <ul class="nav-chapters">
+        <li><a href="#icp-profile">01_ICP_Profile</a></li>
+        <li><a href="#commercial-framework">02_Commercials</a></li>
+        <li><a href="#financial-roi">03_Financial_ROI</a></li>
+        <li><a href="#geo-search">04_GEO_Telemetry</a></li>
+        <li><a href="#qualification-matrix">05_Qualification</a></li>
+      </ul>
+
+      <button class="btn btn-emerald" onclick="openCorpModal()">Schedule Briefing</button>
+    </div>
+  </nav>
+
+  <!-- ==========================================================================
+       2. EXECUTIVE HERO CHAPTER
+       ========================================================================== -->
+  <section class="hero-board">
+    <div class="container">
+      <div class="hero-board-content">
+        <div class="hero-eyebrow-corp">
+          <span class="badge-advisory">STRATEGIC REPOSITIONING &amp; CAPITAL ALLOCATION BRIEF</span>
+        </div>
+
+        <h1 class="hero-board-title">
+          Bespoke technical partnerships for high-ticket physical product manufacturers.
+        </h1>
+
+        <p class="lead-dark" style="margin-bottom: 34px;">
+          We replace fragmented WhatsApp inquiries, manual estimating bottlenecks, and cash flow exposure with dedicated digital dimension engines, automated 50% web deposit capture, and workshop dispatch pipelines for South African manufacturers with AOVs from R15,000 to R250,000+.
+        </p>
+
+        <div class="hero-board-actions">
+          <button class="btn btn-emerald" onclick="openCorpModal()">Schedule Architecture Briefing &rarr;</button>
+          <a href="#financial-roi" class="btn btn-navy-outline">Review Financial Payback Model</a>
+        </div>
+      </div>
+
+      <!-- 4-Card Institutional Scorecard -->
+      <div class="scorecard-corp-grid">
+        <div class="scorecard-corp">
+          <div class="corp-kpi-label">AOV_THRESHOLD</div>
+          <div class="corp-kpi-val">R15,000+</div>
+          <div class="corp-kpi-desc">Minimum economic scale required for mathematical client payback.</div>
+        </div>
+
+        <div class="scorecard-corp">
+          <div class="corp-kpi-label">WORKING_CAPITAL</div>
+          <div class="corp-kpi-val">50% Deposit</div>
+          <div class="corp-kpi-desc">Automated upfront web funds secured before raw material procurement.</div>
+        </div>
+
+        <div class="scorecard-corp">
+          <div class="corp-kpi-label">BANDWIDTH_LIMIT</div>
+          <div class="corp-kpi-val">1–3 Accounts</div>
+          <div class="corp-kpi-desc">Strict monthly capacity cap guaranteeing senior partner technical focus.</div>
+        </div>
+
+        <div class="scorecard-corp">
+          <div class="corp-kpi-label">PAYBACK_SPEED</div>
+          <div class="corp-kpi-val">1 Closed Deal</div>
+          <div class="corp-kpi-desc">Exactly one bespoke commission per month offsets the entire retainer fee.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       3. CHAPTER 01 // TARGET CLIENT PROFILE (ICP)
+       ========================================================================== -->
+  <section id="icp-profile" class="section-light">
+    <div class="container">
+      <div class="section-title-center">
+        <span class="badge-teal">CHAPTER 01 // QUALIFIED PROFILES</span>
+        <h2>Three High-Value Physical Goods Verticals</h2>
+        <p>Our bespoke technical architecture is built exclusively for established manufacturers where high Average Order Values create immediate, undeniable ROI.</p>
+      </div>
+
+      <div class="icp-corp-grid">
+        <!-- Vertical 01 -->
+        <div class="board-card icp-corp-card">
+          <div class="icp-code-header">
+            <span class="icp-code">VERTICAL_01 // JOINERY</span>
+            <span class="badge-advisory">AOV: R25k–R150k+</span>
+          </div>
+          <h3 class="icp-corp-title">Bespoke Architectural Furniture</h3>
+          <p class="icp-corp-desc">
+            Custom solid French oak dining suites, executive boardroom desks, monolithic credenzas, and luxury architectural cabinetry installations.
+          </p>
+
+          <div class="audit-box audit-box-bad">
+            <span class="audit-box-label">Common Operational Bottleneck</span>
+            Sales estimators spend 15+ unpaid hours weekly calculating timber board footage for uncommitted leads who disappear after manual PDF quotes.
+          </div>
+
+          <div class="audit-box audit-box-good">
+            <span class="audit-box-label">AuraWorks Architectural Solution</span>
+            Parametric dimension engine with real-time timber yield formulas and instant 50% web deposit capture that locks kiln-dried stock.
+          </div>
+        </div>
+
+        <!-- Vertical 02 -->
+        <div class="board-card icp-corp-card">
+          <div class="icp-code-header">
+            <span class="icp-code">VERTICAL_02 // FINISHES</span>
+            <span class="badge-advisory">AOV: R20k–R180k+</span>
+          </div>
+          <h3 class="icp-corp-title">High-End Architectural Finishes</h3>
+          <p class="icp-corp-desc">
+            Crittall-style steel & glass partition walls, custom bronze hardware, decorative acoustic timber paneling, and luxury metalwork screens.
+          </p>
+
+          <div class="audit-box audit-box-bad">
+            <span class="audit-box-label">Common Operational Bottleneck</span>
+            Commercial architects wait 48+ hours for custom finish quotes over unread email chains, resulting in lost specification in tender schedules.
+          </div>
+
+          <div class="audit-box audit-box-good">
+            <span class="audit-box-label">AuraWorks Architectural Solution</span>
+            Self-serve specifier engine generating instant pricing, acoustic decibel ratings, and downloadable CAD/BIM drawing packs for tender schedules.
+          </div>
+        </div>
+
+        <!-- Vertical 03 -->
+        <div class="board-card icp-corp-card">
+          <div class="icp-code-header">
+            <span class="icp-code">VERTICAL_03 // FABRICATION</span>
+            <span class="badge-advisory">AOV: R35k–R250k+</span>
+          </div>
+          <h3 class="icp-corp-title">Specialized Fabrication & Outfitting</h3>
+          <p class="icp-corp-desc">
+            Turnkey off-road expedition camper conversions, commercial stainless steel braai islands, luxury automated pergolas, and custom trailers.
+          </p>
+
+          <div class="audit-box audit-box-bad">
+            <span class="audit-box-label">Common Operational Bottleneck</span>
+            Verbal scope changes during 6-week welding runs cause working capital exposure and shop floor scheduling bottlenecks.
+          </div>
+
+          <div class="audit-box audit-box-good">
+            <span class="audit-box-label">AuraWorks Architectural Solution</span>
+            Modular add-on selection with phased milestone deposit gating, live welding bay scheduling, and automated shop floor cut-list dispatch.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       4. CHAPTER 02 // COMMERCIAL CONTRACT TABLE
+       ========================================================================== -->
+  <section id="commercial-framework" class="section-contract">
+    <div class="container">
+      <div class="section-title-center">
+        <span class="badge-teal">CHAPTER 02 // COMMERCIAL STRUCTURE</span>
+        <h2>Two-Phase Partnership Framework</h2>
+        <p>A structured capital investment followed by an ongoing infrastructure retainer designed to deliver continuous high-intent lead flow and guaranteed payback.</p>
+      </div>
+
+      <div class="table-container-corp">
+        <table class="corp-contract-table">
+          <thead>
+            <tr>
+              <th style="width: 22%;">COMMERCIAL_PHASE</th>
+              <th style="width: 24%;">INVESTMENT_STRUCTURE</th>
+              <th style="width: 32%;">SCOPE_OF_DELIVERABLES</th>
+              <th style="width: 22%;">CLIENT_VALUE_PROPOSITION</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <span class="badge-advisory" style="margin-bottom:6px;">PHASE 01 // BUILD</span><br>
+                <strong style="font-size:14px;">Custom Storefront & Pipeline</strong>
+              </td>
+              <td>
+                <span style="font-family:var(--font-display); font-size:17px; font-weight:800; color:var(--body-charcoal);">R 45,000 – R 75,000</span><br>
+                <span style="font-size:11px; color:var(--muted-grey);">Once-off capital milestone</span>
+              </td>
+              <td>
+                <ul style="list-style:none; display:flex; flex-direction:column; gap:5px; font-size:12.5px;">
+                  <li>&#8226; Bespoke responsive visual showcase & architectural monograph.</li>
+                  <li>&#8226; Interactive parametric dimension quoting engine.</li>
+                  <li>&#8226; Automated 50% milestone deposit checkout gateway integration.</li>
+                  <li>&#8226; Shop-floor job card webhook generation & cutting list output.</li>
+                  <li>&#8226; Sub-300ms Core Web Vitals performance optimization.</li>
+                </ul>
+              </td>
+              <td>
+                Eliminates lost inquiries, establishes immediate boardroom credibility with high-ticket clients, and captures 50% working capital deposits directly on-web.
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <span class="badge-teal" style="margin-bottom:6px;">PHASE 02 // RETAINER</span><br>
+                <strong style="font-size:14px;">Growth & Infrastructure</strong>
+              </td>
+              <td>
+                <span style="font-family:var(--font-display); font-size:17px; font-weight:800; color:var(--deep-teal);">R 10,000 – R 18,000</span><br>
+                <span style="font-size:11px; color:var(--muted-grey);">/ month (Strictly 1–3 accounts)</span>
+              </td>
+              <td>
+                <ul style="list-style:none; display:flex; flex-direction:column; gap:5px; font-size:12.5px;">
+                  <li>&#8226; <strong>Generative Engine Optimization (GEO):</strong> AI citations in ChatGPT, Perplexity, and Google AI Overviews.</li>
+                  <li>&#8226; <strong>Technical B2B SEO:</strong> Dominance across Gauteng, Western Cape, and KZN industrial hubs.</li>
+                  <li>&#8226; Continuous conversion optimization, uptime maintenance, database security.</li>
+                  <li>&#8226; Bi-weekly pipeline audit reviews with senior technical partner.</li>
+                </ul>
+              </td>
+              <td>
+                Ensures constant inbound pipeline of high-intent commercial architects and builders. Exactly 1 closed deal per month completely offsets the monthly retainer.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       5. BOARDROOM FINANCIAL ROI MODEL
+       ========================================================================== -->
+  <section id="financial-roi" class="roi-model-section">
+    <div class="container">
+      <div class="section-title-center">
+        <span class="badge-advisory">FIDUCIARY RIGOR</span>
+        <h2 class="dark-mode">Boardroom Unit Economics & Payback Model</h2>
+        <p class="lead-dark">Simulate your manufacturing margins and calculate exact breakeven velocity on the Phase 2 Growth Retainer.</p>
+      </div>
+
+      <div class="roi-grid-wrap">
+        <!-- Interactive Controls -->
+        <div class="roi-panel-dark">
+          <h3 style="color:#ffffff; margin-bottom:20px; font-size:18px;">Parametric Financial Inputs</h3>
+
+          <!-- AOV Slider -->
+          <div class="slider-corp-group">
+            <div class="slider-corp-header">
+              <span class="slider-corp-title">Typical Average Order Value (AOV)</span>
+              <span class="slider-corp-num" id="roi-readout-aov">R 45,000</span>
+            </div>
+            <input type="range" id="roi-aov" class="range-emerald" min="20000" max="150000" step="5000" value="45000">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748b; margin-top:4px;">
+              <span>R20,000 (Commercial Base)</span>
+              <span>R150,000+ (Master Contract)</span>
+            </div>
+          </div>
+
+          <!-- Margin Slider -->
+          <div class="slider-corp-group">
+            <div class="slider-corp-header">
+              <span class="slider-corp-title">Gross Manufacturing Margin (%)</span>
+              <span class="slider-corp-num" id="roi-readout-margin">45%</span>
+            </div>
+            <input type="range" id="roi-margin" class="range-emerald" min="25" max="65" step="1" value="45">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748b; margin-top:4px;">
+              <span>25% (High Materials)</span>
+              <span>65% (High-Margin Bespoke)</span>
+            </div>
+          </div>
+
+          <!-- Retainer Slider -->
+          <div class="slider-corp-group">
+            <div class="slider-corp-header">
+              <span class="slider-corp-title">Selected Monthly Retainer Tier</span>
+              <span class="slider-corp-num" id="roi-readout-retainer">R 12,000 / mo</span>
+            </div>
+            <input type="range" id="roi-retainer" class="range-emerald" min="10000" max="18000" step="1000" value="12000">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748b; margin-top:4px;">
+              <span>R10,000 / mo</span>
+              <span>R18,000 / mo</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Real-Time Financial Receipt -->
+        <div class="financial-receipt">
+          <h3 style="color:#ffffff; margin-bottom:16px; font-size:18px;">Unit Economics Breakdown</h3>
+
+          <div class="fin-row">
+            <span>Gross Profit per Closed Deal:</span>
+            <strong id="fin-gross-profit">R 20,250</strong>
+          </div>
+
+          <div class="fin-row">
+            <span>Monthly Infrastructure Retainer:</span>
+            <strong id="fin-retainer-cost" style="color:#94a3b8;">R 12,000</strong>
+          </div>
+
+          <div class="fin-breakdown-card">
+            <div class="fin-verdict-title">Net Profit After Retainer on Just 1 Deal</div>
+            <div class="fin-verdict-val" id="fin-net-profit">+R 8,250 / mo</div>
+            <div class="fin-verdict-sub">
+              A single closed bespoke commission per month fully finances the retainer and generates net cash flow.
+            </div>
+          </div>
+
+          <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid var(--accent-emerald); border-radius: var(--radius-sm); padding: 14px; text-align: center;">
+            <div style="font-family:var(--font-display); font-size:10.5px; text-transform:uppercase; color:var(--accent-emerald); font-weight:800; letter-spacing:0.06em;">
+              FIDUCIARY VERDICT
+            </div>
+            <div style="font-family:var(--font-display); font-size:18px; font-weight:900; color:#ffffff; margin-top:2px;">
+              EXACTLY 1 ORDER / MONTH BREAKS EVEN
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       6. DUAL-CHANNEL SEARCH & GEO TELEMETRY
+       ========================================================================== -->
+  <section id="geo-search" class="section-geo">
+    <div class="container">
+      <div class="section-title-center">
+        <span class="badge-teal">SEARCH INTELLIGENCE</span>
+        <h2>Dual-Channel Search Dominance</h2>
+        <p>Modern high-ticket buyers search both traditional Google SERP and AI answer engines. Our Phase 2 retainer ensures your manufacturing brand dominates both channels.</p>
+      </div>
+
+      <div class="geo-grid">
+        <!-- Traditional SEO -->
+        <div class="geo-card">
+          <div class="geo-header">
+            <span class="badge-advisory">CHANNEL 01</span>
+            <h3 style="color:var(--body-charcoal);">High-Intent B2B SEO (Google SERP)</h3>
+          </div>
+          <p style="font-size:13.5px;">
+            Targeting commercial specifiers and developers searching for bespoke fabricators across primary South African economic hubs:
+          </p>
+          <ul class="geo-list">
+            <li>
+              <span class="geo-bullet">&#10003;</span>
+              <span><strong>Regional Industrial Dominance:</strong> High-intent terms across Gauteng, Vaal, Mpumalanga, and Cape Town Corridor.</span>
+            </li>
+            <li>
+              <span class="geo-bullet">&#10003;</span>
+              <span><strong>Sub-300ms Core Web Vitals:</strong> Lightning-fast edge caching ensuring flawless mobile browsing for commercial architects on job sites.</span>
+            </li>
+            <li>
+              <span class="geo-bullet">&#10003;</span>
+              <span><strong>Structured Product Schema:</strong> Rich markup displaying dimensions, material grades, and workshop lead times directly in search snippets.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Generative Engine Optimization (GEO) -->
+        <div class="geo-card">
+          <div class="geo-header">
+            <span class="badge-teal">CHANNEL 02</span>
+            <h3 style="color:var(--body-charcoal);">Generative Engine Optimization (GEO)</h3>
+          </div>
+          <p style="font-size:13.5px;">
+            Structuring your website as an authoritative knowledge graph so modern AI answer engines cite your workshop as the definitive manufacturer:
+          </p>
+          <ul class="geo-list">
+            <li>
+              <span class="geo-bullet">&#10003;</span>
+              <span><strong>ChatGPT & Perplexity Citations:</strong> When architects prompt AI (*"Recommend a master French oak table maker in South Africa"*), your studio is the primary citation.</span>
+            </li>
+            <li>
+              <span class="geo-bullet">&#10003;</span>
+              <span><strong>Google AI Overviews (SGE):</strong> High-density entity structuring ensuring your technical specifications appear in synthesized AI answers.</span>
+            </li>
+            <li>
+              <span class="geo-bullet">&#10003;</span>
+              <span><strong>Verified Material Provenance:</strong> Algorithmic proof of South African physical manufacturing presence and certified timber sourcing.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       7. CHAPTER 03 // QUALIFICATION MATRIX
+       ========================================================================== -->
+  <section id="qualification-matrix" class="section-matrix">
+    <div class="container">
+      <div class="section-title-center">
+        <span class="badge-advisory">CHAPTER 03 // ADMISSION AUDIT</span>
+        <h2>Qualification Matrix for Outreach & Booking</h2>
+        <p>Because Auraworks operates with strict capacity constraints (1–3 retained accounts per month), we enforce an objective qualification filter to protect partner execution quality.</p>
+      </div>
+
+      <div class="matrix-scorecard-grid">
+        <!-- Target Qualifiers -->
+        <div class="matrix-scorecard matrix-sc-pass">
+          <div class="sc-header">
+            <span class="badge-advisory" style="background:#16a34a; color:#ffffff; border:none;">&#10003; TARGET QUALIFIERS</span>
+          </div>
+          <h3 style="color:#166534; margin-bottom:6px;">We Welcome Your Briefing Request If:</h3>
+          <p style="font-size:13px; color:#14532d;">Your manufacturing enterprise matches these operational criteria:</p>
+
+          <ul class="sc-list">
+            <li class="sc-item">
+              <span style="color:#16a34a; font-weight:800;">&#10003;</span>
+              <span><strong>Average Order Value strictly R15,000 to R250,000+:</strong> High-ticket physical products where custom quoting engines deliver clear payback.</span>
+            </li>
+            <li class="sc-item">
+              <span style="color:#16a34a; font-weight:800;">&#10003;</span>
+              <span><strong>Physical manufacturing plant & machinery footprint:</strong> You own, manage, or operate physical workshop bays in South Africa.</span>
+            </li>
+            <li class="sc-item">
+              <span style="color:#16a34a; font-weight:800;">&#10003;</span>
+              <span><strong>Manual intake bottlenecks:</strong> Sales estimators or founders losing 15+ hours a week preparing manual quotes over WhatsApp and email.</span>
+            </li>
+            <li class="sc-item">
+              <span style="color:#16a34a; font-weight:800;">&#10003;</span>
+              <span><strong>Executive engagement:</strong> Managing Director, CEO, or Owner-Founder directly engaged in commercial transformation.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Immediate Disqualifiers -->
+        <div class="matrix-scorecard matrix-sc-fail">
+          <div class="sc-header">
+            <span class="badge-advisory" style="background:#dc2626; color:#ffffff; border:none;">&times; IMMEDIATE DISQUALIFIERS</span>
+          </div>
+          <h3 style="color:#991b1b; margin-bottom:6px;">Please Do Not Schedule If:</h3>
+          <p style="font-size:13px; color:#7f1d1d;">Your commercial model is incompatible with high-ticket web engineering:</p>
+
+          <ul class="sc-list">
+            <li class="sc-item">
+              <span style="color:#dc2626; font-weight:800;">&times;</span>
+              <span><strong>Dropshippers & Importers:</strong> Businesses that do not cut, weld, machine, or assemble physical products in-house.</span>
+            </li>
+            <li class="sc-item">
+              <span style="color:#dc2626; font-weight:800;">&times;</span>
+              <span><strong>Mass Low-Margin Retail (AOV &lt; R5,000):</strong> Consumer commodity items where off-the-shelf templates are sufficient.</span>
+            </li>
+            <li class="sc-item">
+              <span style="color:#dc2626; font-weight:800;">&times;</span>
+              <span><strong>Solo Garage Hobbyists:</strong> Part-time makers lacking commercial machinery, dedicated full-time staff, or volume capacity.</span>
+            </li>
+            <li class="sc-item">
+              <span style="color:#dc2626; font-weight:800;">&times;</span>
+              <span><strong>Equity-Only or Unpaid Contingency Models:</strong> We deliver enterprise-grade engineering, not venture-backed speculative work.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       8. EXECUTIVE BRIEFING SCHEDULER MODAL
+       ========================================================================== -->
+  <div id="corp-modal" class="modal-corp-overlay">
+    <div class="modal-corp-dialog">
+      <div class="modal-corp-header">
+        <div>
+          <span class="badge-teal" style="margin-bottom:4px;">EXECUTIVE ADVISORY</span>
+          <h3 style="color:#ffffff; font-size:18px;">Schedule Architecture Briefing</h3>
+        </div>
+        <button onclick="closeCorpModal()" style="background:none; border:none; color:#94a3b8; font-size:24px; cursor:pointer;">&times;</button>
+      </div>
+
+      <div class="modal-corp-body">
+        <!-- Form View -->
+        <div id="corp-form-view">
+          <form id="corp-briefing-form" onsubmit="handleCorpSubmit(event)">
+            <div class="form-group-corp">
+              <label class="form-corp-label" for="corp-name">Executive Name & Corporate Title</label>
+              <input type="text" id="corp-name" class="form-corp-input" placeholder="e.g. David van der Merwe (Managing Director)" required>
+            </div>
+
+            <div class="form-group-corp">
+              <label class="form-corp-label" for="corp-brand">Manufacturing Enterprise / Workshop Name</label>
+              <input type="text" id="corp-brand" class="form-corp-input" placeholder="e.g. Sterling Joinery Studios, Cape Town" required>
+            </div>
+
+            <div class="form-group-corp">
+              <label class="form-corp-label" for="corp-email">Corporate Email Address</label>
+              <input type="email" id="corp-email" class="form-corp-input" placeholder="david@sterlingjoinery.co.za" required>
+            </div>
+
+            <div class="form-group-corp">
+              <label class="form-corp-label" for="corp-turnover">Annual Manufacturing Turnover</label>
+              <select id="corp-turnover" class="form-corp-select" required>
+                <option value="" disabled selected>Select annual turnover bracket</option>
+                <option value="under5m">Under R5,000,000 (Early Stage)</option>
+                <option value="5m-15m">R5,000,000 – R15,000,000 (Established Studio)</option>
+                <option value="15m-40m">R15,000,000 – R40,000,000 (Multi-Bay Plant)</option>
+                <option value="40m+">R40,000,000+ (Commercial Enterprise)</option>
+              </select>
+            </div>
+
+            <div class="form-group-corp">
+              <label class="form-corp-label" for="corp-aov">Typical Average Order Value (AOV)</label>
+              <select id="corp-aov" class="form-corp-select" required>
+                <option value="" disabled selected>Select typical physical project AOV</option>
+                <option value="disqualified">Below R15,000 [ Fails Unit Economics Model ]</option>
+                <option value="tier1">R15,000 – R35,000 (Commercial Standard)</option>
+                <option value="tier2">R35,000 – R75,000 (High-Ticket Bespoke)</option>
+                <option value="tier3">R75,000 – R250,000+ (Master Architectural)</option>
+              </select>
+              <div id="corp-aov-alert" style="display:none; color:#dc2626; font-size:11.5px; margin-top:4px;">
+                Fiduciary Notice: Auraworks custom architecture requires AOV above R15,000 for viable single-order payback.
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-emerald" style="width: 100%; margin-top: 8px;">
+              Confirm Briefing Request &rarr;
+            </button>
+          </form>
+        </div>
+
+        <!-- Confirm View -->
+        <div id="corp-confirm-view" class="modal-corp-confirm">
+          <div style="font-size: 44px; color: var(--accent-emerald); margin-bottom: 12px;">&#10003;</div>
+          <h3 style="color:var(--body-charcoal); font-size:22px; margin-bottom:8px;">Briefing Request Logged</h3>
+          <p style="color:var(--slate-body); font-size:14px; margin-bottom:14px;">
+            Thank you, <strong id="confirm-corp-name" style="color:var(--body-charcoal);"></strong>.
+          </p>
+          <p style="color:var(--muted-grey); font-size:13px; line-height:1.55; margin-bottom:24px;">
+            Auraworks Advisory will evaluate your workshop footprint and turnover metrics against current Q4 capacity. You will receive a direct calendar confirmation within 24 business hours.
+          </p>
+          <button class="btn btn-navy-outline" style="color:var(--body-charcoal); border-color:var(--border-neutral);" onclick="closeCorpModal()">Close Window</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       9. INSTITUTIONAL GOVERNANCE FOOTER
+       ========================================================================== -->
+  <footer class="corp-footer">
+    <div class="container">
+      <div class="corp-footer-grid">
+        <div class="corp-footer-col">
+          <div class="brand-corporate" style="margin-bottom:14px;">
+            <div class="brand-monogram">A</div>
+            <div class="brand-corp-text">
+              <span>AURAWORKS ADVISORY</span>
+              <span class="brand-corp-badge">EXECUTIVE AUDIT STANDARD</span>
+            </div>
+          </div>
+          <p style="font-size:13px; line-height:1.6; max-width:380px;">
+            Institutional technical partnerships for South African physical product manufacturers. Strategic dimension quoting engines, 50% automated web deposit capture, and single-order retainer payback.
+          </p>
+        </div>
+
+        <div class="corp-footer-col">
+          <h4>GOVERNANCE & STANDARDS</h4>
+          <ul class="corp-footer-links">
+            <li><a href="#icp-profile">AuraWorks Audit Design Standard v2.4</a></li>
+            <li><a href="#qualification-matrix">Strict Capacity: 1–3 Retained Accounts</a></li>
+            <li><a href="#qualification-matrix">POPIA Act Compliance Guaranteed</a></li>
+            <li><a href="#qualification-matrix">Mutual Non-Disclosure Agreement (NDA)</a></li>
+          </ul>
+        </div>
+
+        <div class="corp-footer-col">
+          <h4>EXECUTIVE NODES</h4>
+          <ul class="corp-footer-links">
+            <li><a href="#briefing">Johannesburg Industrial Corridor</a></li>
+            <li><a href="#briefing">Cape Town Design Atelier Hub</a></li>
+            <li><a href="#briefing">Durban &amp; KZN Coastal Fabrication</a></li>
+            <li><a href="#briefing">Confidential Partner Direct Access</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="corp-footer-legal">
+        <div>&copy; 2026 Auraworks Advisory. All Rights Reserved. Built in strict accordance with the AuraWorks Executive Audit Design Standards.</div>
+        <div>Strictly Confidential &amp; Proprietary</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       JAVASCRIPT: FINANCIAL ROI ENGINE & MODAL CONTROLS
+       ========================================================================== -->
+  <script>
+    // --- FINANCIAL ROI STATE ---
+    const roiState = {
+      aov: 45000,
+      margin: 45,
+      retainer: 12000
+    };
+
+    // --- DOM REFS ---
+    const roiAovInput = document.getElementById('roi-aov');
+    const roiMarginInput = document.getElementById('roi-margin');
+    const roiRetainerInput = document.getElementById('roi-retainer');
+
+    const roiReadoutAov = document.getElementById('roi-readout-aov');
+    const roiReadoutMargin = document.getElementById('roi-readout-margin');
+    const roiReadoutRetainer = document.getElementById('roi-readout-retainer');
+
+    const finGrossProfit = document.getElementById('fin-gross-profit');
+    const finRetainerCost = document.getElementById('fin-retainer-cost');
+    const finNetProfit = document.getElementById('fin-net-profit');
+
+    // Modal
+    const corpModal = document.getElementById('corp-modal');
+    const corpFormView = document.getElementById('corp-form-view');
+    const corpConfirmView = document.getElementById('corp-confirm-view');
+    const corpAovSelect = document.getElementById('corp-aov');
+    const corpAovAlert = document.getElementById('corp-aov-alert');
+
+    function formatRand(val) {
+      return 'R ' + Math.round(val).toLocaleString('en-ZA');
+    }
+
+    // --- CALCULATIONS ---
+    function updateRoiCalculations() {
+      // Gross Profit on 1 Order: AOV * (Margin / 100)
+      const grossProfit = roiState.aov * (roiState.margin / 100);
+
+      // Net Monthly Profit after Retainer on 1 Order: Gross Profit - Retainer
+      const netMonthlyProfit = grossProfit - roiState.retainer;
+
+      // Update Slider Readouts
+      roiReadoutAov.textContent = formatRand(roiState.aov);
+      roiReadoutMargin.textContent = roiState.margin + '%';
+      roiReadoutRetainer.textContent = formatRand(roiState.retainer) + ' / mo';
+
+      // Update Financial Receipt
+      finGrossProfit.textContent = formatRand(grossProfit);
+      finRetainerCost.textContent = formatRand(roiState.retainer);
+
+      if (netMonthlyProfit >= 0) {
+        finNetProfit.textContent = '+' + formatRand(netMonthlyProfit) + ' / mo';
+        finNetProfit.style.color = '#34d399';
+      } else {
+        finNetProfit.textContent = '-' + formatRand(Math.abs(netMonthlyProfit)) + ' / mo';
+        finNetProfit.style.color = '#f87171';
+      }
+    }
+
+    // --- EVENT LISTENERS ---
+    roiAovInput.addEventListener('input', (e) => {
+      roiState.aov = parseInt(e.target.value, 10);
+      updateRoiCalculations();
+    });
+
+    roiMarginInput.addEventListener('input', (e) => {
+      roiState.margin = parseInt(e.target.value, 10);
+      updateRoiCalculations();
+    });
+
+    roiRetainerInput.addEventListener('input', (e) => {
+      roiState.retainer = parseInt(e.target.value, 10);
+      updateRoiCalculations();
+    });
+
+    // AOV Disqualification Warning
+    corpAovSelect.addEventListener('change', (e) => {
+      if (e.target.value === 'disqualified') {
+        corpAovAlert.style.display = 'block';
+      } else {
+        corpAovAlert.style.display = 'none';
+      }
+    });
+
+    // --- MODAL CONTROLS ---
+    function openCorpModal() {
+      corpFormView.style.display = 'block';
+      corpConfirmView.style.display = 'none';
+      corpModal.classList.add('active');
+    }
+
+    function closeCorpModal() {
+      corpModal.classList.remove('active');
+    }
+
+    corpModal.addEventListener('click', (e) => {
+      if (e.target === corpModal) {
+        closeCorpModal();
+      }
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && corpModal.classList.contains('active')) {
+        closeCorpModal();
+      }
+    });
+
+    function handleCorpSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('corp-name').value;
+      const aov = corpAovSelect.value;
+
+      if (aov === 'disqualified') {
+        alert('Notice: Auraworks custom architecture is built exclusively for manufacturers with AOVs above R15,000.');
+      }
+
+      document.getElementById('confirm-corp-name').textContent = name;
+      corpFormView.style.display = 'none';
+      corpConfirmView.style.display = 'block';
+    }
+
+    // Initialize
+    updateRoiCalculations();
+  </script>
+</body>
+</html>

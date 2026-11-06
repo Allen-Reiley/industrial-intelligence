@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraWorks | Custom Software to Make Money & Run Efficiently</title>
+  <meta name="description" content="AuraWorks designs custom ecommerce stores, visual product configurators, and operational dashboards for product and service businesses.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ECFEFF',
+              100: '#CFFAFE',
+              400: '#22D3EE',
+              500: '#06B6D4',
+              600: '#0891B2',
+            },
+            amber: {
+              500: '#F59E0B',
+              600: '#D97706',
+            },
+            dark: {
+              950: '#05070B',
+              900: '#0B0F17',
+              850: '#0F1523',
+              800: '#141C2E',
+              700: '#1E293B',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbar & micro effects */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0B0F17; }
+    ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #06B6D4; }
+    .glow-cyan { box-shadow: 0 0 40px -10px rgba(6, 182, 212, 0.25); }
+    .glow-card { border: 1px solid rgba(255, 255, 255, 0.08); background: linear-gradient(180deg, rgba(20, 28, 46, 0.7) 0%, rgba(11, 15, 23, 0.9) 100%); }
+    .glow-card:hover { border-color: rgba(6, 182, 212, 0.3); }
+    .radial-bg { background: radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.12) 0%, transparent 60%); }
+  </style>
+</head>
+<body class="bg-dark-950 text-slate-200 font-sans antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- TOP ANNOUNCEMENT BAR -->
+  <div class="bg-dark-900 border-b border-white/5 py-2 px-4 text-xs font-mono text-center text-slate-400 flex items-center justify-center gap-3">
+    <span class="inline-flex items-center gap-1.5 text-brand-400">
+      <span class="w-2 h-2 rounded-full bg-brand-400 animate-pulse"></span>
+      AuraWorks Systems
+    </span>
+    <span class="text-slate-600">|</span>
+    <span>Recent Project: Custom Furniture Configurator & Live Workshop Dashboard Launched</span>
+    <a href="#case-study" class="text-slate-300 hover:text-brand-400 underline decoration-slate-600 underline-offset-2 transition-colors ml-1">See Results &rarr;</a>
+  </div>
+
+  <!-- NAVIGATION -->
+  <header class="sticky top-0 z-40 bg-dark-950/80 backdrop-blur-md border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-6 h-18 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center font-bold text-dark-950 text-xl tracking-tighter shadow-lg shadow-brand-500/20">
+          A
+        </div>
+        <div>
+          <span class="text-lg font-bold tracking-tight text-white">AuraWorks</span>
+          <span class="block text-[10px] font-mono uppercase tracking-wider text-slate-400">Custom Business Systems</span>
+        </div>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
+        <a href="#interactive-demo" class="hover:text-white transition-colors">Live Demo</a>
+        <a href="#what-we-build" class="hover:text-white transition-colors">What We Build</a>
+        <a href="#case-study" class="hover:text-white transition-colors">Client Story</a>
+        <a href="#calculator" class="hover:text-white transition-colors">Time Saved Calculator</a>
+        <a href="#how-it-works" class="hover:text-white transition-colors">How It Works</a>
+      </nav>
+
+      <div class="flex items-center gap-4">
+        <button onclick="openQuoteModal()" class="px-5 py-2.5 rounded-lg bg-brand-500 hover:bg-brand-400 text-dark-950 font-semibold text-sm transition-all duration-200 shadow-md shadow-brand-500/20 flex items-center gap-2">
+          <span>Request a Quote</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="relative pt-20 pb-20 overflow-hidden radial-bg">
+    <div class="max-w-7xl mx-auto px-6 relative z-10">
+      
+      <!-- Top Pills -->
+      <div class="flex flex-wrap items-center justify-center gap-3 mb-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-brand-400"></span>
+          Engineered for Product & Service Businesses
+        </div>
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs">
+          Built for Results: More Revenue, Less Admin Chaos
+        </div>
+      </div>
+
+      <!-- Main Headline -->
+      <div class="text-center max-w-4xl mx-auto mb-10">
+        <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight sm:leading-[1.15] mb-6">
+          We build custom tools that help your business 
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 via-cyan-200 to-white">make more money</span> 
+          and run smoothly.
+        </h1>
+        <p class="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto font-normal leading-relaxed">
+          Say goodbye to lost quotes in WhatsApp, messy spreadsheets, and manual order mistakes. 
+          We engineer custom ecommerce platforms, visual quoting tools, and internal dashboards tailored to your exact business.
+        </p>
+      </div>
+
+      <!-- Hero Action Buttons -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+        <button onclick="openQuoteModal()" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-brand-500 to-brand-400 hover:from-brand-400 hover:to-brand-300 text-dark-950 font-bold text-base shadow-xl shadow-brand-500/25 transition-all flex items-center justify-center gap-3">
+          <span>Book a Free 15-Minute Strategy Call</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        </button>
+        <a href="#interactive-demo" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-dark-800 hover:bg-dark-700 text-slate-200 font-semibold text-base border border-slate-700 transition-all flex items-center justify-center gap-2">
+          <span>Test the Live Couch & Dashboard Demo</span>
+          <svg class="w-4 h-4 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </a>
+      </div>
+
+      <!-- Trust Pillars / Key Outcomes -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div class="glow-card p-6 rounded-2xl">
+          <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <h3 class="text-white font-bold text-base mb-2">Sell More & Close Faster</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Let customers configure options, pick specifications, and pay deposits right on your site instead of waiting 3 days for a manual quote.
+          </p>
+        </div>
+
+        <div class="glow-card p-6 rounded-2xl">
+          <div class="w-10 h-10 rounded-lg bg-brand-500/10 border border-brand-500/20 text-brand-400 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          </div>
+          <h3 class="text-white font-bold text-base mb-2">Total Operational Clarity</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            A single live dashboard connects incoming customer orders directly to your workshop, field team, or warehouse floor. No missed handoffs.
+          </p>
+        </div>
+
+        <div class="glow-card p-6 rounded-2xl">
+          <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <h3 class="text-white font-bold text-base mb-2">Save 15+ Hours Every Week</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Automate routine invoices, status updates, fabric cut-sheets, and customer follow-ups so you can focus on growing your company.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- INTERACTIVE DEMO: CUSTOM COUCH STOREFRONT + WORKSHOP DASHBOARD -->
+  <section id="interactive-demo" class="py-20 bg-dark-900 border-y border-white/5 relative">
+    <div class="max-w-7xl mx-auto px-6">
+      
+      <!-- Section Header -->
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <span class="text-brand-400 font-mono text-xs uppercase tracking-wider font-semibold">Live Working Demonstration</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-2 mb-4 tracking-tight">
+          How It Works in Practice: The Custom Couch Studio
+        </h2>
+        <p class="text-slate-400 text-base">
+          Our client creates high-end custom couches. In the past, customers had to message back and forth on WhatsApp to choose fabrics and sizes, and the workshop lost track of orders. Here is the two-part system we built for them:
+        </p>
+      </div>
+
+      <!-- Interactive 2-Column Split: Customer Facing vs Workshop Facing -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- LEFT: Customer Ecommerce Storefront -->
+        <div class="lg:col-span-6 glow-card rounded-2xl p-6 sm:p-8">
+          <div class="flex items-center justify-between pb-5 border-b border-white/10 mb-6">
+            <div class="flex items-center gap-3">
+              <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+              <div>
+                <h4 class="font-bold text-white text-base">Part 1: Customer Storefront</h4>
+                <p class="text-xs text-slate-400">What your customer sees and interacts with</p>
+              </div>
+            </div>
+            <span class="text-xs font-mono bg-dark-800 text-brand-400 px-2.5 py-1 rounded border border-white/5">Customer Facing</span>
+          </div>
+
+          <!-- Couch Visualizer Canvas (SVG) -->
+          <div class="bg-dark-950 rounded-xl p-6 border border-white/5 mb-6 flex flex-col items-center justify-center relative overflow-hidden min-h-[220px]">
+            <div id="couch-visual-container" class="transition-all duration-300 transform scale-100">
+              <!-- SVG Couch -->
+              <svg id="couch-svg" class="w-64 h-36" viewBox="0 0 320 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Couch Backrest -->
+                <rect id="svg-backrest" x="40" y="40" width="240" height="55" rx="14" fill="#38BDF8" class="transition-colors duration-300"/>
+                <!-- Left Armrest -->
+                <rect id="svg-left-arm" x="20" y="55" width="35" height="70" rx="10" fill="#0284C7" class="transition-colors duration-300"/>
+                <!-- Right Armrest -->
+                <rect id="svg-right-arm" x="265" y="55" width="35" height="70" rx="10" fill="#0284C7" class="transition-colors duration-300"/>
+                <!-- Seat Cushions -->
+                <rect id="svg-seat-1" x="55" y="80" width="66" height="50" rx="8" fill="#0EA5E9" class="transition-colors duration-300"/>
+                <rect id="svg-seat-2" x="127" y="80" width="66" height="50" rx="8" fill="#0EA5E9" class="transition-colors duration-300"/>
+                <rect id="svg-seat-3" x="199" y="80" width="66" height="50" rx="8" fill="#0EA5E9" class="transition-colors duration-300"/>
+                <!-- Wooden Legs -->
+                <rect x="35" y="125" width="10" height="20" rx="2" fill="#78350F"/>
+                <rect x="275" y="125" width="10" height="20" rx="2" fill="#78350F"/>
+                <rect x="155" y="125" width="10" height="20" rx="2" fill="#78350F"/>
+              </svg>
+            </div>
+            <div class="absolute bottom-3 left-4 text-[11px] font-mono text-slate-400 flex items-center gap-2">
+              <span id="selected-model-tag" class="text-white font-semibold">3-Seater Studio (2.4m)</span>
+              <span>•</span>
+              <span id="selected-fabric-tag" class="text-brand-400">Emerald Velvet</span>
+            </div>
+          </div>
+
+          <!-- Controls: Model Selector -->
+          <div class="mb-5">
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">1. Select Couch Configuration:</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="updateModel('studio', '3-Seater Studio (2.4m)', '14m', 'Bay A')" class="model-btn active px-3 py-2 rounded-lg text-xs font-medium border border-brand-500 bg-brand-500/10 text-white transition-all text-center">
+                3-Seater Studio
+              </button>
+              <button onclick="updateModel('lshape', 'L-Shape Sectional (3.1m)', '21m', 'Bay B')" class="model-btn px-3 py-2 rounded-lg text-xs font-medium border border-slate-700 bg-dark-800 text-slate-400 hover:text-white transition-all text-center">
+                L-Shape Sectional
+              </button>
+              <button onclick="updateModel('modular', 'U-Shape Modular (3.8m)', '28m', 'Bay C')" class="model-btn px-3 py-2 rounded-lg text-xs font-medium border border-slate-700 bg-dark-800 text-slate-400 hover:text-white transition-all text-center">
+                U-Shape Modular
+              </button>
+            </div>
+          </div>
+
+          <!-- Controls: Fabric Swatches -->
+          <div class="mb-5">
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">2. Choose Premium Fabric:</label>
+            <div class="flex items-center gap-3">
+              <button onclick="updateFabric('#047857', '#065F46', '#059669', 'Emerald Velvet')" class="fabric-btn w-9 h-9 rounded-full bg-emerald-700 ring-2 ring-brand-400 ring-offset-2 ring-offset-dark-900 transition-all" title="Emerald Velvet"></button>
+              <button onclick="updateFabric('#D97706', '#B45309', '#F59E0B', 'Cognac Saddle Leather')" class="fabric-btn w-9 h-9 rounded-full bg-amber-600 ring-0 ring-offset-2 ring-offset-dark-900 transition-all hover:scale-105" title="Cognac Leather"></button>
+              <button onclick="updateFabric('#E2E8F0', '#CBD5E1', '#F8FAFC', 'Oatmeal Bouclé')" class="fabric-btn w-9 h-9 rounded-full bg-slate-200 ring-0 ring-offset-2 ring-offset-dark-900 transition-all hover:scale-105" title="Oatmeal Bouclé"></button>
+              <button onclick="updateFabric('#334155', '#1E293B', '#475569', 'Charcoal Heavy Weave')" class="fabric-btn w-9 h-9 rounded-full bg-slate-700 ring-0 ring-offset-2 ring-offset-dark-900 transition-all hover:scale-105" title="Charcoal Weave"></button>
+              <span id="fabric-name-display" class="text-xs font-medium text-slate-300 ml-2">Emerald Velvet (High Durability)</span>
+            </div>
+          </div>
+
+          <!-- Instant Order Trigger -->
+          <div class="p-4 bg-dark-800/80 rounded-xl border border-white/5 flex items-center justify-between">
+            <div>
+              <span class="text-xs text-slate-400 block">Instant Customer Experience:</span>
+              <span class="text-sm font-semibold text-white">Deposit Auto-Calculated &bull; Ready to Checkout</span>
+            </div>
+            <button onclick="simulateOrderPlacement()" id="order-submit-btn" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-dark-950 font-bold text-xs rounded-lg transition-all shadow-md shadow-emerald-500/20">
+              Submit Test Order &rarr;
+            </button>
+          </div>
+        </div>
+
+        <!-- RIGHT: Workshop Live Dashboard -->
+        <div class="lg:col-span-6 glow-card rounded-2xl p-6 sm:p-8">
+          <div class="flex items-center justify-between pb-5 border-b border-white/10 mb-6">
+            <div class="flex items-center gap-3">
+              <span class="w-3 h-3 rounded-full bg-brand-400 animate-pulse"></span>
+              <div>
+                <h4 class="font-bold text-white text-base">Part 2: Workshop Operations Dashboard</h4>
+                <p class="text-xs text-slate-400">What your team sees in real time on the factory floor</p>
+              </div>
+            </div>
+            <span class="text-xs font-mono bg-dark-800 text-amber-400 px-2.5 py-1 rounded border border-white/5">Internal Operations</span>
+          </div>
+
+          <!-- Live Order Ticket Generated -->
+          <div class="bg-dark-950 rounded-xl p-5 border border-white/5 mb-6">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-mono text-slate-400">Job Ticket:</span>
+                <span id="ticket-number" class="text-xs font-mono font-bold text-brand-400">#CW-8492</span>
+              </div>
+              <span id="ticket-status-badge" class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                DEPOSIT VERIFIED
+              </span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 text-xs font-mono mb-4">
+              <div>
+                <span class="text-slate-500 block mb-1">SPECIFICATION</span>
+                <span id="dash-spec" class="text-white font-semibold">3-Seater Studio (2.4m)</span>
+              </div>
+              <div>
+                <span class="text-slate-500 block mb-1">MATERIAL CUT-LIST</span>
+                <span id="dash-material" class="text-brand-300 font-semibold">14m Emerald Velvet</span>
+              </div>
+              <div>
+                <span class="text-slate-500 block mb-1">ASSIGNED PRODUCTION BAY</span>
+                <span id="dash-bay" class="text-white font-semibold">Bay A &bull; Frame & Foam</span>
+              </div>
+              <div>
+                <span class="text-slate-500 block mb-1">ESTIMATED PRODUCTION</span>
+                <span class="text-white font-semibold">7 Business Days</span>
+              </div>
+            </div>
+
+            <!-- Workflow Progress Stages -->
+            <div class="space-y-2 pt-2 border-t border-slate-800">
+              <span class="text-[11px] font-mono text-slate-400 block mb-2">Automated Factory Workflow Stages:</span>
+              
+              <div class="flex items-center justify-between p-2 rounded bg-dark-900 border border-emerald-500/30 text-xs">
+                <span class="flex items-center gap-2 text-slate-300">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  1. Order & 50% Deposit Received Online
+                </span>
+                <span class="text-emerald-400 text-[10px] font-mono font-bold">AUTOMATED</span>
+              </div>
+
+              <div class="flex items-center justify-between p-2 rounded bg-dark-900 border border-slate-800 text-xs">
+                <span class="flex items-center gap-2 text-slate-300">
+                  <span class="w-2 h-2 rounded-full bg-brand-400 animate-pulse"></span>
+                  2. Timber Cut-Sheet Dispatched to Bay
+                </span>
+                <span class="text-brand-400 text-[10px] font-mono font-bold">READY</span>
+              </div>
+
+              <div class="flex items-center justify-between p-2 rounded bg-dark-900 border border-slate-800 text-xs text-slate-400">
+                <span class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-slate-600"></span>
+                  3. Upholstery & Cushion Sewing
+                </span>
+                <span class="text-slate-500 text-[10px] font-mono">QUEUED</span>
+              </div>
+
+              <div class="flex items-center justify-between p-2 rounded bg-dark-900 border border-slate-800 text-xs text-slate-400">
+                <span class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-slate-600"></span>
+                  4. QA & Courier Dispatch SMS Sent
+                </span>
+                <span class="text-slate-500 text-[10px] font-mono">QUEUED</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3.5 bg-brand-500/10 rounded-xl border border-brand-500/20 text-xs text-brand-300 flex items-start gap-3">
+            <svg class="w-5 h-5 text-brand-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p>
+              <strong>The Result:</strong> The customer gets a seamless luxury buying experience. The factory manager never has to ask "What color did this client order?" or "Has the deposit cleared?". Everything is automated.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- WHAT WE BUILD (FOR PRODUCT & SERVICE BUSINESSES) -->
+  <section id="what-we-build" class="py-24 bg-dark-950 relative">
+    <div class="max-w-7xl mx-auto px-6">
+      
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-brand-400 font-mono text-xs uppercase tracking-wider font-semibold">Capabilities Tailored to You</span>
+        <h2 class="text-3xl sm:text-5xl font-extrabold text-white mt-2 mb-4 tracking-tight">
+          What We Build for Your Business
+        </h2>
+        <p class="text-slate-400 text-base sm:text-lg">
+          Whether you manufacture custom physical products or provide specialized services, we design the tools that drive revenue and cut waste.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        
+        <!-- Pillar 1 -->
+        <div class="glow-card rounded-2xl p-8 flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-400 flex items-center justify-center mb-6">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-3">Custom Ecommerce & Configurators</h3>
+            <p class="text-slate-400 text-sm leading-relaxed mb-6">
+              Give your clients an interactive visual store. They can choose dimensions, materials, colors, and add-ons—and see exact pricing and lead times before placing deposits.
+            </p>
+            <ul class="space-y-2 text-xs text-slate-300 font-mono">
+              <li class="flex items-center gap-2">
+                <span class="text-brand-400 font-bold">&check;</span> Live Dimension & Material Calculators
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-brand-400 font-bold">&check;</span> Automated 50% Deposit Gateway
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-brand-400 font-bold">&check;</span> Instant Digital Specification Sheets
+              </li>
+            </ul>
+          </div>
+          <div class="mt-8 pt-4 border-t border-white/5">
+            <span class="text-xs text-slate-500 uppercase tracking-wider">Best For:</span>
+            <span class="text-xs text-slate-300 block font-medium">Furniture makers, equipment fabricators, high-ticket retail</span>
+          </div>
+        </div>
+
+        <!-- Pillar 2 -->
+        <div class="glow-card rounded-2xl p-8 flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mb-6">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-3">Internal Operations Dashboards</h3>
+            <p class="text-slate-400 text-sm leading-relaxed mb-6">
+              Replace whiteboards and chaotic group chats. A central control screen tells your team what to build next, which parts are missing, and when jobs are ready to ship.
+            </p>
+            <ul class="space-y-2 text-xs text-slate-300 font-mono">
+              <li class="flex items-center gap-2">
+                <span class="text-amber-400 font-bold">&check;</span> Real-Time Production Stage Tracking
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-amber-400 font-bold">&check;</span> Automatic Bill of Materials (BOM)
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-amber-400 font-bold">&check;</span> Bay & Staff Assignment Queues
+              </li>
+            </ul>
+          </div>
+          <div class="mt-8 pt-4 border-t border-white/5">
+            <span class="text-xs text-slate-500 uppercase tracking-wider">Best For:</span>
+            <span class="text-xs text-slate-300 block font-medium">Workshops, factory managers, production supervisors</span>
+          </div>
+        </div>
+
+        <!-- Pillar 3 -->
+        <div class="glow-card rounded-2xl p-8 flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center mb-6">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-3">Service Portals & Quoting Engines</h3>
+            <p class="text-slate-400 text-sm leading-relaxed mb-6">
+              For service firms, contractors, and consultancies: allow clients to request precise quotes, upload floorplans/briefs, and track project status without phone tag.
+            </p>
+            <ul class="space-y-2 text-xs text-slate-300 font-mono">
+              <li class="flex items-center gap-2">
+                <span class="text-cyan-400 font-bold">&check;</span> Automated Quote Scoping Forms
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-cyan-400 font-bold">&check;</span> Client Project Status Trackers
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-cyan-400 font-bold">&check;</span> Contract Signing & Payment Milestones
+              </li>
+            </ul>
+          </div>
+          <div class="mt-8 pt-4 border-t border-white/5">
+            <span class="text-xs text-slate-500 uppercase tracking-wider">Best For:</span>
+            <span class="text-xs text-slate-300 block font-medium">Trade contractors, engineering firms, professional services</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CASE STUDY SPOTLIGHT: THE CUSTOM COUCH CLIENT -->
+  <section id="case-study" class="py-24 bg-dark-900 border-t border-white/5 relative">
+    <div class="max-w-7xl mx-auto px-6">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs font-semibold uppercase tracking-wider">
+            Real Client Case Study
+          </div>
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-snug">
+            How a Custom Couch Studio Scaled Production by 35% Without Hiring More Admin Staff
+          </h2>
+          <p class="text-slate-300 text-base leading-relaxed">
+            The studio owner was drowning in custom inquiries. Every client asked: <em>"Can I get this 20cm wider?"</em> and <em>"What does this look like in velvet?"</em>. Quoting a single couch took 45 minutes of back-and-forth messaging.
+          </p>
+
+          <div class="space-y-4">
+            <div class="flex items-start gap-3">
+              <div class="w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">&cross;</div>
+              <p class="text-sm text-slate-400"><strong class="text-white">The Pain Before:</strong> 40+ unorganized WhatsApp chats daily, manual quote calculation errors, and workshop carpenters asking who ordered what.</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">&check;</div>
+              <p class="text-sm text-slate-400"><strong class="text-white">What AuraWorks Built:</strong> A bespoke 3D couch configurator that lets buyers choose configurations, fabrics, and leg finishes with automatic 50% deposit gating, directly connected to a workshop queue screen.</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">&star;</div>
+              <p class="text-sm text-slate-400"><strong class="text-white">The Commercial Outcome:</strong> Quoting time dropped from 2 days to 30 seconds. Zero lost deposits. Factory throughput increased by 35% in month two.</p>
+            </div>
+          </div>
+
+          <div class="pt-4">
+            <button onclick="openQuoteModal()" class="px-6 py-3 rounded-xl bg-brand-500 hover:bg-brand-400 text-dark-950 font-bold text-sm transition-all shadow-lg shadow-brand-500/20">
+              Get a Similar System for Your Business &rarr;
+            </button>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          <div class="glow-card rounded-2xl p-8 border border-white/10 relative">
+            <h4 class="text-sm font-mono uppercase text-slate-400 tracking-wider mb-6">Verified Client Transformation</h4>
+            
+            <div class="grid grid-cols-2 gap-6 mb-8">
+              <div class="bg-dark-950 p-5 rounded-xl border border-white/5">
+                <span class="text-xs text-slate-500 block font-mono">QUOTING TIME</span>
+                <span class="text-2xl sm:text-3xl font-extrabold text-brand-400 block mt-1">48h &rarr; 30s</span>
+                <span class="text-xs text-slate-400 mt-1 block">Instant online customer pricing</span>
+              </div>
+              <div class="bg-dark-950 p-5 rounded-xl border border-white/5">
+                <span class="text-xs text-slate-500 block font-mono">ADMIN HOURS SAVED</span>
+                <span class="text-2xl sm:text-3xl font-extrabold text-emerald-400 block mt-1">22 hrs/wk</span>
+                <span class="text-xs text-slate-400 mt-1 block">No more manual invoice typing</span>
+              </div>
+              <div class="bg-dark-950 p-5 rounded-xl border border-white/5">
+                <span class="text-xs text-slate-500 block font-mono">PRODUCTION CAPACITY</span>
+                <span class="text-2xl sm:text-3xl font-extrabold text-white block mt-1">+35%</span>
+                <span class="text-xs text-slate-400 mt-1 block">Workshop bays run without delays</span>
+              </div>
+              <div class="bg-dark-950 p-5 rounded-xl border border-white/5">
+                <span class="text-xs text-slate-500 block font-mono">LOST INQUIRIES</span>
+                <span class="text-2xl sm:text-3xl font-extrabold text-brand-400 block mt-1">Zero</span>
+                <span class="text-xs text-slate-400 mt-1 block">Every lead captured into database</span>
+              </div>
+            </div>
+
+            <blockquote class="border-l-2 border-brand-400 pl-4 py-1 text-slate-300 text-sm italic">
+              "We used to spend our weekends catching up on quote emails and fixing production mistakes. AuraWorks built a platform that runs our orders on autopilot. It paid for itself in the first 30 days."
+            </blockquote>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CALCULATOR: CALCULATE ADMIN TIME LOST -->
+  <section id="calculator" class="py-20 bg-dark-950 relative">
+    <div class="max-w-4xl mx-auto px-6">
+      
+      <div class="glow-card rounded-3xl p-8 sm:p-12 border border-brand-500/20 glow-cyan">
+        <div class="text-center mb-8">
+          <span class="text-xs font-mono uppercase text-brand-400 font-semibold tracking-wider">Interactive ROI Calculator</span>
+          <h3 class="text-2xl sm:text-3xl font-bold text-white mt-2 mb-2">How Much Time Does Your Business Waste on Manual Work?</h3>
+          <p class="text-sm text-slate-400">See how many hours a custom AuraWorks system can return to your business every month.</p>
+        </div>
+
+        <div class="space-y-6 max-w-xl mx-auto">
+          <!-- Slider 1 -->
+          <div>
+            <div class="flex justify-between items-center text-sm font-medium mb-2">
+              <span class="text-slate-300">Staff members answering quotes or managing orders:</span>
+              <span id="calc-staff-val" class="text-brand-400 font-mono font-bold text-base">3 people</span>
+            </div>
+            <input type="range" id="calc-staff" min="1" max="15" value="3" oninput="runCalculator()" class="w-full accent-brand-500 cursor-pointer">
+          </div>
+
+          <!-- Slider 2 -->
+          <div>
+            <div class="flex justify-between items-center text-sm font-medium mb-2">
+              <span class="text-slate-300">Hours spent per person each week on manual admin:</span>
+              <span id="calc-hours-val" class="text-brand-400 font-mono font-bold text-base">10 hours/wk</span>
+            </div>
+            <input type="range" id="calc-hours" min="2" max="30" value="10" oninput="runCalculator()" class="w-full accent-brand-500 cursor-pointer">
+          </div>
+
+          <!-- Result Box -->
+          <div class="bg-dark-950 rounded-2xl p-6 border border-white/5 text-center mt-6">
+            <span class="text-xs uppercase font-mono tracking-wider text-slate-400 block mb-1">Estimated Hours Wasted in Your Business:</span>
+            <div class="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-white font-mono my-2">
+              <span id="calc-result-hours">120</span> Hours / Month
+            </div>
+            <p class="text-xs text-slate-400 max-w-md mx-auto">
+              That is equal to having almost <strong class="text-white" id="calc-result-fte">0.75 full-time employees</strong> doing nothing but manual data entry and email chasing.
+            </p>
+          </div>
+
+          <div class="text-center pt-2">
+            <button onclick="openQuoteModal()" class="px-8 py-3.5 bg-brand-500 hover:bg-brand-400 text-dark-950 font-bold text-sm rounded-xl transition-all shadow-lg shadow-brand-500/20">
+              Claim Back Your Time & Request a Blueprint &rarr;
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS (3 SIMPLE NON-TECHNICAL STEPS) -->
+  <section id="how-it-works" class="py-24 bg-dark-900 border-t border-white/5 relative">
+    <div class="max-w-7xl mx-auto px-6">
+      
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-brand-400 font-mono text-xs uppercase tracking-wider font-semibold">Zero Technical Headache</span>
+        <h2 class="text-3xl sm:text-5xl font-extrabold text-white mt-2 mb-4 tracking-tight">
+          How We Work With You
+        </h2>
+        <p class="text-slate-400 text-base">
+          You don't need to know anything about code, APIs, or databases. We handle the entire engineering process from start to finish.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <div class="glow-card p-8 rounded-2xl relative">
+          <div class="text-4xl font-extrabold font-mono text-brand-500/30 mb-4">01</div>
+          <h3 class="text-lg font-bold text-white mb-2">We Listen & Map Your Workflow</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            In a quick 30-minute conversation, you show us how you currently handle orders, what takes too long, and where quotes get lost. No technical jargon.
+          </p>
+        </div>
+
+        <div class="glow-card p-8 rounded-2xl relative">
+          <div class="text-4xl font-extrabold font-mono text-brand-500/30 mb-4">02</div>
+          <h3 class="text-lg font-bold text-white mb-2">We Build Your Custom System</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            We engineer your custom storefront, configurator, and operational dashboard. We test it against your real products, materials, and workshop steps.
+          </p>
+        </div>
+
+        <div class="glow-card p-8 rounded-2xl relative">
+          <div class="text-4xl font-extrabold font-mono text-brand-500/30 mb-4">03</div>
+          <h3 class="text-lg font-bold text-white mb-2">We Launch & Train Your Team</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            We walk your staff through the system in 15 minutes. It's so intuitive that even the least technical team member can use it from day one.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- BOTTOM CTA BANNER -->
+  <section class="py-20 bg-dark-950 border-t border-white/5 relative">
+    <div class="max-w-5xl mx-auto px-6 text-center">
+      <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-6">
+        Ready to make your business run smoother and close more orders?
+      </h2>
+      <p class="text-slate-400 text-lg max-w-2xl mx-auto mb-10">
+        Let’s talk about your business workflow. No high-pressure sales pitch—just practical ideas on how custom tools can save you time and grow your revenue.
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <button onclick="openQuoteModal()" class="w-full sm:w-auto px-9 py-4 rounded-xl bg-brand-500 hover:bg-brand-400 text-dark-950 font-bold text-base shadow-xl shadow-brand-500/25 transition-all">
+          Request a Custom Solution Quote
+        </button>
+        <button onclick="openQuoteModal()" class="w-full sm:w-auto px-9 py-4 rounded-xl bg-dark-800 hover:bg-dark-700 text-white font-semibold text-base border border-slate-700 transition-all">
+          Book a 15-Minute Strategy Call
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-dark-900 border-t border-white/5 py-12 text-slate-500 text-xs font-mono">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-3">
+        <div class="w-6 h-6 rounded bg-brand-500 flex items-center justify-center text-dark-950 font-bold text-xs">A</div>
+        <span class="text-slate-300 font-sans font-bold">AuraWorks Technologies</span>
+        <span>&bull; Bespoke Digital Systems for Growing Businesses</span>
+      </div>
+      <div>
+        <span>Johannesburg &bull; Cape Town &bull; Available Nationwide</span>
+      </div>
+      <div>
+        <span>&copy; 2026 AuraWorks. All rights reserved.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL: REQUEST A QUOTE & BLUEPRINT -->
+  <div id="quote-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="glow-card rounded-2xl max-w-lg w-full p-6 sm:p-8 relative border border-brand-500/30">
+      <button onclick="closeQuoteModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white text-xl font-bold">&times;</button>
+      
+      <div class="mb-6">
+        <span class="text-xs font-mono text-brand-400 uppercase tracking-wider font-semibold">Zero Obligation</span>
+        <h3 class="text-2xl font-bold text-white mt-1">Request a Custom Solution Blueprint</h3>
+        <p class="text-xs text-slate-400 mt-1">Tell us a little about your business and we'll show you exactly what we can build for you.</p>
+      </div>
+
+      <form id="quote-form" onsubmit="handleFormSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Your Name</label>
+          <input type="text" required placeholder="e.g. David Miller" class="w-full px-3.5 py-2.5 rounded-lg bg-dark-950 border border-slate-700 text-white text-sm focus:border-brand-400 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Company / Business Name</label>
+          <input type="text" required placeholder="e.g. Miller Custom Furniture" class="w-full px-3.5 py-2.5 rounded-lg bg-dark-950 border border-slate-700 text-white text-sm focus:border-brand-400 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">What does your business do?</label>
+          <select class="w-full px-3.5 py-2.5 rounded-lg bg-dark-950 border border-slate-700 text-white text-sm focus:border-brand-400 focus:outline-none">
+            <option>We manufacture or sell custom physical products</option>
+            <option>We provide specialized contracting / trade services</option>
+            <option>We are a professional service or consultancy</option>
+            <option>Other / Multiple areas</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">What is your biggest daily headache?</label>
+          <textarea rows="2" placeholder="e.g. Quoting takes forever on WhatsApp, or our workshop loses track of custom orders..." class="w-full px-3.5 py-2.5 rounded-lg bg-dark-950 border border-slate-700 text-white text-sm focus:border-brand-400 focus:outline-none"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Email Address</label>
+            <input type="email" required placeholder="david@miller.co.za" class="w-full px-3.5 py-2.5 rounded-lg bg-dark-950 border border-slate-700 text-white text-sm focus:border-brand-400 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Phone / WhatsApp</label>
+            <input type="tel" required placeholder="082 123 4567" class="w-full px-3.5 py-2.5 rounded-lg bg-dark-950 border border-slate-700 text-white text-sm focus:border-brand-400 focus:outline-none">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-3.5 rounded-xl bg-brand-500 hover:bg-brand-400 text-dark-950 font-bold text-sm transition-all mt-4 shadow-lg shadow-brand-500/25">
+          Submit & Request Blueprint Call &rarr;
+        </button>
+      </form>
+
+      <div id="form-success" class="hidden text-center py-8 space-y-3">
+        <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto text-2xl">&check;</div>
+        <h4 class="text-xl font-bold text-white">Thank You!</h4>
+        <p class="text-xs text-slate-400">We received your inquiry. One of our systems architects will review your business workflow and reach out within 4 business hours.</p>
+        <button onclick="closeQuoteModal()" class="px-5 py-2 bg-slate-800 text-white text-xs rounded-lg mt-3">Close</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // Modal management
+    function openQuoteModal() {
+      const modal = document.getElementById('quote-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+    function closeQuoteModal() {
+      const modal = document.getElementById('quote-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // Couch Visualizer and Live Dashboard Sync
+    function updateModel(modelKey, title, yardage, bay) {
+      document.querySelectorAll('.model-btn').forEach(btn => {
+        btn.classList.remove('active', 'border-brand-500', 'bg-brand-500/10', 'text-white');
+        btn.classList.add('border-slate-700', 'bg-dark-800', 'text-slate-400');
+      });
+      event.target.classList.add('active', 'border-brand-500', 'bg-brand-500/10', 'text-white');
+      event.target.classList.remove('border-slate-700', 'bg-dark-800', 'text-slate-400');
+
+      // Update text tags
+      document.getElementById('selected-model-tag').innerText = title;
+      document.getElementById('dash-spec').innerText = title;
+      document.getElementById('dash-material').innerText = yardage + " " + currentFabricName;
+      document.getElementById('dash-bay').innerText = bay + " • Frame & Foam";
+
+      // Slight scale animation on SVG
+      const container = document.getElementById('couch-visual-container');
+      container.classList.add('scale-95');
+      setTimeout(() => container.classList.remove('scale-95'), 150);
+    }
+
+    let currentFabricName = "Emerald Velvet";
+    function updateFabric(fill1, fill2, fill3, name) {
+      currentFabricName = name;
+      document.getElementById('svg-backrest').setAttribute('fill', fill1);
+      document.getElementById('svg-left-arm').setAttribute('fill', fill2);
+      document.getElementById('svg-right-arm').setAttribute('fill', fill2);
+      document.getElementById('svg-seat-1').setAttribute('fill', fill3);
+      document.getElementById('svg-seat-2').setAttribute('fill', fill3);
+      document.getElementById('svg-seat-3').setAttribute('fill', fill3);
+
+      document.getElementById('fabric-name-display').innerText = name + " (Selected)";
+      document.getElementById('selected-fabric-tag').innerText = name;
+      
+      const currentYardage = document.getElementById('dash-material').innerText.split(' ')[0] || '14m';
+      document.getElementById('dash-material').innerText = currentYardage + " " + name;
+
+      // highlight active swatch ring
+      document.querySelectorAll('.fabric-btn').forEach(btn => {
+        btn.classList.remove('ring-2', 'ring-brand-400');
+        btn.classList.add('ring-0');
+      });
+      event.target.classList.add('ring-2', 'ring-brand-400');
+      event.target.classList.remove('ring-0');
+    }
+
+    function simulateOrderPlacement() {
+      const btn = document.getElementById('order-submit-btn');
+      btn.innerText = "Order Ingesting...";
+      btn.classList.add('opacity-75');
+
+      setTimeout(() => {
+        btn.innerText = "Order Dispatched to Bay ✓";
+        btn.classList.remove('opacity-75', 'bg-emerald-500');
+        btn.classList.add('bg-brand-500');
+
+        // Flash ticket in dashboard
+        const ticketBadge = document.getElementById('ticket-status-badge');
+        ticketBadge.innerText = "STAGE 2: TIMBER CUT IN PROGRESS";
+        ticketBadge.classList.remove('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
+        ticketBadge.classList.add('bg-brand-500/20', 'text-brand-300', 'border-brand-500/40', 'animate-pulse');
+
+        setTimeout(() => {
+          btn.innerText = "Submit Test Order →";
+          btn.classList.remove('bg-brand-500');
+          btn.classList.add('bg-emerald-500');
+          ticketBadge.classList.remove('animate-pulse');
+        }, 3000);
+      }, 700);
+    }
+
+    // Time Lost Calculator
+    function runCalculator() {
+      const staff = parseInt(document.getElementById('calc-staff').value);
+      const hours = parseInt(document.getElementById('calc-hours').value);
+      
+      document.getElementById('calc-staff-val').innerText = staff + (staff === 1 ? " person" : " people");
+      document.getElementById('calc-hours-val').innerText = hours + " hours/wk";
+
+      const totalMonthlyHours = staff * hours * 4;
+      document.getElementById('calc-result-hours').innerText = totalMonthlyHours;
+      const fte = (totalMonthlyHours / 160).toFixed(2);
+      document.getElementById('calc-result-fte').innerText = fte + " full-time staff";
+    }
+
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      document.getElementById('quote-form').classList.add('hidden');
+      document.getElementById('form-success').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>

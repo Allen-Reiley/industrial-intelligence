@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraWorks | Custom Digital Tools for Growing Businesses</title>
+  <meta name="description" content="AuraWorks builds custom ecommerce, configurators, and internal dashboards that help product and service businesses make money and run smoothly.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brandIndigo: {
+              50: '#EEF2FF',
+              500: '#6366F1',
+              600: '#4F46E5',
+              700: '#4338CA',
+            },
+            slateBg: '#F8FAFC',
+            cardBg: '#FFFFFF',
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #F8FAFC; color: #1E293B; }
+    .bento-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 1.5rem;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+      transition: all 0.25s ease-in-out;
+    }
+    .bento-card:hover {
+      border-color: #CBD5E1;
+      box-shadow: 0 10px 25px -3px rgba(15, 23, 42, 0.08);
+    }
+  </style>
+</head>
+<body class="font-sans antialiased selection:bg-brandIndigo-500 selection:text-white">
+
+  <!-- TOP NAV -->
+  <header class="border-b border-slate-200 bg-white/90 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-brandIndigo-600 flex items-center justify-center font-bold text-white text-lg shadow-md shadow-brandIndigo-500/30">
+          AW
+        </div>
+        <div>
+          <span class="font-bold text-slate-900 text-lg tracking-tight">AuraWorks</span>
+          <span class="block text-[11px] font-semibold text-brandIndigo-600 uppercase tracking-wider">Business Solutions</span>
+        </div>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+        <a href="#bento-grid" class="hover:text-brandIndigo-600 transition-colors">Interactive Bento</a>
+        <a href="#case-study-tile" class="hover:text-brandIndigo-600 transition-colors">Custom Couch Story</a>
+        <a href="#selector" class="hover:text-brandIndigo-600 transition-colors">Products &amp; Services</a>
+        <a href="#how-we-work" class="hover:text-brandIndigo-600 transition-colors">Our Approach</a>
+      </nav>
+
+      <div>
+        <button onclick="scrollToContact()" class="px-5 py-2.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold tracking-wide transition-all shadow-sm">
+          Request a Custom Quote
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="py-16 sm:py-24 px-6 text-center">
+    <div class="max-w-4xl mx-auto">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brandIndigo-50 border border-brandIndigo-500/20 text-brandIndigo-700 text-xs font-bold mb-6">
+        <span class="w-2 h-2 rounded-full bg-brandIndigo-600"></span>
+        Built for Product &amp; Service Businesses
+      </div>
+
+      <h1 class="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.15] mb-6">
+        Custom tools that make your business <br class="hidden sm:inline">
+        <span class="text-brandIndigo-600">more money</span> and run with ease.
+      </h1>
+
+      <p class="text-lg text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
+        We replace messy spreadsheets, delayed quotes, and chaotic WhatsApp chats with bespoke online order platforms and live operations dashboards.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <button onclick="scrollToContact()" class="w-full sm:w-auto px-8 py-4 rounded-full bg-brandIndigo-600 hover:bg-brandIndigo-700 text-white font-bold text-sm shadow-lg shadow-brandIndigo-500/25 transition-all">
+          Book a Free 15-Minute Strategy Call
+        </button>
+        <a href="#bento-grid" class="w-full sm:w-auto px-8 py-4 rounded-full bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm border border-slate-300 transition-all">
+          Explore the Interactive Bento &darr;
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- BENTO SHOWCASE GRID -->
+  <section id="bento-grid" class="py-12 px-6 max-w-7xl mx-auto">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl font-extrabold text-slate-900">The AuraWorks System in Action</h2>
+      <p class="text-slate-600 text-sm mt-2">Every component is engineered to eliminate manual friction and speed up sales.</p>
+    </div>
+
+    <!-- THE BENTO MATRIX -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+      
+      <!-- BENTO TILE 1: (8 COLS) INTERACTIVE CUSTOM COUCH CONFIGURATOR -->
+      <div class="md:col-span-8 bento-card p-8 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-brandIndigo-600">Featured Client System</span>
+              <h3 class="text-2xl font-bold text-slate-900">Custom Couch Visual Quoting Tool</h3>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Live Interactive Prototype
+            </span>
+          </div>
+
+          <p class="text-sm text-slate-600 mb-6">
+            Our furniture client used to take 2 days answering WhatsApp messages to quote custom couches. We built this interactive studio where customers choose specifications and pay deposits online:
+          </p>
+
+          <!-- Interactive Module -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 rounded-2xl bg-slate-50 border border-slate-200/80 mb-6">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">1. Select Sofa Model:</label>
+              <div class="space-y-2">
+                <button onclick="setBentoModel('2-Seater Compact', '10m', 'Bay 1')" class="bento-model-btn w-full p-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 text-xs font-semibold text-left hover:border-brandIndigo-500 transition-all">
+                  2-Seater Compact (1.8m)
+                </button>
+                <button onclick="setBentoModel('3-Seater Deep Lounge', '14m', 'Bay 2')" class="bento-model-btn active w-full p-2.5 rounded-xl border border-brandIndigo-600 bg-brandIndigo-50 text-brandIndigo-700 text-xs font-bold text-left transition-all">
+                  3-Seater Deep Lounge (2.4m)
+                </button>
+                <button onclick="setBentoModel('Modular L-Sectional', '22m', 'Bay 3')" class="bento-model-btn w-full p-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 text-xs font-semibold text-left hover:border-brandIndigo-500 transition-all">
+                  Modular L-Sectional (3.2m)
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">2. Choose Premium Fabric:</label>
+              <div class="space-y-2">
+                <button onclick="setBentoFabric('Oatmeal Belgian Linen', '#E2E8F0')" class="bento-fab-btn active w-full p-2.5 rounded-xl border border-brandIndigo-600 bg-brandIndigo-50 text-brandIndigo-700 text-xs font-bold flex items-center justify-between">
+                  <span>Oatmeal Belgian Linen</span>
+                  <span class="w-3.5 h-3.5 rounded-full bg-slate-200 border border-slate-300"></span>
+                </button>
+                <button onclick="setBentoFabric('Forest Velvet', '#065F46')" class="bento-fab-btn w-full p-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 text-xs font-semibold flex items-center justify-between hover:border-brandIndigo-500">
+                  <span>Forest Velvet</span>
+                  <span class="w-3.5 h-3.5 rounded-full bg-emerald-800"></span>
+                </button>
+                <button onclick="setBentoFabric('Whiskey Saddle Leather', '#92400E')" class="bento-fab-btn w-full p-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 text-xs font-semibold flex items-center justify-between hover:border-brandIndigo-500">
+                  <span>Whiskey Saddle Leather</span>
+                  <span class="w-3.5 h-3.5 rounded-full bg-amber-700"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between p-4 rounded-xl bg-white border border-slate-200">
+            <div>
+              <span class="text-xs text-slate-500 block">Selected Configuration:</span>
+              <span id="bento-summary-text" class="text-sm font-bold text-slate-900">3-Seater Deep Lounge &bull; Oatmeal Belgian Linen</span>
+            </div>
+            <span class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-bold text-xs">
+              50% Deposit Gated Online
+            </span>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+          <span>&check; Eliminates manual quote calculation</span>
+          <span>&check; Collects verified deposit before work begins</span>
+        </div>
+      </div>
+
+      <!-- BENTO TILE 2: (4 COLS) REAL CLIENT METRICS -->
+      <div id="case-study-tile" class="md:col-span-4 bento-card p-8 flex flex-col justify-between bg-gradient-to-br from-brandIndigo-700 to-brandIndigo-900 text-white border-0 shadow-xl">
+        <div>
+          <span class="text-xs uppercase tracking-widest font-bold text-indigo-200 block mb-2">Verified Impact</span>
+          <h3 class="text-2xl font-bold mb-6">Custom Couch Client Outcomes</h3>
+
+          <div class="space-y-6">
+            <div class="border-b border-indigo-500/40 pb-4">
+              <span class="text-3xl font-extrabold block">22 Hours</span>
+              <span class="text-xs text-indigo-200">Admin time saved each week by the founder</span>
+            </div>
+            <div class="border-b border-indigo-500/40 pb-4">
+              <span class="text-3xl font-extrabold block">+35%</span>
+              <span class="text-xs text-indigo-200">Increase in monthly workshop output</span>
+            </div>
+            <div>
+              <span class="text-3xl font-extrabold block">Zero</span>
+              <span class="text-xs text-indigo-200">Lost quotes or mistaken fabric cuts</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 pt-4 border-t border-indigo-500/40">
+          <p class="text-xs text-indigo-100 italic">
+            &ldquo;We stopped answering the same quote questions over and over. Our business grew without any added office chaos.&rdquo;
+          </p>
+        </div>
+      </div>
+
+      <!-- BENTO TILE 3: (6 COLS) LIVE WORKSHOP FLOOR BOARD -->
+      <div class="md:col-span-6 bento-card p-8">
+        <span class="text-xs font-bold uppercase tracking-wider text-amber-600 block mb-1">Operational Engine</span>
+        <h3 class="text-xl font-bold text-slate-900 mb-4">Live Workshop Kanban Dashboard</h3>
+        <p class="text-xs text-slate-600 mb-6">
+          How factory managers and workshop teams see orders in real time. As orders come in, job cards are automatically dispatched:
+        </p>
+
+        <div class="space-y-3 font-mono text-xs">
+          <!-- Job Item 1 -->
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+            <div>
+              <span class="font-bold text-slate-800 block" id="bento-kanban-title">#CW-4921: 3-Seater Deep Lounge</span>
+              <span class="text-slate-500 text-[11px]" id="bento-kanban-spec">Oatmeal Linen &bull; 14m Cut-List</span>
+            </div>
+            <span class="px-2.5 py-1 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">
+              BAY 2 &bull; TIMBER CUT
+            </span>
+          </div>
+
+          <!-- Job Item 2 -->
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+            <div>
+              <span class="font-bold text-slate-800 block">#CW-4919: Modular L-Sectional</span>
+              <span class="text-slate-500 text-[11px]">Forest Velvet &bull; 22m Cut-List</span>
+            </div>
+            <span class="px-2.5 py-1 rounded bg-indigo-100 text-brandIndigo-800 text-[10px] font-bold">
+              BAY 3 &bull; FOAM &amp; SEW
+            </span>
+          </div>
+
+          <!-- Job Item 3 -->
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+            <div>
+              <span class="font-bold text-slate-800 block">#CW-4915: 2-Seater Compact</span>
+              <span class="text-slate-500 text-[11px]">Cognac Leather &bull; Final Polish</span>
+            </div>
+            <span class="px-2.5 py-1 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+              READY FOR COURIER
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BENTO TILE 4: (6 COLS) AUTOMATED INTAKE & LEAD RESCUE -->
+      <div class="md:col-span-6 bento-card p-8 flex flex-col justify-between">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 block mb-1">Lead Capture</span>
+          <h3 class="text-xl font-bold text-slate-900 mb-4">Never Lose a Client Request Again</h3>
+          <p class="text-xs text-slate-600 mb-6">
+            Inquiries from your website, WhatsApp, and email are automatically organized into one clear priority list:
+          </p>
+
+          <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 text-xs">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+              <span class="font-bold text-slate-800">Interior Designer Inquiry &bull; 6 Couches</span>
+              <span class="text-emerald-700 font-bold font-mono">HIGH PRIORITY</span>
+            </div>
+            <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+              <span class="font-bold text-slate-800">Commercial Hotel Fitout &bull; Custom Banquettes</span>
+              <span class="text-emerald-700 font-bold font-mono">SPEC ATTACHED</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-slate-800">Private Residence &bull; L-Shape Velvet Sofa</span>
+              <span class="text-brandIndigo-700 font-bold font-mono">DEPOSIT PAID</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-500">
+          Eliminates forgotten emails and guarantees fast follow-ups that close deals.
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SELECTOR: PRODUCT VS SERVICE BUSINESSES -->
+  <section id="selector" class="py-20 px-6 bg-slate-100 border-t border-slate-200">
+    <div class="max-w-6xl mx-auto">
+      
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <h2 class="text-3xl font-extrabold text-slate-900">Tailored to How Your Business Works</h2>
+        <p class="text-slate-600 text-sm mt-2">Whether you manufacture physical goods or offer specialized services, we have you covered.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <!-- Product Business -->
+        <div class="bento-card p-8">
+          <div class="w-10 h-10 rounded-xl bg-brandIndigo-50 text-brandIndigo-600 flex items-center justify-center font-bold mb-4">
+            📦
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-2">For Product-Based Businesses</h3>
+          <p class="text-xs text-slate-600 mb-6">
+            Custom manufacturers, made-to-order artisans, and equipment builders.
+          </p>
+          <ul class="space-y-3 text-xs text-slate-700">
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-600 font-bold">&check;</span>
+              <span><strong>Interactive visual configurators</strong> for sofas, tables, cabinets, and steelwork.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-600 font-bold">&check;</span>
+              <span><strong>Automated timber cut-sheets</strong> and material bills of material.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-600 font-bold">&check;</span>
+              <span><strong>50% deposit gating</strong> to lock in buyers before manufacturing starts.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Service Business -->
+        <div class="bento-card p-8">
+          <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold mb-4">
+            🛠️
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-2">For Service-Based Businesses</h3>
+          <p class="text-xs text-slate-600 mb-6">
+            Contractors, trades, engineering consultancies, and commercial fitouts.
+          </p>
+          <ul class="space-y-3 text-xs text-slate-700">
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-600 font-bold">&check;</span>
+              <span><strong>Structured quote intake</strong> capturing site dimensions, drawings, and specs.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-600 font-bold">&check;</span>
+              <span><strong>Client project portals</strong> so customers can track progress without calling.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-600 font-bold">&check;</span>
+              <span><strong>Milestone billing</strong> and automated contract sign-offs.</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- HOW WE WORK -->
+  <section id="how-we-work" class="py-20 px-6 max-w-6xl mx-auto">
+    <div class="text-center mb-14">
+      <h2 class="text-3xl font-extrabold text-slate-900">Our 3-Step Process (No Tech Stress)</h2>
+      <p class="text-slate-600 text-sm mt-2">We build everything. You and your team just enjoy the results.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bento-card p-6">
+        <span class="text-2xl font-extrabold text-brandIndigo-600 mb-2 block">1. Discovery</span>
+        <h4 class="font-bold text-slate-900 text-sm mb-2">We Map Your Daily Headaches</h4>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          We speak in simple, everyday terms. You show us how you quote and build today, and we identify where manual work is slowing you down.
+        </p>
+      </div>
+
+      <div class="bento-card p-6">
+        <span class="text-2xl font-extrabold text-brandIndigo-600 mb-2 block">2. Custom Build</span>
+        <h4 class="font-bold text-slate-900 text-sm mb-2">We Engineer Your Tools</h4>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          We design your custom storefront and connected operational dashboard, fully configured with your real products, options, and workflows.
+        </p>
+      </div>
+
+      <div class="bento-card p-6">
+        <span class="text-2xl font-extrabold text-brandIndigo-600 mb-2 block">3. Launch</span>
+        <h4 class="font-bold text-slate-900 text-sm mb-2">We Train Your Team &amp; Go Live</h4>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Our systems are so simple that anyone in your workshop or office can pick them up in 15 minutes. We support you every step of the way.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT & QUOTE REQUEST -->
+  <section id="contact-form-section" class="py-20 px-6 bg-slate-900 text-white">
+    <div class="max-w-3xl mx-auto text-center">
+      <h2 class="text-3xl sm:text-4xl font-extrabold mb-4">
+        Ready to make more money and run your business smoothly?
+      </h2>
+      <p class="text-slate-400 text-sm mb-10 max-w-xl mx-auto">
+        Tell us a little about your business. We will show you a tailored blueprint of what custom software can do for you.
+      </p>
+
+      <form id="bento-form" onsubmit="handleBentoSubmit(event)" class="space-y-4 text-left max-w-xl mx-auto bg-slate-800/80 p-8 rounded-3xl border border-slate-700">
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Your Name</label>
+          <input type="text" required placeholder="Michael Adams" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:border-brandIndigo-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Company / Workshop Name</label>
+          <input type="text" required placeholder="Adams Custom Creations" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:border-brandIndigo-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">What does your business sell?</label>
+          <input type="text" required placeholder="e.g. Custom timber couches and dining tables, or electrical contracting" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:border-brandIndigo-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Email or Phone Number</label>
+          <input type="text" required placeholder="michael@adams.co.za / 082 123 4567" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:border-brandIndigo-500 focus:outline-none">
+        </div>
+
+        <button type="submit" class="w-full py-4 rounded-xl bg-brandIndigo-600 hover:bg-brandIndigo-500 text-white font-bold text-sm tracking-wide transition-all shadow-lg shadow-brandIndigo-500/30 mt-4">
+          Request Free Consultation Call &rarr;
+        </button>
+      </form>
+
+      <div id="bento-success" class="hidden py-10 space-y-3">
+        <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto text-2xl font-bold">&check;</div>
+        <h4 class="text-xl font-bold">Request Received!</h4>
+        <p class="text-xs text-slate-400">Our systems engineer will review your business and reach out within 4 hours.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="py-10 px-6 bg-white border-t border-slate-200 text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div>
+        <strong class="text-slate-900">AuraWorks Systems</strong> &bull; Custom Software for Product &amp; Service Businesses
+      </div>
+      <div>
+        Cape Town &bull; Johannesburg &bull; South Africa
+      </div>
+      <div>
+        &copy; 2026 AuraWorks. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function scrollToContact() {
+      document.getElementById('contact-form-section').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    let bentoModel = '3-Seater Deep Lounge';
+    let bentoFabric = 'Oatmeal Belgian Linen';
+
+    function setBentoModel(model, yardage, bay) {
+      bentoModel = model;
+      document.querySelectorAll('.bento-model-btn').forEach(btn => {
+        btn.classList.remove('active', 'border-brandIndigo-600', 'bg-brandIndigo-50', 'text-brandIndigo-700', 'font-bold');
+        btn.classList.add('border-slate-300', 'bg-white', 'text-slate-700', 'font-semibold');
+      });
+      event.currentTarget.classList.add('active', 'border-brandIndigo-600', 'bg-brandIndigo-50', 'text-brandIndigo-700', 'font-bold');
+      event.currentTarget.classList.remove('border-slate-300', 'bg-white', 'text-slate-700', 'font-semibold');
+
+      updateBentoSummary();
+      document.getElementById('bento-kanban-title').innerText = '#CW-4921: ' + model;
+      document.getElementById('bento-kanban-spec').innerText = bentoFabric + ' • ' + yardage + ' Cut-List';
+    }
+
+    function setBentoFabric(fab, color) {
+      bentoFabric = fab;
+      document.querySelectorAll('.bento-fab-btn').forEach(btn => {
+        btn.classList.remove('active', 'border-brandIndigo-600', 'bg-brandIndigo-50', 'text-brandIndigo-700', 'font-bold');
+        btn.classList.add('border-slate-300', 'bg-white', 'text-slate-700', 'font-semibold');
+      });
+      event.currentTarget.classList.add('active', 'border-brandIndigo-600', 'bg-brandIndigo-50', 'text-brandIndigo-700', 'font-bold');
+      event.currentTarget.classList.remove('border-slate-300', 'bg-white', 'text-slate-700', 'font-semibold');
+
+      updateBentoSummary();
+      const currentYardage = document.getElementById('bento-kanban-spec').innerText.split('•')[1] || ' 14m Cut-List';
+      document.getElementById('bento-kanban-spec').innerText = fab + ' •' + currentYardage;
+    }
+
+    function updateBentoSummary() {
+      document.getElementById('bento-summary-text').innerText = bentoModel + ' • ' + bentoFabric;
+    }
+
+    function handleBentoSubmit(e) {
+      e.preventDefault();
+      document.getElementById('bento-form').classList.add('hidden');
+      document.getElementById('bento-success').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>

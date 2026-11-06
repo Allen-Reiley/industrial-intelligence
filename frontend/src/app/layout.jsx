@@ -4,6 +4,7 @@ import "./globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { Analytics } from "@vercel/analytics/next";
+import CookieBanner from "@/components/cookies/CookieBanner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -209,6 +210,9 @@ export default function RootLayout({ children }) {
 
         {children}
         
+        {/* Cookie Consent Banner */}
+        <CookieBanner />
+
         {/* Third-party Analytics */}
         <SpeedInsights />
         <GoogleAnalytics gaId="G-2LE9FLFM12" />

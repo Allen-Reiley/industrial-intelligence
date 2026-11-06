@@ -1,11 +1,38 @@
-// frontend/src/lib/auth.ts
+// dashboard/src/lib/auth.ts
 import { betterAuth } from "better-auth";
 import { jwt } from "better-auth/plugins";
 import { Pool } from "pg";
 
-const pool = process.env.DATABASE_URL
-  ? new Pool({ connectionString: process.env.DATABASE_URL })
-  : undefined;
+function createDatabasePool(): Pool | undefined {
+  const rawUrl = process.env.DATABASE_URL;
+  if (!rawUrl) {
+    console.error("🚨 [Better Auth]: DATABASE_URL is not defined in environment variables! Better Auth database operations will fail.");
+    return undefined;
+  }
+
+  // Normalize protocol: if someone configured postgresql+asyncpg:// from backend, fix to postgresql://
+  const connectionString = rawUrl.replace(/^postgresql\+asyncpg:\/\//, "postgresql://");
+
+  const isProduction = process.env.NODE_ENV === "production";
+  const isRemoteHost = !connectionString.includes("localhost") && !connectionString.includes("127.0.0.1");
+  const needsSsl = isProduction || isRemoteHost || connectionString.includes("sslmode=require") || connectionString.includes("ssl=require");
+
+  const poolInstance = new Pool({
+    connectionString,
+    ssl: needsSsl ? { rejectUnauthorized: false } : undefined,
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
+  });
+
+  poolInstance.on("error", (err) => {
+    console.error("🚨 [PostgreSQL Pool Error]: Unexpected client error on idle connection:", err);
+  });
+
+  return poolInstance;
+}
+
+const pool = createDatabasePool();
 
 const isProduction = process.env.NODE_ENV === "production";
 const cookieDomain = process.env.COOKIE_DOMAIN || (isProduction ? ".auraworks.co.za" : undefined);
