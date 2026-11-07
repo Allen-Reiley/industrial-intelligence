@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select, func, desc, delete
 
 from app.db import get_async_session
-from app.core.security import require_admin, hash_password
+from app.core.security import require_admin, hash_password, SUPER_ADMIN_EMAILS
 from app.models.user import User, Account, UserRole
 from app.models.client import Client, SubscriptionStatus
 from app.models.checkout_session import CheckoutSession, CheckoutSessionStatus
@@ -103,7 +103,7 @@ async def create_personnel(
 
     new_user_id = f"user_{uuid.uuid4().hex[:12]}"
     permissions = payload.permissions if payload.permissions is not None else ["analytics", "sales"]
-    role_assigned = UserRole.ADMIN if email_clean == "reitumetse@auraworks.co.za" else payload.role
+    role_assigned = UserRole.ADMIN if email_clean in SUPER_ADMIN_EMAILS else payload.role
 
     new_user = User(
         id=new_user_id,
@@ -165,16 +165,16 @@ async def update_personnel(
         raise HTTPException(status_code=404, detail="User not found")
 
     # Guard: Permanent Super Admin immunity
-    if user.email and user.email.lower() == "reitumetse@auraworks.co.za":
+    if user.email and user.email.lower() in SUPER_ADMIN_EMAILS:
         if payload.role is not None and payload.role != UserRole.ADMIN:
             raise HTTPException(
                 status_code=400,
-                detail="reitumetse@auraworks.co.za is a permanent Super Admin and cannot be demoted."
+                detail=f"{user.email} is a permanent Super Admin and cannot be demoted."
             )
         if payload.is_active is False:
             raise HTTPException(
                 status_code=400,
-                detail="reitumetse@auraworks.co.za is a permanent Super Admin and cannot be deactivated."
+                detail=f"{user.email} is a permanent Super Admin and cannot be deactivated."
             )
 
     if payload.role is not None:

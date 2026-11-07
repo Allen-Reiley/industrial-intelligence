@@ -70,7 +70,9 @@ const AppSidebar: React.FC = () => {
   const pathname = usePathname();
   const t = useTranslations("sidebar");
   const { data: session } = useSession();
-  const isSuperAdminEmail = session?.user?.email?.toLowerCase() === "reitumetse@auraworks.co.za";
+  const isSuperAdminEmail = ["reitumetse@auraworks.co.za", "rsethabela@auraworks.co.za"].includes(
+    session?.user?.email?.toLowerCase() || ""
+  );
   const userRole = isSuperAdminEmail ? "admin" : ((session?.user as any)?.role || "sales").toLowerCase();
 
   const visibleNavItems = navItems.filter((item) => {

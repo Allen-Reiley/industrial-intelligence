@@ -21,6 +21,8 @@ from jose import jwt as jose_jwt, JWTError
 logger = logging.getLogger("auraworks.security")
 bearer_scheme = HTTPBearer(auto_error=False)
 
+SUPER_ADMIN_EMAILS = {"reitumetse@auraworks.co.za", "rsethabela@auraworks.co.za"}
+
 def get_encryption_key() -> bytes:
     """
     Derives a 32-byte key from the SECRET_KEY for AES-256-GCM encryption.
@@ -258,8 +260,8 @@ async def get_current_user(
                     logger.warning(f"Database query failed during JWT user resolution: {db_err}")
 
             if db_user:
-                # Permanent Super Admin Invariant: reitumetse@auraworks.co.za is ALWAYS active ADMIN
-                if db_user.email and db_user.email.lower() == "reitumetse@auraworks.co.za":
+                # Permanent Super Admin Invariant: reitumetse@auraworks.co.za / rsethabela@auraworks.co.za is ALWAYS active ADMIN
+                if db_user.email and db_user.email.lower() in SUPER_ADMIN_EMAILS:
                     if db_user.role != UserRole.ADMIN or not db_user.is_active:
                         db_user.role = UserRole.ADMIN
                         db_user.is_active = True
@@ -277,7 +279,7 @@ async def get_current_user(
                 return db_user
             else:
                 # Stateless JWT user: verified directly via cryptographic signature
-                role_enum = UserRole.ADMIN if (role_str == "admin" or (email and email.lower() == "reitumetse@auraworks.co.za")) else UserRole.SALES
+                role_enum = UserRole.ADMIN if (role_str == "admin" or (email and email.lower() in SUPER_ADMIN_EMAILS)) else UserRole.SALES
                 return User(
                     id=str(user_id or f"jwt_{email}"),
                     name=name,
@@ -340,8 +342,8 @@ async def get_current_user(
                 headers={"WWW-Authenticate": "Bearer"}
             )
 
-        # Permanent Super Admin Invariant: reitumetse@auraworks.co.za is ALWAYS active ADMIN
-        if user_record.email and user_record.email.lower() == "reitumetse@auraworks.co.za":
+        # Permanent Super Admin Invariant: reitumetse@auraworks.co.za / rsethabela@auraworks.co.za is ALWAYS active ADMIN
+        if user_record.email and user_record.email.lower() in SUPER_ADMIN_EMAILS:
             if user_record.role != UserRole.ADMIN or not user_record.is_active:
                 user_record.role = UserRole.ADMIN
                 user_record.is_active = True

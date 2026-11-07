@@ -129,7 +129,8 @@ export const auth = betterAuth({
     user: {
       create: {
         before: async (user) => {
-          if (user.email?.toLowerCase() === "reitumetse@auraworks.co.za") {
+          const superAdmins = ["reitumetse@auraworks.co.za", "rsethabela@auraworks.co.za"];
+          if (superAdmins.includes(user.email?.toLowerCase() || "")) {
             return {
               data: {
                 ...user,

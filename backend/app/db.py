@@ -26,9 +26,13 @@ def get_sanitized_db_url(url: str, is_async: bool = False) -> str:
     if is_async:
         if url.startswith("postgresql://"):
             url = "postgresql+asyncpg://" + url[len("postgresql://"):]
+        elif url.startswith("sqlite://") and not url.startswith("sqlite+aiosqlite://"):
+            url = "sqlite+aiosqlite://" + url[len("sqlite://"):]
     else:
         if url.startswith("postgresql+asyncpg://"):
             url = "postgresql://" + url[len("postgresql+asyncpg://"):]
+        elif url.startswith("sqlite+aiosqlite://"):
+            url = "sqlite://" + url[len("sqlite+aiosqlite://"):]
             
     return url
 
@@ -178,16 +182,16 @@ def init_db():
                     session.commit()
                     logger.info("✅ Default integration client updated with require_consent_banner=True.")
 
-                # Ensure reitumetse@auraworks.co.za is ALWAYS active admin on startup
-                stmt_admin = select(User).where(func.lower(User.email) == "reitumetse@auraworks.co.za")
-                super_admin = session.execute(stmt_admin).scalars().first()
-                if super_admin:
+                # Ensure super admins are ALWAYS active admin on startup
+                stmt_admin = select(User).where(func.lower(User.email).in_(["reitumetse@auraworks.co.za", "rsethabela@auraworks.co.za"]))
+                super_admins = session.execute(stmt_admin).scalars().all()
+                for super_admin in super_admins:
                     if super_admin.role != UserRole.ADMIN or not super_admin.is_active:
                         super_admin.role = UserRole.ADMIN
                         super_admin.is_active = True
                         session.add(super_admin)
                         session.commit()
-                        logger.info("👑 Super Admin reitumetse@auraworks.co.za role verified and restored to active ADMIN.")
+                        logger.info(f"👑 Super Admin {super_admin.email} role verified and restored to active ADMIN.")
         except Exception as e:
             logger.error(f"⚠️ Failed to seed default integration client or super admin: {e}")
     except Exception as e:
