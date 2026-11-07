@@ -311,13 +311,13 @@ function SignUpFormInner() {
                     />
                     <label htmlFor="agreeTerms" className="text-xs text-gray-500 dark:text-gray-400 cursor-pointer select-none">
                       I agree to the{" "}
-                      <Link href="/terms-of-service" className="text-brand-500 hover:underline">
+                      <a href="https://auraworks.co.za/terms-of-service" target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:underline">
                         Terms of Service
-                      </Link>{" "}
+                      </a>{" "}
                       and{" "}
-                      <Link href="/privacy-policy" className="text-brand-500 hover:underline">
+                      <a href="https://auraworks.co.za/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:underline">
                         Privacy Policy
-                      </Link>.
+                      </a>.
                     </label>
                   </div>
 

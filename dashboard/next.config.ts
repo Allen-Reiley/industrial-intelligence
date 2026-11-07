@@ -38,6 +38,20 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  async redirects() {
+    return [
+      {
+        source: "/privacy-policy",
+        destination: "https://auraworks.co.za/privacy-policy",
+        permanent: false,
+      },
+      {
+        source: "/terms-of-service",
+        destination: "https://auraworks.co.za/terms-of-service",
+        permanent: false,
+      },
+    ];
+  },
   experimental: {
     agentUpgrade: "security",
   },
