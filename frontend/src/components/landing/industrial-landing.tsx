@@ -490,11 +490,11 @@ export default function IndustrialLanding() {
                             </div>
                         </div>
 
-                        {/* Right Column: Live Calendly Widget Embed */}
+                        {/* Right Column: Live Cal.com Widget Embed */}
                         <div className="lg:col-span-8">
                             <div className="rounded-3xl border-2 border-primary/30 bg-card p-2 sm:p-4 shadow-2xl overflow-hidden min-h-[680px]">
                                 <iframe
-                                    src="https://calendly.com/auraworks221/30min"
+                                    src="https://cal.com/reitumetse-sethabela/30min"
                                     width="100%"
                                     height="680"
                                     frameBorder="0"

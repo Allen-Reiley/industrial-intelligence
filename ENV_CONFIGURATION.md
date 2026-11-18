@@ -85,7 +85,8 @@ SLACK_SUPPORT_WEBHOOK_URL=https://hooks.slack.com/services/...
 RESEND_API_KEY=re_...
 RESEND_FROM_EMAIL=AuraWorks <onboarding@auraworks.co.za>
 RESEND_WEBHOOK_SECRET=whsec_...
-CALENDLY_LINK=https://calendly.com/auraworks/demo
+BOOKING_LINK=https://cal.com/reitumetse-sethabela/30min
+CALENDLY_LINK=https://cal.com/reitumetse-sethabela/30min
 CALENDLY_WEBHOOK_SECRET=
 
 # --- Payment Integrations ---

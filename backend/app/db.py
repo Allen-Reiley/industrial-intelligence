@@ -235,9 +235,13 @@ async def get_async_session(request: Request = None) -> AsyncSession:
         if client_id:
             # Set the PostgreSQL session variable for RLS policies
             # is_local=True ensures it is scoped strictly to the current transaction.
-            await session.execute(
-                text("SELECT set_config('app.current_client_id', :client_id, true)").bindparams(client_id=str(client_id))
-            )
+            try:
+                if session.bind and session.bind.dialect.name == "postgresql":
+                    await session.execute(
+                        text("SELECT set_config('app.current_client_id', :client_id, true)").bindparams(client_id=str(client_id))
+                    )
+            except Exception:
+                pass
         yield session
 
 def get_session():
