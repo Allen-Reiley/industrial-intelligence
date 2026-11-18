@@ -88,7 +88,7 @@ export default function BookCallPage() {
                             Or use a placeholder div if you haven't set one up yet.
                         */}
                         <iframe
-                            src="https://calendly.com/auraworks221/30min"
+                            src="https://cal.com/reitumetse-sethabela/30min"
                             width="100%"
                             height="100%"
                             frameBorder="0"

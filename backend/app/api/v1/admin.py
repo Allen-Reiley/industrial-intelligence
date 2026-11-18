@@ -318,3 +318,43 @@ async def get_admin_overview_metrics(
         "total_mrr_zar": total_mrr_cents / 100.0,
         "active_sales_reps": sales_reps_count
     }
+
+
+class LeadRecoveryPayload(BaseModel):
+    dry_run: bool = False
+    only_unbooked: bool = True
+    booking_link: Optional[str] = None
+    client_id: Optional[str] = None
+    days_back: Optional[int] = None
+    limit: Optional[int] = None
+
+
+@router.post("/leads/recover")
+async def trigger_lead_recovery(
+    payload: LeadRecoveryPayload = LeadRecoveryPayload(),
+    session: AsyncSession = Depends(get_async_session),
+    current_admin: User = Depends(require_admin)
+):
+    """
+    Recovers leads from the database whose demo/audit booking may have failed
+    due to a broken 404 scheduling link.
+    Dispatches targeted recovery emails with the verified cal.com booking link.
+    """
+    from app.services.email import recover_prospect_leads
+    target_client_id = uuid.UUID(payload.client_id) if payload.client_id else None
+    
+    results = await recover_prospect_leads(
+        session=session,
+        booking_link=payload.booking_link,
+        client_id=target_client_id,
+        only_unbooked=payload.only_unbooked,
+        dry_run=payload.dry_run,
+        days_back=payload.days_back,
+        limit=payload.limit
+    )
+    
+    logger.info(
+        f"Admin {current_admin.email} triggered lead recovery: "
+        f"sent={results['sent']}, failed={results['failed']}, skipped={results['skipped']}, dry_run={payload.dry_run}"
+    )
+    return results

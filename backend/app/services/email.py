@@ -1,7 +1,11 @@
 # backend/app/services/email.py
 import logging
-from typing import Optional
+from typing import Optional, List, Dict, Any
+from datetime import datetime, timezone, timedelta
+from uuid import UUID
 import httpx
+from sqlmodel import select, or_
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 
 logger = logging.getLogger("auraworks.email")
@@ -13,7 +17,8 @@ async def send_resend_email(
     subject: str, 
     html_content: str,
     attachment_bytes: Optional[bytes] = None,
-    filename: Optional[str] = None
+    filename: Optional[str] = None,
+    bypass_filter: bool = False
 ) -> bool:
     """
     Dispatches outbound email notifications using Resend's REST API.
@@ -24,10 +29,13 @@ async def send_resend_email(
         
     lower_email = to_email.lower()
     blocked_keywords = [
-        "test", "example", "fake", "spam", "dummy", 
+        "fake", "spam", "dummy", 
         "localhost", "foo.com", "bar.com", "unknown@"
     ]
-    if any(keyword in lower_email for keyword in blocked_keywords):
+    if not bypass_filter and getattr(settings, "ENVIRONMENT", "") not in ["test", "testing"]:
+        blocked_keywords.extend(["test", "example"])
+
+    if not bypass_filter and any(keyword in lower_email for keyword in blocked_keywords):
         logger.info(f"🚫 Email dispatch skipped for test/blocked address: {to_email}")
         return False
 
@@ -84,7 +92,7 @@ async def send_prospect_success_email(
     subject = "Confirm Your AuraWorks Demo & Onboarding"
     
     greeting = f"Hello {recipient_name}," if recipient_name else "Hello,"
-    link = calendly_link or settings.CALENDLY_LINK
+    link = calendly_link or getattr(settings, "BOOKING_LINK", None) or settings.CALENDLY_LINK or "https://cal.com/reitumetse-sethabela/30min"
     
     # Premium minimalist design framework matching a professional brand layout
     html_template = f"""
@@ -146,6 +154,192 @@ async def send_prospect_success_email(
         subject=subject,
         html_content=html_template
     )
+
+
+async def send_prospect_recovery_email(
+    recipient_email: str,
+    recipient_name: Optional[str] = None,
+    booking_link: Optional[str] = None
+) -> bool:
+    """
+    Sends an executive lead-recovery email to prospects who signed the form but
+    encountered an invalid/broken 404 scheduling link.
+    """
+    subject = "Updated Scheduling Link: Your AuraWorks Technical Strategy Session"
+    
+    greeting = f"Hello {recipient_name}," if recipient_name else "Hello,"
+    link = booking_link or getattr(settings, "BOOKING_LINK", None) or settings.CALENDLY_LINK or "https://cal.com/reitumetse-sethabela/30min"
+    
+    html_template = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #fafafa; color: #1a1a1a; margin: 0; padding: 40px; }}
+            .card {{ max-width: 540px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e5e5; border-radius: 6px; padding: 40px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02); }}
+            .brand {{ font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; color: #737373; margin-bottom: 28px; }}
+            .greeting {{ font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #171717; }}
+            .body-text {{ font-size: 14px; line-height: 1.65; color: #404040; margin-bottom: 20px; }}
+            .highlight-box {{ background: #f9fafb; border-left: 3px solid #18181b; padding: 14px 18px; margin: 20px 0; font-size: 13px; color: #374151; line-height: 1.5; }}
+            .cta-container {{ margin: 32px 0; text-align: left; }}
+            .cta-button {{ display: inline-block; font-size: 13px; font-weight: 600; color: #ffffff !important; background: #000000; padding: 13px 26px; text-decoration: none; border-radius: 4px; letter-spacing: 0.05em; }}
+            .cta-button:hover {{ background: #262626; }}
+            .status-tag {{ display: inline-block; font-size: 11px; font-family: monospace; background: #fef3c7; color: #92400e; padding: 5px 10px; border-radius: 3px; margin-bottom: 20px; font-weight: 600; }}
+            .agenda-list {{ margin: 16px 0; padding-left: 20px; font-size: 13px; color: #4b5563; line-height: 1.7; }}
+            .footer {{ border-top: 1px solid #f3f3f3; padding-top: 24px; font-size: 11px; color: #a3a3a3; letter-spacing: 0.05em; line-height: 1.6; margin-top: 32px; }}
+            .signature {{ margin-top: 24px; font-size: 14px; color: #1f2937; line-height: 1.5; }}
+            .signature strong {{ color: #111827; }}
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <div class="brand">AuraWorks Industrial Intelligence</div>
+            <div class="status-tag">PRIORITY ACTION: SCHEDULE ONBOARDING</div>
+            <div class="greeting">{greeting}</div>
+            
+            <div class="body-text">
+                Thank you for recently requesting an onboarding demonstration and technical walk-through with AuraWorks.
+            </div>
+
+            <div class="highlight-box">
+                <strong>Notice regarding your scheduling link:</strong> We identified that our previous calendar booking link was temporarily returning a 404 error, which may have prevented you from finalizing your session on our calendar. We apologize for the inconvenience and have migrated to our verified calendar system.
+            </div>
+            
+            <div class="body-text">
+                To ensure you receive your technical discovery session and discoverability audit, please use our direct calendar link below to select a date and time that suits your availability:
+            </div>
+
+            <div class="cta-container">
+                <a href="{link}" class="cta-button" target="_blank">Select Your Time Slot &rarr;</a>
+            </div>
+
+            <div class="body-text">
+                During this 15–30 minute engineering walkthrough, we will examine:
+            </div>
+            <ul class="agenda-list">
+                <li><strong>Search &amp; AI Visibility:</strong> Your domain&rsquo;s current organic positioning and citability across Google and AI search engines.</li>
+                <li><strong>B2B Traffic Unmasking:</strong> How our POPIA-compliant engine identifies anonymous corporate visitors from industrial and mining clusters.</li>
+                <li><strong>Operational Cashflow:</strong> Workflows to convert unmasked corporate interest into qualified sales pipeline.</li>
+            </ul>
+
+            <div class="body-text">
+                If you prefer to coordinate a time directly or have urgent questions, simply reply directly to this email.
+            </div>
+
+            <div class="signature">
+                Best regards,<br>
+                <strong>Reitumetse Sethabela</strong><br>
+                Founder &amp; Systems Architect &bull; AuraWorks (Pty) Ltd<br>
+                <a href="mailto:reitumetse@auraworks.co.za" style="color: #6b7280; text-decoration: none;">reitumetse@auraworks.co.za</a>
+            </div>
+            
+            <div class="footer">
+                AuraWorks (Pty) Ltd &bull; Industrial Intelligence Engine<br>
+                South Africa &bull; Private &amp; Confidential
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    return await send_resend_email(
+        to_email=recipient_email,
+        subject=subject,
+        html_content=html_template
+    )
+
+
+async def recover_prospect_leads(
+    session: AsyncSession,
+    booking_link: Optional[str] = None,
+    client_id: Optional[UUID] = None,
+    only_unbooked: bool = True,
+    dry_run: bool = False,
+    days_back: Optional[int] = None,
+    limit: Optional[int] = None
+) -> Dict[str, Any]:
+    """
+    Recovers prospects from the database whose demo/audit booking may have failed
+    due to a broken 404 scheduling link.
+    """
+    from app.models.prospect import Prospect
+
+    target_link = booking_link or getattr(settings, "BOOKING_LINK", None) or settings.CALENDLY_LINK or "https://cal.com/reitumetse-sethabela/30min"
+
+    stmt = select(Prospect)
+    if client_id:
+        stmt = stmt.where(Prospect.client_id == client_id)
+
+    if only_unbooked:
+        stmt = stmt.where(
+            or_(
+                Prospect.status != "call_booked",
+                Prospect.status.is_(None),
+                Prospect.calendly_event_uuid.is_(None)
+            )
+        )
+
+    if days_back:
+        threshold = datetime.now(timezone.utc) - timedelta(days=days_back)
+        stmt = stmt.where(Prospect.created_at >= threshold)
+
+    stmt = stmt.order_by(Prospect.created_at.desc())
+    if limit:
+        stmt = stmt.limit(limit)
+
+    result = await session.execute(stmt)
+    prospects = result.scalars().all()
+
+    sent_count = 0
+    failed_count = 0
+    skipped_count = 0
+    details = []
+
+    for p in prospects:
+        # Filter invalid or synthetic addresses
+        if not p.email or "@" not in p.email or p.email.endswith("@unverified.aura"):
+            skipped_count += 1
+            details.append({"id": str(p.id), "email": p.email, "status": "skipped", "reason": "invalid_or_placeholder_email"})
+            continue
+
+        if dry_run:
+            sent_count += 1
+            details.append({"id": str(p.id), "email": p.email, "name": p.name, "status": "dry_run_ready"})
+            continue
+
+        try:
+            success = await send_prospect_recovery_email(
+                recipient_email=p.email,
+                recipient_name=p.name,
+                booking_link=target_link
+            )
+            if success:
+                sent_count += 1
+                p.welcome_email_sent = True
+                p.updated_at = datetime.now(timezone.utc)
+                session.add(p)
+                details.append({"id": str(p.id), "email": p.email, "name": p.name, "status": "sent"})
+            else:
+                failed_count += 1
+                details.append({"id": str(p.id), "email": p.email, "name": p.name, "status": "delivery_failed"})
+        except Exception as e:
+            failed_count += 1
+            logger.error(f"Error recovering lead {p.email}: {e}")
+            details.append({"id": str(p.id), "email": p.email, "name": p.name, "status": "error", "error": str(e)})
+
+    if not dry_run and sent_count > 0:
+        await session.commit()
+
+    return {
+        "total_candidates": len(prospects),
+        "sent": sent_count,
+        "failed": failed_count,
+        "skipped": skipped_count,
+        "dry_run": dry_run,
+        "booking_link": target_link,
+        "details": details
+    }
 
 
 async def send_inbound_auto_reply(to_email: str, recipient_alias: str) -> bool:

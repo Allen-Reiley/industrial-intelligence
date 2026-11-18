@@ -62,7 +62,8 @@ class Settings(BaseSettings):
     # --- EXCLUSIVE RESEND EMAIL DISPATCH ENGINE ---
     RESEND_API_KEY: Optional[str] = None
     RESEND_FROM_EMAIL: str = "AuraWorks <onboarding@auraworks.co.za>"
-    CALENDLY_LINK: str = "https://calendly.com/auraworks/demo"
+    BOOKING_LINK: str = "https://cal.com/reitumetse-sethabela/30min"
+    CALENDLY_LINK: str = "https://cal.com/reitumetse-sethabela/30min"
     CALENDLY_WEBHOOK_SECRET: Optional[str] = None
     RESEND_WEBHOOK_SECRET: Optional[str] = None
 
